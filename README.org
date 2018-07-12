@@ -1,0 +1,15 @@
+* Mahogany
+  Mahogany is a tiling window manager for Wayland modeled after
+  stumpwm. While it is not a drop-in replacement for stumpwm, stumpwm
+  users should be very comfortable with Mahogany. It features:
+  + Easy extensibility: through the use of different modes, users can
+    modify keybindings present in Mahogany, and even have different
+    keybindings for each program.
+  + Programs to interact with other running services such as
+    pulseaudio and alsamixer, as well as facilities to controll screen
+    brightness.
+** TODO Installation
+** TODO Customizing Mahogany
+** TODO Adding new features/modes
+   Please see the [[./doc/devel/][documentation directory]] for details on how to extend
+   Mahogany.

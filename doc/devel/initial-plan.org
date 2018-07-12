@@ -1,0 +1,103 @@
+* Architecture
+** Backends
+   There are two parts to a backend: the portion of a backend that is
+   responsible for generated events and handling devices, and the
+   output backend, which is used for rendering items on screen.
+*** Event backend
+    The event backend calls the various hooks that modes provide for
+    managing windows. Its main responsibility is to manage sever
+    aspect of Wayland: adding and removing displays, managing input
+    devices, and handling keyboard/cursor/client events.
+*** Output backend
+    The output backend provides an interface for placing windows, and
+    providing compositor effects. It abstracts the calls needed to
+    actually draw each window in the correct position.
+** Base Mahogany structure
+    In order for Mahogany to be customizable, there needs to be
+    agreement on the objects that can be mainpulated and how they are
+    stored. The objects and datastructures in this section will hold
+    the state of Mahogany. It is up to each mode to figure out how it
+    wants to interact with these datasctructures and objects, and how
+    it uses them to layout each Wayland surface.
+*** Mahogany Objects
+     There are a few objects that provide a container for wayland
+     surfaces, or help organize what the user sees on screen.
+
+     + Window :: An object that holds a wayland surface and keeps track
+		of the program that corresponds to the surface as well
+		as various states that are associated with said
+		surface. There is one window per frame.
+     + Frame :: Windows are displayed in frames. Frames can either be
+		floating, or tiled. Frames dictate where windows appear
+		on screen: # of frames \le # of windows.
+     + Groups :: This is term used for virtual desktops in
+		 Mahogany. There is one window-list, frame-tree and
+		 frame-list per group.
+*** Mahogany Data structures
+    There are a couple of datastructures that determine the overall
+    state of what is shown to the user. These datastructures exist in
+    a group, which is the virtual destops of Mahogany. Each of these
+    structures hold the specific object mentioned in their name.
+
+    + Group-list :: Holds the list of available groups.
+    + Frame-list :: There is one frame-list per group. This list
+		    manages the floating windows in a group.
+    + Frame-tree :: There is one frame-list per group. This tree
+		    managages the tiled windows in the group.
+    + Visible-frame-list :: The frames that are currently visible to
+	 the user. This will generally hold all of the leaf nodes in
+         the frame-tree, plus whichever frames are visible in the
+         Frame-list.
+*** Mode-agnostic Items
+     In order to display notifications and display a command prompt,
+     certain windows are beyond the control of the modes, and are
+     alway rendered if they are present.
+     + Notification windows will always be shown on top.
+     + Command windows that allow the user to issue textual commands
+       to the window manager are also always shown.
+*** Detemining the events dispatching on the activated mode
+**** Major modes
+     Modes are stored in a stack called ~*current-major-modes*~. When an
+     event is recieved, the event will be passed to the mode on the top
+     of the stack. The main use of the stack is to be able to
+     activate/deactivate modes without having to worry which mode
+     should be activated next. If you want to merge several modes
+     together, you can use inherentance. Minor modes can affect the
+     keybindings globally available.
+**** Window Minor Modes
+
+** Modes
+    Modes allow the user to customize how the user interacts with
+    Mahogany.
+*** Major Modes
+    Major modes are responsible for directly deciding how the window-tree and
+    window-list are displayed and interacted with. Each major mode can have
+    a series of minor modes activated within it. ~mahogany-mode~, the
+    default mode, should be used most often. Other modes allow for 3d
+    desktop effects when switching windows, or special modes to raise windows.
+**** Minor Modes
+     Minor Modes have two variants: window-minor modes and
+     global minor modes. Window minor modes affect the behavor of a
+     single window. They are mainly used to create different keymaps
+     depending on the window.
+*** Window Minor Modes
+    Window minor modes are used to customize keybindings and how the
+    window is displayed without affecting any other part of
+    Mahogany. For example, window minor modes can be used to implement
+    "gaps" as seen in the popular extension for i3, or to scroll
+    windows with different keys.
+*** Modules
+    Modules represent a way to package and enable code that is not a
+    part of Mahogany. Modules are mainly used to add additional modes
+    and platform specificy functionality. For example, if someone uses
+    pulseaudio, the may wish to install a module that handles volume
+    and sink selection.
+* Undecided
+** Mode line
+** Menu windows
+   + Menu windows that the user interacts with could be implemented as
+    a major mode that puts all input into the menu instead of
+    re-directing it to the windows.
+** Notification windows
+   Dunst for wayland?
+** IPC for modeline, testing

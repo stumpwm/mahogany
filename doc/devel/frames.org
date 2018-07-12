@@ -1,0 +1,24 @@
+* Frames
+** Focusing
+   + A frame holds focus, not the window that is inside of it.
+** Depth
+  Frames have depth. This dictates which frames are shown overtop of
+  one another. This depth is mainly used to layer floating windows and
+  to make them feel more like a pile of papers on a desk, but tiling
+  frames have this feature as well.
+  + The layer closest to the user is 0, followed by layer 1.
+  + Each time a frame is focused, its depth resets to zero. If a frame
+  is focused that overlays another frame, those frames drop down a
+  level. This is a recursive process, as frames that drop in level
+  also need to check if they overlap any frames and lower their level
+  as well.
+** Frame types
+*** Frames
+*** Floating Frames
+    + These frames have absoulte XY positioning. These are the type of
+    frames present in ~frame-list~.
+*** Tree-frames
+    + The tree-frame is a tree of frames. Tree-frames represent the
+    internal nodes in the tree.
+*** Leaf-frames
+    + Leaf frames in the tree that actually hold windows
