@@ -6,8 +6,16 @@
   :license  "GPL 2.0"
   :version "0.0.1"
   :serial t
-  :depends-on (#:cl-autowrap #:uiop #:alexandria #:cl-ppcre #:bordeaux-threads)
-  :components ((:module "base"
+  :depends-on (#:cl-autowrap/libffi #:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
+				    #:cl-wlroots #:cffi)
+  :components ((:file "util")
+	       (:module "backend"
+			:serial t
+			:components
+			((:file "package")
+			 (:file "test")
+			 (:file "backend")))
+	       (:module "base"
 			:serial t
 			:components
 			((:file "package")
