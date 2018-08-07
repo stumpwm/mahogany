@@ -1,15 +1,36 @@
 * Mahogany
   Mahogany is a tiling window manager for Wayland modeled after
   stumpwm. While it is not a drop-in replacement for stumpwm, stumpwm
-  users should be very comfortable with Mahogany. It features:
-  + Easy extensibility: through the use of different modes, users can
+  users should be very comfortable with Mahogany. Its planned
+  features are:
+  + [ ] Easy extensibility: through the use of different modes, users can
     modify keybindings present in Mahogany, and even have different
-    keybindings for each program.
-  + Programs to interact with other running services such as
+    keybindings for each program or window.
+  + [ ] Module system that allows users to load and use code at their
+    descretion.
+  + [ ] Programs to interact with other running services such as
     pulseaudio and alsamixer, as well as facilities to controll screen
-    brightness.
+    brightness. These are module based, so they don't have to be
+    loaded if your system doesn't used them.
+  + [ ] Good support for floating windows
+  + [X] A Common Lisp code base.
 ** TODO Installation
+   Currently, the only way to install Mahogany is to compile from
+   source.
+
+*** Requirements:
+    * [[https://github.com/swaywm/wlroots][wlroots]] with Xwayland support. If you would like to use Mahogany
+      without X11 support, please create an issue.
+    * [[https://www.quicklisp.org/][Quicklisp]] for automatically installing some of lisp
+      dependencies.
+    * [[https://github.com/sdilts/cl-autowrap][cl-autowrap]] from this repository. The linked version has several patches
+      and bugfixes that are requried by Mahogany.
+    * cl-wlr, an ffi for ~wlroots~
+    * A lisp implementation that supports multithreading. ~SBCL~ is
+      recommended.
+
 ** TODO Customizing Mahogany
 ** TODO Adding new features/modes
    Please see the [[./doc/devel/][documentation directory]] for details on how to extend
    Mahogany.
+** TODO Contributing to Mahogany
