@@ -19,16 +19,23 @@
 :info   Useful, general information that is shown by default
 :warn   Will signal a warning condition with the supplied text as well as print to
         *log-output-file*. Use if something is wrong, but the app can still continue.
-For more severe situations, directly signal an error.")
+:error  Something went wrong...
+:fatal  Better call the insurance company...")
 
+;; mh-log is used in this file, so get-print-data needs to
+;; be availabe at compile time:
 (eval-when (:compile-toplevel)
   (defun get-print-data (level)
+    ;; would probably be better to use a hashtable or plist
     (ccase level
-      (:trace (values 0 :yellow))
-      (:debug (values 1 :cyan))
-      (:info  (values 2 :blue))
-      (:warn  (values 3 :red))
-      (:ignore (values 4 :white)))))
+      ;; higher values mean less importance
+      (:trace  (values 6 :white))
+      (:debug  (values 5 :cyan))
+      (:info   (values 4 :blue))
+      (:warn   (values 3 :yellow))
+      (:error  (values 2 :red))
+      (:fatal  (values 1 :red))
+      (:ignore (values 0)))))
 
 (defmacro mh-log (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*"
@@ -36,7 +43,7 @@ For more severe situations, directly signal an error.")
     (multiple-value-bind (lvl color)
       (get-print-data log-lvl)
       `(progn
-	 (when (<= (get-print-data *log-level*) ,lvl)
+	 (when (>= (get-print-data *log-level*) ,lvl)
 	   (with-color (,color :effect :bright)
 	     (format *log-output-file* ,string ,@fmt)
 	     (format *log-output-file* "~%"))
@@ -65,7 +72,7 @@ It is not necessary to call this for logging to work properly, but coloring may 
   COLOR:  Enable/Disable logging colors"
   (setf *log-output-file* output)
   ;; TODO: make this something with a use-value restart
-  (assert (member level '(:trace :debug :info :warn)))
+  (assert (member level '(:trace :debug :info :warn :error :crit)))
   (setf *log-level* level)
   ;; check if we can use pretty colors:
   (if (and (term-colorable-p)
