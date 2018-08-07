@@ -1,13 +1,19 @@
+
+
 (defpackage #:mh-log
   (:use :cl :cl-ansi-text))
-
+;; an alternative to this package is vom. However, it doesn't
+;; support color, and is unlikely to, so this will stay.
 (in-package #:mh-log)
 
 (export '(*log-level*
 	  mh-log
-	  mh-log-init))
+	  mh-log-init
+	  *log-level*
+	  *log-output-file*))
 
-(defvar *log-output-file* *standard-output*)
+(defvar *log-output-file* *standard-output*
+  "The file to print log messages")
 
 ;; if you need to add more log levels, you may need to recompile, as
 ;; the level is translated to a number at read time. See mh-log:mh-log
@@ -15,7 +21,7 @@
   "The amount of information printed to the *log-output-file*. The accepted values are:
 :ignore Print nothing to stdout
 :trace  this should be used for 'tracing' the code, such as when doing deep debugging.
-:debug  Information that is diagnostically helpful to people more than just the developers
+:debug  Information that is diagnostically helpful to people who are not project developers
 :info   Useful, general information that is shown by default
 :warn   Will signal a warning condition with the supplied text as well as print to
         *log-output-file*. Use if something is wrong, but the app can still continue.
@@ -37,11 +43,11 @@
       (:fatal  (values 1 :red))
       (:ignore (values 0)))))
 
-(defmacro mh-log (log-lvl string &rest fmt)
+(defmacro log-string (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*"
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color)
-      (get-print-data log-lvl)
+	(get-print-data log-lvl)
       `(progn
 	 (when (>= (get-print-data *log-level*) ,lvl)
 	   (with-color (,color :effect :bright)
@@ -54,7 +60,7 @@
 
 ;; as of August 2018, the terminfo package doesn't support 32 bit terminfo files,
 ;; so we must try to use the old versions:
-;; TODO: update for new a new version of terminfo
+;; TODO: update for new a future version of terminfo
 (defun fix-term-name (name)
   (cl-ppcre:register-groups-bind (fixed) ("([a-z]*)-*" name)
     (or fixed name)))
@@ -64,7 +70,7 @@
        (member :max-colors (terminfo:capabilities
 			    (terminfo:set-terminal (fix-term-name (uiop:getenv "TERM")))))))
 
-(defun mh-log-init (&key (level :info) (output *standard-output*) (color t))
+(defun log-init (&key (level :info) (output *standard-output*) (color t))
   "Initialize logging. Call this to setup colorized output, ect.
 It is not necessary to call this for logging to work properly, but coloring may be messed up.
   LVL:    see *log-level*
@@ -79,5 +85,5 @@ It is not necessary to call this for logging to work properly, but coloring may 
 	   color)
       (setf cl-ansi-text:*enabled* t)
       (setf cl-ansi-text:*enabled* nil))
-  (mh-log :info "Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
+  (log-string :info "Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
 	  cl-ansi-text:*enabled* *log-output-file* *log-level*))
