@@ -15,6 +15,8 @@
 			:serial t
 			:components
 			((:file "package")
+			 (:file "desktop")
+			 (:file "server")
 			 (:file "test")
 			 (:file "backend")))
 	       (:module "base"
