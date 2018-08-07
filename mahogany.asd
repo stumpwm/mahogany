@@ -7,8 +7,10 @@
   :version "0.0.1"
   :serial t
   :depends-on (#:cl-autowrap/libffi #:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
-				    #:cl-wlroots #:cffi)
+				    #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
+				    #:cl-ppcre)
   :components ((:file "util")
+	       (:file "log")
 	       (:module "backend"
 			:serial t
 			:components
