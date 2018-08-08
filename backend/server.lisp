@@ -10,6 +10,8 @@
 (export '(make-server
 	  destroy-server))
 
+(defvar *server* nil)
+
 (defclass server ()
   ;; should probably use :reader instead of :accessor
   ((display :accessor display)
@@ -33,9 +35,12 @@
     (setf backend (c-fun wlr:wlr-backend-autocreate display (null-pointer)))
     (assert (not (and (eql (null-pointer) event-loop)
 		      (eql (null-pointer) backend))))
-    ;;(setf renderer (c-fun wlr:wlr-backend-get-renderer backend))
-    ;; (c-fun wlr:wlr-renderer-init renderer)
-    ;; (setf data-device-manager (c-fun wlr:wlr-data-device-manager-create display))
+    (setf renderer (c-fun wlr:wlr-backend-get-renderer backend))
+    (assert (not (eql renderer (null-pointer))))
+    (describe renderer)
+    (c-fun wlr:wlr-renderer-init-wl-display renderer display)
+    (setf data-device-manager (c-fun wlr:wlr-data-device-manager-create display))
+
     (setf desktop (make-desktop backend))))
 ;; (setf input (make-input backend)
 
