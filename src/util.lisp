@@ -1,11 +1,10 @@
+;;; A place to put useful functions that are shared between different files
+
 (defpackage #:mh-util
-  (:use #:cl #:autowrap #:plus-c))
+  (:use #:cl #:wayland-server-core))
 
 (in-package #:mh-util)
 
-(export '(free-from))
-
-(defun free-from (object slot)
-  (autowrap:free (slot-value object slot))
-  ;; remove the invalid pointer from the object:
-  (setf (slot-value object slot) nil))
+(define-condition initialization-error (error)
+  ((text :initarg text :reader text))
+  (:documentation "Used when initializaion goes wrong"))
