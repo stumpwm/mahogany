@@ -6,20 +6,25 @@
   :license  "GPL 2.0"
   :version "0.0.1"
   :serial t
-  :depends-on (#:cl-autowrap/libffi #:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
-				    #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
-				    #:cl-ppcre)
-  :components ((:file "util")
-	       (:file "log")
-	       (:module "backend"
+  :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
+		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
+		      #:cl-ppcre #:vom #:cl-egl)
+  :components ((:module "src/"
 			:serial t
 			:components
-			((:file "package")
+			((:file "util")
+			 (:file "log")))
+	       (:module "src/backend"
+			:serial t
+			:components
+			((:file "util")
+			 (:file "output")
 			 (:file "desktop")
 			 (:file "server")
 			 (:file "test")
-			 (:file "backend")))
-	       (:module "base"
+			 (:file "backend")
+			 (:file "package")))
+	       (:module "src/base"
 			:serial t
 			:components
 			((:file "package")
