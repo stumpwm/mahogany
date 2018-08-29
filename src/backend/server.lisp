@@ -10,9 +10,21 @@
 (in-package #:mh/backend/server)
 
 (export '(make-server
-	  destroy-server))
+	  destroy-server
+	  run-server))
 
 (defvar *server* nil)
+
+(defun get-server ()
+  (if *server*
+      *server*
+      (setf *server* (make-server))))
+
+(defun clear-server ()
+  (when *server*
+    (destroy-server *server*)
+    (setf *server* nil)))
+
 
 (defclass server ()
   ;; should probably use :reader instead of :accessor
