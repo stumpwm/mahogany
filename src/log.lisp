@@ -7,8 +7,9 @@
 (in-package #:mh-log)
 
 (export '(*log-level*
-	  mh-log
-	  mh-log-init
+	  log-string
+	  get-print-data
+	  log-init
 	  *log-level*
 	  *log-output-file*))
 
@@ -16,7 +17,7 @@
   "The file to print log messages")
 
 ;; if you need to add more log levels, you may need to recompile, as
-;; the level is translated to a number at read time. See mh-log:mh-log
+;; the level is translated to a number at read time. See log-string.
 (defvar *log-level* :info
   "The amount of information printed to the *log-output-file*. The accepted values are:
 :ignore Print nothing to stdout
@@ -30,7 +31,7 @@
 
 ;; mh-log is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :load-toplevel)
   (defun get-print-data (level)
     ;; would probably be better to use a hashtable or plist
     (ccase level
@@ -85,5 +86,5 @@ It is not necessary to call this for logging to work properly, but coloring may 
 	   color)
       (setf cl-ansi-text:*enabled* t)
       (setf cl-ansi-text:*enabled* nil))
-  (log-string :info "Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
+  (log-string :debug "Mahogany Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
 	  cl-ansi-text:*enabled* *log-output-file* *log-level*))
