@@ -1,9 +1,12 @@
 (defpackage #:mh/backend/desktop
-  (:use #:cl #:autowrap #:wlr/wayland #:plus-c)
-  (:import-from #:mh-util
-		#:free-from)
-  (:import-from #:mh-log
-		#:log-string))
+  (:use #:cl #:cffi #:mh/backend/output #:backend/util)
+  (:import-from :mh-log
+		#:log-string)
+  (:import-from :wayland-server-core
+		#:wl-signal-add
+		#:wl-list-remove
+		#:wl_listener
+		#:link))
 
 (in-package #:mh/backend/desktop)
 
@@ -28,17 +31,19 @@
   (finish-output))
 
 (defun make-desktop (backend)
-  (let ((output-listener (wlr/wayland:make-listener 'handle-new-output))
-	(layout (c-fun wlr:wlr-output-layout-create)))
-    (wlr/wayland:wl-signal-add (c-ref backend (:struct (wlr:wlr-backend)) :events :new-output &)
-			       ;;(c-ref output-stream-p (:sttruct (wlr:wlr-listener)) :notify
-			       output-listener)
-    (make-instance 'desktop
-		   :output-listener output-listener
-		   :layout layout)))
+  (let ((new-output-listener (make-listener handle-new-output))
+	(layout (wlr:output-layout-create)))
+    (wl-signal-add (cffi:foreign-slot-pointer backend '(:struct wlr:backend) :event-new-output)
+		   new-output-listener)
+    (let ((new-desktop (make-instance 'desktop
+			 :output-listener new-output-listener
+			 :layout layout)))
+      (backend/util:register-listener new-output-listener new-desktop *desktop-listeners*)
+      (the desktop new-desktop))))
 
 (defun destroy-desktop (desktop)
   ;; remove the listener from its signal:
-  (c-fun wlr:wl-list-remove (c-ref (output-listener desktop) (:struct (wlr:wl-listener)) :link &))
+  (wl-list-remove (cffi:foreign-slot-pointer (output-listener desktop)
+					'(:struct wl_listener) link))
   (free-from desktop 'output-listener)
-  (c-fun wlr:wlr-output-layout-destroy (layout desktop)))
+  (wlr:output-layout-destroy (layout desktop)))
