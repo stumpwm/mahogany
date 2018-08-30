@@ -51,7 +51,6 @@
 		      (eql (null-pointer) backend))))
     (setf renderer (wlr:backend-get-renderer backend))
     (assert (not (eql renderer (null-pointer))))
-    (describe renderer)
     ( wlr:renderer-init-wl-display renderer display)
     (setf data-device-manager (wlr:data-device-manager-create display))
 

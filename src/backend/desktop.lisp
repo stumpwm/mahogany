@@ -38,9 +38,8 @@
   (let ((desktop-owner (get-listener-owner listener *desktop-listeners*)))
     (assert (not (null desktop-owner)))
     (log-string :debug "New output: ~A" (cffi:foreign-string-to-lisp
-					 (foreign-slot-pointer output 'wlr:output
-							       :name)))
-    (finish-output)
+  					 (foreign-slot-pointer output '(:struct wlr:output)
+  							       :name)))
     (let* ((destroy-listener (make-listener handle-destroy-output))
 	   (new-output (make-output output)))
       ;; register the signal:

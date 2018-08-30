@@ -28,9 +28,15 @@
 (defun make-output (output)
   (let* ((output-damage (wlr:output-damage-create output))
 	 (damage-frame-listener (make-listener handle-damage-frame)))
-    (wl-signal-add (foreign-slot-pointer output-damage '(:struct wlr:output-damage)
-					 :event-damage-frame)
+    (wl-signal-add (foreign-slot-pointer output '(:struct wlr:output)
+					 :event-frame)
 		   damage-frame-listener)
+    (when (not (wl-list-empty (foreign-slot-pointer output '(:struct wlr:output)
+    						    :modes)))
+      (let ((modes (foreign-slot-value output '(:struct wlr:output) :modes)))
+    	(let ((mode (container-of (getf modes 'prev) '(:struct wlr:output_mode) link)))
+    	  (log-string :debug "Mode set to: ~A" mode)
+    	  (wlr:output-set-mode output mode))))
     (let ((new-output (make-instance 'output
 				     :output output
 				     :output-damage output-damage
@@ -48,6 +54,17 @@
 
 (defcallback handle-damage-frame :void
     ((listener :pointer)
-     (data (:pointer wlr:output)))
-  (log-string :debug "Damage Frame"))
-;; (let ((output (get-listener-owner listener *listener-hash*)))
+     (data (:pointer (:struct wlr:output))))
+  (declare (ignore data))
+  (log-string :debug "Damage Frame")
+  (let* ((output (get-listener-owner listener *listener-hash*))
+	 (wlr-output (output-output output))
+	 (renderer (wlr:backend-get-renderer (foreign-slot-pointer wlr-output '(:struct wlr:output)
+								   :backend))))
+    (wlr:output-make-current wlr-output (cffi:null-pointer))
+
+    (with-foreign-array (color #(0.4 0.4 0.4 1.0) '(:array :float 4))
+      (wlr:renderer-clear renderer color))
+    (wlr:output-swap-buffers wlr-output (cffi:null-pointer)
+			     (cffi:null-pointer))
+    (wlr:renderer-end renderer)))
