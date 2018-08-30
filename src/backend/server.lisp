@@ -1,5 +1,5 @@
 (defpackage #:mh/backend/server
-  (:use :cl :mh/backend/desktop)
+  (:use :cl :mh/backend/desktop :mh-log)
   (:import-from :cffi
 		:null-pointer)
   (:import-from :wayland-server-core
@@ -9,8 +9,8 @@
 
 (in-package #:mh/backend/server)
 
-(export '(make-server
-	  destroy-server
+(export '(get-server
+	  clear-server
 	  run-server))
 
 (defvar *server* nil)
@@ -24,7 +24,6 @@
   (when *server*
     (destroy-server *server*)
     (setf *server* nil)))
-
 
 (defclass server ()
   ;; should probably use :reader instead of :accessor
@@ -50,7 +49,6 @@
     (setf renderer (wlr:backend-get-renderer backend))
     (assert (not (eql renderer (null-pointer))))
     (wlr:renderer-init-wl-display renderer display)
-    (log-string :debug "Backend in server: ~A" backend)
     (setf desktop (make-desktop backend))))
 ;; (setf input (make-input backend)
 
