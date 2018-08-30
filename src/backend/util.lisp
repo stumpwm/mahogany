@@ -8,7 +8,11 @@
 	  unregister-listener
 	  remove-from-list
 	  free-from
+	  container-of
 	  make-listener))
+
+(defun container-of (ptr type member)
+  (cffi:make-pointer (- (cffi:pointer-address ptr) (cffi:foreign-slot-offset type member))))
 
 (defun get-listener-owner (listener table)
   (gethash (cffi:pointer-address listener) table))
