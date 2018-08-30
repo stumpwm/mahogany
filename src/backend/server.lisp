@@ -30,7 +30,6 @@
   ;; should probably use :reader instead of :accessor
   ((display :accessor display)
    (backend :accessor backend)
-   (event-loop :accessor event-loop)
    (desktop :accessor desktop)
    (input :accessor input)
    (renderer :accessor renderer)
@@ -39,21 +38,19 @@
 
 (defmethod initialize-instance :after ((server server) &key)
   ;; initialize everything, no initargs
-  (with-accessors ((event-loop event-loop) (backend backend) (display display)
+  (with-accessors ((backend backend) (display display)
 		   (desktop desktop) (renderer renderer) (data-device-manager data-device-manager))
       server
     ;; TODO: actual error handling here
     (setf display (wayland-server-core:wl-display-create))
     (assert (not (eql (null-pointer) display)))
-    (setf event-loop (wayland-server-core:wl-display-get-event-loop display))
     (setf backend (wlr:backend-autocreate display (null-pointer)))
-    (assert (not (and (eql (null-pointer) event-loop)
+    (assert (not (and backend
 		      (eql (null-pointer) backend))))
     (setf renderer (wlr:backend-get-renderer backend))
     (assert (not (eql renderer (null-pointer))))
-    ( wlr:renderer-init-wl-display renderer display)
-    (setf data-device-manager (wlr:data-device-manager-create display))
-
+    (wlr:renderer-init-wl-display renderer display)
+    (log-string :debug "Backend in server: ~A" backend)
     (setf desktop (make-desktop backend))))
 ;; (setf input (make-input backend)
 

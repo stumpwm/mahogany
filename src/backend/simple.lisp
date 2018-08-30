@@ -1,39 +1,39 @@
-(defpackage #:mh/backend/desktop
-  (:use #:cl #:cffi #:mh/backend/output #:backend/util)
-  (:import-from :mh-log
-		#:log-string)
-  (:import-from :wayland-server-core
-		#:wl-signal-add
-		#:wl-list-remove
-		#:wl_listener
-		#:link))
+(defpackage #:mh/backend/simple
+  (:use :cl :wayland-server-core :cffi #:backend/util :mh-log))
 
-(in-package #:mh/backend/desktop)
+;; (defun get-listener-owner (listener table)
+;;   (gethash (cffi:pointer-address listener) table))
 
-(export '(desktop
-	  make-desktop
-	  destroy-desktop))
+;; (defun register-listener (listener owner table)
+;;   (setf (gethash (cffi:pointer-address listener) table) owner))
 
-;; used to match listeners with their desktops
-;; there's supposted to only be one desktop, so...
-;; could also use a list of desktops, and see if the listener
-;; is a member of that desktop...
+;; (defun unregister-listener (listener table)
+;;   (remhash (cffi:pointer-address  listener) table))
 
-(defvar *desktop-listeners* (make-hash-table))
+;; (defun remove-from-list (object place)
+;;   (wl-list-remove (cffi:foreign-slot-pointer object
+;; 					     '(:struct wl_listener) place)))
+(in-package :mh/backend/simple)
 
-(defclass desktop ()
-  ((output-listener :initarg :output-listener
-		    :accessor output-listener)
-   (outputs :accessor desktop-outputs
-	    :type 'list
-	    :initform ())))
+(defvar *listener-hash* (make-hash-table))
+
+(defstruct sample-state
+  display
+  backend)
 
 (defstruct sample-output
+  state
   output
   frame-listener
   destroy-listener)
 
-(defvar *listener-hash* (make-hash-table))
+(defvar *sample-state* nil)
+
+(cffi:defcallback handle-new-input :void
+      ((listener :pointer)
+       (input :pointer))
+  (declare (ignore listener input))
+  (format t "new input device"))
 
 (cffi:defcallback new-frame-notify :void
     ((listener :pointer)
@@ -50,7 +50,8 @@
       (wlr:renderer-clear renderer color))
     (wlr:output-swap-buffers (sample-output-output output-owner) (cffi:null-pointer)
 			     (cffi:null-pointer))
-    (wlr:renderer-end renderer)))
+    (wlr:renderer-end renderer)
+    ))
 
 (cffi:defcallback destroy-output :void
     ((listener :pointer)
@@ -79,21 +80,44 @@
     								  '(:struct wlr:output)
     								  :event-destroy)
     				       destroy-listener)
-    (let ((new-output (make-sample-output :output output
+    (let ((new-output (make-sample-output :state *sample-state*
+    					  :output output
     					  :frame-listener frame-listener
     					  :destroy-listener destroy-listener)))
       (register-listener destroy-listener new-output *listener-hash*)
       (register-listener frame-listener new-output *listener-hash*)))
   (format t "New output registered~%"))
 
-(defun make-desktop (backend)
-  (log-string :debug "Backend in desktop: ~S" backend)
-  (let ((new-output-listener (make-listener handle-new-output)))
+(defvar *listener-hash* (make-hash-table))
+
+
+;; (defvar *new-output-listener* (make-listener handle-new-input))
+
+
+(defun main ()
+  (cl-wlroots/util/log:log-init :log-debug (cffi:null-pointer))
+  (let* ((display (wayland-server-core:wl-display-create))
+	 (backend (wlr:backend-autocreate display (cffi:null-pointer)))
+	 (renderer (wlr:backend-get-renderer backend))
+	 (new-output-listener (make-listener handle-new-output))
+	 (new-input-listener (make-listener handle-new-input)))
+    (assert (not (cffi:null-pointer-p backend)))
+    (assert (not (eql renderer (null-pointer))))
+    (wlr:renderer-init-wl-display renderer display)
+
+    (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer backend
+								  '(:struct wlr:backend)
+								  :event-new-input)
+				       new-input-listener)
     (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer backend
 								  '(:struct wlr:backend)
 								  :event-new-output)
 				       new-output-listener)
-    (let ((new-desktop (make-instance 'desktop
-			 :output-listener new-output-listener)))
-      (backend/util:register-listener new-output-listener new-desktop *listener-hash*)
-      (the desktop new-desktop))))
+    (setf *sample-state* (make-sample-state :display display
+					    :backend backend))
+    (unless (wlr:backend-start backend)
+      (format t "Failed to start backend")
+      (wlr:backend-destroy backend)
+      (uiop:quit 1))
+    (wayland-server-core:wl-display-run display)
+    (wayland-server-core:wl-display-destroy display)))

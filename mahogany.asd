@@ -23,6 +23,7 @@
 			 (:file "server")
 			 (:file "test")
 			 (:file "backend")
+			 (:file "simple")
 			 (:file "package")))
 	       (:module "src/base"
 			:serial t
