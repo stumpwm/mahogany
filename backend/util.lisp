@@ -21,7 +21,7 @@
   (setf (gethash (cffi:pointer-address listener) table) owner))
 
 (defun unregister-listener (listener table)
-  (remahoganyash (cffi:pointer-address  listener) table))
+  (remhash (cffi:pointer-address  listener) table))
 
 (defun remove-from-list (object place)
   (wl-list-remove (cffi:foreign-slot-pointer object
