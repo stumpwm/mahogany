@@ -1,19 +1,19 @@
-(defpackage #:mh/backend/output
-  (:use :cl :cffi :wayland-server-core :backend/util)
-  (:import-from :mh-log
-		:log-string)
+(defpackage #:mahogany/backend/output
+  (:use :cl :cffi :wayland-server-core :mahogany/backend/util)
+  (:import-from :mahogany/log
+		#:log-string)
   (:import-from :wayland-server-core
 		#:wl-signal-add
 		#:link))
 
-(in-package #:mh/backend/output)
+(in-package #:mahogany/backend/output)
 
-(export '(make-mh-output
-	  destroy-mh-output))
+(export '(make-mahogany-output
+	  destroy-mahogany-output))
 
 (defvar *listener-hash* (make-hash-table))
 
-(defclass mh-output ()
+(defclass mahogany-output ()
   ((wlr-output :initarg :wlr-output
 	      :reader output-wlr-output
 	      :type wlr:output)
@@ -26,7 +26,6 @@
      (output :pointer))
   (declare (ignore output))
   (let* ((output-owner (get-listener-owner listener *listener-hash*))
-	 ;; (renderer (wlr:backend-get-renderer (sample-state-backend *sample-state*)))
 	 (renderer (wlr:backend-get-renderer (foreign-slot-value (output-wlr-output output-owner)
 						       '(:struct wlr:output)
 						       :backend))))
@@ -38,21 +37,21 @@
 			     (cffi:null-pointer))
     (wlr:renderer-end renderer)))
 
-(defun make-mh-output (output)
+(defun make-mahogany-output (output)
   (let ((frame-listener (make-listener new-frame-notify)))
     (assert (not (cffi:null-pointer-p frame-listener)))
     (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer output
     								  '(:struct wlr:output)
     								  :event-frame)
     				       frame-listener)
-    (let ((new-output (make-instance 'mh-output
+    (let ((new-output (make-instance 'mahogany-output
 				     :wlr-output output
     				     :frame-listener frame-listener)))
       (register-listener frame-listener new-output *listener-hash*)
-      (the mh-output new-output))))
+      (the mahogany-output new-output))))
 
-(defun destroy-mh-output (mh-output)
-  (unregister-listener (output-frame-listener mh-output) *listener-hash*)
-  (wl-list-remove (cffi:foreign-slot-pointer (output-frame-listener mh-output)
+(defun destroy-mahogany-output (mahogany-output)
+  (unregister-listener (output-frame-listener mahogany-output) *listener-hash*)
+  (wl-list-remove (cffi:foreign-slot-pointer (output-frame-listener mahogany-output)
     					     '(:struct wl_listener) 'link))
-  (foreign-free (output-frame-listener mh-output)))
+  (foreign-free (output-frame-listener mahogany-output)))

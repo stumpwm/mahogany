@@ -1,5 +1,5 @@
-(defpackage #:mh/backend/server
-  (:use :cl :mh/backend/desktop :mh-log)
+(defpackage #:mahogany/backend/server
+  (:use :cl :mahogany/backend/desktop :mahogany/log)
   (:import-from :cffi
 		:null-pointer)
   (:import-from :wayland-server-core
@@ -7,7 +7,7 @@
 		:wl-display-destroy-clients
 		:wl-display-run))
 
-(in-package #:mh/backend/server)
+(in-package #:mahogany/backend/server)
 
 (export '(get-server
 	  clear-server

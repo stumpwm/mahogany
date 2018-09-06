@@ -1,10 +1,8 @@
-
-
-(defpackage #:mh-log
+(defpackage #:mahogany/log
   (:use :cl :cl-ansi-text))
 ;; an alternative to this package is vom. However, it doesn't
 ;; support color, and is unlikely to, so this will stay.
-(in-package #:mh-log)
+(in-package #:mahogany/log)
 
 (export '(*log-level*
 	  log-string
@@ -29,7 +27,7 @@
 :error  Something went wrong...
 :fatal  Better call the insurance company...")
 
-;; mh-log is used in this file, so get-print-data needs to
+;; mahogany-log is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel)
   (defun get-print-data (level)
@@ -55,7 +53,7 @@
 	     (format *log-output-file* ,string ,@fmt)
 	     (format *log-output-file* "~%"))
 	   (finish-output *log-output-file*))
-	 ,(if (= lvl 3)
+	 ,(when (= lvl 3)
 	      `(warn (format nil ,string ,@fmt)))))))
 
 

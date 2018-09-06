@@ -1,6 +1,6 @@
-(defpackage #:mh/backend/desktop
-  (:use #:cl #:cffi #:mh/backend/output #:backend/util)
-  (:import-from :mh-log
+(defpackage #:mahogany/backend/desktop
+  (:use #:cl #:cffi #:mahogany/backend/output #:mahogany/backend/util)
+  (:import-from :mahogany/log
 		#:log-string)
   (:import-from :wayland-server-core
 		#:wl-signal-add
@@ -8,7 +8,7 @@
 		#:wl_listener
 		#:link))
 
-(in-package #:mh/backend/desktop)
+(in-package #:mahogany/backend/desktop)
 
 (export '(desktop
 	  make-desktop
@@ -23,12 +23,10 @@
 
 (defclass desktop ()
   ((output-listener :initarg :output-listener
-		    :accessor output-listener)
+		    :reader output-listener)
    (outputs :accessor desktop-outputs
 	    :type 'list
 	    :initform ())))
-
-
 
 (defvar *listener-hash* (make-hash-table))
 
@@ -40,7 +38,7 @@
   								    :name)))
   (multiple-value-bind (desktop-owner lookup-output)
       (values-list (get-listener-owner listener *listener-hash*))
-    (destroy-mh-output lookup-output)
+    (destroy-mahogany-output lookup-output)
     (delete lookup-output (desktop-outputs desktop-owner))
     (unregister-listener listener *listener-hash*)
     (wl-list-remove (cffi:foreign-slot-pointer listener
@@ -63,7 +61,7 @@
     								  '(:struct wlr:output)
     								  :event-destroy)
     				       destroy-listener)
-    (let ((new-output (make-mh-output output)))
+    (let ((new-output (make-mahogany-output output)))
       ;; insert both the desktop and the output so we don't have to look it up later:
       (register-listener destroy-listener (list desktop-owner new-output) *listener-hash*)
       (push new-output (desktop-outputs desktop-owner)))))
@@ -76,5 +74,5 @@
 				       new-output-listener)
     (let ((new-desktop (make-instance 'desktop
 			 :output-listener new-output-listener)))
-      (backend/util:register-listener new-output-listener new-desktop *listener-hash*)
+      (register-listener new-output-listener new-desktop *listener-hash*)
       (the desktop new-desktop))))

@@ -1,7 +1,7 @@
-(defpackage #:backend/util
+(defpackage #:mahogany/backend/util
   (:use :cl :cffi :wayland-server-core))
 
-(in-package #:backend/util)
+(in-package :mahogany/backend/util)
 
 (export '(get-listener-owner
 	  register-listener
@@ -21,7 +21,7 @@
   (setf (gethash (cffi:pointer-address listener) table) owner))
 
 (defun unregister-listener (listener table)
-  (remhash (cffi:pointer-address  listener) table))
+  (remahoganyash (cffi:pointer-address  listener) table))
 
 (defun remove-from-list (object place)
   (wl-list-remove (cffi:foreign-slot-pointer object
