@@ -31,8 +31,7 @@
 						       :backend))))
     (wlr:output-make-current (output-wlr-output output-owner) (cffi:null-pointer))
 
-    (with-foreign-array (color #(0.4 0.4 0.4 1.0) '(:array :float 4))
-      (wlr:renderer-clear renderer color))
+    (wlr:renderer-clear renderer #(0.4 0.4 0.4 1.0))
     (wlr:output-swap-buffers (output-wlr-output output-owner) (cffi:null-pointer)
 			     (cffi:null-pointer))
     (wlr:renderer-end renderer)))
