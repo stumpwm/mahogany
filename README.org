@@ -1,3 +1,4 @@
+* NOTE: there is nothing notable implemented yet.
 * Mahogany
   Mahogany is a tiling window manager for Wayland modeled after
   stumpwm. While it is not a drop-in replacement for stumpwm, stumpwm
