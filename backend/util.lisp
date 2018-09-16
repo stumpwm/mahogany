@@ -3,13 +3,16 @@
 
 (in-package :mahogany/backend/util)
 
-(export '(get-listener-owner
+(export '(*listener-hash*
+	  get-listener-owner
 	  register-listener
 	  unregister-listener
 	  remove-from-list
 	  free-from
 	  container-of
 	  make-listener))
+
+(defparameter *listener-hash* (make-hash-table))
 
 (defun container-of (ptr type member)
   (cffi:make-pointer (- (cffi:pointer-address ptr) (cffi:foreign-slot-offset type member))))

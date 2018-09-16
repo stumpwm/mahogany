@@ -11,8 +11,6 @@
 (export '(make-mahogany-output
 	  destroy-mahogany-output))
 
-(defvar *listener-hash* (make-hash-table))
-
 (defclass mahogany-output ()
   ((wlr-output :initarg :wlr-output
 	      :reader output-wlr-output

@@ -21,10 +21,6 @@
 	    :type 'list
 	    :initform ())))
 
-;; used to match listeners with their manager
-;; there's supposted to only be one manager, so...
-(defvar *listener-hash* (make-hash-table))
-
 (cffi:defcallback destroy-output :void
     ((listener :pointer)
      (output :pointer))
