@@ -8,6 +8,9 @@
 	  log-string
 	  get-print-data
 	  log-init
+	  with-log-level
+	  with-log-color-enabled
+	  with-logging-to-file
 	  *log-level*
 	  *log-output-file*))
 
@@ -27,7 +30,7 @@
 :error  Something went wrong...
 :fatal  Better call the insurance company...")
 
-;; mahogany-log is used in this file, so get-print-data needs to
+;; log-string is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel)
   (defun get-print-data (level)
@@ -69,15 +72,33 @@
        (member :max-colors (terminfo:capabilities
 			    (terminfo:set-terminal (fix-term-name (uiop:getenv "TERM")))))))
 
+(defun check-valid-log-level (level)
+  ;; TODO: make this something with a use-value restart?
+  (assert (member level '(:trace :debug :info :warn :error :crit))))
+
+(defun log-debug-level ()
+  *log-level*)
+
+(defun (setf log-debug-level) (new-level)
+  (check-valid-log-level new-level)
+  (setf *log-level* new-level))
+
+(defun log-colored ()
+  cl-ansi-text:*enabled*)
+
+(defun (setf log-colored) (enablep)
+  (setf cl-ansi-text:*enabled* enablep))
+
 (defun log-init (&key (level :info) (output *standard-output*) (color t))
   "Initialize logging. Call this to setup colorized output, ect.
 It is not necessary to call this for logging to work properly, but coloring may be messed up.
+If *log-output-file* is changed, it is a good idea to call this function again.
   LVL:    see *log-level*
   OUTPUT: see *log-output-file*
-  COLOR:  Enable/Disable logging colors"
+  COLOR:  Enable/Disable logging colors. If colors are not supported by the output stream, then
+          this argument will be ignored."
   (setf *log-output-file* output)
-  ;; TODO: make this something with a use-value restart
-  (assert (member level '(:trace :debug :info :warn :error :crit)))
+  (check-valid-log-level level)
   (setf *log-level* level)
   ;; check if we can use pretty colors:
   (if (and (term-colorable-p)
@@ -86,3 +107,21 @@ It is not necessary to call this for logging to work properly, but coloring may 
       (setf cl-ansi-text:*enabled* nil))
   (log-string :debug "Mahogany Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
 	  cl-ansi-text:*enabled* *log-output-file* *log-level*))
+
+(defmacro with-log-level (log-level &body body)
+  `(progn
+     (check-valid-log-level ,log-level)
+     (let ((*log-level* ,log-level))
+       ,@body)))
+
+(defmacro with-log-color-enabled (enabledp &body body)
+  `(let ((cl-ansi-text:*enabled* ,enabledp))
+    ,@body))
+
+(defmacro with-logging-to-file ((file-path log-level &rest options) &body body)
+  (let ((file-var (gensym "LOG-FILE")))
+    `(with-open-file (,file-var ,file-path ,@options)
+       (let ((*log-output-file* ,file-var))
+	 (with-log-level ,log-level
+	   (with-log-color-enabled nil
+	     ,@body))))))
