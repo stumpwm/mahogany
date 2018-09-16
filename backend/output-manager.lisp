@@ -66,3 +66,10 @@
 			 :output-listener new-output-listener)))
       (register-listener new-output-listener new-manager *listener-hash*)
       (the output-manager new-manager))))
+
+(defun destroy-output-manager (output-manager)
+  (with-accessors ((listener output-listener)) output-manager
+    (unregister-listener listener *listener-hash*)
+    (wl-list-remove (foreign-slot-pointer listener
+					  '(:struct wl_listener) 'link))
+    (foreign-free listener))
