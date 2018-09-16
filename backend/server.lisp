@@ -1,5 +1,7 @@
 (defpackage #:mahogany/backend/server
-  (:use :cl :mahogany/backend/desktop :mahogany/log)
+  (:use :cl :mahogany/backend/output-manager :mahogany/log)
+  (:import-from :mahogany/backend/input/input-manager
+		:make-input-manager)
   (:import-from :cffi
 		:null-pointer)
   (:import-from :wayland-server-core
@@ -29,7 +31,7 @@
   ;; should probably use :reader instead of :accessor
   ((display :accessor display)
    (backend :accessor backend)
-   (desktop :accessor desktop)
+   (output-manager :accessor output-manager)
    (input :accessor input)
    (renderer :accessor renderer)
    (data-device-manager :accessor data-device-manager))
@@ -38,7 +40,10 @@
 (defmethod initialize-instance :after ((server server) &key)
   ;; initialize everything, no initargs
   (with-accessors ((backend backend) (display display)
-		   (desktop desktop) (renderer renderer) (data-device-manager data-device-manager))
+		   (output-manager output-manager)
+		   (input-manager input-manager)
+		   (renderer renderer)
+		   (data-device-manager data-device-manager))
       server
     ;; TODO: actual error handling here
     (setf display (wayland-server-core:wl-display-create))
@@ -49,15 +54,15 @@
     (setf renderer (wlr:backend-get-renderer backend))
     (assert (not (eql renderer (null-pointer))))
     (wlr:renderer-init-wl-display renderer display)
-    (setf desktop (make-desktop backend))))
+    (setf output-manager (make-output-manager backend))
 ;; (setf input (make-input backend)
 
 (defun make-server ()
   (make-instance 'server))
 
 (defun destroy-server (server)
-  ;; free the stuff in the desktop first:
-  (destroy-desktop (desktop server))
+  ;; free the stuff in the output-manager first:
+  (destroy-output-manager (output-manager server))
   (wl-display-destroy-clients (display server))
   (wl-display-destroy (display server)))
 
