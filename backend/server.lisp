@@ -1,5 +1,6 @@
 (defpackage #:mahogany/backend/server
-  (:use :cl :mahogany/backend/output-manager :mahogany/log)
+  (:use :cl :mahogany/backend/output-manager :mahogany/log
+	:mahogany/backend/server-protocol)
   (:import-from :mahogany/backend/input/input-manager
 		:make-input-manager)
   (:import-from :cffi
@@ -27,27 +28,17 @@
     (destroy-server *server*)
     (setf *server* nil)))
 
-(defclass server ()
-  ;; should probably use :reader instead of :accessor
-  ((display :accessor display)
-   (backend :accessor backend)
-   (output-manager :accessor output-manager)
-   (input :accessor input)
-   (renderer :accessor renderer)
-   (data-device-manager :accessor data-device-manager))
-  (:documentation "Class used to store and manage the wayland backend for Mahogany"))
-
 (defmethod initialize-instance :after ((server server) &key)
   ;; initialize everything, no initargs
-  (with-accessors ((backend backend) (display display)
-		   (output-manager output-manager)
-		   (input-manager input-manager)
-		   (renderer renderer)
-		   (data-device-manager data-device-manager))
+  (with-accessors ((backend get-backend) (display get-display)
+		   (output-manager get-output-manager)
+		   (input-manager get-input-manager)
+		   (renderer get-renderer)
+		   (data-device-manager get-data-device-manager))
       server
     ;; TODO: actual error handling here
     (setf display (wayland-server-core:wl-display-create))
-    (assert (not (eql (null-pointer) display)))
+/    (assert (not (eql (null-pointer) display)))
     (setf backend (wlr:backend-autocreate display (null-pointer)))
     (assert (not (and backend
 		      (eql (null-pointer) backend))))
@@ -62,17 +53,17 @@
 
 (defun destroy-server (server)
   ;; free the stuff in the output-manager first:
-  (destroy-output-manager (output-manager server))
-  (wl-display-destroy-clients (display server))
-  (wl-display-destroy (display server)))
+  (destroy-output-manager (get-output-manager server))
+  (wl-display-destroy-clients (get-display server))
+  (wl-display-destroy (get-display server)))
 
 (defun run-server ()
   (cl-wlroots/util/log:log-init :log-debug (cffi:null-pointer))
   (setf *server* (make-server))
-  (unless (wlr:backend-start (backend *server*))
+  (unless (wlr:backend-start (get-backend *server*))
     (format t "Could not start backend")
-    (wl-display-destroy (display *server*))
+    (wl-display-destroy (get-display *server*))
     (uiop:quit 1))
-  (wl-display-run (display *server*))
+  (wl-display-run (get-display *server*))
   (destroy-server *server*)
   (uiop:quit))

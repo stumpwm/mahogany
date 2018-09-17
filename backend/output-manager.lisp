@@ -11,7 +11,8 @@
 (in-package :mahogany/backend/output-manager)
 
 (export '(output-manager
-	  make-output-manager))
+	  make-output-manager
+	  destroy-output-manager))
 
 
 (defclass output-manager ()
@@ -72,4 +73,4 @@
     (unregister-listener listener *listener-hash*)
     (wl-list-remove (foreign-slot-pointer listener
 					  '(:struct wl_listener) 'link))
-    (foreign-free listener))
+    (foreign-free listener)))
