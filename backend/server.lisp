@@ -46,6 +46,7 @@
     (assert (not (eql renderer (null-pointer))))
     (wlr:renderer-init-wl-display renderer display)
     (setf output-manager (make-output-manager backend))
+    (setf input-manager (make-input-manager server))))
 ;; (setf input (make-input backend)
 
 (defun make-server ()
@@ -59,6 +60,7 @@
 
 (defun run-server ()
   (cl-wlroots/util/log:log-init :log-debug (cffi:null-pointer))
+  (log-init :level :trace)
   (setf *server* (make-server))
   (unless (wlr:backend-start (get-backend *server*))
     (format t "Could not start backend")

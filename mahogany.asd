@@ -14,3 +14,4 @@
   :in-order-to ((test-op (test-op mahogany-test))))
 
 (asdf:register-system-packages "cl-wayland" '(:wayland-server-core))
+(asdf:register-system-packages "xkbcommon" '(:xkb))
