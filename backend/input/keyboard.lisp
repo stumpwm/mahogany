@@ -1,5 +1,6 @@
 (defpackage :mahogany/backend/input/keyboard
-  (:use :cl :mahogany/backend/util :cffi)
+  (:use :cl :mahogany/backend/util :cffi
+	:mahogany/backend/input/input-device)
   (:import-from :mahogany/log
 		#:log-string)
   (:import-from :wayland-server-core
@@ -24,10 +25,10 @@
 (defgeneric set-keyboard-keymap (keyboard keymap)
   (:documentation "Set the keymap for the keyboard"))
 
-(defclass keyboard ()
-  ((wlr-keyboard :initarg :wlr-keyboard
-		 :reader keyboard-wlr-keyboard
-		 :type wlr:keyboard)
+(defclass keyboard (input-device)
+  (;; (wlr-keyboard :initarg :wlr-keyboard
+   ;; 		 :reader keyboard-wlr-keyboard
+   ;; 		 :type wlr:keyboard)
    (key-listener :initarg :key-listener
 		 :reader keyboard-key-listener
 		 :type wl_listener)))
@@ -53,7 +54,7 @@
     ((listener :pointer)
      (event (:pointer (:struct wlr:event-keyboard-key))))
   (let* ((owner-keyboard (get-listener-owner listener *listener-hash*))
-	 (wlr-keyboard (cffi:foreign-slot-value (keyboard-wlr-keyboard owner-keyboard)
+	 (wlr-keyboard (cffi:foreign-slot-value (input-device-wlr-input owner-keyboard)
 						'(:struct wlr:input-device)
     						:keyboard))
 	 (keycode (+ 8 (foreign-slot-value event '(:struct wlr:event-keyboard-key) :keycode))))
@@ -74,7 +75,7 @@
 
 (defun make-keyboard (device rules)
   (let* ((key-listener (make-listener keyboard-key-notify))
-	 (new-keyboard (make-instance 'keyboard :wlr-keyboard device
+	 (new-keyboard (make-instance 'keyboard :wlr-input-device device
 						:key-listener key-listener))
 	 (wlr-keyboard (cffi:foreign-slot-value device '(:struct wlr:input-device)
     								    :keyboard)))
