@@ -59,7 +59,7 @@
   (wl-display-destroy (get-display server)))
 
 (defun run-server ()
-  (cl-wlroots/util/log:log-init :log-debug (cffi:null-pointer))
+  (wlr:log-init :log-debug (cffi:null-pointer))
   (log-init :level :trace)
   (setf *server* (make-server))
   (unless (wlr:backend-start (get-backend *server*))
