@@ -1,0 +1,35 @@
+image: archlinux
+language: common-lisp c
+sudo: required
+
+packages:
+  - meson
+  - pixman
+  - wayland
+  - wayland-protocols
+  - xcb-util-image
+  - libcap
+  - libinput
+
+sources:
+  - https://github.com/swaywm/wlroots
+
+env:
+  matrix:
+    - LISP=sbcl-bin
+    - LISP=ccl-bin
+    - LISP=cmucl-bin
+    - LISP=ecl
+
+matrix:
+  allow_failures:
+    - env: LISP=cmucl-bin
+
+install:
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+  - ros install swaywm/cl-wlroots
+
+cache:
+  directories:
+    - $HOME/.roswell
+    - $HOME/.config/common-lisp
