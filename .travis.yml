@@ -26,6 +26,9 @@ matrix:
     - env: LISP=cmucl-bin
 
 install:
+  - git clone --depth 1 https://github.com/swaywm/wlroots
+  - mkdir wlroots/build
+  - cd wlroots/build && meson .. && ninja && sudo ninja install
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
   - ros install swaywm/cl-wlroots
 
