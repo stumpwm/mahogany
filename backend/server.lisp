@@ -12,16 +12,7 @@
 
 (in-package #:mahogany/backend/server)
 
-(export '(get-server
-	  clear-server
-	  run-server))
-
-(defvar *server* nil)
-
-(defun get-server ()
-  (if *server*
-      *server*
-      (setf *server* (make-server))))
+(export '(run-server))
 
 (defun clear-server ()
   (when *server*
@@ -57,14 +48,17 @@
   (wl-display-destroy-clients (get-display server))
   (wl-display-destroy (get-display server)))
 
-(defun run-server ()
+(defmethod stop-server ((server server))
+  (wl-display-terminate (get-display *server*)))
+
+(defun run-server (&optional backend-type)
   (wlr:log-init :log-debug (cffi:null-pointer))
   (log-init :level :trace)
-  (setf *server* (make-server))
-  (unless (wlr:backend-start (get-backend *server*))
-    (format t "Could not start backend")
-    (wl-display-destroy (get-display *server*))
-    (uiop:quit 1))
-  (wl-display-run (get-display *server*))
-  (destroy-server *server*)
-  (uiop:quit))
+  (let ((server (get-server)))
+    (unless (wlr:backend-start (get-backend server))
+      (log-string :fatal "Could not start backend")
+      (wl-display-destroy (get-display server))
+      (uiop:quit 1))
+    (wl-display-run (get-display server))
+    (destroy-server server)
+    (uiop:quit)))

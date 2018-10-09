@@ -9,7 +9,16 @@
 	  get-input-manager
 	  get-data-device-manager
 	  get-renderer
+	  stop-server
+	  get-server
 	  server))
+
+(defvar *server* nil)
+
+(defun get-server ()
+  (if *server*
+      *server*
+      (setf *server* (make-instance 'server))))
 
 (defgeneric get-display (server)
   (:documentation "Get the wlroots display from the object"))
@@ -22,6 +31,9 @@
 
 (defgeneric get-input-manager (server)
   (:documentation "Get the mahogany input manager from the object"))
+
+(defgeneric stop-server (server)
+  (:documentation "Stop the server and exit its event loop."))
 
 (defclass server ()
   ;; should probably use :reader instead of :accessor
