@@ -19,7 +19,20 @@
 		    :reader output-listener)
    (outputs :accessor get-outputs
 	    :type 'list
-	    :initform ())))
+	    :initform ())
+   (layout :initarg :output-layout
+	   :accessor output-layout
+	   :type wlr:output-layout)
+   (layout-change-listener :initarg :layout-change-listener
+			   :reader output-layout-listener
+			   :type wl_listener)))
+
+(cffi:defcallback handle-layout-change :void
+    ((listener :pointer)
+     (something :pointer))
+  (declare (ignore listener something))
+  ;; TODO: do layout change
+  (log-string :info "Output layout changed"))
 
 (cffi:defcallback destroy-output :void
     ((listener :pointer)
@@ -51,25 +64,42 @@
     								  '(:struct wlr:output)
     								  :event-destroy)
     				       destroy-listener)
+    (wlr:output-layout-add-auto (output-layout manager) output)
     (let ((new-output (make-mahogany-output output)))
       ;; insert both the manager and the output so we don't have to look it up later:
       (register-listener destroy-listener (list manager new-output) *listener-hash*)
       (push new-output (get-outputs manager)))))
 
 (defun make-output-manager (backend)
-  (let ((new-output-listener (make-listener handle-new-output)))
+  (let ((new-output-listener (make-listener handle-new-output))
+	(layout-change-listener (make-listener handle-layout-change))
+	(layout (wlr:output-layout-create)))
     (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer backend
 								  '(:struct wlr:backend)
 								  :event-new-output)
 				       new-output-listener)
+    (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer layout
+								  '(:struct wlr:output-layout)
+								  :event-change)
+				       layout-change-listener)
     (let ((new-manager (make-instance 'output-manager
-			 :output-listener new-output-listener)))
+				      :output-layout layout
+				      :layout-change-listener layout-change-listener
+				      :output-listener new-output-listener)))
+      (register-listener layout-change-listener new-manager *listener-hash*)
       (register-listener new-output-listener new-manager *listener-hash*)
       (the output-manager new-manager))))
 
 (defun destroy-output-manager (output-manager)
-  (with-accessors ((listener output-listener)) output-manager
-    (unregister-listener listener *listener-hash*)
-    (wl-list-remove (foreign-slot-pointer listener
+  (with-accessors ((output-listener output-listener)
+		   (layout-change-listener output-layout-listener))
+      output-manager
+    (unregister-listener output-listener *listener-hash*)
+    (wl-list-remove (foreign-slot-pointer output-listener
 					  '(:struct wl_listener) 'link))
-    (foreign-free listener)))
+    (foreign-free output-listener)
+    (unregister-listener layout-change-listener *listener-hash*)
+    (wl-list-remove (foreign-slot-pointer layout-change-listener
+					  '(:struct wl_listener) 'link))
+    (wlr:output-layout-destroy (output-layout output-manager))
+    (foreign-free layout-change-listener)))
