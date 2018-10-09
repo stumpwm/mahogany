@@ -14,7 +14,6 @@
 	  make-output-manager
 	  destroy-output-manager))
 
-
 (defclass output-manager ()
   ((output-listener :initarg :output-listener
 		    :reader output-listener)

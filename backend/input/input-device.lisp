@@ -1,19 +1,16 @@
 (defpackage :mahogany/backend/input/input-device
-  (:use :cl :cffi))
+  (:use :cl :cffi)
+  (:import-from :mahogany/backend/input/classes
+		#:input-device
+		#:input-device-seat
+		#:input-device-wlr-input))
 
 (in-package :mahogany/backend/input/input-device)
 
-(export '(input-device
-	  input-device-wlr-input
-	  get-device-name
+(export '(get-device-name
 	  get-device-number
 	  get-device-vendor
 	  get-device-product))
-
-(defclass input-device ()
-  ((wlr-input-device :initarg :wlr-input-device
-		     :reader input-device-wlr-input
-		     :type wlr:input-device)))
 
 (defgeneric get-device-name (input-device)
   (:documentation "Get the name of the input device")

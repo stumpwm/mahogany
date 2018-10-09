@@ -63,7 +63,7 @@
      activate/deactivate modes without having to worry which mode
      should be activated next. If you want to merge several modes
      together, you can use inherentance. Minor modes can affect the
-     keybindings globally available.
+     keybindings globally available within each major mode.
 **** Window Minor Modes
 
 ** Modes
@@ -94,10 +94,13 @@
     and sink selection.
 * Undecided
 ** Mode line
+   + see wlr-protocols and layer-shell
 ** Menu windows
+   + see wlr-protocols and layer-shell
    + Menu windows that the user interacts with could be implemented as
     a major mode that puts all input into the menu instead of
     re-directing it to the windows.
 ** Notification windows
    Dunst for wayland?
+   + see wlr-protocols and layer-shell
 ** IPC for modeline, testing

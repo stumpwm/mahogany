@@ -47,7 +47,6 @@
     (wlr:renderer-init-wl-display renderer display)
     (setf output-manager (make-output-manager backend))
     (setf input-manager (make-input-manager server))))
-;; (setf input (make-input backend)
 
 (defun make-server ()
   (make-instance 'server))
