@@ -43,7 +43,7 @@ Returns the newly created seat."
   (declare (ignore device))
   ;; TODO: add functions, rules, ect to decide which seat the device
   ;; goes to.
-  (if-let ((seat (first (assoc +default-seat-name+ (input-seats input-manager) :test #'string=))))
+  (if-let ((seat (cdr (assoc +default-seat-name+ (input-seats input-manager) :test #'string=))))
     seat
     (add-new-seat input-manager +default-seat-name+)))
 
@@ -51,7 +51,7 @@ Returns the newly created seat."
     ((listener :pointer)
      (keyboard (:pointer (:struct wlr:input-device))))
   (declare (ignore keyboard))
-  (format t "A keyboard was destroyed~%")
+  (log-string :info "A keyboard was destroyed~%")
   (multiple-value-bind (manager keyboard)
       (values-list (get-listener-owner listener *listener-hash*))
     (destroy-device keyboard)
