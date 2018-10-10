@@ -2,10 +2,32 @@
 
 (export '(run-server))
 
-(defun clear-server ()
-  (when *server*
-    (destroy-server *server*)
-    (setf *server* nil)))
+(defvar *server* nil)
+
+(defgeneric get-display (server)
+  (:documentation "Get the wlroots display from the object"))
+
+(defgeneric get-backend (server)
+  (:documentation "Get the wlroots backend from the object"))
+
+(defgeneric get-output-manager (server)
+  (:documentation "Get the mahogany output manager from the object"))
+
+(defgeneric get-input-manager (server)
+  (:documentation "Get the mahogany input manager from the object"))
+
+(defgeneric stop-server (server)
+  (:documentation "Stop the server and exit its event loop."))
+
+(defclass server ()
+  ;; should probably use :reader instead of :accessor
+  ((display :accessor get-display)
+   (backend :accessor get-backend)
+   (output-manager :accessor get-output-manager)
+   (input-manager :accessor get-input-manager)
+   (renderer :accessor get-renderer)
+   (data-device-manager :accessor get-data-device-manager))
+  (:documentation "Class used to store and manage the wayland backend for Mahogany"))
 
 (defmethod initialize-instance :after ((server server) &key)
   ;; initialize everything, no initargs
@@ -38,6 +60,16 @@
 
 (defmethod stop-server ((server server))
   (wl-display-terminate (get-display *server*)))
+
+(defun get-server ()
+  (if *server*
+      *server*
+      (setf *server* (make-instance 'server))))
+
+(defun clear-server ()
+  (when *server*
+    (destroy-server *server*)
+    (setf *server* nil)))
 
 (defun run-server (&optional backend-type)
   (wlr:log-init :log-debug (cffi:null-pointer))

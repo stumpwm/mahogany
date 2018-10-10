@@ -14,12 +14,10 @@
 	       (:file "log")
 	       (:module backend
 			:components ((:file "util")
-				     (:file "server-protocol")
 				     (:file "output")
 				     (:file "output-manager")
 				     (:file "server")
-				     (:file "input/classes")
-				     (:file "input/input-device")
+				     (:file "input/input-devices")
 				     (:file "input/keyboard")
 				     (:file "input/pointing-device")
 				     (:file "input/seat")
