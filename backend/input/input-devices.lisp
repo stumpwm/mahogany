@@ -23,15 +23,6 @@
    (wlr-cursor :initarg :wlr-cursor
 	       :reader seat-wlr-cursor
 	       :type wlr:cursor)
-   (keyboards :initarg :keyboards
-	      :accessor seat-keyboards
-	      :type list)
-   (cursors :initarg :cursors
-	      :accessor seat-cursors
-	      :type list))
-  (:default-initargs
-   :keyboards ()
-    :cursors ()))
 
 (defgeneric destroy-device (device)
   (:documentation "Remove the device from its associated systems and
