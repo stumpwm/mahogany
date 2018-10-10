@@ -8,6 +8,24 @@
 		  :reader output-frame-listener
 		  :type wl_listener)))
 
+(defmethod output-width ((output mahogany-output))
+  "Get the width of the output"
+  (foreign-slot-value (output-wlr-output output)
+		      '(:struct wlr:output)
+		      :width))
+
+(defmethod output-height ((output mahogany-output))
+  "Get the width of the output"
+  (foreign-slot-value (output-wlr-output output)
+		      '(:struct wlr:output)
+		      :height))
+
+(defmethod output-scale ((output mahogany-output))
+  "Get the scale of the output"
+  (foreign-slot-value (output-wlr-output output)
+		      '(:struct wlr:output)
+		      :scale))
+
 (cffi:defcallback new-frame-notify :void
     ((listener :pointer)
      (output :pointer))
@@ -17,7 +35,7 @@
 						       '(:struct wlr:output)
 						       :backend))))
     (wlr:output-make-current (output-wlr-output output-owner) (cffi:null-pointer))
-
+    (wlr:renderer-begin renderer (output-width output-owner) (output-height output-owner))
     (wlr:renderer-clear renderer #(0.4 0.4 0.4 1.0))
     (wlr:output-swap-buffers (output-wlr-output output-owner) (cffi:null-pointer)
 			     (cffi:null-pointer))

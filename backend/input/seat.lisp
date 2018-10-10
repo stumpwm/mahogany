@@ -16,9 +16,7 @@
   (declare (type cursor cursor))
   (let ((xcursor-manager (cursor-xcursor-manager cursor))
 	(wlr-cursor (cursor-wlr-cursor cursor)))
-    (wlr:xcursor-manager-load xcursor-manager (foreign-slot-value (output-wlr-output output)
-								  '(:struct wlr:output)
-								  :scale))
+    (wlr:xcursor-manager-load xcursor-manager (output-scale output))
     (wlr:xcursor-manager-set-cursor-image xcursor-manager "left_ptr" wlr-cursor)))
 
 (defun seat-config-cursor-for-output (seat output)
