@@ -1,17 +1,4 @@
-(defpackage #:mahogany/backend/server-protocol
-  (:use :cl))
-
-(in-package #:mahogany/backend/server-protocol)
-
-(export '(get-display
-	  get-backend
-	  get-output-manager
-	  get-input-manager
-	  get-data-device-manager
-	  get-renderer
-	  stop-server
-	  get-server
-	  server))
+(in-package #:mahogany/backend)
 
 (defvar *server* nil)
 

@@ -6,12 +6,21 @@
   :license  "GPL 2.0"
   :version "0.0.1"
   :serial t
-  :class :package-inferred-system
-  :defsystem-depends-on (:asdf-package-system)
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
-		      #:cl-ppcre #:vom #:cl-egl #:mahogany/all)
-  :in-order-to ((test-op (test-op mahogany-test))))
-
-(asdf:register-system-packages "cl-wayland" '(:wayland-server-core))
-(asdf:register-system-packages "xkbcommon" '(:xkb))
+		      #:cl-ppcre #:vom #:cl-egl)
+  :in-order-to ((test-op (test-op mahogany-test)))
+  :components ((:file "package")
+	       (:file "log")
+	       (:module backend
+			:components ((:file "util")
+				     (:file "server-protocol")
+				     (:file "output")
+				     (:file "output-manager")
+				     (:file "server")
+				     (:file "input/classes")
+				     (:file "input/input-device")
+				     (:file "input/keyboard")
+				     (:file "input/pointing-device")
+				     (:file "input/seat")
+				     (:file "input/input-manager")))))

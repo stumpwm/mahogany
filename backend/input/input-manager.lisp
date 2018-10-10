@@ -1,24 +1,4 @@
-(defpackage :mahogany/backend/input/input-manager
-  (:use :cl :cffi :mahogany/backend/util
-	:mahogany/backend/input/classes
-	:mahogany/backend/input/keyboard
-	:mahogany/backend/input/seat
-	:mahogany/backend/server-protocol)
-  (:import-from :alexandria
-	       #:if-let)
-  (:import-from :mahogany/log
-		#:log-string)
-  (:import-from :wayland-server-core
-		#:wl-signal-add
-		#:wl-list-remove
-		#:wl_listener
-		#:link))
-
-(export '(input-manager
-	  make-input-manager
-	  +default-seat-name+))
-
-(in-package :mahogany/backend/input/input-manager)
+(in-package :mahogany/backend)
 
 (defclass input-manager ()
   ((server :initarg :server

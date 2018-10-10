@@ -1,19 +1,4 @@
-(defpackage :mahogany/backend/input/classes
-  (:use :cl))
-
-(in-package :mahogany/backend/input/classes)
-
-(export '(destroy-device
-	  input-device
-	  input-device-wlr-input
-	  input-device-seat
-	  keyboard
-	  keyboard-key-listener
-	  seat
-	  seat-wlr-seat
-	  seat-wlr-cursor
-	  seat-keyboards
-	  seat-cursors))
+(in-package :mahogany/backend)
 
 (defgeneric destroy-device (device)
   (:documentation "Remove the device from its associated systems and

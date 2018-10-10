@@ -1,5 +1,3 @@
-(defpackage #:mahogany/log
-  (:use :cl :cl-ansi-text))
 ;; an alternative to this package is vom. However, it doesn't
 ;; support color, and is unlikely to, so this will stay.
 (in-package #:mahogany/log)

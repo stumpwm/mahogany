@@ -1,23 +1,4 @@
-(defpackage :mahogany/backend/input/keyboard
-  (:use :cl :mahogany/backend/util :cffi :mahogany/backend/input/classes)
-  (:import-from :mahogany/log
-		#:log-string)
-  (:import-from :wayland-server-core
-		#:wl-signal-add
-		#:wl-list-remove
-		#:wl_listener
-		#:link)
-  (:import-from :xkb
-		#:with-xkb-context
-		#:with-keymap-from-names))
-
-(in-package :mahogany/backend/input/keyboard)
-
-(export '(init-default-keyboard-rules
-	  keyboard
-	  make-keyboard
-	  destroy-keyboard
-	  set-keyboard-keymap))
+(in-package :mahogany/backend)
 
 (defvar *listener-hash* (make-hash-table))
 

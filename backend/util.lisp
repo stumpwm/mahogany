@@ -1,16 +1,4 @@
-(defpackage #:mahogany/backend/util
-  (:use :cl :cffi :wayland-server-core))
-
-(in-package :mahogany/backend/util)
-
-(export '(*listener-hash*
-	  get-listener-owner
-	  register-listener
-	  unregister-listener
-	  remove-from-list
-	  free-from
-	  container-of
-	  make-listener))
+(in-package :mahogany/backend)
 
 (defparameter *listener-hash* (make-hash-table))
 

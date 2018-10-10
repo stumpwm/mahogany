@@ -1,18 +1,5 @@
-(defpackage :mahogany/backend/output-manager
-  (:use #:cl #:cffi #:mahogany/backend/output #:mahogany/backend/util)
-  (:import-from :mahogany/log
-		#:log-string)
-  (:import-from :wayland-server-core
-		#:wl-signal-add
-		#:wl-list-remove
-		#:wl_listener
-		#:link))
 
-(in-package :mahogany/backend/output-manager)
-
-(export '(output-manager
-	  make-output-manager
-	  destroy-output-manager))
+(in-package :mahogany/backend)
 
 (defclass output-manager ()
   ((output-listener :initarg :output-listener

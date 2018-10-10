@@ -1,15 +1,4 @@
-(defpackage #:mahogany/backend/output
-  (:use :cl :cffi :wayland-server-core :mahogany/backend/util)
-  (:import-from :mahogany/log
-		#:log-string)
-  (:import-from :wayland-server-core
-		#:wl-signal-add
-		#:link))
-
-(in-package #:mahogany/backend/output)
-
-(export '(make-mahogany-output
-	  destroy-mahogany-output))
+(in-package #:mahogany/backend)
 
 (defclass mahogany-output ()
   ((wlr-output :initarg :wlr-output

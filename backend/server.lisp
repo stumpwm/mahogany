@@ -1,16 +1,4 @@
-(defpackage #:mahogany/backend/server
-  (:use :cl :mahogany/backend/output-manager :mahogany/log
-	:mahogany/backend/server-protocol)
-  (:import-from :mahogany/backend/input/input-manager
-		:make-input-manager)
-  (:import-from :cffi
-		:null-pointer)
-  (:import-from :wayland-server-core
-		:wl-display-destroy
-		:wl-display-destroy-clients
-		:wl-display-run))
-
-(in-package #:mahogany/backend/server)
+(in-package #:mahogany/backend)
 
 (export '(run-server))
 
