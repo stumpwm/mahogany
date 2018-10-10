@@ -1,5 +1,10 @@
 (in-package :mahogany/backend)
 
+(defun config-pointers-for-output (input-manager output)
+  (dolist (pair (input-seats input-manager))
+    (let ((seat (cdr pair)))
+      (seat-config-cursor-for-output seat output))))
+
 (defclass input-manager ()
   ((server :initarg :server
 	   :reader mh-server)
@@ -10,6 +15,10 @@
    (keyboards :accessor keyboards
 	      :initform ()
 	      :type list)
+   (pointing-devices :accessor pointing-devices
+	     :initform ()
+	     :type list
+	     :documentation "Holds the pointing devices")
    (input-listener :initarg :input-listener
 		   :reader input-listener))
   (:default-initargs
@@ -61,6 +70,19 @@ Returns the newly created seat."
 					  '(:struct wl_listener) 'link))
     (foreign-free listener)))
 
+(cffi:defcallback pointer-destroy-notify :void
+    ((listener :pointer)
+     (device (:pointer (:struct wlr:input-device))))
+  (log-string :info "A pointer was destroyed")
+  (multiple-value-bind (manager pointing-device)
+      (values-list (get-listener-owner listener *listener-hash*))
+    (destroy-device pointing-device)
+    (setf (pointing-devices manager) (delete pointing-device (pointing-devices manager)))
+    (unregister-listener listener *listener-hash*)
+    (wl-list-remove (foreign-slot-pointer listener
+					  '(:struct wl_listener) 'link))
+    (foreign-free listener)))
+
 (defun add-keyboard (manager device seat)
   (let ((destroy-listener (make-listener keyboard-destroy-notify))
 	(new-keyboard (with-foreign-object (rules '(:struct xkb:rule-names))
@@ -71,6 +93,16 @@ Returns the newly created seat."
 		   destroy-listener)
     (register-listener destroy-listener (list manager new-keyboard) *listener-hash*)
     new-keyboard))
+
+(defun add-pointing-device (manager device seat)
+  (let ((destroy-listener (make-listener pointer-destroy-notify))
+	(new-pointer (make-pointing-device device seat)))
+    (wl-signal-add (cffi:foreign-slot-pointer device '(:struct wlr:input-device)
+					      :event-destroy)
+		   destroy-listener)
+    (register-listener destroy-listener (list manager new-pointer) *listener-hash*)
+    new-pointer))
+
 
 (cffi:defcallback handle-new-input :void
     ((listener :pointer)
@@ -84,7 +116,8 @@ Returns the newly created seat."
     (case (cffi:foreign-slot-value input
   				   '(:struct wlr:input-device) :type)
       (:keyboard (push (add-keyboard listener-owner input seat) (keyboards listener-owner)))
-      (t (log-string :info "Something that isn't a keyboard was added")))))
+      (:pointer (push (add-pointing-device listener-owner input seat) (pointing-devices  listener-owner)))
+      (t (log-string :info "Something that isn't a keyboard or pointer was added")))))
 
 (defun make-input-manager (server)
   (let ((new-input-listener (make-listener handle-new-input)))

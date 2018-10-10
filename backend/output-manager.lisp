@@ -1,4 +1,3 @@
-
 (in-package :mahogany/backend)
 
 (defclass output-manager ()
@@ -55,7 +54,8 @@
     (let ((new-output (make-mahogany-output output)))
       ;; insert both the manager and the output so we don't have to look it up later:
       (register-listener destroy-listener (list manager new-output) *listener-hash*)
-      (push new-output (get-outputs manager)))))
+      (push new-output (get-outputs manager))
+      (config-pointers-for-output (get-input-manager (get-server)) new-output))))
 
 (defun make-output-manager (backend)
   (let ((new-output-listener (make-listener handle-new-output))
