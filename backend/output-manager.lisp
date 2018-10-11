@@ -41,6 +41,7 @@
     (unregister-listener listener *listener-hash*)
     (wl-list-remove (cffi:foreign-slot-pointer listener
     					       '(:struct wl_listener) 'link))
+    (wlr:output-layout-remove (output-layout manager) output)
     (cffi:foreign-free listener)))
 
 (cffi:defcallback handle-new-output :void
