@@ -72,7 +72,7 @@
 
 (defun check-valid-log-level (level)
   ;; TODO: make this something with a use-value restart?
-  (assert (member level '(:trace :debug :info :warn :error :crit))))
+  (assert (member level '(:trace :debug :info :warn :error :fatal))))
 
 (defun log-debug-level ()
   *log-level*)

@@ -60,7 +60,7 @@ Returns the newly created seat."
     ((listener :pointer)
      (keyboard (:pointer (:struct wlr:input-device))))
   (declare (ignore keyboard))
-  (log-string :info "A keyboard was destroyed~%")
+  (log-string :info "A keyboard was destroyed")
   (multiple-value-bind (manager keyboard)
       (values-list (get-listener-owner listener *listener-hash*))
     (destroy-device keyboard)
