@@ -44,10 +44,21 @@
 (defun make-mahogany-output (output)
   (let ((frame-listener (make-listener new-frame-notify)))
     (assert (not (cffi:null-pointer-p frame-listener)))
-    (wayland-server-core:wl-signal-add (cffi:foreign-slot-pointer output
-    								  '(:struct wlr:output)
-    								  :event-frame)
-    				       frame-listener)
+    (with-wlr-accessors ((frame-event :event-frame :pointer t)
+			 (modes :modes :pointer t))
+	output (:struct wlr:output)
+      (wayland-server-core:wl-signal-add frame-event frame-listener)
+      (when (not (eq 1 (wl-list-empty modes)))
+	(log-string :trace "setting mode")
+	;; TODO: allow other default modes:
+	(let ((mode (container-of (foreign-slot-value modes
+							'(:struct wl_list)
+							'prev)
+				  '(:struct wlr:output-mode)
+				  :link)))
+	  (print-output-mode mode)
+	  (wlr:output-set-mode output mode))))
+
     (let ((new-output (make-instance 'mahogany-output
 				     :wlr-output output
     				     :frame-listener frame-listener)))

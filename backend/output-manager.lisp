@@ -1,5 +1,13 @@
 (in-package :mahogany/backend)
 
+(defun print-output-mode (mode)
+  (with-wlr-accessors ((width :width)
+  		       (height :height)
+  		       (flags :flags)
+  		       (refresh :refresh))
+      mode (:struct wlr:output-mode)
+    (log-string :trace "~Sx~S @ ~S flags: ~S" width height refresh flags)))
+
 (defclass output-manager ()
   ((output-listener :initarg :output-listener
 		    :reader output-listener)
