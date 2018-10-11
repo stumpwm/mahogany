@@ -2,12 +2,9 @@
 
 (in-package :mahogany/backend)
 
-
 (defcallback handle-cursor-motion :void
     ((listener :pointer)
      (event (:pointer (:struct wlr:event-pointer-motion))))
-  ;; TODO: test this with the DRM or Wayland backend: doesn't seem to do anything on X11:
-  (log-string :trace "Pointer was moved")
   (let ((cursor (get-listener-owner listener *listener-hash*)))
     (with-wlr-accessors ((device :device :pointer t)
 			 (delta-x :delta-x)
@@ -58,10 +55,14 @@
 
 (defun make-seat (display name)
   (let* ((wlr-seat (wlr:seat-create display name))
-	(cursor (make-cursor)))
-    (make-instance 'seat
-		   :wlr-seat wlr-seat
-		   :cursor cursor)))
+	 (cursor (make-cursor))
+         (new-seat (make-instance 'seat
+				  :wlr-seat wlr-seat
+				  :cursor cursor)))
+    ;; make the seat aware of all of the outputs:
+    (dolist (output (get-outputs (get-output-manager (get-server))))
+      (seat-config-cursor-for-output new-seat output))
+    new-seat))
 
 (defun seat-name (seat)
   (foreign-string-to-lisp (foreign-slot-pointer (seat-wlr-seat seat)
