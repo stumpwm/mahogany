@@ -87,7 +87,7 @@
 (defun (setf log-colored) (enablep)
   (setf cl-ansi-text:*enabled* enablep))
 
-(defun log-init (&key (level :info) (output *standard-output*) (color t))
+(defun log-init (&key (level *log-level*) (output *standard-output*) (color t))
   "Initialize logging. Call this to setup colorized output, ect.
 It is not necessary to call this for logging to work properly, but coloring may be messed up.
 If *log-output-file* is changed, it is a good idea to call this function again.
