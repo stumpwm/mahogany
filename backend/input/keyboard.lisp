@@ -42,9 +42,8 @@
 	  ;; ref twice, as syms is a pointer to a pointer:
 	  (let ((keysym (mem-aref (mem-ref syms :pointer) 'xkb:keysym i)))
 	    (log-string :trace "Keysym: ~A" keysym)
-	    ;; (when (eql keysym #xff1b)
-	    ;;   (wl-display-terminate (sample-state-display *sample-state*)))
-	    ))
+	     (when (eql keysym #xff1b)
+	       (stop-server *server*))))
 	(finish-output)))))
 
 (defmethod (setf input-device-seat) :before (new-seat (keyboard keyboard))
