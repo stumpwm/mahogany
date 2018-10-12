@@ -30,7 +30,7 @@
       with quicklisp is not up to date with the latest changes. Use
       the devel branch of linked repository instead; it will always be
       up to date.
-    + [[https://github.com/swaywm/wlroots][wlroots]] and [[https://gihub.com/sdilts/cl-wlroots][cl-wlroots]]. Install them per the directions in each project's
+    + [[https://github.com/swaywm/wlroots][wlroots]] and [[https://github.com/swaywm/cl-wlroots][cl-wlroots]]. Install them per the directions in each project's
       readme. The submodule included in the cl-wlroots repository will always
       work, but may lag behind several commits. For all the features of Mahogany,
       ensure that XWayland support is included.
