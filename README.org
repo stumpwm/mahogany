@@ -31,7 +31,7 @@
       the devel branch of linked repository instead; it will always be
       up to date.
     + [[https://github.com/swaywm/wlroots][wlroots]] and [[https://github.com/swaywm/cl-wlroots][cl-wlroots]]. Install them per the directions in each project's
-      readme. The submodule included in the cl-wlroots repository will always
+      readme. The submodule included in the =cl-wlroots= repository will always
       work, but may lag behind several commits. For all the features of Mahogany,
       ensure that XWayland support is included.
     + A lisp implementation that supports multithreading. ~SBCL~ is
@@ -47,3 +47,16 @@
    Please see the [[./doc/devel/][documentation directory]] for details on how to extend
    Mahogany.
 ** TODO Contributing to Mahogany
+   Some parts of Mahogany are in a hackable state, and others can be adapted from other projects. If you want to work on
+   Mahogany, here are some things you can do, in no particular order:
+   + The basic infastructure for getting keyboard input is implemented. Reading and holding the state of the keyboard
+     needs to be implemented. Rootson, the example compositor for wlroots is a good place to start. See the files 
+     backend/input/keyobard.lisp in this repo and rootson/keyboard.c in the wlroots repo.
+   + Command suppoort. We could probably get away with using the command system used in 
+     [[https://github.com/stumpwm/stumpwm][stumpwm]]. Everything is that we would need in present in the `command.lisp` file.
+     Put it into its own package, and submit a pull request for both stumpwm and mahogany: this is on stumpwm's todo iist
+     as well as Mahogany's.
+   + [[https://github.com/stumpwm/paulownia][Paulownia]] has some code that we could use as well, Notably, the following files
+     in the =base= directory: =data-dir.lisp=, =load-rc.lisp=, and =hooks.lisp=.
+   + A build system to actually compile Mahogany into an executable. =Roswell= looks like it is our best bet; see the Paulownia
+     repo for some insipration.
