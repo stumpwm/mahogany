@@ -53,10 +53,12 @@
   (make-instance 'server))
 
 (defun destroy-server (server)
-  ;; free the stuff in the output-manager first:
-  (destroy-output-manager (get-output-manager server))
+  ;; cleanup the wl resources first:
   (wl-display-destroy-clients (get-display server))
-  (wl-display-destroy (get-display server)))
+  (wl-display-destroy (get-display server))
+  ;; destroy the resources we created:
+  (destroy-output-manager (get-output-manager server))
+  (destroy-input-manager (get-input-manager server)))
 
 (defmethod stop-server ((server server))
   (wl-display-terminate (get-display *server*)))
@@ -80,5 +82,4 @@
       (wl-display-destroy (get-display server))
       (uiop:quit 1))
     (wl-display-run (get-display server))
-    (destroy-server server)
-    (uiop:quit)))
+    (clear-server)))

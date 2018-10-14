@@ -38,10 +38,20 @@
     (let ((new-cursor (make-instance 'cursor
 				     :wlr-cursor wlr-cursor
 				     :motion-listener motion-listener
+				     :motion-absolute-listener motion-absolute-listener
 				     :xcursor-manager xcursor-manager)))
       (register-listener motion-listener new-cursor *listener-hash*)
       (register-listener motion-absolute-listener new-cursor *listener-hash*)
       new-cursor)))
+
+(defun destroy-cursor (cursor)
+  (with-accessors ((absolute-listener cursor-motion-absolute-listener)
+		   (motion-listener cursor-motion-listener)
+		   (wlr-cursor cursor-wlr-cursor))
+      cursor
+    (cleanup-listener absolute-listener *listener-hash*)
+    (cleanup-listener motion-listener *listener-hash*)
+    (wlr:cursor-destroy wlr-cursor)))
 
 (defun config-cursor-for-output (cursor output)
   (declare (type cursor cursor))
@@ -63,6 +73,10 @@
     (dolist (output (get-outputs (get-output-manager (get-server))))
       (seat-config-cursor-for-output new-seat output))
     new-seat))
+
+(defun destroy-seat (seat)
+  ;; TODO: finish this.
+  (destroy-cursor (seat-cursor seat)))
 
 (defun seat-name (seat)
   (foreign-string-to-lisp (foreign-slot-pointer (seat-wlr-seat seat)

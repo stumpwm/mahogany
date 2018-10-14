@@ -30,16 +30,21 @@
 (defcallback handle-seat-destroy :void
     ((listener :pointer)
      (seat (:pointer (:struct wlr:seat))))
-  (declare (ignore seat listener))
-  (log-string :info "Seat Destroyed"))
+  (log-string :info "Seat Destroyed")
+  (multiple-value-bind (input-manager seat-object)
+      (values-list (get-listener-owner listener *listener-hash*))
+    (setf (input-seats input-manager) (remove seat-object (input-seats input-manager)
+					      :key #'cdr))
+    (destroy-seat seat-object)
+    (cleanup-listener listener *listener-hash*)))
 
 (defun add-new-seat (input-manager seat-name)
   "Create a new seat named seat-name and add it to the given input manager.
 Returns the newly created seat."
   (let* ((new-seat (make-seat (get-display (mh-server input-manager))
 			      seat-name))
-	(destroy-listener (make-listener handle-seat-destroy))
-	(wlr-seat (seat-wlr-seat new-seat)))
+	 (destroy-listener (make-listener handle-seat-destroy))
+	 (wlr-seat (seat-wlr-seat new-seat)))
     (wl-signal-add (foreign-slot-pointer wlr-seat '(:struct wlr:seat)
 					 :event-destroy)
 		   destroy-listener)
@@ -132,6 +137,7 @@ Returns the newly created seat."
       (the input-manager new-manager))))
 
 (defun destroy-input-manager (input-manager)
+  (log-string :debug "Input manager destroyed")
   (with-accessors ((input-listener input-listener)) input-manager
     (unregister-listener input-listener *listener-hash*)
     (wl-list-remove (foreign-slot-pointer input-listener

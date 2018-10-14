@@ -27,3 +27,9 @@
   `(let ((listener (cffi:foreign-alloc '(:struct wl_listener))))
      (setf (cffi:foreign-slot-value listener '(:struct wl_listener) 'notify) (cffi:callback ,callback))
      listener))
+
+(defun cleanup-listener (listener-ptr listener-table)
+  (unregister-listener listener-ptr listener-table)
+  (wl-list-remove (foreign-slot-pointer listener-ptr
+					'(:struct wl_listener) 'link))
+  (foreign-free listener-ptr))

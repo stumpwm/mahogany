@@ -90,6 +90,7 @@
   (with-accessors ((output-listener output-listener)
 		   (layout-change-listener output-layout-listener))
       output-manager
+    (log-string :debug "Output manager destroyed")
     (unregister-listener output-listener *listener-hash*)
     (wl-list-remove (foreign-slot-pointer output-listener
 					  '(:struct wl_listener) 'link))
