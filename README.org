@@ -49,7 +49,7 @@
 ** TODO Contributing to Mahogany
    Some parts of Mahogany are in a hackable state, and others can be adapted from other projects. If you want to work on
    Mahogany, here are some things you can do, in no particular order:
-   + The basic infastructure for getting keyboard input is implemented. Reading and holding the state of the keyboard
+   + The basic infrastructure for getting keyboard input is implemented. Reading and holding the state of the keyboard
      needs to be implemented. Rootson, the example compositor for wlroots is a good place to start. See the files 
      backend/input/keyobard.lisp in this repo and rootson/keyboard.c in the wlroots repo.
    + Command suppoort. We could probably get away with using the command system used in 
