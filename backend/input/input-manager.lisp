@@ -30,7 +30,7 @@
 (defcallback handle-seat-destroy :void
     ((listener :pointer)
      (seat (:pointer (:struct wlr:seat))))
-  (log-string :info "Seat Destroyed")
+  (log-string :debug "Seat Destroyed")
   (multiple-value-bind (input-manager seat-object)
       (values-list (get-listener-owner listener *listener-hash*))
     (setf (input-seats input-manager) (remove seat-object (input-seats input-manager)
@@ -65,7 +65,7 @@ Returns the newly created seat."
     ((listener :pointer)
      (keyboard (:pointer (:struct wlr:input-device))))
   (declare (ignore keyboard))
-  (log-string :info "A keyboard was destroyed")
+  (log-string :debug "A keyboard was destroyed")
   (multiple-value-bind (manager keyboard)
       (values-list (get-listener-owner listener *listener-hash*))
     (destroy-device keyboard)
@@ -78,7 +78,7 @@ Returns the newly created seat."
 (cffi:defcallback pointer-destroy-notify :void
     ((listener :pointer)
      (device (:pointer (:struct wlr:input-device))))
-  (log-string :info "A pointer was destroyed")
+  (log-string :debug "A pointer was destroyed")
   (multiple-value-bind (manager pointing-device)
       (values-list (get-listener-owner listener *listener-hash*))
     (destroy-device pointing-device)
@@ -114,7 +114,7 @@ Returns the newly created seat."
      (input (:pointer (:struct wlr:input-device))))
   (let* ((listener-owner (get-listener-owner listener *listener-hash*))
 	(seat (get-desired-seat listener-owner input)))
-    (log-string :info "new input device ~A"
+    (log-string :debug "new input device ~A"
 		(cffi:foreign-slot-value input
 					 '(:struct wlr:input-device) :type))
 
@@ -122,7 +122,7 @@ Returns the newly created seat."
   				   '(:struct wlr:input-device) :type)
       (:keyboard (push (add-keyboard listener-owner input seat) (keyboards listener-owner)))
       (:pointer (push (add-pointing-device listener-owner input seat) (pointing-devices  listener-owner)))
-      (t (log-string :info "Something that isn't a keyboard or pointer was added")))))
+      (t (log-string :debug "Something that isn't a keyboard or pointer was added")))))
 
 (defun make-input-manager (server)
   (let ((new-input-listener (make-listener handle-new-input)))

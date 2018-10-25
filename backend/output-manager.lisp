@@ -26,7 +26,7 @@
      (something :pointer))
   (declare (ignore listener something))
   ;; TODO: do layout change
-  (log-string :info "Output layout changed"))
+  (log-string :debug "Output layout changed"))
 
 (cffi:defcallback destroy-output :void
     ((listener :pointer)
