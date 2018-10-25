@@ -11,6 +11,10 @@
 (defun register-listener (listener owner table)
   (setf (gethash (cffi:pointer-address listener) table) owner))
 
+(defun register-listeners (owner table &rest listeners)
+  (dolist (listener listeners)
+    (register-listener listener owner table)))
+
 (defun unregister-listener (listener table)
   (remhash (cffi:pointer-address  listener) table))
 
