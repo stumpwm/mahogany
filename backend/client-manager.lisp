@@ -15,6 +15,16 @@
   ((surface :initarg :wlr-surface
 	    :reader view-surface
 	    :type wlr:xdg-surface)
+   (x :initarg :view-x
+      :accessor view-x
+      :initform 0
+      :type integer
+      :documentation "Location of surface in output coordinates")
+   (y :initarg :view-y
+      :accessor view-y
+      :initform 0
+      :type integer
+      :documentation "Location of surface in output coordinates")
    (map-listener :initarg :map-listener
 		 :reader view-map-listener
 		 :type wl_listener)
@@ -68,7 +78,8 @@
 				   :map-listener map-listener
 				   :unmap-listener unmap-listener
 				   :destroy-listener destroy-listener)))
-      (register-listeners new-view *listener-hash* map-listener unmap-listener destroy-listener)
+      (register-listeners (list new-view client-manager) *listener-hash*
+			  map-listener unmap-listener destroy-listener)
       (push new-view (client-manager-surfaces client-manager)))))
 
 

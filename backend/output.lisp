@@ -48,7 +48,7 @@
 		       :y (truncate (* scale output-y))
 		       :width (truncate (* (getf current :width) scale))
 		       :height (truncate (* (getf current :height) scale)))))))
-
+(declaim (inline get-surface-render-box))
 
 (defcallback draw-surface :void
     ((surface :pointer)
@@ -64,7 +64,6 @@
 	(let ((box (get-surface-render-box surface output view-x view-y sx sy))
 	      (transform (wlr:output-transform-invert (getf current :transform))))
 	  (with-foreign-object (matrix :float 9)
-	  ;;(with-foreign-array (matrix #(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) :float)
 	    (with-wlr-accessors ((transform-matrix :transform-matrix :pointer t))
 		output (:struct wlr:output)
 	      (wlr:matrix-project-box matrix box
@@ -91,8 +90,8 @@
 	      renderer wlr-renderer
 	      time now)
 	(dolist (view (reverse (client-manager-surfaces (get-client-manager (get-server)))))
-	  (setf view-x 10
-		view-y 10)
+	  (setf view-x (view-x view)
+		view-y (view-y view))
           (wlr:xdg-surface-for-each-surface (view-surface view) (callback draw-surface) data))))
 
     (wlr:renderer-end wlr-renderer)
