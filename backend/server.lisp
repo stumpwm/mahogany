@@ -46,7 +46,7 @@
       server
     ;; TODO: actual error handling here
     (setf display (wayland-server-core:wl-display-create))
-/    (assert (not (eql (null-pointer) display)))
+    (assert (not (eql (null-pointer) display)))
     (setf backend (wlr:backend-autocreate display (null-pointer)))
     (assert (not (and backend
 		      (eql (null-pointer) backend))))
