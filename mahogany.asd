@@ -8,7 +8,7 @@
   :serial t
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
-		      #:cl-ppcre #:vom #:cl-egl)
+		      #:cl-ppcre #:cl-egl)
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "package")
 	       (:file "log")
