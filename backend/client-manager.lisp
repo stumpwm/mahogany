@@ -28,7 +28,11 @@
 (defcallback view-destroy :void
     ((listener :pointer)
      (surface :pointer))
-  (log-string :trace "Veiw destroyed"))
+  (log-string :trace "Veiw destroyed")
+  (multiple-value-bind (view manager)
+      (values-list (get-listener-owner listener *listener-hash*))
+    (setf (client-manager-surfaces manager) (remove view
+						    (client-manager-surfaces manager)))))
 
 (defcallback view-map :void
     ((listener :pointer)
