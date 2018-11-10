@@ -11,30 +11,6 @@
    (xdg-shell-destroy-listener :initarg :xdg-shell-destroy-listener
 			       :type wl_listener)))
 
-(defclass view ()
-  ((surface :initarg :wlr-surface
-	    :reader view-surface
-	    :type wlr:xdg-surface)
-   (x :initarg :view-x
-      :accessor view-x
-      :initform 0
-      :type integer
-      :documentation "Location of surface in output coordinates")
-   (y :initarg :view-y
-      :accessor view-y
-      :initform 0
-      :type integer
-      :documentation "Location of surface in output coordinates")
-   (map-listener :initarg :map-listener
-		 :reader view-map-listener
-		 :type wl_listener)
-   (unmap-listener :initarg :unmap-listener
-		   :reader view-unmap-listener
-		   :type wl_listener)
-   (destroy-listener :initarg :destroy-listener
-		     :reader view-destroy-listener
-		     :type wl_listener)))
-
 (defcallback view-destroy :void
     ((listener :pointer)
      (surface :pointer))
@@ -73,7 +49,7 @@
       (wl-signal-add map-signal map-listener)
       (wl-signal-add unmap-signal unmap-listener)
       (wl-signal-add destroy-signal destroy-listener))
-    (let ((new-view (make-instance 'view
+    (let ((new-view (make-instance 'xdg-view
 				   :wlr-surface surface
 				   :map-listener map-listener
 				   :unmap-listener unmap-listener
@@ -81,7 +57,6 @@
       (register-listeners (list new-view client-manager) *listener-hash*
 			  map-listener unmap-listener destroy-listener)
       (push new-view (client-manager-surfaces client-manager)))))
-
 
 (defcallback handle-xdg-shell-destroy :void
     ((listener :pointer)

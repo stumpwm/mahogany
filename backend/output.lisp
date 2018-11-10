@@ -92,7 +92,7 @@
 	(dolist (view (reverse (client-manager-surfaces (get-client-manager (get-server)))))
 	  (setf view-x (view-x view)
 		view-y (view-y view))
-          (wlr:xdg-surface-for-each-surface (view-surface view) (callback draw-surface) data))))
+          (view-for-each-surface view (callback draw-surface) data))))
 
     (wlr:renderer-end wlr-renderer)
     (wlr:output-swap-buffers wlr-output (cffi:null-pointer)
