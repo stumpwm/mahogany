@@ -22,24 +22,37 @@
 	event (:struct wlr:event-pointer-motion-absolute)
       (wlr:cursor-warp-absolute (cursor-wlr-cursor cursor) device new-x new-y))))
 
+(defcallback handle-cursor-button :void
+    ((listener :pointer)
+     (event (:pointer (:struct wlr:event-pointer-button))))
+  (let ((cursor (get-listener-owner listener *listener-hash*)))
+    ;; TODO: finish this once the needed functions are implemented
+    (log-string :trace "Button pressed")
+    ))
+
 (defun make-cursor ()
   (let ((wlr-cursor (wlr:cursor-create))
 	(xcursor-manager (wlr:xcursor-manager-create "default" 24))
 	(motion-listener (make-listener handle-cursor-motion))
-	(motion-absolute-listener (make-listener handle-cursor-absolute-motion)))
+	(motion-absolute-listener (make-listener handle-cursor-absolute-motion))
+	(button-listener (make-listener handle-cursor-button)))
     ;; don't know if we need to call this on creation or not:
     (wlr:xcursor-manager-set-cursor-image xcursor-manager "left_ptr" wlr-cursor)
     (wlr:cursor-attach-output-layout wlr-cursor (output-layout (get-output-manager (get-server))))
     (with-wlr-accessors ((motion-event :event-motion :pointer t)
+			 (button-event :event-button :pointer t)
 			 (m-absolute-event :event-motion-absolute :pointer t))
 	wlr-cursor (:struct wlr:cursor)
+      (wl-signal-add button-event button-listener)
       (wl-signal-add motion-event motion-listener)
       (wl-signal-add m-absolute-event motion-absolute-listener))
     (let ((new-cursor (make-instance 'cursor
 				     :wlr-cursor wlr-cursor
 				     :motion-listener motion-listener
 				     :motion-absolute-listener motion-absolute-listener
-				     :xcursor-manager xcursor-manager)))
+				     :xcursor-manager xcursor-manager
+				     :button-listener button-listener)))
+      (register-listener button-listener new-cursor *listener-hash*)
       (register-listener motion-listener new-cursor *listener-hash*)
       (register-listener motion-absolute-listener new-cursor *listener-hash*)
       new-cursor)))
@@ -47,8 +60,10 @@
 (defun destroy-cursor (cursor)
   (with-accessors ((absolute-listener cursor-motion-absolute-listener)
 		   (motion-listener cursor-motion-listener)
+		   (button-listener cursor-button-listener)
 		   (wlr-cursor cursor-wlr-cursor))
       cursor
+    (cleanup-listener button-listener *listener-hash*)
     (cleanup-listener absolute-listener *listener-hash*)
     (cleanup-listener motion-listener *listener-hash*)
     (wlr:cursor-destroy wlr-cursor)))
