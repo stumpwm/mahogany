@@ -90,9 +90,10 @@
 	      renderer wlr-renderer
 	      time now)
 	(dolist (view (reverse (client-manager-surfaces (get-client-manager (get-server)))))
-	  (setf view-x (view-x view)
-		view-y (view-y view))
-          (view-for-each-surface view (callback draw-surface) data))))
+	  (when (view-mapped view)
+	    (setf view-x (view-x view)
+		  view-y (view-y view))
+            (view-for-each-surface view (callback draw-surface) data)))))
 
     (wlr:renderer-end wlr-renderer)
     (wlr:output-swap-buffers wlr-output (cffi:null-pointer)

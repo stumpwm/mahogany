@@ -23,12 +23,18 @@
 (defcallback view-map :void
     ((listener :pointer)
      (surface :pointer))
-  (log-string :trace "View mapped"))
+  (log-string :trace "View mapped")
+  (multiple-value-bind (view manager)
+      (values-list (get-listener-owner listener *listener-hash*))
+    (setf (view-mapped view) t)))
 
 (defcallback view-unmap :void
     ((listener :pointer)
      (surface :pointer))
-  (log-string :trace "View unmapped"))
+  (log-string :trace "View unmapped")
+  (multiple-value-bind (view manager)
+      (values-list (get-listener-owner listener *listener-hash*))
+    (setf (view-mapped view) t)))
 
 (defcallback handle-new-surface :void
     ((listener :pointer)
