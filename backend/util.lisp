@@ -37,3 +37,7 @@
   (wl-list-remove (foreign-slot-pointer listener-ptr
 					'(:struct wl_listener) 'link))
   (foreign-free listener-ptr))
+
+(define-condition initialization-error (error)
+  ((text :initarg text :reader text))
+  (:documentation "Used when initializaion goes wrong"))
