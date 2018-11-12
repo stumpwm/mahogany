@@ -12,6 +12,8 @@ CALLBACK-FUNC must be a c function pointer."))
 (defclass view ()
   ((surface :initarg :wlr-surface
 	    :reader view-surface)
+   (mapped :initarg :mapped
+	   :accessor view-mapped)
    (x :initarg :view-x
       :accessor view-x
       :initform 0
@@ -21,7 +23,9 @@ CALLBACK-FUNC must be a c function pointer."))
       :accessor view-y
       :initform 0
       :type integer
-      :documentation "Location of surface in output coordinates")))
+      :documentation "Location of surface in output coordinates"))
+  (:default-initargs
+   :mapped nil))
 
 (defclass xdg-view (view)
   ((map-listener :initarg :map-listener

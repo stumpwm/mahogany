@@ -72,7 +72,6 @@
 	      (wlr:render-texture-with-matrix renderer texture matrix 1.0)
 	      (wlr:surface-send-frame-done surface time))))))))
 
-
 (defun draw-frame (wlr-output output)
   (declare (type mahogany-output output))
   (let ((wlr-renderer (wlr:backend-get-renderer (foreign-slot-value (output-wlr-output output)
@@ -114,7 +113,6 @@
 	output (:struct wlr:output)
       (wayland-server-core:wl-signal-add frame-event frame-listener)
       (when (not (eq 1 (wl-list-empty modes)))
-	(log-string :trace "setting mode")
 	;; TODO: allow other default modes:
 	(let ((mode (container-of (foreign-slot-value modes
 							'(:struct wl_list)
