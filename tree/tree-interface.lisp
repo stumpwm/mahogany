@@ -1,27 +1,4 @@
-(defpackage :mahogany/tree/frame-interface
-  (:use :cl))
-
-(in-package :mahogany/tree/frame-interface)
-
-(export '(split-frame-h
-	  split-frame-v
-	  ;; remove-frame
-	  ;; isolate-frame
-	  swap-children
-	  *split-frame-hook*
-	  *new-frame-hook*
-	  *remove-split-hook*
-	  *new-split-type*
-	  frame
-	  tree-frame
-	  binary-tree-frame
-	  poly-tree-frame
-	  root-frame-p
-	  frame-x
-	  frame-y
-	  frame-width
-	  frame-height
-	  frame-parent))
+(in-package :mahogany/tree)
 
 ;; various hooks
 (defvar *split-frame-hook* nil
@@ -130,6 +107,10 @@ The parent tree is modified appropriately.
   (:documentation "Finds a veiw-frame in the given tree that doesn't have
 a view assigned to it."))
 
+(defgeneric set-dimentions (frame width height)
+  (:documentation "Set the dimensions of the frame. If setting both the width and
+height of a frame, use this method instead of frame-x and frame-y"))
+
 ;; floating frame interface
 
 (defvar *request-client-decoration* nil
@@ -140,7 +121,7 @@ a view assigned to it."))
 
 ;; helper functions:
 
-(declaim (inline root-frame-p))
 (defun root-frame-p (frame)
   ;; the root frame's parent will be a tree-container:
   (typep (frame-parent frame) 'tree-container))
+(declaim (inline root-frame-p))

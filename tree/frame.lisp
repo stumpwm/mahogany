@@ -1,9 +1,4 @@
-(defpackage :mahogany/tree/frames
-  (:use :cl :mahogany/tree/frame-interface :alexandria)
-  (:import-from :mahogany-util
-		:invalid-operation))
-
-(in-package :mahogany/tree/frames)
+(in-package :mahogany/tree)
 
 (defun replace-item (lst old-itm new-itm &key (test #'equal))
   (alexandria:if-let ((found (member old-itm lst :test test)))

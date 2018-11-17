@@ -5,13 +5,13 @@
   :author "Stuart Dilts"
   :license  "GPL 2.0"
   :version "0.0.1"
-  :serial t
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
 		      #:cl-egl)
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "package")
 	       (:file "log")
+	       (:file "util")
 	       (:module backend
 			:components ((:file "util")
 				     (:file "output")
@@ -23,4 +23,9 @@
 				     (:file "input/pointing-device")
 				     (:file "input/seat")
 				     (:file "input/input-manager")
-				     (:file "server")))))
+				     (:file "server"))
+			:depends-on ("package" "log"))
+	       (:module tree
+	       		:components ((:file "tree-interface")
+	       			     (:file "frame" :depends-on ("tree-interface")))
+	       		:depends-on ("package" "log" "util"))))

@@ -1,9 +1,6 @@
 ;;; A place to put useful functions that are shared between different files
 
-(defpackage #:mahogany-util
-  (:use #:cl #:wayland-server-core))
-
-(in-package #:mahogany-util)
+(in-package #:mahogany/util)
 
 (define-condition initialization-error (error)
   ((text :initarg text :reader text))
