@@ -86,18 +86,18 @@ of an already existing frame with the `set-split-frame-type` function")
   ()
   (:default-initargs
    :split-type :binary)
-  (:documentation "An inner node of a frame-tree that can have more than two children"))
+  (:documentation "An inner node of a frame-tree that can only have two children"))
 
 (defclass poly-tree-frame (tree-frame)
   ()
   (:default-initargs
    :split-type :poly)
-  (:documentation "An inner node of a frame-tree that can only have two children"))
+  (:documentation "An inner node of a frame-tree that can have more than two children"))
 
 ;; frame-tree interface
 (defgeneric set-split-frame-type (frame type)
   (:documentation "Sets the split frame type. Note that this may change the
-the layout of the tree depending the frame type.
+the layout of the tree depending on the frame type.
 See *new-split-type* for more details"))
 
 (defgeneric split-frame-v (frame &key ratio direction)
