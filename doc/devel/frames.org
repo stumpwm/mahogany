@@ -22,3 +22,5 @@
     internal nodes in the tree.
 *** Leaf-frames
     + Leaf frames in the tree that actually hold windows
+
+*** Child frames?

@@ -1,16 +1,4 @@
-(defpackage #:mahogany/backend/util
-  (:use :cl :cffi :wayland-server-core))
-
-(in-package :mahogany/backend/util)
-
-(export '(*listener-hash*
-	  get-listener-owner
-	  register-listener
-	  unregister-listener
-	  remove-from-list
-	  free-from
-	  container-of
-	  make-listener))
+(in-package :mahogany/backend)
 
 (defparameter *listener-hash* (make-hash-table))
 
@@ -22,6 +10,10 @@
 
 (defun register-listener (listener owner table)
   (setf (gethash (cffi:pointer-address listener) table) owner))
+
+(defun register-listeners (owner table &rest listeners)
+  (dolist (listener listeners)
+    (register-listener listener owner table)))
 
 (defun unregister-listener (listener table)
   (remhash (cffi:pointer-address  listener) table))
@@ -39,3 +31,13 @@
   `(let ((listener (cffi:foreign-alloc '(:struct wl_listener))))
      (setf (cffi:foreign-slot-value listener '(:struct wl_listener) 'notify) (cffi:callback ,callback))
      listener))
+
+(defun cleanup-listener (listener-ptr listener-table)
+  (unregister-listener listener-ptr listener-table)
+  (wl-list-remove (foreign-slot-pointer listener-ptr
+					'(:struct wl_listener) 'link))
+  (foreign-free listener-ptr))
+
+(define-condition initialization-error (error)
+  ((text :initarg text :reader text))
+  (:documentation "Used when initializaion goes wrong"))
