@@ -116,6 +116,11 @@
     (run-hook-with-args *split-frame-hook* new-frame new-parent)
     (values new-frame new-parent)))
 
+(defun swap-in-parent (frame new-parent)
+  (if (root-frame-p frame)
+      (setf (root-tree (frame-parent frame)) new-parent)
+      (replace-item (tree-children (frame-parent frame)) frame new-parent)))
+
 (defun binary-split-h (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
@@ -158,7 +163,7 @@ Used to initially split all frames, regardless of type."
 	   (setf (frame-x frame) (+ old-x new-frame-width))
 	   (setf (tree-children new-parent) (list new-frame frame))))
 	;; insert the new node into the tree:
-	(replace-item (tree-children (frame-parent frame)) frame new-parent)
+	(swap-in-parent frame new-parent)
 	(values new-frame new-parent)))))
 
 (defun binary-split-v (frame ratio direction parent-type)
@@ -203,7 +208,7 @@ Used to initially split all frames, regardless of type."
 	     (setf (frame-height frame) (- old-height new-frame-height))
 	     (setf (tree-children new-parent) (list frame new-frame))))
 	;; insert the new node into the tree:
-	(replace-item (tree-children (frame-parent frame)) frame new-parent)
+	(swap-in-parent frame new-parent)
 	(values new-frame new-parent)))))
 
 (defun poly-split-frame-h (frame ratio direction)
