@@ -11,12 +11,14 @@
 
 (defun find-frame (parent frame)
   (labels ((rec-func (item to-search)
-	     (let ((parent (pop to-search)))
+	     (let ((frame (pop to-search)))
 	       (cond
-		 ((equal item parent)
+		 ((equal item frame)
 		  (return-from rec-func item))
-		 ((typep parent 'tree-frame)
-		  (setf to-search (append (tree-children parent)
+		 ((null frame)
+		  (return-from rec-func nil))
+		 ((typep frame 'tree-frame)
+		  (setf to-search (append (tree-children frame)
 					  to-search))))
 	       (rec-func item to-search))))
     (if (equal parent frame)
@@ -25,22 +27,25 @@
 	  (rec-func frame (tree-children parent))))))
 
 (defmethod swap-positions ((frame1 frame) (frame2 frame))
+  ;; don't swap if a frame is a parent of the other:
+  (when (or (find-frame frame1 frame2) (find-frame frame2 frame1))
+    (error 'invalid-operation "Cannot swap positions with a frame higher in the tree."))
+  ;; resize the frames so they will fit in the other's position:
+  (let ((tmp-x (frame-x frame1))
+	(tmp-y (frame-y frame1))
+	(tmp-wdith (frame-width frame1))
+	(tmp-height (frame-height frame1)))
+    (setf (frame-x frame1) (frame-x frame2)
+	  (frame-y frame1) (frame-y frame2)
+	  (frame-wdith frame1) (frame-wdith frame2)
+	  (frame-height frame1) (frame-height frame2))
+    (setf (frame-x frame2) tmp-x
+	  (frame-y frame2) tmp-y
+	  (frame-wdith frame2) tmp-width
+	  (frame-height frame2) tmp-height))
+
   (let ((frame1-parent (frame-parent frame2))
 	(frame2-parent (frame-parent frame2)))
-    ;; don't swap if a frame is a parent of the other:
-    (when (or (find-frame frame1 frame2) (find-frame frame2 frame1))
-      (error 'invalid-operation "Cannot swap positions with a frame higher in the tree."))
-    ;; resize the frames so they will fit in the other's position:
-    ;; this is woefully incorrect:
-    (setf (frame-x frame1) (frame-x frame2-parent)
-	  (frame-x frame2) (frame-x frame1-parent)
-	  (frame-y frame1) (frame-y frame2-parent)
-	  (frame-y frame2) (frame-y frame1-parent)
-	  (frame-wdith frame1) (frame-wdith frame2-parent)
-	  (frame-wdith frame2) (frame-wdith frame1-parent)
-	  (frame-height frame1) (frame-height frame2-parent)
-	  (frame-height frame2) (frame-height frame1-parent))
-
     (replace-item (tree-children frame1-parent) frame1 frame2)
     (replace-item (tree-children frame2-parent) frame2 frame1)))
 
