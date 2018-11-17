@@ -45,19 +45,18 @@ of an already existing frame with the `set-split-frame-type` function")
 (defclass frame ()
   ((x :initarg :x
       :accessor frame-x
-      :type number)
+      :type integer)
    (y :initarg :y
       :accessor frame-y
-      :type number)
+      :type integer)
    (width :initarg :width
 	  :accessor frame-width
-	  :type number)
+	  :type integer)
    (height :initarg :height
 	   :accessor frame-height
-	   :type number)
+	   :type integer)
    (parent :initarg :parent
-	   :accessor frame-parent
-	   :type container))
+	   :accessor frame-parent))
   (:documentation "A frame that is displayed on an output"))
 
 (defclass tree-container ()
