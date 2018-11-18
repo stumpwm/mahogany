@@ -8,7 +8,7 @@
   (:use :cl #:mahogany/log #:alexandria #:mahogany/util)
   (:export #:split-frame-h
 	   #:split-frame-v
-	   #:swap-children
+	   #:swap-positions
 	   #:*split-frame-hook*
 	   #:*new-frame-hook*
 	   #:*remove-split-hook*
