@@ -24,6 +24,7 @@
 	   #:frame-height
 	   #:frame-parent
 	   #:tree-container
+	   #:tree-children
 	   #:root-tree))
 
 (defpackage #:mahogany/backend
