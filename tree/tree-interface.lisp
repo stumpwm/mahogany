@@ -81,13 +81,15 @@ See *new-split-type* for more details"))
   (:documentation "Split the frame vertically. Returns a tree of the split frames.
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
-     the the size is split evenly between the other child frame(s)"))
+     the the size is split evenly between the other child frame(s)
+   DIRECTION: where the new frame is placed. Either :left or :right"))
 
 (defgeneric split-frame-h (frame &key ratio direction)
   (:documentation "Split the frame horizontally. Returns a tree of the split frames.
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
-     the the size is split evenly between the other child frame(s)"))
+     the the size is split evenly between the other child frame(s)
+   DIRECTION: where the new frame is placed. Either :top or :bottom"))
 
 ;; (defgeneric remove-frame (frame)
 ;;   (:documentation "Remove the frame from the tree. Parent can be any
