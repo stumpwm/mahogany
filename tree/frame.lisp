@@ -104,16 +104,16 @@
   "Run the appropriate hooks"
   (declare (ignore frame direction ratio))
   (multiple-value-bind (new-frame new-parent) (call-next-method)
-    (run-hook-with-args *new-frame-hook* new-frame)
-    (run-hook-with-args *split-frame-hook* new-frame new-parent)
+    ;; (run-hook-with-args *new-frame-hook* new-frame)
+    ;; (run-hook-with-args *split-frame-hook* new-frame new-parent)
     (values new-frame new-parent)))
 
 (defmethod split-frame-v :around ((frame frame) &key ratio direction)
   "Run the appropriate hooks"
   (declare (ignore frame direction ratio))
   (multiple-value-bind (new-frame new-parent) (call-next-method)
-    (run-hook-with-args *new-frame-hook* new-frame)
-    (run-hook-with-args *split-frame-hook* new-frame new-parent)
+    ;; (run-hook-with-args *new-frame-hook* new-frame)
+    ;; (run-hook-with-args *split-frame-hook* new-frame new-parent)
     (values new-frame new-parent)))
 
 (defun swap-in-parent (frame new-parent)
@@ -226,9 +226,9 @@ Used to initially split all frames, regardless of type."
 	   (new-num-children (+ parent-children-len 1))
 	   (new-frame-width (if ratio
 				(truncate (* ratio parent-width))
-				(/ 1 new-num-children)))
-	   (other-children-width (/ (- parent-width new-frame-width)
-				    parent-children-len))
+				(truncate (* parent-width (/ 1 new-num-children)))))
+	   (other-children-width (truncate (/ (- parent-width new-frame-width)
+					      parent-children-len)))
 	   (new-frame) (x-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
@@ -265,7 +265,7 @@ Used to initially split all frames, regardless of type."
 (defun poly-split-frame-v (frame ratio direction)
   "Add another child to a horizontally oriented poly-tree-frame"
   (declare (type poly-tree-frame frame))
-  (assert (eql (tree-split-direction frame) :horizontal))
+  (assert (eql (tree-split-direction frame) :vertical))
   ;; we alread have children, so add and re-adjust:
   (with-accessors ((parent-width frame-width)
 		   (parent-height frame-height)
@@ -277,9 +277,9 @@ Used to initially split all frames, regardless of type."
 	   (new-num-children (+ parent-children-len 1))
 	   (new-frame-height (if ratio
 				(truncate (* ratio parent-height))
-				(/ 1 new-num-children)))
-	   (other-children-height (/ (- parent-height new-frame-height)
-				    parent-children-len))
+				(truncate (* parent-height (/ 1 new-num-children)))))
+	   (other-children-height (truncate (/ (- parent-height new-frame-height)
+				    parent-children-len)))
 	   (new-frame) (y-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
