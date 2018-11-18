@@ -164,6 +164,7 @@ Used to initially split all frames, regardless of type."
 	   (setf (tree-children new-parent) (list new-frame frame))))
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
+	(setf (frame-parent frame) new-parent)
 	(values new-frame new-parent)))))
 
 (defun binary-split-v (frame ratio direction parent-type)
@@ -209,6 +210,7 @@ Used to initially split all frames, regardless of type."
 	     (setf (tree-children new-parent) (list frame new-frame))))
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
+	(setf (frame-parent frame) new-parent)
 	(values new-frame new-parent)))))
 
 (defun poly-split-frame-h (frame ratio direction)
