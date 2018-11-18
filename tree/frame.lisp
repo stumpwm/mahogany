@@ -347,14 +347,14 @@ Used to initially split all frames, regardless of type."
       (binary-split-v frame ratio direction (decode-new-split-type))))
 
 (defmethod print-object ((object frame) stream)
-  (print-unreadable-object (object stream :type t)
+  (print-unreadable-object (object stream :type t :identity t)
     (with-slots (width height x y)
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A"
 	      width height x y))))
 
 (defmethod print-object ((object tree-frame) stream)
-  (print-unreadable-object (object stream :type t)
+  (print-unreadable-object (object stream :type t :identity t)
     (with-slots (width height x y children split-direction)
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A ~S :children ~S"
