@@ -4,6 +4,12 @@
   (alexandria:if-let ((found (member old-itm lst :test test)))
     (setf (car found) new-itm)))
 
+(defun swap-items (lst1 item1 lst2 item2 &key (test #'equal))
+  (alexandria:if-let ((found1 (member item1 lst1 :test test))
+		      (found2 (member item2 lst2 :test test)))
+    (progn (setf (car found1) item2)
+	   (setf (car found2) item1))))
+
 (defun find-frame (parent frame)
   (labels ((rec-func (item to-search)
 	     (let ((frame (pop to-search)))
@@ -38,11 +44,12 @@
 	  (frame-y frame2) tmp-y
 	  (frame-width frame2) tmp-width
 	  (frame-height frame2) tmp-height))
-
-  (let ((frame1-parent (frame-parent frame2))
-	(frame2-parent (frame-parent frame2)))
-    (replace-item (tree-children frame1-parent) frame1 frame2)
-    (replace-item (tree-children frame2-parent) frame2 frame1)))
+  (let ((frame1-parent (frame-parent frame1))
+  	(frame2-parent (frame-parent frame2)))
+    (swap-items (tree-children frame1-parent) frame1
+    		(tree-children frame2-parent) frame2 :test #'eq)
+    (setf (frame-parent frame1) frame2-parent
+  	  (frame-parent frame2) frame1-parent)))
 
 (defmethod (setf frame-width) :before (new-width (frame tree-frame))
   "Scale and shift the children so that geometry is preserved"
@@ -347,14 +354,14 @@ Used to initially split all frames, regardless of type."
       (binary-split-v frame ratio direction (decode-new-split-type))))
 
 (defmethod print-object ((object frame) stream)
-  (print-unreadable-object (object stream :type t :identity t)
+  (print-unreadable-object (object stream :type t)
     (with-slots (width height x y)
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A"
 	      width height x y))))
 
 (defmethod print-object ((object tree-frame) stream)
-  (print-unreadable-object (object stream :type t :identity t)
+  (print-unreadable-object (object stream :type t)
     (with-slots (width height x y children split-direction)
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A ~S :children ~S"

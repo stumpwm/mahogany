@@ -5,7 +5,7 @@
 
 (in-package :mahogany-test/tree)
 
-;; (setf prove:*default-reporter* :dot)
+(setf prove:*default-reporter* :dot)
 
 (defmacro tree-subtest (subtest-name (tree-name container-name &rest tree-args) &body body)
   `(subtest ,subtest-name
@@ -23,7 +23,6 @@
 
 (deftest find-frame
   (multiple-value-bind (tree container) (make-basic-tree)
-    (diag "Testing single frame")
     (ok (not (find-frame tree nil)))
     (ok (find-frame tree tree))
     (multiple-value-bind (frame parent) (split-frame-h tree)
@@ -76,8 +75,56 @@
 		  (tree-children (root-tree container))
 		  #'frame-width))))
 
-(plan 3)
+(defstruct dimensions
+  x
+  y
+  width
+  height)
+
+(defun save-dimensions (tree)
+  (make-dimensions :x (frame-x tree)
+		   :y (frame-y tree)
+		   :width (frame-width tree)
+		   :height (frame-height tree)))
+
+(deftest frame-swap
+  (tree-subtest "simple case" (tree container)
+    (split-frame-h tree :ratio (/ 1 3))
+    ;; TODO: actually write this test
+    (let* ((children (tree-children (root-tree container)))
+	   (first-tree (first children))
+	   (second-tree (second children))
+	   (first-dims (save-dimensions first-tree))
+	   (second-dims (save-dimensions second-tree)))
+      (swap-positions first-tree second-tree)
+      (let* ((children (tree-children (root-tree container)))
+      	     (first-tree2 (first children))
+      	     (second-tree2 (second children)))
+      	(is first-dims (save-dimensions first-tree2) :test #'equalp)
+      	(is second-dims (save-dimensions second-tree2) :test #'equalp)
+      	(is second-tree first-tree2 :test #'eq)
+      	(is first-tree second-tree2 :test #'eq))))
+  (tree-subtest "different parents" (tree container)
+    ;; (print (root-tree container))
+    (split-frame-h tree :ratio (/ 1 3))
+    ;; TODO: actually write this test
+    (let* ((first-tree (split-frame-h tree))
+	   (children (tree-children (root-tree container)))
+	   (second-tree (second children))
+	   (first-dims (save-dimensions first-tree))
+	   (second-dims (save-dimensions second-tree)))
+      (swap-positions first-tree second-tree)
+      (let* ((children (tree-children (root-tree container)))
+      	     (first-tree2 (second (tree-children (first children))))
+      	     (second-tree2 (second children)))
+      	(is first-dims (save-dimensions first-tree2) :test #'equalp)
+      	(is second-dims (save-dimensions second-tree2) :test #'equalp)
+      	(is second-tree first-tree2 :test #'eq)
+      	(is first-tree second-tree2 :test #'eq)))))
+
+(plan 4)
 (prove:run-test 'find-frame)
 (prove:run-test 'poly-split-dimensions)
 (prove:run-test 'binary-split-dimensions)
+(prove:run-test 'frame-swap)
 (finalize)
