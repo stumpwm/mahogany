@@ -49,9 +49,11 @@ of an already existing frame with the `set-split-frame-type` function")
 	    :accessor tree-children
 	    :type list)
    (split-type :initarg :split-type
-	       :reader tree-split-type)
+	       :reader tree-split-type
+	       :type keyword)
    (split-direction :initarg :split-direction
-		    :reader tree-split-direction))
+		    :reader tree-split-direction
+		    :type keyword))
   (:documentation "An inner node of a frame-tree"))
 
 (defclass floating-frame (frame)
