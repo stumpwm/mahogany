@@ -37,13 +37,13 @@
 	(tmp-width (frame-width frame1))
 	(tmp-height (frame-height frame1)))
     (setf (frame-x frame1) (frame-x frame2)
-	  (frame-y frame1) (frame-y frame2)
-	  (frame-width frame1) (frame-width frame2)
-	  (frame-height frame1) (frame-height frame2))
+	  (frame-y frame1) (frame-y frame2))
+    (set-dimensions frame1 (frame-width frame2) (frame-height frame2))
+
     (setf (frame-x frame2) tmp-x
-	  (frame-y frame2) tmp-y
-	  (frame-width frame2) tmp-width
-	  (frame-height frame2) tmp-height))
+	  (frame-y frame2) tmp-y)
+    (set-dimensions frame2 tmp-width tmp-height))
+
   (let ((frame1-parent (frame-parent frame1))
   	(frame2-parent (frame-parent frame2)))
     (swap-items (tree-children frame1-parent) frame1
@@ -96,6 +96,10 @@
     (let ((diff (- old-y new-y)))
       (dolist (child children)
 	(setf (frame-y child) (+ diff (frame-y child)))))))
+
+(defmethod set-dimensions ((frame frame) width height)
+  (setf (frame-width frame) width
+	(frame-height frame) height))
 
 (defmethod split-frame-h :before ((frame frame) &key ratio direction)
   (declare (ignore frame direction))
