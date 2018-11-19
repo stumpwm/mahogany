@@ -11,7 +11,7 @@ This file is a part of mahogany.
 	       #:prove)
   :components ((:module "test"
 			:components
-			((:test-file "tree"))))
+			((:test-file "tree-tests"))))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
                     (funcall (intern #.(string :run) :prove) c)))
