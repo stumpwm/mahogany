@@ -5,8 +5,6 @@
 
 (in-package :mahogany-test/tree)
 
-(setf prove:*default-reporter* :dot)
-
 (defmacro tree-subtest (subtest-name (tree-name container-name &rest tree-args) &body body)
   `(subtest ,subtest-name
      (multiple-value-bind (,tree-name ,container-name) ,(if tree-args
