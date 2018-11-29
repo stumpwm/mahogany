@@ -93,12 +93,9 @@ The parent tree is modified appropriately.
      the the size is split evenly between the other child frame(s)
    DIRECTION: where the new frame is placed. Either :top or :bottom"))
 
-;; (defgeneric remove-frame (frame)
-;;   (:documentation "Remove the frame from the tree. Parent can be any
-;; frame higher in the heirarchy."))
-
-;; (defgeneric isolate-frame (frame)
-;;   (:documentation "Make the frame the only frame in its tree"))
+(defgeneric remove-frame (root frame &optional cleanup-func)
+  (:documentation "Remove the frame from the tree. Parent can be any
+frame higher in the heirarchy."))
 
 ;; (defgeneric remove-child (parent child)
 ;;   (:documentation "Remove the child from the parent. Returns a boolean signifying
