@@ -5,7 +5,7 @@
   (:use #:cl))
 
 (defpackage #:mahogany/tree
-  (:use :cl #:mahogany/log #:alexandria #:mahogany/util)
+  (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate)
   (:export #:split-frame-h
 	   #:split-frame-v
 	   #:swap-positions
