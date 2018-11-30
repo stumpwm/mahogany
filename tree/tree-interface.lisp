@@ -105,8 +105,11 @@ frame higher in the heirarchy."))
   (:documentation "Swap the positions of the two frames in their trees."))
 
 (defgeneric find-empty-frame (root)
-  (:documentation "Finds a veiw-frame in the given tree that doesn't have
+  (:documentation "Finds the first veiw-frame in the given tree that doesn't have
 a view assigned to it."))
+
+(defgeneric get-empty-frames (root)
+  (:documentation "Gets a list of empty frames in the tree."))
 
 (defgeneric set-dimentions (frame width height)
   (:documentation "Set the dimensions of the frame. If setting both the width and
