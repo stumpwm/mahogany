@@ -48,9 +48,6 @@ of an already existing frame with the `set-split-frame-type` function")
 	     :initform nil
 	    :accessor tree-children
 	    :type list)
-   (split-type :initarg :split-type
-	       :reader tree-split-type
-	       :type keyword)
    (split-direction :initarg :split-direction
 		    :reader tree-split-direction
 		    :type keyword))
@@ -63,14 +60,10 @@ of an already existing frame with the `set-split-frame-type` function")
 
 (defclass binary-tree-frame (tree-frame)
   ()
-  (:default-initargs
-   :split-type :binary)
   (:documentation "An inner node of a frame-tree that can only have two children"))
 
 (defclass poly-tree-frame (tree-frame)
   ()
-  (:default-initargs
-   :split-type :poly)
   (:documentation "An inner node of a frame-tree that can have more than two children"))
 
 ;; frame-tree interface
