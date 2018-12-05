@@ -367,6 +367,62 @@ Used to initially split all frames, regardless of type."
 		  (snakes:yield child))))
       (snakes:yield frame)))
 
+(defun release-views (frame &optional (cleanup-func #'identity))
+  "Remove the views stored in the frame. When a frame is removed,
+REMOVE-FUNC is called with one argument: the view that was removed."
+  (iter (for (view) snakes:in-generator (views-in frame))
+	(funcall cleanup-func view)
+	(setf (frame-view view) nil)))
+
+(defun promote-frame (root frame)
+  (swap-in-parent root frame)
+  (setf (frame-parent frame) (frame-parent root))
+  ;; don't bother with an if-statement to see which values to change:
+  (set-dimensions frame (frame-width root) (frame-height root))
+  (setf (frame-x frame) (frame-x root)
+	(frame-y frame) (frame-y root)))
+
+(defmethod remove-frame-from-parent :after (parent frame cleanup-func)
+  (declare (ignore parent))
+  (release-views frame cleanup-func))
+
+(defmethod remove-frame-from-parent ((parent poly-tree-frame) frame cleanup-func)
+  (declare (ignore cleanup-func))
+  (let ((new-num-children (- (length (tree-children parent)) 1)))
+    (cond
+      ;; if after the removal, the tree only has one child, just swap the other child with its parent:
+      ((= new-num-children 1)
+       (let ((other-child (find-if (lambda (x) (not (equal frame x)))
+				   (tree-children parent))))
+	 (promote-frame parent other-child)))
+      (t
+       ;; remove the child from the parent and set the remaining childrens' dimensions:
+       (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
+       (ecase (tree-split-direction parent)
+	 (:vertical (let ((new-child-width (truncate (/ (frame-width parent) new-num-children)))
+			  (new-x (frame-x parent)))
+		      (dolist (child (tree-children parent))
+			(setf (frame-width child) new-child-width
+			      (frame-x child) new-x)
+			(setf new-x (+ new-x new-child-width)))))
+	 (:horizontal  (let ((new-child-height (truncate (/ (frame-height parent) new-num-children)))
+			     (new-y (frame-y parent)))
+			 (dolist (child (tree-children parent))
+			   (setf (frame-height child) new-child-height
+				 (frame-y child) new-y)
+			   (setf new-y (+ new-y new-child-height))))))))))
+
+(defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
+  (let ((other-child (find-if (lambda (x) (not (equal x frame)))
+			      (tree-children parent))))
+    (promote-frame parent other-child)))
+
+
+(defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
+  (let ((tree (root-tree root)))
+    (declare (type frame tree))
+    (remove-frame-from-parent tree frame cleanup-func)))
+
 (defmethod print-object ((object frame) stream)
   (print-unreadable-object (object stream :type t)
     (with-slots (width height x y)

@@ -93,13 +93,16 @@ The parent tree is modified appropriately.
      the the size is split evenly between the other child frame(s)
    DIRECTION: where the new frame is placed. Either :top or :bottom"))
 
-(defgeneric remove-frame (root frame &optional cleanup-func)
-  (:documentation "Remove the frame from the tree. Parent can be any
-frame higher in the heirarchy."))
+(defgeneric remove-frame-from-parent (parent frame cleanup-func)
+  (:documentation "Remove the frame from the tree. Parent must be the parent of frame."))
 
-;; (defgeneric remove-child (parent child)
-;;   (:documentation "Remove the child from the parent. Returns a boolean signifying
-;; that more children
+(defun remove-frame (frame &optional (cleanup-func #'identity))
+  "Remove the frame from the poly tree. The remaining children grow to equally take up the available space.
+e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
+will be (40, 40). If a tree only has one child left, it is replaced with its child."
+  (check-type frame tree-frame)
+  (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
+
 
 (defgeneric swap-positions (frame1 frame2)
   (:documentation "Swap the positions of the two frames in their trees."))
