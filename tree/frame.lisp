@@ -382,7 +382,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (setf (frame-x frame) (frame-x root)
 	(frame-y frame) (frame-y root)))
 
-(defmethod remove-frame-from-parent :after (parent frame cleanup-func)
+(defmethod remove-frame-from-parent :after ((parent tree-frame) frame cleanup-func)
   (declare (ignore parent))
   (release-views frame cleanup-func))
 
@@ -399,13 +399,13 @@ REMOVE-FUNC is called with one argument: the view that was removed."
        ;; remove the child from the parent and set the remaining childrens' dimensions:
        (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
        (ecase (tree-split-direction parent)
-	 (:vertical (let ((new-child-width (truncate (/ (frame-width parent) new-num-children)))
+	 (:horizontal (let ((new-child-width (truncate (/ (frame-width parent) new-num-children)))
 			  (new-x (frame-x parent)))
 		      (dolist (child (tree-children parent))
 			(setf (frame-width child) new-child-width
 			      (frame-x child) new-x)
 			(setf new-x (+ new-x new-child-width)))))
-	 (:horizontal  (let ((new-child-height (truncate (/ (frame-height parent) new-num-children)))
+	 (:vertical  (let ((new-child-height (truncate (/ (frame-height parent) new-num-children)))
 			     (new-y (frame-y parent)))
 			 (dolist (child (tree-children parent))
 			   (setf (frame-height child) new-child-height

@@ -93,7 +93,7 @@ The parent tree is modified appropriately.
   "Remove the frame from the poly tree. The remaining children grow to equally take up the available space.
 e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
 will be (40, 40). If a tree only has one child left, it is replaced with its child."
-  (check-type frame tree-frame)
+  (check-type frame frame)
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
 
