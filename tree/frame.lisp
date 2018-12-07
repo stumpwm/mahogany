@@ -306,7 +306,7 @@ Used to initially split all frames, regardless of type."
 	       y-adjust 0
 	       ;; adding to the back, create new list so parent-children is unchanged:
 	       new-frame-list (append parent-children (list new-frame))))
-	(:bottom ;; TODO: changes this to view-frame
+	(:bottom ;; TODO: change this to view-frame
 	 (setf new-frame (make-instance 'frame
           				  :parent frame
           				  :width parent-width

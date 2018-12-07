@@ -34,7 +34,7 @@
 (defgeneric move-frame (owner frame new-owner &optional move-type)
   (:documentation "Moves a frame from one group to another. Specify move-type to
 make the new frame floating or tiled. By default, the frame will be whatever type
-it was in it's original group."))
+it was in its original group."))
 
 (defgeneric remove-view (owner view)
   (:documentation "Remove the view from the group."))
