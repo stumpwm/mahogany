@@ -365,7 +365,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	;; (setf (frame-view frame) nil)
 	))
 
-(defun promote-frame (root frame)
+(defun replace-frame (root frame)
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
@@ -385,7 +385,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       ((= new-num-children 1)
        (let ((other-child (find-if (lambda (x) (not (equal frame x)))
 				   (tree-children parent))))
-	 (promote-frame parent other-child)))
+	 (replace-frame parent other-child)))
       (t
        ;; remove the child from the parent and set the remaining childrens' dimensions:
        (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
@@ -406,7 +406,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
   (let ((other-child (find-if (lambda (x) (not (equal x frame)))
 			      (tree-children parent))))
-    (promote-frame parent other-child)))
+    (replace-frame parent other-child)))
 
 
 (defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
