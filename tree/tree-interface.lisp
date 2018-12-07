@@ -87,7 +87,7 @@ The parent tree is modified appropriately.
    DIRECTION: where the new frame is placed. Either :top or :bottom"))
 
 (defgeneric remove-frame-from-parent (parent frame cleanup-func)
-  (:documentation "Remove the frame from the tree. Parent must be the parent of frame."))
+  (:documentation "Remove the frame from the tree. Parent must be the direct parent of frame."))
 
 (defun remove-frame (frame &optional (cleanup-func #'identity))
   "Remove the frame from the poly tree. The remaining children grow to equally take up the available space.
