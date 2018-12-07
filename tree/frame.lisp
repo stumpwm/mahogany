@@ -357,15 +357,6 @@ Used to initially split all frames, regardless of type."
       (poly-split-frame-v frame ratio direction)
       (binary-split-v frame ratio direction (decode-new-split-type))))
 
-(snakes:defgenerator views-in (frame)
-  (if (typep frame 'tree-frame)
-      (let ((stack (tree-children frame)))
-	(iter (for child = (pop stack))
-	      (while child)
-	      (if (typep child 'tree-frame)
-		  (appendf stack (tree-children child))
-		  (snakes:yield child))))
-      (snakes:yield frame)))
 (defun release-frames (frame &optional (cleanup-func #'identity))
   "Remove the views stored in the frame. When a frame is removed,
 REMOVE-FUNC is called with one argument: the view that was removed."
