@@ -92,7 +92,8 @@ The parent tree is modified appropriately.
 (defun remove-frame (frame &optional (cleanup-func #'identity))
   "Remove the frame from the poly tree. The remaining children grow to equally take up the available space.
 e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
-will be (40, 40). If a tree only has one child left, it is replaced with its child."
+will be (40, 40). If a tree only has one child left, it is replaced with its child.
+CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (check-type frame frame)
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
@@ -107,21 +108,12 @@ a view assigned to it."))
 (defgeneric get-empty-frames (root)
   (:documentation "Gets a list of empty frames in the tree."))
 
-(defgeneric set-dimentions (frame width height)
+(defgeneric set-dimensions (frame width height)
   (:documentation "Set the dimensions of the frame. If setting both the width and
 height of a frame, use this method instead of frame-x and frame-y"))
-
-;; floating frame interface
-
-(defvar *request-client-decoration* nil
-  "Controls whether client-side borders and windows are drawn")
-
-(defgeneric is-visible-p (floating-frame)
-  (:documentation "Returns if the frame is visible on an output."))
 
 ;; helper functions:
 
 (defun root-frame-p (frame)
   ;; the root frame's parent will be a tree-container:
   (typep (frame-parent frame) 'tree-container))
-(declaim (inline root-frame-p))
