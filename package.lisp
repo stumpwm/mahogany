@@ -26,7 +26,6 @@
 	   #:split-frame-v
 	   #:split-frame-h
 	   #:remove-frame
-	   #:replace-frame
 	   #:swap-positions
 	   #:find-empty-frame
 	   #:get-empty-frames

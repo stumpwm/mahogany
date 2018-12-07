@@ -366,13 +366,13 @@ Used to initially split all frames, regardless of type."
 		  (appendf stack (tree-children child))
 		  (snakes:yield child))))
       (snakes:yield frame)))
-
-(defun release-views (frame &optional (cleanup-func #'identity))
+(defun release-frames (frame &optional (cleanup-func #'identity))
   "Remove the views stored in the frame. When a frame is removed,
 REMOVE-FUNC is called with one argument: the view that was removed."
-  (iter (for (view) snakes:in-generator (views-in frame))
-	(funcall cleanup-func view)
-	(setf (frame-view view) nil)))
+  (iter (for (frame) snakes:in-generator (leafs-in frame))
+	(funcall cleanup-func frame)
+	;; (setf (frame-view frame) nil)
+	))
 
 (defun promote-frame (root frame)
   (swap-in-parent root frame)
@@ -436,3 +436,21 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A ~S :children ~S"
 	      width height x y split-direction children))))
+
+(defmethod find-empty-frame ((root frame))
+  (iter (for (frame) snakes:in-generator (leafs-in frame))
+	(when (frame-view frame)
+	  (return-from find-empty-frame frame))))
+
+(defmethod find-empty-frame ((root tree-container))
+  (find-empty-frame (root-tree root)))
+
+(defmethod get-empty-frames ((root frame))
+  (let ((empties inl))
+    (iter (for (frame) snakes:in-generator (leafs-in frame))
+	  (when (frame-view frame)
+	    (push frame empties)))
+    empties))
+
+(defmethod get-empty-frames ((root tree-container))
+  (get-empty-frames (root-tree root)))
