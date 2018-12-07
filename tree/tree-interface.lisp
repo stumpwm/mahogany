@@ -97,6 +97,8 @@ CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (check-type frame frame)
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
+(defgeneric promote-frame (root frame &optional cleanup-func)
+  (:documentation "Replace ROOT with FRAME in ROOT's parent."))
 
 (defgeneric swap-positions (frame1 frame2)
   (:documentation "Swap the positions of the two frames in their trees."))

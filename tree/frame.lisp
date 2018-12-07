@@ -366,6 +366,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	))
 
 (defun replace-frame (root frame)
+  "Replace ROOT with FRAME without any cleanup."
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
@@ -413,6 +414,18 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (let ((tree (root-tree root)))
     (declare (type frame tree))
     (remove-frame-from-parent tree frame cleanup-func)))
+
+(defgeneric promote-frame (root (frame tree-frame) &optional (cleanup-func #'identity))
+  (let ((stack (tree-children frame)))
+    (iter (for child = (pop stack))
+	  (while child)
+	  (unless (equal frame child)
+	    (funcall cleanup-func frame)
+	    (setf (frame-view frame) nil))))
+  (replace-frame root frame))
+
+;; (defgeneric promote-frame (root (frame frame) &optional (cleanup-func #'identity))
+;;   (replace-frame root frame))
 
 (defmethod print-object ((object frame) stream)
   (print-unreadable-object (object stream :type t)
