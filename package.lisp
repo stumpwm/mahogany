@@ -1,8 +1,12 @@
 (defpackage #:mahogany/log
   (:use :cl :cl-ansi-text))
 
+(defpackage #:mahogany/backend-interface
+  (:use :cl))
+
 (defpackage #:mahogany/backend
-  (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types)
+  (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types
+	#:mahogany/backend-interface)
   (:import-from #:wayland-server-core
 		#:wl-display-add-socket-auto
 		#:wl-display-destroy

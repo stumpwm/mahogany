@@ -1,9 +1,5 @@
 (in-package :mahogany/backend)
 
-;; external generic functions:
-(defgeneric set-dimensions (view width height)
-  (:documentation "Set the width and height of the view"))
-
 ;; internal generic functions:
 (defgeneric view-for-each-surface (view callback-func data)
   (:documentation "Call callback-func on all of the surfaces in the view.

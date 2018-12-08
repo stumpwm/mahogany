@@ -12,6 +12,9 @@
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "package")
 	       (:file "log")
+	       (:module interfaces
+			:depends-on ("package")
+			:components ((:file "view-interface")))
 	       (:module backend
 			:components ((:file "util")
 				     (:file "output")
