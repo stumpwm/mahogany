@@ -5,17 +5,17 @@
   :author "Stuart Dilts"
   :license  "GPL 2.0"
   :version "0.0.1"
-  :serial t
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
 		      #:cl-egl)
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "package")
-	       (:file "log")
+	       (:file "log" :depends-on ("package"))
 	       (:module interfaces
 			:depends-on ("package")
 			:components ((:file "view-interface")))
 	       (:module backend
+			:depends-on ("interfaces" "package" "log")
 			:components ((:file "util")
 				     (:file "output")
 				     (:file "output-manager")
