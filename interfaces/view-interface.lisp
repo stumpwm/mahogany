@@ -1,4 +1,5 @@
 (in-package #:mahogany/backend-interface)
 
 (defgeneric set-dimensions (object width height)
-  (:documentation "Set the dimensions of the the view."))
+  (:documentation "Set the dimensions of the the view.")
+  (declare (optimize (speed 3))))
