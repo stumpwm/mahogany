@@ -2,7 +2,14 @@
   (:use :cl :cl-ansi-text))
 
 (defpackage #:mahogany/backend-interface
-  (:use :cl))
+  (:use :cl)
+  (:export #:set-dimensions)
+
+(defpackage #:mahogany/wm-interface
+  (:use :cl)
+  (:export #:get-visible-views
+	   #:add-view
+	   #:remove-view))
 
 (defpackage #:mahogany/backend
   (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types
