@@ -31,3 +31,7 @@
   (:import-from #:xkb
 		#:with-xkb-context
 		#:with-keymap-from-names))
+
+(defpackage #:mahogany/wm
+  (:use :cl #:mahogany/log #:alexandria
+	#:mahogany/backend-interface))
