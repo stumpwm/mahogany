@@ -1,4 +1,4 @@
-(in-package :mahogany/backend)
+(in-package #:mahogany/backend)
 
 ;; internal generic functions:
 (defgeneric view-for-each-surface (view callback-func data)

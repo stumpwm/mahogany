@@ -1,5 +1,8 @@
 (in-package #:mahogany/wm-interface)
 
+(defgeneric set-backend (wm backend)
+  (:documentation "Set the backend of the wm"))
+
 (defgeneric get-visible-views (wm)
   (:documentation "Get the views to display."))
 
