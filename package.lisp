@@ -3,7 +3,7 @@
 
 (defpackage #:mahogany/backend-interface
   (:use :cl)
-  (:export #:set-dimensions)
+  (:export #:set-dimensions))
 
 (defpackage #:mahogany/wm-interface
   (:use :cl)
