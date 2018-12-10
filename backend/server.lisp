@@ -4,6 +4,8 @@
 
 (defvar *server* nil)
 
+;; internal functions:
+
 (defgeneric get-display (server)
   (:documentation "Get the wlroots display from the object"))
 
@@ -18,9 +20,6 @@
 
 (defgeneric get-client-manager (server)
   (:documentation "Get the client manager from this ohject"))
-
-(defgeneric stop-server (server)
-  (:documentation "Stop the server and exit its event loop."))
 
 (defclass server ()
   ;; should probably use :reader instead of :accessor
@@ -74,10 +73,13 @@
   (destroy-input-manager (get-input-manager server))
   (destroy-client-manager (get-client-manager server)))
 
-(defmethod stop-server ((server server))
+(defmethod stop-backend ((server server))
   (wl-display-terminate (get-display *server*)))
 
-(defmethod start-server ((server server))
+(defmethod cleanup-backend ((server server))
+  (clear-server))
+
+(defmethod start-backend ((server server) &key &allow-other-keys)
   (let ((socket (wl-display-add-socket-auto (get-display server))))
     (unless socket
       (log-string :fatal "Could not create Wayland socket")
@@ -105,5 +107,5 @@
   (wlr:log-init :log-debug (cffi:null-pointer))
   (log-init :level :trace)
   (let ((server (get-server)))
-    (start-server server)
+    (start-backend server)
     (clear-server)))

@@ -43,7 +43,7 @@
 	  (let ((keysym (mem-aref (mem-ref syms :pointer) 'xkb:keysym i)))
 	    (log-string :trace "Keysym: ~A" keysym)
 	     (when (eql keysym #xff1b)
-	       (stop-server *server*))))
+	       (stop-backend *server*))))
 	(finish-output)))))
 
 (defmethod (setf input-device-seat) :before (new-seat (keyboard keyboard))
