@@ -26,7 +26,7 @@
      (surface :pointer))
   (declare (ignore surface))
   (log-string :trace "View mapped")
-  (let ((view (get-listener-owner listener *listener-hash*)))
+  (let ((view (first (get-listener-owner listener *listener-hash*))))
     (setf (view-mapped view) t)
     (add-view (server-frontend (get-server)) view)))
 
@@ -35,7 +35,7 @@
      (surface :pointer))
   (declare (ignore surface))
   (log-string :trace "View unmapped")
-  (let ((view (get-listener-owner listener *listener-hash*)))
+  (let ((view (first (get-listener-owner listener *listener-hash*))))
     (setf (view-mapped view) t)
     (remove-view (server-frontend (get-server)) view)))
 
