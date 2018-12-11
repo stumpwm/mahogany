@@ -22,10 +22,8 @@
     These are the requirements that must be manually installed. For
     the lisp dependencies, it is enough to download the repositories
     to where they can be found by =asdf=, the lisp dependency manager. Either
-    place them in =~/quicklisp/local-projects= once quicklisp is installed, or use
+    place them in =~/common-lisp=, or use
     one of the methods described in the [[https://common-lisp.net/project/asdf/asdf/Configuring-ASDF-to-find-your-systems.html][relevant section of the asdf manual]].
-    + [[https://www.quicklisp.org/][Quicklisp]] for automatically installing some of the lisp
-      dependencies. Folow the instructions listed at the link.
     + [[https://github.com/sdilts/cl-wayland][cl-wayland]]. As of the time of writing, the distribution included
       with quicklisp is not up to date with the latest changes. Use
       the devel branch of linked repository instead; it will always be
@@ -34,14 +32,14 @@
       readme. The submodule included in the =cl-wlroots= repository will always
       work, but may lag behind several commits. For all the features of Mahogany,
       ensure that XWayland support is included.
-    + A lisp implementation that supports multithreading. ~SBCL~ is
-      recommended, although it /should/ work with any implementation
-      with a recent version of ~asdf~. Mahogany is tested
-      with SBCL and CCL.
+    + [[https://github.com/roswell/roswell][Roswell]]. Roswell is an lisp implementation manager that makes it
+      very easy to install common lisp implementations and create binaries.
+    + +[[https://www.quicklisp.org/][Quicklisp]]+ for automatically installing some of the lisp
+      dependencies. Folow the instructions listed at the link. Not
+      needed if you are using Roswell.
 *** Instalation
-    You can't currently install this project.
-    Once the above dependencies are downloaded and are discoverable
-    via quicklisp, run the usual ~configure~, ~make~ and ~make install~ commands.
+    You can build an executable by running =ros build mahogany.ros=
+    in the root directory of the project.
 ** TODO Customizing Mahogany
 ** TODO Adding new features/modes
    Please see the [[./doc/devel/][documentation directory]] for details on how to extend
@@ -50,13 +48,11 @@
    Some parts of Mahogany are in a hackable state, and others can be adapted from other projects. If you want to work on
    Mahogany, here are some things you can do, in no particular order:
    + The basic infrastructure for getting keyboard input is implemented. Reading and holding the state of the keyboard
-     needs to be implemented. Rootson, the example compositor for wlroots is a good place to start. See the files 
+     needs to be implemented. Rootson, the example compositor for wlroots is a good place to start. See the files
      backend/input/keyobard.lisp in this repo and rootson/keyboard.c in the wlroots repo.
-   + Command suppoort. We could probably get away with using the command system used in 
+   + Command suppoort. We could probably get away with using the command system used in
      [[https://github.com/stumpwm/stumpwm][stumpwm]]. Everything is that we would need in present in the `command.lisp` file.
      Put it into its own package, and submit a pull request for both stumpwm and mahogany: this is on stumpwm's todo iist
      as well as Mahogany's.
    + [[https://github.com/stumpwm/paulownia][Paulownia]] has some code that we could use as well, Notably, the following files
      in the =base= directory: =data-dir.lisp=, =load-rc.lisp=, and =hooks.lisp=.
-   + A build system to actually compile Mahogany into an executable. =Roswell= looks like it is our best bet; see the Paulownia
-     repo for some insipration.
