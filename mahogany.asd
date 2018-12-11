@@ -7,9 +7,10 @@
   :version "0.0.1"
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
-		      #:cl-egl)
+		      #:cl-egl #:snakes #:iterate)
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "package")
+	       (:file "util" :depends-on ("package"))
 	       (:file "log" :depends-on ("package"))
 	       (:module interfaces
 			:depends-on ("package")
@@ -31,4 +32,8 @@
 				     (:file "server")))
 	       (:module wm
 			:depends-on ("package" "interfaces")
-			:components ((:file "wm")))))
+			:components ((:file "wm")))
+	       (:module tree
+	       		:components ((:file "tree-interface")
+	       			     (:file "frame" :depends-on ("tree-interface")))
+	       		:depends-on ("package" "log" "util"))))
