@@ -90,15 +90,16 @@ The parent tree is modified appropriately.
   (:documentation "Remove the frame from the tree. Parent must be the direct parent of frame."))
 
 (defun remove-frame (frame &optional (cleanup-func #'identity))
-  "Remove the frame from the poly tree. The remaining children grow to equally take up the available space.
+  "Remove the frame from the tree. The remaining children grow to equally take up the available space.
 e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
 will be (40, 40). If a tree only has one child left, it is replaced with its child.
 CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (check-type frame frame)
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
-(defgeneric promote-frame (root frame &optional cleanup-func)
-  (:documentation "Replace ROOT with FRAME in ROOT's parent."))
+(defgeneric replace-frame (root frame &optional cleanup-func)
+  (:documentation "Replace ROOT with FRAME. Call CLEANUP-FUNC on every view-frame that is removed
+from the tree. "))
 
 (defgeneric swap-positions (frame1 frame2)
   (:documentation "Swap the positions of the two frames in their trees."))

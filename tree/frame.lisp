@@ -128,9 +128,21 @@
     (values new-frame new-parent)))
 
 (defun swap-in-parent (frame new-parent)
+  "In FRAME's parent, swap FRAME for NEW-PARENT. Don't change the dimensions of FRAME."
+  ;; TODO: also swap the parent pointer in NEW-PARENT
   (if (root-frame-p frame)
       (setf (root-tree (frame-parent frame)) new-parent)
       (replace-item (tree-children (frame-parent frame)) frame new-parent)))
+
+(defun %replace-frame (root frame)
+  "Replace ROOT with FRAME without any cleanup. Change the dimensions and position
+of FRAME to those of ROOT."
+  (swap-in-parent root frame)
+  (setf (frame-parent frame) (frame-parent root))
+  ;; don't bother with an if-statement to see which values to change:
+  (set-dimensions frame (frame-width root) (frame-height root))
+  (setf (frame-x frame) (frame-x root)
+	(frame-y frame) (frame-y root)))
 
 (defun binary-split-h (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
@@ -365,15 +377,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	;; (setf (frame-view frame) nil)
 	))
 
-(defun replace-frame (root frame)
-  "Replace ROOT with FRAME without any cleanup."
-  (swap-in-parent root frame)
-  (setf (frame-parent frame) (frame-parent root))
-  ;; don't bother with an if-statement to see which values to change:
-  (set-dimensions frame (frame-width root) (frame-height root))
-  (setf (frame-x frame) (frame-x root)
-	(frame-y frame) (frame-y root)))
-
 (defmethod remove-frame-from-parent :after ((parent tree-frame) frame cleanup-func)
   (declare (ignore parent))
   (release-frames frame cleanup-func))
@@ -386,7 +389,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       ((= new-num-children 1)
        (let ((other-child (find-if (lambda (x) (not (equal frame x)))
 				   (tree-children parent))))
-	 (replace-frame parent other-child)))
+	 (%replace-frame parent other-child)))
       (t
        ;; remove the child from the parent and set the remaining childrens' dimensions:
        (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
@@ -407,7 +410,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
   (let ((other-child (find-if (lambda (x) (not (equal x frame)))
 			      (tree-children parent))))
-    (replace-frame parent other-child)))
+    (%replace-frame parent other-child)))
 
 
 (defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
@@ -415,17 +418,21 @@ REMOVE-FUNC is called with one argument: the view that was removed."
     (declare (type frame tree))
     (remove-frame-from-parent tree frame cleanup-func)))
 
-(defgeneric promote-frame (root (frame tree-frame) &optional (cleanup-func #'identity))
-  (let ((stack (tree-children frame)))
+(defgeneric replace-frame ((root tree-frame) frame &optional (cleanup-func #'identity))
+  (let ((stack (tree-children root)))
     (iter (for child = (pop stack))
 	  (while child)
 	  (unless (equal frame child)
-	    (funcall cleanup-func frame)
-	    (setf (frame-view frame) nil))))
-  (replace-frame root frame))
+	    (etypecase child
+	      (tree-frame
+	       (alexandria:appendf stack (tree-children child)))
+	      (frame
+	       (funcall cleanup-func child))))))
+  (%replace-frame root frame))
 
-;; (defgeneric promote-frame (root (frame frame) &optional (cleanup-func #'identity))
-;;   (replace-frame root frame))
+(defgeneric replace-frame (root (frame frame) &optional (cleanup-func #'identity))
+  (%replace-frame root frame)
+  (funcall cleanup-func frame))
 
 (defmethod print-object ((object frame) stream)
   (print-unreadable-object (object stream :type t)
@@ -443,7 +450,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 
 (defmethod find-empty-frame ((root frame))
   (iter (for (frame) snakes:in-generator (leafs-in frame))
-	(when (frame-view frame)
+	(unless (frame-view frame)
 	  (return-from find-empty-frame frame))))
 
 (defmethod find-empty-frame ((root tree-container))
@@ -452,7 +459,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod get-empty-frames ((root frame))
   (let ((empties inl))
     (iter (for (frame) snakes:in-generator (leafs-in frame))
-	  (when (frame-view frame)
+	  (unless (frame-view frame)
 	    (push frame empties)))
     empties))
 
