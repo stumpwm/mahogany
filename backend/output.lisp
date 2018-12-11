@@ -33,6 +33,7 @@
   (view-y :int)
   (time (:pointer (:struct timespec))))
 
+(declaim (inline get-surface-render-box))
 (defun get-surface-render-box (surface output view-x view-y surface-x surface-y)
   (declare (type cffi:foreign-pointer surface))
   (multiple-value-bind (output-x output-y)
@@ -48,7 +49,6 @@
 		       :y (truncate (* scale output-y))
 		       :width (truncate (* (getf current :width) scale))
 		       :height (truncate (* (getf current :height) scale)))))))
-(declaim (inline get-surface-render-box))
 
 (defcallback draw-surface :void
     ((surface :pointer)
@@ -101,8 +101,7 @@
 (cffi:defcallback new-frame-notify :void
     ((listener :pointer)
      (output :pointer))
-  (declare (ignore output))
-  (let* ((output-owner (get-listener-owner listener *listener-hash*)))
+  (let ((output-owner (get-listener-owner listener *listener-hash*)))
     (draw-frame output output-owner)))
 
 (defun make-mahogany-output (output)
