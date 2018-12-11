@@ -1,6 +1,6 @@
 (in-package #:mahogany/backend)
 
-(export '(run-server))
+;; (export '(run-server))
 
 (defvar *server* nil)
 
@@ -23,7 +23,8 @@
 
 (defclass server ()
   ;; should probably use :reader instead of :accessor
-  ((display :accessor get-display)
+  ((front-end :accessor server-frontend)
+   (display :accessor get-display)
    (backend :accessor get-backend)
    (wlr-compositor :accessor server-compositor)
    (output-manager :accessor get-output-manager)
@@ -72,6 +73,9 @@
   (destroy-output-manager (get-output-manager server))
   (destroy-input-manager (get-input-manager server))
   (destroy-client-manager (get-client-manager server)))
+
+(defmethod set-window-manager ((server server) wm)
+  (setf (server-frontend server) wm))
 
 (defmethod stop-backend ((server server))
   (wl-display-terminate (get-display *server*)))

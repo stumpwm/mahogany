@@ -24,17 +24,17 @@
     ((listener :pointer)
      (surface :pointer))
   (log-string :trace "View mapped")
-  (multiple-value-bind (view manager)
-      (values-list (get-listener-owner listener *listener-hash*))
-    (setf (view-mapped view) t)))
+  (let ((view (get-listener-owner listener *listener-hash*)))
+    (setf (view-mapped view) t)
+    (add-view (server-frontend (get-server)) view)))
 
 (defcallback view-unmap :void
     ((listener :pointer)
      (surface :pointer))
   (log-string :trace "View unmapped")
-  (multiple-value-bind (view manager)
-      (values-list (get-listener-owner listener *listener-hash*))
-    (setf (view-mapped view) t)))
+  (let ((view (get-listener-owner listener *listener-hash*)))
+    (setf (view-mapped view) t)
+    (remove-view (server-frontend (get-server)) view)))
 
 (defcallback handle-new-surface :void
     ((listener :pointer)

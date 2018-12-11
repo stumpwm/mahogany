@@ -13,7 +13,9 @@
 	       (:file "log" :depends-on ("package"))
 	       (:module interfaces
 			:depends-on ("package")
-			:components ((:file "view-interface")))
+			:components ((:file "view-interface")
+				     (:file "wm-interface")
+				     (:file "backend-interface")))
 	       (:module backend
 			:depends-on ("interfaces" "package" "log")
 			:components ((:file "util")
@@ -26,4 +28,7 @@
 				     (:file "input/pointing-device")
 				     (:file "input/seat")
 				     (:file "input/input-manager")
-				     (:file "server")))))
+				     (:file "server")))
+	       (:module wm
+			:depends-on ("package" "interfaces")
+			:components ((:file "wm")))))

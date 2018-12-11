@@ -88,7 +88,7 @@
 	(setf output wlr-output
 	      renderer wlr-renderer
 	      time now)
-	(dolist (view (reverse (client-manager-surfaces (get-client-manager (get-server)))))
+	(dolist (view (get-visible-views (server-frontend (get-server))))
 	  (when (view-mapped view)
 	    (setf view-x (view-x view)
 		  view-y (view-y view))
