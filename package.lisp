@@ -4,6 +4,27 @@
 (defpackage #:mahogany/util
   (:use #:cl))
 
+(defpackage #:mahogany/backend-interface
+  (:use :cl)
+  (:export #:set-window-manager
+	   #:start-backend
+	   #:stop-backend
+	   #:cleanup-backend
+	   ;; output interface
+	   #:output-width
+	   #:output-height
+	   ;; view interface
+	   #:set-dimensions
+	   #:view-y
+	   #:view-x))
+
+(defpackage #:mahogany/wm-interface
+  (:use :cl)
+  (:export #:get-visible-views
+	   #:set-backend
+	   #:add-view
+	   #:remove-view))
+
 (defpackage #:mahogany/tree
   (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate)
   (:export #:*split-frame-hook*
@@ -30,22 +51,12 @@
 	   #:find-empty-frame
 	   #:get-empty-frames
 	   #:set-dimensions
-	   #:root-frame-p))
-
-(defpackage #:mahogany/backend-interface
-  (:use :cl)
-  (:export #:set-window-manager
-	   #:start-backend
-	   #:stop-backend
-	   #:cleanup-backend
-	   #:set-dimensions))
-
-(defpackage #:mahogany/wm-interface
-  (:use :cl)
-  (:export #:get-visible-views
-	   #:set-backend
-	   #:add-view
-	   #:remove-view))
+	   #:root-frame-p
+	   #:view-frame
+	   #:frame-view
+	   #:frame-modes
+	   #:fit-view-into-frame
+	   #:leafs-in))
 
 (defpackage #:mahogany/backend
   (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types
