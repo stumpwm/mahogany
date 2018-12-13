@@ -34,9 +34,21 @@ CALLBACK-FUNC must be a c function pointer."))
 		     :reader view-destroy-listener
 		     :type wl_listener)))
 
+
+(defmethod (setf view-x) ((view view) new-x)
+  (setf (slot-value view 'x) (truncate new-x)))
+
+(defmethod (setf view-y) ((view view) new-y)
+  (setf (slot-value view 'y) (truncate new-y)))
+
 (defmethod view-for-each-surface ((view xdg-view) callback-func data)
   (declare (type cffi:foreign-pointer callback-func data))
   (wlr:xdg-surface-for-each-surface (view-surface view) callback-func data))
 
 (defmethod set-dimensions ((view xdg-view) width height)
-  (wlr:xdg-toplevel-set-size (view-surface view) width height))
+  (wlr:xdg-toplevel-set-size (view-surface view) (truncate width) (truncate height)))
+
+(defmethod print-object ((object view) stream)
+  (print-unreadable-object (object stream :type t)
+    (with-slots (x y) object
+      (format stream ":x ~S :y ~S" x y))))
