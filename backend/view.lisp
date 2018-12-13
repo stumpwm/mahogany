@@ -8,8 +8,6 @@ CALLBACK-FUNC must be a c function pointer."))
 (defclass view ()
   ((surface :initarg :wlr-surface
 	    :reader view-surface)
-   (mapped :initarg :mapped
-	   :accessor view-mapped)
    (x :initarg :view-x
       :accessor view-x
       :initform 0
@@ -24,7 +22,9 @@ CALLBACK-FUNC must be a c function pointer."))
    :mapped nil))
 
 (defclass xdg-view (view)
-  ((map-listener :initarg :map-listener
+  ((mapped :initarg :mapped
+	   :accessor view-mapped)
+   (map-listener :initarg :map-listener
 		 :reader view-map-listener
 		 :type wl_listener)
    (unmap-listener :initarg :unmap-listener
