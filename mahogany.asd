@@ -31,7 +31,7 @@
 				     (:file "input/input-manager")
 				     (:file "server")))
 	       (:module wm
-			:depends-on ("package" "interfaces")
+			:depends-on ("package" "log" "interfaces")
 			:components ((:file "wm")))
 	       (:module tree
 	       		:components ((:file "tree-interface")
