@@ -26,7 +26,8 @@
 	   #:remove-view))
 
 (defpackage #:mahogany/tree
-  (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate)
+  (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate
+	#:mahogany/backend-interface)
   (:export #:*split-frame-hook*
 	   #:*new-frame-hook*
 	   #:*remove-split-hook*

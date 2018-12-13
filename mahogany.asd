@@ -35,5 +35,6 @@
 			:components ((:file "wm")))
 	       (:module tree
 	       		:components ((:file "tree-interface")
-	       			     (:file "frame" :depends-on ("tree-interface")))
-	       		:depends-on ("package" "log" "util"))))
+	       			     (:file "frame" :depends-on ("tree-interface"))
+				     (:file "view" :depends-on ("tree-interface")))
+	       		:depends-on ("package" "log" "util" "interfaces"))))
