@@ -165,8 +165,7 @@ Used to initially split all frames, regardless of type."
       (let ((new-frame))
 	(ecase direction
 	  (:right
-	   ;; TODO: change 'frame to 'view-frame:
-	   (setf new-frame (make-instance 'frame
+	   (setf new-frame (make-instance 'view-frame
 					  :parent new-parent
 					  :width new-frame-width
 					  :height old-height
@@ -175,8 +174,7 @@ Used to initially split all frames, regardless of type."
 	   (setf (frame-width frame) (- old-width new-frame-width))
 	   (setf (tree-children new-parent) (list frame new-frame)))
 	  (:left
-	   ;; TODO: change 'frame to 'view-frame:
-	   (setf new-frame (make-instance 'frame
+	   (setf new-frame (make-instance 'view-frame
 					  :parent new-parent
 					  :width (- old-width new-frame-width)
 					  :height old-height
@@ -211,8 +209,7 @@ Used to initially split all frames, regardless of type."
       (let ((new-frame))
 	(ecase direction
 	  (:top
-	   ;; TODO: change 'frame to 'view-frame:
-	   (setf new-frame (make-instance 'frame
+	   (setf new-frame (make-instance 'view-frame
 					   :parent new-parent
 					   :width old-width
 					   :height new-frame-height
@@ -222,8 +219,7 @@ Used to initially split all frames, regardless of type."
 	   (setf (frame-y frame) (+ old-y new-frame-height))
 	   (setf (tree-children new-parent) (list new-frame frame)))
 	  (:bottom
-	   ;; TODO: change 'frame to 'view-frame:
-	   (setf new-frame (make-instance 'frame
+	   (setf new-frame (make-instance 'view-frame
 					   :parent new-parent
 					   :width old-width
 					   :height (- old-height new-frame-height)
@@ -257,8 +253,8 @@ Used to initially split all frames, regardless of type."
 	   (new-frame) (x-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
-	(:right     ;; TODO: change this to view-frame
-	 (setf new-frame (make-instance 'frame
+	(:right
+	 (setf new-frame (make-instance 'view-frame
           				  :parent frame
           				  :width new-frame-width
           				  :height (frame-height frame)
@@ -267,8 +263,8 @@ Used to initially split all frames, regardless of type."
 	       x-adjust 0
 	       ;; adding to the back, create new list so parent-children is unchanged:
 	       new-frame-list (append parent-children (list new-frame))))
-	(:left ;; TODO: changes this to view-frame
-	 (setf new-frame (make-instance 'frame
+	(:left
+	 (setf new-frame (make-instance 'view-frame
           				  :parent frame
           				  :width new-frame-width
           				  :height (frame-height frame)
@@ -308,8 +304,8 @@ Used to initially split all frames, regardless of type."
 	   (new-frame) (y-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
-	(:top     ;; TODO: change this to view-frame
-	 (setf new-frame (make-instance 'frame
+	(:top
+	 (setf new-frame (make-instance 'view-frame
           				  :parent frame
           				  :width parent-width
           				  :height new-frame-height
@@ -318,8 +314,8 @@ Used to initially split all frames, regardless of type."
 	       y-adjust 0
 	       ;; adding to the back, create new list so parent-children is unchanged:
 	       new-frame-list (append parent-children (list new-frame))))
-	(:bottom ;; TODO: change this to view-frame
-	 (setf new-frame (make-instance 'frame
+	(:bottom
+	 (setf new-frame (make-instance 'view-frame
           				  :parent frame
           				  :width parent-width
           				  :height new-frame-height

@@ -14,7 +14,7 @@
 
 (defun make-basic-tree (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree-container))
-	(frame (make-instance 'frame :x x :y y :width width :height height)))
+	(frame (make-instance 'view-frame :x x :y y :width width :height height)))
     (setf (frame-parent frame) container)
     (setf (root-tree container) frame)
     (values frame container)))
