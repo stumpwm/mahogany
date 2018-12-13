@@ -24,9 +24,16 @@
 (cffi:defcallback handle-layout-change :void
     ((listener :pointer)
      (something :pointer))
-  (declare (ignore listener something))
-  ;; TODO: do layout change
-  (log-string :debug "Output layout changed"))
+  (declare (ignore something))
+  (let ((manager (get-listener-owner listener *listener-hash*)))
+    ;; TODO: do layout change
+    (dolist (output (get-outputs manager))
+      (log-string :info "Layout changed: ~A :w ~S :h ~S"
+		  (foreign-string-to-lisp (foreign-slot-pointer (output-wlr-output output)
+								'(:struct wlr:output)
+  								:name))
+		  (output-width output)
+		  (output-height output)))))
 
 (cffi:defcallback destroy-output :void
     ((listener :pointer)
@@ -49,9 +56,16 @@
      (output (:pointer (:struct wlr:output))))
   (let ((manager (get-listener-owner listener *listener-hash*))
 	(destroy-listener (make-listener destroy-output)))
+    (log-string :info "New output ~A :w ~S :h ~S"
+		(foreign-string-to-lisp (foreign-slot-pointer output '(:struct wlr:output)
+  							      :name))
+		(foreign-slot-value output
+		      '(:struct wlr:output)
+		      :width)
+		(foreign-slot-value output
+				    '(:struct wlr:output)
+				    :height))
 
-    (log-string :info "New output ~A" (foreign-string-to-lisp (foreign-slot-pointer output '(:struct wlr:output)
-  							       :name)))
     (assert (not (cffi:null-pointer-p destroy-listener)))
     (assert (not (null manager)))
 
