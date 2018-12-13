@@ -153,7 +153,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-width (truncate (* old-width ratio)))
+    (let* ((new-frame-width (* old-width ratio))
 	   (new-parent (make-instance parent-type
 				      :split-direction :horizontal
 				      :parent (frame-parent frame)
@@ -197,7 +197,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-height (truncate (* old-height ratio)))
+    (let* ((new-frame-height (* old-height ratio))
 	   (new-parent (make-instance parent-type
 				      :split-direction :vertical
 				      :parent (frame-parent frame)
@@ -246,10 +246,10 @@ Used to initially split all frames, regardless of type."
     (let* ((parent-children-len (length parent-children))
 	   (new-num-children (+ parent-children-len 1))
 	   (new-frame-width (if ratio
-				(truncate (* ratio parent-width))
-				(truncate (* parent-width (/ 1 new-num-children)))))
-	   (other-children-width (truncate (/ (- parent-width new-frame-width)
-					      parent-children-len)))
+				(* ratio parent-width)
+				(* parent-width (/ 1 new-num-children))))
+	   (other-children-width (/ (- parent-width new-frame-width)
+					      parent-children-len))
 	   (new-frame) (x-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
@@ -297,10 +297,10 @@ Used to initially split all frames, regardless of type."
     (let* ((parent-children-len (length parent-children))
 	   (new-num-children (+ parent-children-len 1))
 	   (new-frame-height (if ratio
-				(truncate (* ratio parent-height))
-				(truncate (* parent-height (/ 1 new-num-children)))))
-	   (other-children-height (truncate (/ (- parent-height new-frame-height)
-				    parent-children-len)))
+				 (* ratio parent-height)
+				 (* parent-height (/ 1 new-num-children))))
+	   (other-children-height (/ (- parent-height new-frame-height)
+				    parent-children-len))
 	   (new-frame) (y-adjust) (new-frame-list))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
@@ -390,14 +390,14 @@ REMOVE-FUNC is called with one argument: the view that was removed."
        ;; remove the child from the parent and set the remaining childrens' dimensions:
        (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
        (ecase (tree-split-direction parent)
-	 (:horizontal (let ((new-child-width (truncate (/ (frame-width parent) new-num-children)))
-			  (new-x (frame-x parent)))
+	 (:horizontal (let ((new-child-width (/ (frame-width parent) new-num-children))
+			    (new-x (frame-x parent)))
 		      (dolist (child (tree-children parent))
 			(setf (frame-width child) new-child-width
 			      (frame-x child) new-x)
 			(setf new-x (+ new-x new-child-width)))))
-	 (:vertical  (let ((new-child-height (truncate (/ (frame-height parent) new-num-children)))
-			     (new-y (frame-y parent)))
+	 (:vertical  (let ((new-child-height (/ (frame-height parent) new-num-children))
+			   (new-y (frame-y parent)))
 			 (dolist (child (tree-children parent))
 			   (setf (frame-height child) new-child-height
 				 (frame-y child) new-y)
