@@ -14,31 +14,24 @@ exec ros -Q -- $0 "$@"
   (require 'sb-sprof))
 
 
-(defpackage :ros.script.mahogany.3748005358
-  (:use :cl #:mahogany/backend-interface
-	#:mahogany/wm-interface
-	#:mahogany/backend-interface
-	#:mahogany/log))
+(in-package :mahogany)
 
-(in-package :ros.script.mahogany.3748005358)
 
-;; (swank-loader:init)
-;; (swank:create-server :port 4006
-;; 		     :dont-close t)
-
+(defvar *wm*)
+(defvar *backend*)
 
 (defun main (&rest argv)
   (declare (ignorable argv))
   (wlr:log-init :log-debug (cffi:null-pointer))
   (log-init :level :trace)
-  (let ((backend (mahogany/backend:get-server))
-	(frontend (make-instance 'mahogany/wm:window-manager)))
-    (set-backend frontend backend)
-    (set-window-manager backend frontend)
-    ;;(sb-sprof:with-profiling (:report :flat)
-    (start-backend backend)
-    ;;)
-    (cleanup-backend backend))
+  (setf *backend* (mahogany/backend:get-server))
+  (setf *wm* (make-instance 'mahogany/wm:window-manager))
+  (set-backend *wm* *backend*)
+  (set-window-manager *backend* *wm*)
+  ;;(sb-sprof:with-profiling (:report :flat)
+  (start-backend *backend*)
+  ;;)
+  (cleanup-backend *backend*)
   (uiop:quit))
 
 ;;; vim: set ft=lisp lisp:

@@ -87,3 +87,8 @@
 	#:mahogany/backend-interface
 	#:mahogany/tree)
   (:export #:window-manager))
+
+(defpackage #:mahogany
+  (:use :cl #:mahogany/log #:alexandria #:mahogany/wm-interface
+	#:mahogany/backend-interface
+	#:mahogany/tree))
