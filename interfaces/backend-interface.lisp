@@ -11,3 +11,11 @@
 
 (defgeneric cleanup-backend (backend)
   (:documentation "Cleanup the resources associated with the backend"))
+
+;; output functions
+
+(defgeneric output-width (output)
+  (:documentation "Get the width of the output"))
+
+(defgeneric output-height (output)
+  (:documentation "Get the width of the output"))
