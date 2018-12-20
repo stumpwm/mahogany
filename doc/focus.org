@@ -1,0 +1,41 @@
+#+TITLE: Focusing windows in Mahogany
+
+\bigskip
+There are two types of focus present in Mahogany: keyboard focus and
+cursor focus. When a surface is focused by an input device, it means
+that the device is sending events to the surface. Keyboard and cursor
+focus can be controlled seperately in Mahogany, and there are various
+settings that control how focus moves from one surface to another.
+
+* Keyboard focus
+  Keyboard focus can be controlled either by actions taken by the
+  cursor, or through various commands.
+
+** Setting how focus is controlled
+  + =(set-keyboard-focus-type wm type)= :: Sets the way the keyboard
+    focus is set. The valid values are:
+    - =:click-ignore-wheel= :: /Default/ Switch the keyboard focus to
+	 windows that are clicked on in addition to wm commands.
+    - =:click= :: Switch the keyboard focus when the cursor is clicked
+      or scrolled.
+    - =:ignore= :: Ignore the mouse, and just use commands.
+    - =:sloppy= :: Set the keyboard focus to whatever surface the cursors is over.
+* Cursor focus
+  Cursor focus has two different modes: following the keyboard, or
+  having its own seperate focus.
+  + =(set-mouse-focus-policy wm type)= :: Sets the way the keyboard
+    focus is set. The value values are:
+    - =:seperated= :: /Default/ The cursor focus is seperated from the keyboard
+      focus. This means that the cursor can be focused on a different
+      window than the keyboard. Surfaces are focused when the mouse
+      moves over them, then movement events, clicks, and scroll events
+      are sent to the surface. Scroll events are always sent to the
+      surface,even if it isn't focused.
+    - =:stumpwm= :: The cursor is locked to the keyboard focus. Mouse movement,
+                    clicks and scrolls are ignored if the keyboard isn't
+                    focused on the surface that the cursor is over.
+* Stumpwm focus
+  Since Mahogany is decended from stumpwm, it is useful to note that
+  in order to get the equivalent behavior of stumpwm, set the cursor
+  focus to =:stumpwm=, and the keyboard focus settings will match up
+  nicely with the stumpwm options.
