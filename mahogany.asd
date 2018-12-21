@@ -25,7 +25,7 @@
 				     (:file "view")
 				     (:file "client-manager" :depends-on ("view"))
 				     (:file "input/input-devices")
-				     (:file "input/keyboard")
+				     (:file "input/keyboard" :depends-on ("input/input-devices"))
 				     (:file "input/pointing-device")
 				     (:file "input/seat")
 				     (:file "input/input-manager")
@@ -34,7 +34,7 @@
 			:depends-on ("package" "log" "interfaces")
 			:components ((:file "wm")))
 	       (:module tree
+			:depends-on ("package" "log" "util" "interfaces")
 	       		:components ((:file "tree-interface")
 	       			     (:file "frame" :depends-on ("tree-interface"))
-				     (:file "view" :depends-on ("tree-interface")))
-	       		:depends-on ("package" "log" "util" "interfaces"))))
+				     (:file "view" :depends-on ("tree-interface"))))))
