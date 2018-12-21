@@ -3,3 +3,7 @@
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
+
+# ignore generated files in the doc directory
+doc/*.tex
+doc/*.pdf
