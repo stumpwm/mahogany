@@ -1,6 +1,5 @@
 #+TITLE: Focusing windows in Mahogany
 
-\bigskip
 There are two types of focus present in Mahogany: keyboard focus and
 cursor focus. When a surface is focused by an input device, it means
 that the device is sending events to the surface. Keyboard and cursor
@@ -15,7 +14,7 @@ settings that control how focus moves from one surface to another.
   + =(set-keyboard-focus-type wm type)= :: Sets the way the keyboard
     focus is set. The valid values are:
     - =:click-ignore-wheel= :: /Default/ Switch the keyboard focus to
-	 windows that are clicked on in addition to wm commands.
+      windows that are clicked on in addition to wm commands.
     - =:click= :: Switch the keyboard focus when the cursor is clicked
       or scrolled.
     - =:ignore= :: Ignore the mouse, and just use commands.
