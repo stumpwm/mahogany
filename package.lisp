@@ -23,7 +23,8 @@
   (:export #:get-visible-views
 	   #:set-backend
 	   #:add-view
-	   #:remove-view))
+	   #:remove-view
+	   #:view-at))
 
 (defpackage #:mahogany/tree
   (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate

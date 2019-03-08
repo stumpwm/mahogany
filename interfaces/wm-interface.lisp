@@ -11,3 +11,6 @@
 
 (defgeneric remove-view (wm view)
   (:documentation "Remove the view from the wm"))
+
+(defgeneric view-at (wm x y)
+  (:documentation "Get the view at the specified output coordinates"))

@@ -50,3 +50,9 @@
     (if (not visible-views)
 	(setf visible-views (generate-visible-views wm))
 	visible-views)))
+
+(defmethod view-at ((wm window-manager) x y)
+  (if-let ((frame (frame-at (root-tree (wm-tree wm)) x y)))
+    (frame-view frame)
+    ;; at this stage in the program's progress, it is an error if we don't find a frame:
+    (error "Could not find frame")))
