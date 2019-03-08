@@ -10,9 +10,9 @@
 
 (defun fit-view-into-frame (view frame)
   "Make the view fit in the dimensions of the frame"
-  (setf (view-x view) (truncate (frame-x frame))
-	(view-y view) (truncate (frame-y frame)))
-  (set-dimensions view (truncate (frame-width frame)) (truncate (frame-height frame))))
+  (setf (view-x view) (round (frame-x frame))
+	(view-y view) (round (frame-y frame)))
+  (set-dimensions view (round (frame-width frame)) (round (frame-height frame))))
 
 (defmethod print-object ((object view-frame) stream)
   (print-unreadable-object (object stream :type t)
@@ -23,19 +23,19 @@
 
 (defmethod (setf frame-x) :before (new-x (frame view-frame))
   (when (frame-view frame)
-    (setf (view-x (frame-view frame)) (truncate new-x))))
+    (setf (view-x (frame-view frame)) (round new-x))))
 
 (defmethod (setf frame-y) :before (new-y (frame view-frame))
   (when (frame-view frame)
-    (setf (view-y (frame-view frame)) (truncate new-y))))
+    (setf (view-y (frame-view frame)) (round new-y))))
 
 (defmethod set-dimensions ((frame view-frame) width height)
-  (set-dimensions (frame-view frame) (truncate width) (truncate height)))
+  (set-dimensions (frame-view frame) (round width) (round height)))
 
 (defmethod (setf frame-width) :before (new-width (frame view-frame))
   (when (frame-view frame)
-    (set-dimensions (frame-view frame) (truncate new-width) (truncate (frame-height frame)))))
+    (set-dimensions (frame-view frame) (round new-width) (round (frame-height frame)))))
 
 (defmethod (setf frame-height) :before (new-height (frame view-frame))
   (when (frame-view frame)
-    (set-dimensions (frame-view frame) (truncate (frame-width frame)) (truncate new-height))))
+    (set-dimensions (frame-view frame) (round (frame-width frame)) (round new-height))))
