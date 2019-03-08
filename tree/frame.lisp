@@ -465,6 +465,11 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod get-empty-frames ((root tree-container))
   (get-empty-frames (root-tree root)))
 
+(defun get-populated-frames (root)
+  "Return a list of view-frames that contain views"
+  (remove-if (lambda (x) (not (frame-view x)))
+	     (snakes:generator->list (leafs-in root))))
+
 (defmethod frame-at ((root tree-frame) x y)
   (declare (type real x y))
   (let ((prev-frame))

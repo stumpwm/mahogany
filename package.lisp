@@ -53,6 +53,7 @@
 	   #:swap-positions
 	   #:find-empty-frame
 	   #:get-empty-frames
+	   #:get-populated-frames
 	   #:set-dimensions
 	   #:root-frame-p
 	   #:view-frame
