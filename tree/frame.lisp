@@ -470,29 +470,25 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (remove-if (lambda (x) (not (frame-view x)))
 	     (snakes:generator->list (leafs-in root))))
 
+(defun in-frame-p (frame x y)
+  (declare (type frame frame))
+  (with-accessors ((frame-x frame-x)
+		   (frame-y frame-y)
+		   (frame-width frame-width)
+		   (frame-height frame-height))
+      frame
+    (and (<= frame-x x)
+	 (<  x (+ frame-x frame-width))
+	 (<= frame-y y)
+	 (<  y (+ frame-y frame-height)))))
+
 (defmethod frame-at ((root tree-frame) x y)
   (declare (type real x y))
-  (let ((prev-frame))
-    ;; this requires the frames to be in order from left
-    ;; to right or top to bottom:
-    (ecase (tree-split-direction root)
-      (:horizontal
-       (dolist (cur-frame (tree-children root))
-	 (when (and (<= (frame-x cur-frame) x)
-		    (<  (frame-x cur-frame) (+ x (frame-width cur-frame))))
-	   (return (frame-at prev-frame x y)))
-	 (setf prev-frame cur-frame)))
-      (:vertical
-       (dolist (cur-frame (tree-children root))
-	 (when (and (<= (frame-y cur-frame) y)
-		    (<  (frame-y cur-frame) (+ y (frame-height cur-frame))))
-	   (return-from frame-at (frame-at cur-frame x y)))
-	 (setf prev-frame cur-frame))))))
+  (dolist (cur-frame (tree-children root))
+      (when (in-frame-p cur-frame x y)
+	(return-from frame-at (frame-at cur-frame x y)))))
 
 (defmethod frame-at ((frame frame) x y)
   (declare (type real x y))
-  (when (and (<= (frame-x frame) x)
-	     (<= (frame-y frame) y)
-	     (< (frame-x frame) (+ x (frame-width frame)))
-	     (< (frame-y frame) (+ y (frame-height frame))))
-      frame))
+  (when (in-frame-p frame x y)
+    frame))
