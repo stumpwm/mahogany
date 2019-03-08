@@ -8,7 +8,8 @@
    (views :accessor wm-views
 	  :initform nil
 	  :type list)
-   (visible-views :initform nil
+   (visible-views :accessor wm-visible-views
+		  :initform nil
 		  :type list)
    (tree :reader wm-tree
 	 :type tree-container
@@ -43,10 +44,17 @@
 ;;   ;; set the
 
 (defmethod remove-view ((wm window-manager) view)
+  (LOG-STRING :TRACE "view removed from wm")
+  (let ((leafs (get-populated-frames (root-tree (wm-tree wm)))))
+    (when-let ((frame (find view leafs :key #'frame-view
+  			    :test #'equalp)))
+      (log-string :trace "View removed from tree")
+      (setf (frame-view frame) nil)))
+  (removef (wm-visible-views wm) view :test #'equal)
   (removef (wm-views wm) view :test #'equal))
 
 (defmethod get-visible-views ((wm window-manager))
-  (with-slots (visible-views) wm
+  (with-accessors ((visible-views wm-visible-views)) wm
     (if (not visible-views)
 	(setf visible-views (generate-visible-views wm))
 	visible-views)))
