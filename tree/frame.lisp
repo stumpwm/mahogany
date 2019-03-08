@@ -463,24 +463,28 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (get-empty-frames (root-tree root)))
 
 (defmethod frame-at ((root tree-frame) x y)
-  (declare (type integer x y))
+  (declare (type real x y))
   (let ((prev-frame))
     ;; this requires the frames to be in order from left
     ;; to right or top to bottom:
     (ecase (tree-split-direction root)
       (:horizontal
        (dolist (cur-frame (tree-children root))
-	 (when (> (frame-x cur-frame) x)
-	   (return (frame-at prev-frame x y)))))
+	 (when (and (<= (frame-x cur-frame) x)
+		    (<  (frame-x cur-frame) (+ x (frame-width cur-frame))))
+	   (return (frame-at prev-frame x y)))
+	 (setf prev-frame cur-frame)))
       (:vertical
        (dolist (cur-frame (tree-children root))
-	 (when (> (frame-x cur-frame) y)
-	   (return (frame-at prev-frame x y))))))))
+	 (when (and (<= (frame-y cur-frame) y)
+		    (<  (frame-y cur-frame) (+ y (frame-height cur-frame))))
+	   (return-from frame-at (frame-at cur-frame x y)))
+	 (setf prev-frame cur-frame))))))
 
 (defmethod frame-at ((frame frame) x y)
-  (declare (type fixnum x y))
+  (declare (type real x y))
   (when (and (<= (frame-x frame) x)
 	     (<= (frame-y frame) y)
 	     (< (frame-x frame) (+ x (frame-width frame)))
 	     (< (frame-y frame) (+ y (frame-height frame))))
-    frame))
+      frame))

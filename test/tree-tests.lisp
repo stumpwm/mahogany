@@ -74,6 +74,34 @@
 		  (tree-children (root-tree container))
 		  #'frame-width))))
 
+(deftest binary-split-direction
+  (tree-subtest "Errors" (tree container)
+    (declare (ignore tree))
+    (prove:is-error (split-frame-v (root-tree container) :direction :left) 'error)
+    (prove:is-error (split-frame-h (root-tree container) :direction :top) 'error))
+  (subtest "vertical split"
+    (diag "Testing :top")
+    (multiple-value-bind (tree container) (make-basic-tree)
+      (declare (ignore container))
+      (multiple-value-bind (new-frame new-parent) (split-frame-v tree :direction :top)
+	(is new-frame (first (tree-children new-parent)))))
+    (diag "Testing :bottom")
+    (multiple-value-bind (tree container) (make-basic-tree)
+      (declare (ignore container))
+      (multiple-value-bind (new-frame new-parent) (split-frame-v tree :direction :bottom)
+	(is new-frame (second (tree-children new-parent))))))
+  (subtest "Horizontal split"
+    (diag "Testing :left")
+    (multiple-value-bind (tree container) (make-basic-tree)
+      (declare (ignore container))
+      (multiple-value-bind (new-frame new-parent) (split-frame-h tree :direction :left)
+	(is new-frame (first (tree-children new-parent)))))
+    (diag "Testing :right")
+    (multiple-value-bind (tree container) (make-basic-tree)
+      (declare (ignore container))
+      (multiple-value-bind (new-frame new-parent) (split-frame-h tree :direction :right)
+      (is new-frame (second (tree-children new-parent)))))))
+
 (defstruct dimensions
   x
   y
@@ -121,9 +149,19 @@
       	(is second-tree first-tree2 :test #'eq)
       	(is first-tree second-tree2 :test #'eq)))))
 
-(plan 4)
+(deftest frame-at-test
+  (subtest "Single frame"
+    (let ((frame (make-instance 'frame :x 0 :y 0 :width 100 :height 100)))
+      (ok (frame-at frame 50 50))
+      (ok (not (frame-at frame -1 50)))
+      (ok (not (frame-at frame 50 -1)))
+      (ok (not (frame-at frame -1 -1))))))
+
+(plan 6)
 (prove:run-test 'find-frame)
 (prove:run-test 'poly-split-dimensions)
 (prove:run-test 'binary-split-dimensions)
+(prove:run-test 'binary-split-direction)
 (prove:run-test 'frame-swap)
+(prove:run-test 'frame-at-test)
 (finalize)
