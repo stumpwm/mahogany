@@ -27,8 +27,11 @@
      (event (:pointer (:struct wlr:event-pointer-button))))
   (let ((cursor (get-listener-owner listener *listener-hash*)))
     ;; TODO: finish this once the needed functions are implemented
-    (log-string :trace "Button pressed")
-    ))
+    (with-wlr-accessors ((x :y)
+			 (y :y))
+	(cursor-wlr-cursor cursor) (:struct wlr:cursor)
+      (log-string :trace "Button pressed at (~A ~A)~%" x y)
+      (log-string :trace "~A" (view-at (server-frontend (get-server)) x y)))))
 
 (defun make-cursor ()
   (let ((wlr-cursor (wlr:cursor-create))
