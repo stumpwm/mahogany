@@ -22,16 +22,16 @@ of an already existing frame with the `set-split-frame-type` function")
 (defclass frame ()
   ((x :initarg :x
       :accessor frame-x
-      :type number)
+      :type real)
    (y :initarg :y
       :accessor frame-y
-      :type number)
+      :type real)
    (width :initarg :width
 	  :accessor frame-width
-	  :type number)
+	  :type real)
    (height :initarg :height
 	   :accessor frame-height
-	   :type number)
+	   :type real)
    (parent :initarg :parent
 	   :accessor frame-parent))
   (:documentation "A frame that is displayed on an output"))
