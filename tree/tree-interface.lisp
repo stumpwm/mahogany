@@ -16,7 +16,7 @@ as the first argument.")
 
 (defvar *new-split-type* :binary
   "Directs a newly split frame to have two or many children.
-Valid choices are :binary or :poly. You can change the split type
+Valid choices are :binary or :many. You can change the split type
 of an already existing frame with the `set-split-frame-type` function")
 
 (defclass frame ()
