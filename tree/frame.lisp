@@ -147,7 +147,9 @@ of FRAME to those of ROOT."
 (defun binary-split-h (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
-  (declare (type frame frame))
+  (declare (type frame frame)
+	   (type keyword direction)
+	   (type symbol parent-type))
   (with-accessors ((old-width frame-width)
 		   (old-height frame-height)
 		   (old-x frame-x)
@@ -191,7 +193,9 @@ Used to initially split all frames, regardless of type."
 (defun binary-split-v (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
-  (declare (type frame frame))
+  (declare (type frame frame)
+	   (type keyword direction)
+	   (type symbol parent-type))
   (with-accessors ((old-width frame-width)
 		   (old-height frame-height)
 		   (old-x frame-x)
@@ -407,7 +411,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (let ((other-child (find-if (lambda (x) (not (equal x frame)))
 			      (tree-children parent))))
     (%replace-frame parent other-child)))
-
 
 (defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
   (let ((tree (root-tree root)))

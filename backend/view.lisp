@@ -11,12 +11,12 @@ CALLBACK-FUNC must be a c function pointer."))
    (x :initarg :view-x
       :accessor view-x
       :initform 0
-      :type integer
+      :type fixnum
       :documentation "Location of surface in output coordinates")
    (y :initarg :view-y
       :accessor view-y
       :initform 0
-      :type integer
+      :type fixnum
       :documentation "Location of surface in output coordinates"))
   (:default-initargs
    :mapped nil))
