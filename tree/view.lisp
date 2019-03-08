@@ -29,8 +29,9 @@
   (when (frame-view frame)
     (setf (view-y (frame-view frame)) (round new-y))))
 
-(defmethod set-dimensions ((frame view-frame) width height)
-  (set-dimensions (frame-view frame) (round width) (round height)))
+(defmethod set-dimensions :before ((frame view-frame) width height)
+  (when (frame-view frame)
+    (set-dimensions (frame-view frame) (round width) (round height))))
 
 (defmethod (setf frame-width) :before (new-width (frame view-frame))
   (when (frame-view frame)
