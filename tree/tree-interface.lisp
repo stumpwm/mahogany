@@ -115,6 +115,9 @@ a view assigned to it."))
   (:documentation "Set the dimensions of the frame. If setting both the width and
 height of a frame, use this method instead of frame-x and frame-y"))
 
+(defgeneric frame-at (root x y)
+  (:documentation "Get the frame that occupies the specified coordinates."))
+
 ;; helper functions:
 
 (defun root-frame-p (frame)

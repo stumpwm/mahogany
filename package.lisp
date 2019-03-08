@@ -33,6 +33,7 @@
 	   #:*remove-split-hook*
 	   #:*new-split-type*
 	   #:frame
+	   #:frame-at
 	   #:frame-x
 	   #:frame-y
 	   #:frame-width
