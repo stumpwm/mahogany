@@ -8,6 +8,8 @@
    (views :accessor wm-views
 	  :initform nil
 	  :type list)
+   (visible-views :initform nil
+		  :type list)
    (tree :reader wm-tree
 	 :type tree-container
 	 :initform (let ((container (make-instance 'tree-container))
@@ -19,6 +21,14 @@
 (defmethod set-backend ((wm window-manager) backend)
   (setf (window-manager-backend wm) backend))
 
+(defun generate-visible-views (wm)
+  (declare (type window-manager wm)
+	   (optimize (speed 2)))
+  (mapcar #'frame-view
+	  (remove-if  (lambda (x)
+			(not (frame-view x)))
+		      (snakes:generator->list (leafs-in (root-tree (wm-tree wm)))))))
+
 (defmethod add-view ((wm window-manager) view)
   (unless (find-empty-frame (wm-tree wm))
     (split-frame-v (root-tree (wm-tree wm))))
@@ -27,7 +37,7 @@
 	(progn (setf (frame-view empty-frame) view)
 	       (fit-view-into-frame view empty-frame))
 	(push view (wm-views wm))))
-  (print (root-tree (wm-tree wm))))
+  (setf (slot-value wm 'visible-views) (generate-visible-views wm)))
 
 ;; (defmethod add-output ((wm window-manager) output)
 ;;   ;; set the
@@ -36,6 +46,7 @@
   (removef (wm-views wm) view :test #'equal))
 
 (defmethod get-visible-views ((wm window-manager))
-  (mapcar #'frame-view (remove-if  (lambda (x)
-					   (not (frame-view x)))
-				   (snakes:generator->list (leafs-in (root-tree (wm-tree wm)))))))
+  (with-slots (visible-views) wm
+    (if (not visible-views)
+	(setf visible-views (generate-visible-views wm))
+	visible-views)))
