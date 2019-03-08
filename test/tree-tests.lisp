@@ -117,7 +117,6 @@
 (deftest frame-swap
   (tree-subtest "simple case" (tree container)
     (split-frame-h tree :ratio (/ 1 3))
-    ;; TODO: actually write this test
     (let* ((children (tree-children (root-tree container)))
 	   (first-tree (first children))
 	   (second-tree (second children))
@@ -132,9 +131,7 @@
       	(is second-tree first-tree2 :test #'eq)
       	(is first-tree second-tree2 :test #'eq))))
   (tree-subtest "different parents" (tree container)
-    ;; (print (root-tree container))
     (split-frame-h tree :ratio (/ 1 3))
-    ;; TODO: actually write this test
     (let* ((first-tree (split-frame-h tree))
 	   (children (tree-children (root-tree container)))
 	   (second-tree (second children))
