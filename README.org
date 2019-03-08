@@ -34,12 +34,17 @@
       ensure that XWayland support is included.
     + [[https://github.com/roswell/roswell][Roswell]]. Roswell is an lisp implementation manager that makes it
       very easy to install common lisp implementations and create binaries.
-    + +[[https://www.quicklisp.org/][Quicklisp]]+ for automatically installing some of the lisp
+    + [[https://www.quicklisp.org/][Quicklisp]] for automatically installing some of the lisp
       dependencies. Folow the instructions listed at the link. Not
       needed if you are using Roswell.
 *** Instalation
     You can build an executable by running =ros build mahogany.ros=
-    in the root directory of the project.
+    in the root directory of the project. While mahogany will run
+    using sbcl, it is recommended to use CCL, as rendering is much
+    more stable. To download ccl using roswell, run =ros install
+    ccl-bin=. Roswell may not use CCL by default, so use =ros -L
+    ccl-bin build mahogany.ros=
+
 ** TODO Customizing Mahogany
 ** TODO Adding new features/modes
    Please see the [[./doc/devel/][documentation directory]] for details on how to extend

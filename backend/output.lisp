@@ -42,6 +42,7 @@
 	  output-y (+ output-y view-y surface-y))
     (with-wlr-accessors ((scale :scale))
 	output (:struct wlr:output)
+      (declare (type single-float scale))
       (with-wlr-accessors ((current :current))
 	  surface (:struct wlr:surface)
 	(make-instance 'wlr:box
