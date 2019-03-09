@@ -6,7 +6,13 @@
 	      :type wlr:output)
   (frame-listener :initarg :frame-listener
 		  :reader output-frame-listener
-		  :type wl_listener)))
+		  :type wl_listener)
+   (x :accessor output-x
+      :type fixnum
+      :initform 0)
+   (y :accessor output-y
+      :type fixnum
+      :initform 0)))
 
 (defmethod output-width ((output mahogany-output))
   "Get the width of the output"
