@@ -28,19 +28,14 @@
   (let* ((manager (get-listener-owner listener *listener-hash*))
 	(layout (output-layout manager)))
     (dolist (output (get-outputs manager))
-      (let (x-coord y-coord)
-	(with-wlr-accessors ((x :x) (y :y))
-	    (wlr:output-layout-get layout (output-wlr-output output))
-	    (:struct wlr:output-layout-output)
-	  (setf (output-x output) x
-		(output-y output) y))
-	(log-string :info "Layout changed: ~A (~S ~S) :w ~S :h ~S"
-		    (foreign-string-to-lisp (foreign-slot-pointer (output-wlr-output output)
-								  '(:struct wlr:output)
-  								  :name))
-		    (output-x output) (output-y output)
-		    (output-width output)
-		    (output-height output))))))
+      (configure-output output (wlr:output-layout-get-box layout (output-wlr-output output)))
+      (log-string :info "Layout changed: ~A (~S ~S) :w ~S :h ~S"
+		  (foreign-string-to-lisp (foreign-slot-pointer (output-wlr-output output)
+								'(:struct wlr:output)
+  								:name))
+		  (output-x output) (output-y output)
+		  (output-width output)
+		  (output-height output)))))
 
 (cffi:defcallback destroy-output :void
     ((listener :pointer)

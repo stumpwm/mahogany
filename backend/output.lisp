@@ -12,25 +12,33 @@
       :initform 0)
    (y :accessor output-y
       :type fixnum
-      :initform 0)))
-
-(defmethod output-width ((output mahogany-output))
-  "Get the width of the output"
-  (foreign-slot-value (output-wlr-output output)
-		      '(:struct wlr:output)
-		      :width))
-
-(defmethod output-height ((output mahogany-output))
-  "Get the width of the output"
-  (foreign-slot-value (output-wlr-output output)
-		      '(:struct wlr:output)
-		      :height))
+      :initform 0)
+   (width :accessor output-width
+   	  :type fixnum)
+   (height :accessor output-height
+   	   :type fixnum)))
 
 (defmethod output-scale ((output mahogany-output))
   "Get the scale of the output"
   (foreign-slot-value (output-wlr-output output)
 		      '(:struct wlr:output)
 		      :scale))
+
+(defmethod configure-output ((output mahogany-output) box)
+  (declare (type wlr:box box))
+  (setf (output-x output) (wlr:box-x box)
+	(output-y output) (wlr:box-y box)
+	(output-width output) (wlr:box-width box)
+	(output-height output) (wlr:box-height box)))
+
+(defmethod initialize-instance :after ((output mahogany-output) &key wlr-output &allow-other-keys)
+  (with-accessors ((width output-width)
+		   (height output-height))
+      output
+    (setf width (foreign-slot-value wlr-output '(:struct wlr:output)
+				    :width))
+    (setf height (foreign-slot-value wlr-output '(:struct wlr:output)
+				    :height))))
 
 (defcstruct render-data
   (output :pointer)
