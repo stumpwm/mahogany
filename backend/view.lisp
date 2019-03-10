@@ -41,7 +41,7 @@ CALLBACK-FUNC must be a c function pointer.")
 
 (defun surface-at-p (view lx ly)
   "Return the surface at the given layout coordinates in the surface. If such a surface exists,
-also return its x a nd y surface coordinates"
+also return its x and y surface coordinates"
   (let ((view-sx (- lx (view-x view)))
 	(view-sy (- ly (view-y view))))
     (wlr:xdg-surface-at (view-surface view) view-sx view-sy)))
