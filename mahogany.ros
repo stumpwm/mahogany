@@ -28,9 +28,23 @@ exec ros -Q -- $0 "$@"
   (setf *wm* (make-instance 'mahogany/wm:window-manager))
   (set-backend *wm* *backend*)
   (set-window-manager *backend* *wm*)
-  ;;(sb-sprof:with-profiling (:report :flat)
-  (start-backend *backend*)
-  ;;)
+  (let ((*debugger-hook* (lambda (condition hook)
+			   (declare (ignore hook))
+			   (log-string :fatal "A fatal error occured ~S~%~A" condition
+				       (with-output-to-string (stream)
+					 #+sbcl
+					 (dolist (frame (sb-debug:list-backtrace))
+					   (print frame stream))
+					 #+ccl
+					 (ccl:print-call-history :stream stream
+								 :start-frame-number 8
+								 :show-internal-frames nil)))
+			   (unwind-protect
+				(progn (stop-backend *backend*)
+				       (cleanup-backend *backend*))))))
+
+      (let ((mahogany/tree:*new-split-type* :binary))
+	(start-backend *backend*)))
   (cleanup-backend *backend*)
   (uiop:quit))
 
