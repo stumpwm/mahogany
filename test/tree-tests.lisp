@@ -33,14 +33,13 @@
 	(ok (not result))))))
 
 (defun check-size (ratio original-size frames accessor)
-  (let ((proper-size (truncate (* ratio original-size)))
+  (let ((proper-size (* ratio original-size))
 	(sum 0))
     (dolist (item frames)
       (setf sum (+ sum (funcall accessor item)))
       (is proper-size (funcall accessor item)))
     (diag "Check if full screen is being used:")
-    (skip 1 "Not implemented yet")))
-    ;;(is sum original-size)))
+    (is sum original-size)))
 
 (defun poly-split-dim-test (repeats container split-function accessor)
   (dotimes (i repeats)
