@@ -19,7 +19,7 @@
     (with-slots (width height x y view)
 	object
       (format stream ":w ~A :h ~A :x ~A :y ~A view: ~S"
-	      width height x y view))))
+	      (round width) (round height) (round x) (round y) view))))
 
 (defmethod (setf frame-x) :before (new-x (frame view-frame))
   (when (frame-view frame)
