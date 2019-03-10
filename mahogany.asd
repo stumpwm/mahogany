@@ -17,6 +17,14 @@
 			:components ((:file "view-interface")
 				     (:file "wm-interface")
 				     (:file "backend-interface")))
+	       (:module wm
+			:depends-on ("package" "log" "interfaces")
+			:components ((:file "wm")))
+	       (:module tree
+			:depends-on ("package" "log" "util" "interfaces")
+	       		:components ((:file "tree-interface")
+	       			     (:file "frame" :depends-on ("tree-interface"))
+				     (:file "view" :depends-on ("tree-interface"))))
 	       (:module backend
 			:depends-on ("interfaces" "package" "log")
 			:components ((:file "util")
@@ -29,12 +37,4 @@
 				     (:file "input/pointing-device")
 				     (:file "input/seat")
 				     (:file "input/input-manager")
-				     (:file "server")))
-	       (:module wm
-			:depends-on ("package" "log" "interfaces")
-			:components ((:file "wm")))
-	       (:module tree
-			:depends-on ("package" "log" "util" "interfaces")
-	       		:components ((:file "tree-interface")
-	       			     (:file "frame" :depends-on ("tree-interface"))
-				     (:file "view" :depends-on ("tree-interface"))))))
+				     (:file "server")))))

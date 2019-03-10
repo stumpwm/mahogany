@@ -1,5 +1,18 @@
 (in-package #:mahogany/wm-interface)
 
+(defclass output ()
+  ((x :accessor output-x
+      :type fixnum
+      :initform 0)
+  (y :accessor output-y
+     :type fixnum
+     :initform 0)
+  (width :accessor output-width
+   	 :type fixnum)
+  (height :accessor output-height
+   	  :type fixnum)))
+
+
 (defgeneric set-backend (wm backend)
   (:documentation "Set the backend of the wm"))
 

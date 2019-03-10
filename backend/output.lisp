@@ -1,22 +1,12 @@
 (in-package #:mahogany/backend)
 
-(defclass mahogany-output ()
+(defclass mahogany-output (output)
   ((wlr-output :initarg :wlr-output
 	      :reader output-wlr-output
 	      :type wlr:output)
   (frame-listener :initarg :frame-listener
 		  :reader output-frame-listener
-		  :type wl_listener)
-   (x :accessor output-x
-      :type fixnum
-      :initform 0)
-   (y :accessor output-y
-      :type fixnum
-      :initform 0)
-   (width :accessor output-width
-   	  :type fixnum)
-   (height :accessor output-height
-   	   :type fixnum)))
+		  :type wl_listener)))
 
 (defmethod output-scale ((output mahogany-output))
   "Get the scale of the output"

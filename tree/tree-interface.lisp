@@ -111,10 +111,6 @@ a view assigned to it."))
 (defgeneric get-empty-frames (root)
   (:documentation "Gets a list of empty frames in the tree."))
 
-(defgeneric set-dimensions (frame width height)
-  (:documentation "Set the dimensions of the frame. If setting both the width and
-height of a frame, use this method instead of frame-x and frame-y"))
-
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))
 

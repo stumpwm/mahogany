@@ -9,18 +9,23 @@
   (:export #:set-window-manager
 	   #:start-backend
 	   #:stop-backend
-	   #:cleanup-backend
-	   ;; output interface
-	   #:output-width
-	   #:output-height
-	   ;; view interface
-	   #:set-dimensions
-	   #:view-y
-	   #:view-x))
+	   #:cleanup-backend))
 
 (defpackage #:mahogany/wm-interface
   (:use :cl)
-  (:export #:get-visible-views
+  (:export #:output
+	   #:output-x
+	   #:output-y
+	   #:output-width
+	   #:output-height
+	   ;; view interface:
+	   #:view
+	   #:view-x
+	   #:view-y
+	   #:view-opacity
+	   #:set-dimensions
+	   ;; wm callbacks:
+	   #:get-visible-views
 	   #:set-backend
 	   #:add-view
 	   #:remove-view
@@ -28,7 +33,7 @@
 
 (defpackage #:mahogany/tree
   (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate
-	#:mahogany/backend-interface)
+	#:mahogany/wm-interface)
   (:export #:*split-frame-hook*
 	   #:*new-frame-hook*
 	   #:*remove-split-hook*
@@ -54,13 +59,19 @@
 	   #:find-empty-frame
 	   #:get-empty-frames
 	   #:get-populated-frames
-	   #:set-dimensions
 	   #:root-frame-p
 	   #:view-frame
 	   #:frame-view
 	   #:frame-modes
 	   #:fit-view-into-frame
 	   #:leafs-in))
+
+(defpackage #:mahogany/wm
+  (:use :cl #:mahogany/log #:alexandria
+	#:mahogany/wm-interface
+	#:mahogany/backend-interface
+	#:mahogany/tree)
+  (:export #:window-manager))
 
 (defpackage #:mahogany/backend
   (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types
@@ -83,13 +94,6 @@
 		#:with-xkb-context
 		#:with-keymap-from-names)
   (:export #:get-server))
-
-(defpackage #:mahogany/wm
-  (:use :cl #:mahogany/log #:alexandria
-	#:mahogany/wm-interface
-	#:mahogany/backend-interface
-	#:mahogany/tree)
-  (:export #:window-manager))
 
 (defpackage #:mahogany
   (:use :cl #:mahogany/log #:alexandria #:mahogany/wm-interface
