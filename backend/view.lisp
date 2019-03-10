@@ -18,7 +18,11 @@ CALLBACK-FUNC must be a c function pointer.")
       :accessor view-y
       :initform 0
       :type fixnum
-      :documentation "Location of surface in output coordinates"))
+      :documentation "Location of surface in output coordinates")
+   (opacity :initarg :opacity
+	    :accessor view-opacity
+	    :type single-float
+	    :initform 1.0))
   (:default-initargs
    :mapped nil))
 

@@ -45,6 +45,7 @@
   (renderer :pointer)
   (view-x :int)
   (view-y :int)
+  (opacity :float)
   (time (:pointer (:struct timespec))))
 
 (declaim (inline get-surface-render-box))
@@ -72,7 +73,7 @@
      (sy :int)
      (render-data :pointer))
   (declare (optimize (speed 3) (safety 0)))
-  (with-foreign-slots ((output renderer time view-x view-y) render-data (:struct render-data))
+  (with-foreign-slots ((output renderer time view-x view-y opacity) render-data (:struct render-data))
     (let ((texture (wlr:surface-get-texture surface)))
       (when (null-pointer-p texture)
 	(return-from draw-surface))
@@ -86,7 +87,7 @@
 	      (wlr:matrix-project-box matrix box
 				      transform
 				      0.0 transform-matrix)
-	      (wlr:render-texture-with-matrix renderer texture matrix 1.0)
+	      (wlr:render-texture-with-matrix renderer texture matrix opacity)
 	      (wlr:surface-send-frame-done surface time))))))))
 
 (defun draw-frame (wlr-output output)
@@ -105,19 +106,19 @@
     (with-foreign-objects ((data '(:struct render-data))
 			   (now  '(:struct timespec)))
       (clock-get-time :monotonic now)
-      (with-foreign-slots ((output renderer time view-x view-y) data (:struct render-data))
+      (with-foreign-slots ((output renderer time opacity view-x view-y) data (:struct render-data))
 	(setf output wlr-output
 	      renderer wlr-renderer
 	      time now)
 	(dolist (view (get-visible-views (server-frontend (get-server))))
 	  (when (view-mapped view)
 	    (setf view-x (view-x view)
-		  view-y (view-y view))
-            (view-for-each-surface view (callback draw-surface) data)))))
-
-    (wlr:renderer-end wlr-renderer)
-    (wlr:output-swap-buffers wlr-output (cffi:null-pointer)
-			     (cffi:null-pointer))))
+		  view-y (view-y view)
+		  opacity (view-opacity view))
+            (view-for-each-surface view (callback draw-surface) data))))
+      (wlr:renderer-end wlr-renderer)
+      (wlr:output-swap-buffers wlr-output (cffi:null-pointer)
+			     (cffi:null-pointer)))))
 
 (cffi:defcallback new-frame-notify :void
     ((listener :pointer)
