@@ -30,8 +30,11 @@
     (with-wlr-accessors ((x :y)
 			 (y :y))
 	(cursor-wlr-cursor cursor) (:struct wlr:cursor)
-      (log-string :trace "Button pressed at (~A ~A)~%" x y)
-      (log-string :trace "~A" (view-at (server-frontend (get-server)) x y)))))
+      (log-string :trace "Button pressed at (~A ~A)" x y)
+      (let ((v (view-at (server-frontend (get-server)) x y)))
+	(when v
+	  (log-string :trace "~A, ~a~%" v (VIEW-SURFACE V))
+	  (wlr:xdg-surface-send-close (view-surface v)))))))
 
 (defun make-cursor ()
   (let ((wlr-cursor (wlr:cursor-create))
