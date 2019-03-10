@@ -3,12 +3,18 @@
 (defparameter *listener-hash* (make-hash-table))
 
 (defun container-of (ptr type member)
+  (declare (type cffi:foreign-pointer ptr))
   (cffi:make-pointer (- (cffi:pointer-address ptr) (cffi:foreign-slot-offset type member))))
 
 (defun get-listener-owner (listener table)
+  (declare (type cffi:foreign-pointer listener)
+  	   (type hash-table table)
+  	   (optimize (speed 3) (safety 0)))
   (gethash (cffi:pointer-address listener) table))
 
 (defun register-listener (listener owner table)
+  (declare (type cffi:foreign-pointer listener)
+	   (type hash-table table))
   (setf (gethash (cffi:pointer-address listener) table) owner))
 
 (defun register-listeners (owner table &rest listeners)
