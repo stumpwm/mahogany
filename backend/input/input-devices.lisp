@@ -11,7 +11,16 @@
 (defclass keyboard (input-device)
   ((key-listener :initarg :key-listener
 		 :reader keyboard-key-listener
-		 :type wl_listener)))
+		 :type wl_listener)
+   (modifier-listener :initarg :modifier-listener
+		      :reader keyboard-modifier-listener
+		      :type wl_listener)
+   (modifier-state :accessor keyboard-modifier-state
+		   :type modifier-state)
+   (executing-keybinding :reader executing-keybinding-p
+			 :writer keyboard-executing-keybinding
+			 :type boolean
+			 :initfrom nil)))
 
 (defclass pointing-device (input-device)
   ()

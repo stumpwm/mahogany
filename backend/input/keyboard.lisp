@@ -46,6 +46,11 @@
 	       (stop-backend (get-server)))))
 	(finish-output)))))
 
+(defcallback keyboard-modifier-notify :void
+    ((listener :pointer)
+     (event (:pointer (:struct wlr:event-keyboard-key))))
+  (log-string :trace "Modifier pressed"))
+
 (defmethod (setf input-device-seat) :before (new-seat (keyboard keyboard))
   ;; if the keyboard is the current keyboard for its seat, remove it:
   (when (equal (input-device-wlr-input keyboard)
@@ -55,26 +60,31 @@
 
 (defun make-keyboard (device seat rules)
   (let* ((key-listener (make-listener keyboard-key-notify))
+	 (modifier-listener (make-listener keyboard-modifier-notify))
 	 (new-keyboard (make-instance 'keyboard :wlr-input-device device
 				      :key-listener key-listener
+				      :modifier-listener modifier-listener
 				      :seat seat))
 	 (wlr-keyboard (cffi:foreign-slot-value device '(:struct wlr:input-device)
-    								    :keyboard)))
-    (wl-signal-add (foreign-slot-pointer wlr-keyboard
-					 '(:struct wlr:keyboard) :event-key)
-    		   key-listener)
-
+    						:keyboard)))
+    (with-wlr-accessors ((key-signal :event-key :pointer t)
+			 (modifier-signal :event-modifiers :pointer t))
+	wlr-keyboard (:struct wlr:keyboard)
+      (wl-signal-add key-signal key-listener)
+      (wl-signal-add modifier-signal modifier-listener))
     (with-xkb-context (context (:no-flags))
 	(with-keymap-from-names (keymap (context rules :no-flags))
 	  (wlr:keyboard-set-keymap wlr-keyboard keymap)))
-    (register-listener key-listener new-keyboard *listener-hash*)))
+    (register-listeners new-keyboard  *listener-hash*
+			key-listener modifier-listener)
+    new-keyboard))
 
 (defun destroy-keyboard (keyboard)
-  (with-accessors ((listener keyboard-key-listener)) keyboard
-    (unregister-listener listener *listener-hash*)
-    (wl-list-remove (foreign-slot-pointer listener
-					  '(:struct wl_listener) 'link))
-    (foreign-free listener)))
+  (with-accessors ((key-listener keyboard-key-listener)
+		   (modifier-listener keyboard-modifier-listener))
+      keyboard
+    (cleanup-listener key-listener *listener-hash*)
+    (cleanup-listener modifier-listener *listener-hash*)))
 
 (defmethod destroy-device ((keyboard keyboard))
   (destroy-keyboard keyboard))
