@@ -8,6 +8,14 @@
 	       :accessor input-device-seat
 	       :type seat)))
 
+(defstruct modifier-state
+  (meta nil :type list)
+  (alt nil :type list)
+  (super nil :type list)
+  (hyper nil :type list)
+  (num-lock nil :type boolean)
+  (scroll-lock nil :type boolean))
+
 (defclass keyboard (input-device)
   ((key-listener :initarg :key-listener
 		 :reader keyboard-key-listener
