@@ -15,6 +15,7 @@
 (defun register-listener (listener owner table)
   (declare (type cffi:foreign-pointer listener)
 	   (type hash-table table))
+  (assert (not (gethash (cffi:pointer-address listener) table)))
   (setf (gethash (cffi:pointer-address listener) table) owner))
 
 (defun register-listeners (owner table &rest listeners)
