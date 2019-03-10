@@ -28,7 +28,7 @@
    (executing-keybinding :reader executing-keybinding-p
 			 :writer keyboard-executing-keybinding
 			 :type boolean
-			 :initfrom nil)))
+			 :initform nil)))
 
 (defclass pointing-device (input-device)
   ()
