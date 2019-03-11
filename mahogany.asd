@@ -9,9 +9,9 @@
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
 		      #:cl-egl #:snakes #:iterate)
   :in-order-to ((test-op (test-op mahogany-test)))
-  :components ((:file "package")
-	       (:file "util" :depends-on ("package"))
-	       (:file "log" :depends-on ("package"))
+  :components ((:file "log")
+	       (:file "util")
+	       (:file "package")
 	       (:module interfaces
 			:depends-on ("package")
 			:components ((:file "view-interface")

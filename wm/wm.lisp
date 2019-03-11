@@ -23,8 +23,7 @@
   (setf (window-manager-backend wm) backend))
 
 (defun generate-visible-views (wm)
-  (declare (type window-manager wm)
-	   (optimize (speed 2)))
+  (declare (optimize (speed 2)))
   (mapcar #'frame-view
 	  (remove-if  (lambda (x)
 			(not (frame-view x)))

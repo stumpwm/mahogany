@@ -14,12 +14,12 @@
 		      '(:struct wlr:output)
 		      :scale))
 
-(defmethod configure-output ((output mahogany-output) box)
+(defmethod configure-output ((output mahogany-output) x y width height)
   (declare (type wlr:box box))
-  (setf (output-x output) (wlr:box-x box)
-	(output-y output) (wlr:box-y box)
-	(output-width output) (wlr:box-width box)
-	(output-height output) (wlr:box-height box)))
+  (setf (output-x output) x
+	(output-y output) y
+	(output-width output) width
+	(output-height output) height))
 
 (defmethod initialize-instance :after ((output mahogany-output) &key wlr-output &allow-other-keys)
   (with-accessors ((width output-width)

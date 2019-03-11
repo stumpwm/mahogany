@@ -1,4 +1,6 @@
 ;;; A place to put useful functions that are shared between different files
+(defpackage #:mahogany/util
+  (:use #:cl))
 
 (in-package #:mahogany/util)
 

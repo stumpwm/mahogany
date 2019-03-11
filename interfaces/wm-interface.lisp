@@ -1,18 +1,5 @@
 (in-package #:mahogany/wm-interface)
 
-(defclass output ()
-  ((x :accessor output-x
-      :type fixnum
-      :initform 0)
-  (y :accessor output-y
-     :type fixnum
-     :initform 0)
-  (width :accessor output-width
-   	 :type fixnum)
-  (height :accessor output-height
-   	  :type fixnum)))
-
-
 (defgeneric set-backend (wm backend)
   (:documentation "Set the backend of the wm"))
 
@@ -27,3 +14,28 @@
 
 (defgeneric view-at (wm x y)
   (:documentation "Get the view at the specified output coordinates"))
+
+(defgeneric configure-output (output x y width height)
+  (:documentation "Set the width, height, x, y of the output in layout coordinates."))
+
+;; These functions are expected to be implemented by the backend:
+
+(defgeneric output-width (output)
+  (:documentation "Get the width of the output"))
+
+(defgeneric output-height (output)
+  (:documentation "Get the width of the output"))
+
+;; class definitions:
+
+(defclass output ()
+  ((x :accessor output-x
+      :type fixnum
+      :initform 0)
+  (y :accessor output-y
+     :type fixnum
+     :initform 0)
+  (width :accessor output-width
+   	 :type fixnum)
+  (height :accessor output-height
+   	  :type fixnum)))

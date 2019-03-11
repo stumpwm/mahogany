@@ -1,9 +1,3 @@
-(defpackage #:mahogany/log
-  (:use :cl #:cl-ansi-text))
-
-(defpackage #:mahogany/util
-  (:use #:cl))
-
 (defpackage #:mahogany/backend-interface
   (:use :cl)
   (:export #:set-window-manager

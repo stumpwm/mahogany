@@ -28,7 +28,12 @@
   (let* ((manager (get-listener-owner listener *listener-hash*))
 	(layout (output-layout manager)))
     (dolist (output (get-outputs manager))
-      (configure-output output (wlr:output-layout-get-box layout (output-wlr-output output)))
+      (with-accessors ((x wlr:box-x)
+		       (y wlr:box-y)
+		       (width wlr:box-width)
+		       (height wlr:box-height))
+	   (wlr:output-layout-get-box layout (output-wlr-output output))
+	(configure-output output x y width height))
       (log-string :info "Layout changed: ~A (~S ~S) :w ~S :h ~S"
 		  (foreign-string-to-lisp (foreign-slot-pointer (output-wlr-output output)
 								'(:struct wlr:output)

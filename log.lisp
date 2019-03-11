@@ -1,16 +1,18 @@
 ;; an alternative to this package is vom. However, it doesn't
 ;; support color, and is unlikely to, so this will stay.
-(in-package #:mahogany/log)
+(defpackage #:mahogany/log
+  (:use :cl #:cl-ansi-text)
+  (:export #:*log-level*
+	   #:log-string
+	   #:get-print-data
+	   #:log-init
+	   #:with-log-level
+	   #:with-log-color-enabled
+	   #:with-logging-to-file
+	   #:*log-output-file*))
 
-(export '(*log-level*
-	  log-string
-	  get-print-data
-	  log-init
-	  with-log-level
-	  with-log-color-enabled
-	  with-logging-to-file
-	  *log-level*
-	  *log-output-file*))
+
+(in-package #:mahogany/log)
 
 (defvar *log-output-file* *standard-output*
   "The file to print log messages")
