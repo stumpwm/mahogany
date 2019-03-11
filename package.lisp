@@ -12,6 +12,7 @@
 	   #:output-y
 	   #:output-width
 	   #:output-height
+	   #:configure-output
 	   ;; view interface:
 	   #:view
 	   #:view-x
