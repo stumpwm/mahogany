@@ -58,17 +58,10 @@
 	      `(warn (format nil ,string ,@fmt)))))))
 
 
-;; as of August 2018, the terminfo package doesn't support 32 bit terminfo files,
-;; so we must try to use the old versions:
-;; TODO: update for new a future version of terminfo
-(defun fix-term-name (name)
-  (cl-ppcre:register-groups-bind (fixed) ("([a-z]*)-*" name)
-    (or fixed name)))
-
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
        (member :max-colors (terminfo:capabilities
-			    (terminfo:set-terminal (fix-term-name (uiop:getenv "TERM")))))))
+			    (terminfo:set-terminal (uiop:getenv "TERM"))))))
 
 (defun check-valid-log-level (level)
   ;; TODO: make this something with a use-value restart?
