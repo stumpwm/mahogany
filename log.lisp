@@ -48,15 +48,13 @@
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color)
 	(get-print-data log-lvl)
-      `(progn
-	 (when (>= (get-print-data *log-level*) ,lvl)
-	   (with-color (,color :effect :bright)
-	     (format *log-output-file* ,string ,@fmt)
-	     (format *log-output-file* "~%"))
-	   (finish-output *log-output-file*))
+      `(when (>= (get-print-data *log-level*) ,lvl)
+	 (with-color (,color :effect :bright)
+	   (format *log-output-file* ,string ,@fmt)
+	   (format *log-output-file* "~%"))
+	 (finish-output *log-output-file*)
 	 ,(when (= lvl 3)
-	      `(warn (format nil ,string ,@fmt)))))))
-
+	    `(warn (format nil ,string ,@fmt)))))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
