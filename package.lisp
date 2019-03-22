@@ -12,6 +12,8 @@
 	   #:output-y
 	   #:output-width
 	   #:output-height
+	   #:output-tree
+	   #:output-floating-windows
 	   #:configure-output
 	   ;; view interface:
 	   #:view
@@ -23,6 +25,7 @@
 	   #:get-visible-views
 	   #:set-backend
 	   #:add-view
+	   #:add-output
 	   #:remove-view
 	   #:view-at))
 
@@ -70,7 +73,7 @@
 
 (defpackage #:mahogany/backend
   (:use :cl :cffi #:mahogany/log #:alexandria #:wlr/macros #:wlr/common-c-types
-	#:mahogany/backend-interface #:mahogany/wm-interface)
+	#:mahogany/backend-interface #:mahogany/wm-interface #:mahogany/tree)
   (:import-from #:wayland-server-core
 		#:wl-display-add-socket-auto
 		#:wl-display-destroy

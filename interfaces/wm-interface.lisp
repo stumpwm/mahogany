@@ -18,6 +18,9 @@
 (defgeneric configure-output (output x y width height)
   (:documentation "Set the width, height, x, y of the output in layout coordinates."))
 
+(defgeneric add-output (wm output)
+  (:documentation "Add the output to the wm"))
+
 ;; These functions are expected to be implemented by the backend:
 
 (defgeneric output-width (output)
@@ -32,10 +35,14 @@
   ((x :accessor output-x
       :type fixnum
       :initform 0)
-  (y :accessor output-y
-     :type fixnum
-     :initform 0)
-  (width :accessor output-width
-   	 :type fixnum)
-  (height :accessor output-height
-   	  :type fixnum)))
+   (y :accessor output-y
+      :type fixnum
+      :initform 0)
+   (width :accessor output-width
+   	  :type fixnum)
+   (height :accessor output-height
+   	   :type fixnum)
+   (tree :accessor output-tree)
+   (floating-windows :accessor output-floating-windows
+		     :type list
+		     :initform nil)))
