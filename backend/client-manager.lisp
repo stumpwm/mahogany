@@ -18,6 +18,15 @@
   (log-string :trace "View destroyed")
   (multiple-value-bind (view manager)
       (values-list (get-listener-owner listener *listener-hash*))
+    (with-accessors ((map-listener view-map-listener)
+		     (config-listener view-config-listener)
+		     (unmap-listener view-unmap-listener)
+		     (destroy-listener view-destroy-listener))
+	view
+      (cleanup-listener map-listener *listener-hash*)
+      (cleanup-listener config-listener *listener-hash*)
+      (cleanup-listener unmap-listener *listener-hash*)
+      (cleanup-listener destroy-listener *listener-hash*))
     (setf (client-manager-surfaces manager) (remove view
 						    (client-manager-surfaces manager)))))
 
@@ -39,6 +48,11 @@
     (setf (view-mapped view) t)
     (remove-view (server-frontend (get-server)) view)))
 
+(defcallback handle-view-config :void
+    ((listener :pointer)
+     (surface :pointer))
+  (log-string :trace "view configured"))
+
 (defcallback handle-new-surface :void
     ((listener :pointer)
      (surface :pointer))
@@ -46,10 +60,12 @@
   (let ((client-manager (get-listener-owner listener *listener-hash*))
 	(destroy-listener (make-listener view-destroy))
 	(map-listener (make-listener view-map))
+	(config-listener (make-listener handle-view-config))
 	(unmap-listener (make-listener view-unmap)))
     (with-wlr-accessors ((destroy-signal :event-destroy :pointer t)
 			 (map-signal :event-map :pointer t)
 			 (unmap-signal :event-unmap :pointer t)
+			 (config-signal :event-configure :pointer t)
 			 (role :role))
 	surface (:struct wlr:xdg-surface)
       (unless (eq role :toplevel)
@@ -57,14 +73,18 @@
 	(return-from handle-new-surface))
       (wl-signal-add map-signal map-listener)
       (wl-signal-add unmap-signal unmap-listener)
+      (wl-signal-add config-signal config-listener)
       (wl-signal-add destroy-signal destroy-listener))
     (let ((new-view (make-instance 'xdg-view
 				   :wlr-surface surface
 				   :map-listener map-listener
 				   :unmap-listener unmap-listener
+				   :config-listener config-listener
 				   :destroy-listener destroy-listener)))
       (register-listeners (list new-view client-manager) *listener-hash*
 			  map-listener unmap-listener destroy-listener)
+      ;; no need to include the client manager
+      (register-listener config-listener new-view *listener-hash*)
       (push new-view (client-manager-surfaces client-manager)))))
 
 (defcallback handle-xdg-shell-destroy :void

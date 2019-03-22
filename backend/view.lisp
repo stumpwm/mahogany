@@ -18,6 +18,9 @@ CALLBACK-FUNC must be a c function pointer.")
    (map-listener :initarg :map-listener
 		 :reader view-map-listener
 		 :type wl_listener)
+   (configure-listener :initarg :config-listener
+		       :reader view-config-listener
+		       :type wl_listener)
    (unmap-listener :initarg :unmap-listener
 		   :reader view-unmap-listener
 		   :type wl_listener)
