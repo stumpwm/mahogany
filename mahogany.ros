@@ -39,13 +39,17 @@ exec ros -Q -- $0 "$@"
 					 (ccl:print-call-history :stream stream
 								 :start-frame-number 8
 								 :show-internal-frames nil)))
-			   (unwind-protect
-				(progn (stop-backend *backend*)
-				       (cleanup-backend *backend*))))))
+			   (let ((*debugger-hook* nil))
+			     (stop-backend *backend*)
+			     (cleanup-backend *backend*)))))
 
       (let ((mahogany/tree:*new-split-type* :binary))
 	(start-backend *backend*)))
   (cleanup-backend *backend*)
+  (log-string :debug "Leftover listeners:")
+  (maphash (lambda (key value)
+	     (log-string :debug "Key: ~A Value: ~A" key value))
+	   mahogany/backend::*listener-hash*)
   (uiop:quit))
 
 ;;; vim: set ft=lisp lisp:
