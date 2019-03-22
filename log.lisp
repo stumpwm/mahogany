@@ -47,6 +47,7 @@
 
 (defmacro log-string (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*"
+  (assert (keywordp log-lvl))
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color)
 	(get-print-data log-lvl)
