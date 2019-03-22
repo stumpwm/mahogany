@@ -26,7 +26,9 @@ CALLBACK-FUNC must be a c function pointer.")
 		   :type wl_listener)
    (destroy-listener :initarg :destroy-listener
 		     :reader view-destroy-listener
-		     :type wl_listener)))
+		     :type wl_listener)
+   (geometry :accessor view-geometry
+	     :type wlr:box)))
 
 (defun surface-at-p (view lx ly)
   "Return the surface at the given layout coordinates in the surface. If such a surface exists,

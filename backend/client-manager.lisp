@@ -50,8 +50,12 @@
 
 (defcallback handle-view-config :void
     ((listener :pointer)
-     (surface :pointer))
-  (log-string :trace "view configured"))
+     (data :pointer))
+  (declare (ignore data))
+  (log-string :trace "view configured")
+  (let ((view (get-listener-owner listener *listener-hash*)))
+    ;; TODO: check if the view unexpectedly changes size:
+    (setf (view-geometry view) (wlr:xdg-surface-get-geometry (view-surface view)))))
 
 (defcallback handle-new-surface :void
     ((listener :pointer)
