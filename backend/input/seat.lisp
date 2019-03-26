@@ -34,7 +34,7 @@
       (let ((v (view-at (server-frontend (get-server)) x y)))
 	(when v
 	  (log-string :trace "~A, ~a~%" v (VIEW-SURFACE V))
-	  (wlr:xdg-surface-send-close (view-surface v)))))))
+	  (wlr:xdg-toplevel-send-close (view-surface v)))))))
 
 (defun make-cursor ()
   (let ((wlr-cursor (wlr:cursor-create))
