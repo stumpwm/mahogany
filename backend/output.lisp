@@ -15,7 +15,6 @@
 		      :scale))
 
 (defmethod configure-output ((output mahogany-output) x y width height)
-  (declare (type wlr:box box))
   (setf (output-x output) x
 	(output-y output) y
 	(output-width output) width
