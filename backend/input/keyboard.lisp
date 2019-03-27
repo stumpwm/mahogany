@@ -42,9 +42,13 @@
 	  ;; ref twice, as syms is a pointer to a pointer:
 	  (let ((keysym (mem-aref (mem-ref syms :pointer) 'xkb:keysym i)))
 	    (log-string :trace "Keysym: ~A" keysym)
-	     (if (eql keysym #xff1b)
-		 (stop-backend (get-server))
-		 (uiop:run-program "gnome-terminal -e htop &"))))
+	    (cond
+	      ((eql keysym #xff1b)
+	       (stop-backend (get-server)))
+	      ((eql keysym (cl-xkeysym:keysym-name->keysym "c"))
+	       (uiop:run-program "gnome-calculator &"))
+	      ((eql keysym (cl-xkeysym:keysym-name->keysym "t"))
+	       (uiop:run-program "gnome-terminal -e htop &")))))
 	(finish-output)))))
 
 (defcallback keyboard-modifier-notify :void

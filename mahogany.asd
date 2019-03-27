@@ -7,6 +7,7 @@
   :version "0.0.1"
   :depends-on (#:uiop #:alexandria #:cl-ppcre #:bordeaux-threads
 		      #:cl-wlroots #:cffi #:cl-ansi-text #:terminfo
+		      #:cl-xkeysym
 		      #:cl-egl #:snakes #:iterate)
   :in-order-to ((test-op (test-op mahogany-test)))
   :components ((:file "log")
