@@ -11,8 +11,12 @@ exec ros -Q -- $0 "$@"
 #+sbcl
 (progn
   (sb-ext:enable-debugger)
-  (require 'sb-sprof))
+  (require 'sb-sprof)
+  (sb-int:set-floating-point-modes :traps nil))
 
+#+ccl
+(progn
+  (set-fpu-mode :overflow nil))
 
 (in-package :mahogany)
 
