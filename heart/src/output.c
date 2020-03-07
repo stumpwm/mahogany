@@ -1,12 +1,12 @@
-#include <mahogany_output.h>
+#include <hrt_output.h>
 
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 static void handle_frame_notify(struct wl_listener *listener, void *data) {
-  struct mahogany_output *output = wl_container_of(listener, output, frame);
-  struct mahogany_server *server = output->server;
+  struct hrt_output *output = wl_container_of(listener, output, frame);
+  struct hrt_server *server = output->server;
   struct wlr_renderer *renderer = server->renderer;
 
   //TODO: damage tracking
@@ -29,7 +29,7 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
   puts("Output destroyed");
-  struct mahogany_output *output = wl_container_of(listener, output, destroy);
+  struct hrt_output *output = wl_container_of(listener, output, destroy);
   wl_list_remove(&output->link);
 
   // wlr_output_layout removes the output by itself.
@@ -43,9 +43,9 @@ static float float_rand()
   return (float) (rand() / (double) RAND_MAX); /* [0, 1.0] */
 }
 
-static struct mahogany_output *mahogany_output_create(struct mahogany_server *server,
+static struct hrt_output *hrt_output_create(struct hrt_server *server,
 				     struct wlr_output *wlr_output) {
-  struct mahogany_output *output = calloc(1, sizeof(struct mahogany_output));
+  struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
   output->wlr_output = wlr_output;
   output->server = server;
 
@@ -68,10 +68,10 @@ static struct mahogany_output *mahogany_output_create(struct mahogany_server *se
 
 static void handle_new_output(struct wl_listener *listener, void *data) {
   puts("New output detected");
-  struct mahogany_server *server = wl_container_of(listener, server, new_output);
+  struct hrt_server *server = wl_container_of(listener, server, new_output);
 
   struct wlr_output *wlr_output = data;
-  struct mahogany_output *output = mahogany_output_create(server, wlr_output);
+  struct hrt_output *output = hrt_output_create(server, wlr_output);
   output->destroy.notify = handle_output_destroy;
   wl_signal_add(&wlr_output->events.destroy, &output->destroy);
   wl_list_insert(&server->outputs, &output->link);
@@ -93,7 +93,7 @@ static void handle_output_manager_test(struct wl_listener *listener, void *data)
 
 }
 
-bool output_init(struct mahogany_server *server) {
+bool output_init(struct hrt_server *server) {
   server->new_output.notify = handle_new_output;
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
 

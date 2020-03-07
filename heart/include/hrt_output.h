@@ -1,15 +1,15 @@
-#ifndef MAHOGANY_OUTPUT_H
-#define MAHOGANY_OUTPUT_H
+#ifndef HRT_OUTPUT_H
+#define HRT_OUTPUT_H
 
 #include <wayland-server.h>
 
 #include <wlr/types/wlr_output.h>
 
-#include <mahogany_server.h>
+#include <hrt_server.h>
 
-struct mahogany_output {
+struct hrt_output {
   struct wlr_output *wlr_output;
-  struct mahogany_server *server;
+  struct hrt_server *server;
   struct wl_list link;
 
   struct wl_listener frame;
@@ -19,5 +19,5 @@ struct mahogany_output {
   float color[4];
 };
 
-bool output_init(struct mahogany_server *server);
+bool output_init(struct hrt_server *server);
 #endif

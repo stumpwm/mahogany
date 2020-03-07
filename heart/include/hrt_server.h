@@ -1,5 +1,5 @@
-#ifndef MAHOGANY_SERVER_H
-#define MAHOGANY_SERVER_H
+#ifndef HRT_SERVER_H
+#define HRT_SERVER_H
 
 #include <stdbool.h>
 
@@ -10,11 +10,11 @@
 #include <wlr/types/wlr_output_management_v1.h>
 
 
-struct mahogany_callbacks {
+struct hrt_callbacks {
 
 };
 
-struct mahogany_server {
+struct hrt_server {
   struct wl_display *wl_display;
   struct wlr_backend *backend;
   struct wlr_renderer *renderer;
@@ -28,12 +28,12 @@ struct mahogany_server {
   struct wl_listener output_manager_test;
 };
 
-bool mahogany_server_init(struct mahogany_server *server);
+bool hrt_server_init(struct hrt_server *server);
 
-bool mahogany_server_start(struct mahogany_server *server);
+bool hrt_server_start(struct hrt_server *server);
 
-void mahogany_server_run(struct mahogany_server *server);
+void hrt_server_run(struct hrt_server *server);
 
-void mahogany_server_finish(struct mahogany_server *server);
+void hrt_server_finish(struct hrt_server *server);
 
 #endif

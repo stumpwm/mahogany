@@ -3,10 +3,10 @@
 #include <wlr/types/wlr_data_control_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 
-#include <mahogany_server.h>
-#include <mahogany_output.h>
+#include <hrt_server.h>
+#include <hrt_output.h>
 
-bool mahogany_server_init(struct mahogany_server *server) {
+bool hrt_server_init(struct hrt_server *server) {
   server->wl_display = wl_display_create();
   server->backend = wlr_backend_autocreate(server->wl_display, NULL);
 
@@ -32,7 +32,7 @@ bool mahogany_server_init(struct mahogany_server *server) {
   return true;
 }
 
-bool mahogany_server_start(struct mahogany_server *server) {
+bool hrt_server_start(struct hrt_server *server) {
   if (!wlr_backend_start(server->backend)) {
     wlr_backend_destroy(server->backend);
     return false;
@@ -40,11 +40,11 @@ bool mahogany_server_start(struct mahogany_server *server) {
   return true;
 }
 
-void mahogany_server_run(struct mahogany_server *server) {
+void hrt_server_run(struct hrt_server *server) {
   wl_display_run(server->wl_display);
 }
 
-void mahogany_server_finish(struct mahogany_server *server) {
+void hrt_server_finish(struct hrt_server *server) {
   wl_display_destroy_clients(server->wl_display);
   wl_display_destroy(server->wl_display);
 }
