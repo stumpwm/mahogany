@@ -32,6 +32,8 @@ struct hrt_input {
   struct wlr_input_device *wlr_input_device;
   struct hrt_seat *seat;
   struct wl_list link;
+
+  struct wl_listener destroy;
 };
 
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server);
