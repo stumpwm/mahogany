@@ -93,7 +93,7 @@ static void handle_output_manager_test(struct wl_listener *listener, void *data)
 
 }
 
-bool output_init(struct hrt_server *server) {
+bool hrt_output_init(struct hrt_server *server) {
   server->new_output.notify = handle_new_output;
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
 

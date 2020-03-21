@@ -19,5 +19,5 @@ struct hrt_output {
   float color[4];
 };
 
-bool output_init(struct hrt_server *server);
+bool hrt_output_init(struct hrt_server *server);
 #endif
