@@ -9,6 +9,7 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
 
+#include <hrt_input.h>
 
 struct hrt_callbacks {
 
@@ -26,6 +27,8 @@ struct hrt_server {
   struct wlr_output_layout *output_layout;
   struct wl_listener output_manager_apply;
   struct wl_listener output_manager_test;
+
+  struct hrt_seat seat;
 };
 
 bool hrt_server_init(struct hrt_server *server);

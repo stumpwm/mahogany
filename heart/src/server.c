@@ -5,6 +5,7 @@
 
 #include <hrt_server.h>
 #include <hrt_output.h>
+#include <hrt_input.h>
 
 bool hrt_server_init(struct hrt_server *server) {
   server->wl_display = wl_display_create();
@@ -25,7 +26,10 @@ bool hrt_server_init(struct hrt_server *server) {
   wlr_data_control_manager_v1_create(server->wl_display);
   wlr_gamma_control_manager_v1_create(server->wl_display);
 
-  if(!output_init(server)) {
+  if(!hrt_output_init(server)) {
+    return false;
+  }
+  if(!hrt_seat_init(&server->seat, server)) {
     return false;
   }
 
