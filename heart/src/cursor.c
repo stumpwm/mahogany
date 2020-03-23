@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
