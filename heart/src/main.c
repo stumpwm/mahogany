@@ -1,9 +1,10 @@
 #include <stdio.h>
 
+#include <wlr/util/log.h>
 #include <hrt_server.h>
 
 int main(int argc, char *argv[]) {
-  puts("Hello, World!");
+  wlr_log_init(WLR_DEBUG, NULL);
 
   struct hrt_server server;
 
