@@ -5,7 +5,11 @@
 #include <hrt_input.h>
 
 static void seat_handle_key(struct wl_listener *listener, void *data) {
-  puts("Keyboard key pressed");
+  puts("Keyobard key pressed");
+  struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
+  struct wlr_event_keyboard_key *ev = data;
+
+  wlr_seat_keyboard_notify_key(seat->seat, ev->time_msec, ev->keycode, ev->state);
 }
 
 static void seat_handle_modifiers(struct wl_listener *listener, void *data) {
