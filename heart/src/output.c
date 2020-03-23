@@ -23,6 +23,8 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 
   wlr_renderer_clear(renderer, output->color);
 
+  wlr_output_render_software_cursors(output->wlr_output, NULL);
+
   wlr_renderer_end(renderer);
   wlr_output_commit(output->wlr_output);
 }
