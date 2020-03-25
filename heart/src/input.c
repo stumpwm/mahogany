@@ -4,8 +4,8 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
 
-#include <hrt_input.h>
-#include <hrt_server.h>
+#include <hrt/hrt_input.h>
+#include <hrt/hrt_server.h>
 
 static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
   struct wlr_keyboard *kb = input->wlr_input_device->keyboard;

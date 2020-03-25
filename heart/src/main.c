@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include <wlr/util/log.h>
-#include <hrt_server.h>
+#include <hrt/hrt_server.h>
 
 int main(int argc, char *argv[]) {
   wlr_log_init(WLR_DEBUG, NULL);

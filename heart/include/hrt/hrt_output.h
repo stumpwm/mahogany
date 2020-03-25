@@ -5,7 +5,7 @@
 
 #include <wlr/types/wlr_output.h>
 
-#include <hrt_server.h>
+#include <hrt/hrt_server.h>
 
 struct hrt_output {
   struct wlr_output *wlr_output;

@@ -2,7 +2,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
 
-#include <hrt_input.h>
+#include <hrt/hrt_input.h>
 
 static void seat_motion(struct wl_listener *listener, void *data) {
   struct hrt_seat *seat = wl_container_of(listener, seat, motion);

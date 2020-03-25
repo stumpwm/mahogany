@@ -9,7 +9,7 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
 
-#include <hrt_input.h>
+#include <hrt/hrt_input.h>
 
 struct hrt_callbacks {
 

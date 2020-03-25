@@ -3,9 +3,9 @@
 #include <wlr/types/wlr_data_control_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 
-#include <hrt_server.h>
-#include <hrt_output.h>
-#include <hrt_input.h>
+#include <hrt/hrt_server.h>
+#include <hrt/hrt_output.h>
+#include <hrt/hrt_input.h>
 
 bool hrt_server_init(struct hrt_server *server) {
   server->wl_display = wl_display_create();

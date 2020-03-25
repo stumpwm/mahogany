@@ -1,8 +1,8 @@
-#include <hrt_output.h>
-
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <hrt/hrt_output.h>
 
 static void handle_frame_notify(struct wl_listener *listener, void *data) {
   struct hrt_output *output = wl_container_of(listener, output, frame);

@@ -2,7 +2,7 @@
 
 #include <wlr/types/wlr_seat.h>
 
-#include <hrt_input.h>
+#include <hrt/hrt_input.h>
 
 static void seat_handle_key(struct wl_listener *listener, void *data) {
   puts("Keyobard key pressed");
