@@ -7,7 +7,8 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
-bool hrt_server_init(struct hrt_server *server) {
+bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
+		     const struct hrt_seat_callbacks *seat_callbacks) {
   server->wl_display = wl_display_create();
   server->backend = wlr_backend_autocreate(server->wl_display, NULL);
 
@@ -18,7 +19,6 @@ bool hrt_server_init(struct hrt_server *server) {
   server->renderer = wlr_backend_get_renderer(server->backend);
   wlr_renderer_init_wl_display(server->renderer, server->wl_display);
 
-
   server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
 
   wlr_export_dmabuf_manager_v1_create(server->wl_display);
@@ -26,10 +26,12 @@ bool hrt_server_init(struct hrt_server *server) {
   wlr_data_control_manager_v1_create(server->wl_display);
   wlr_gamma_control_manager_v1_create(server->wl_display);
 
-  if(!hrt_output_init(server)) {
+  server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
+
+  if(!hrt_output_init(server, output_callbacks)) {
     return false;
   }
-  if(!hrt_seat_init(&server->seat, server)) {
+  if(!hrt_seat_init(&server->seat, server, seat_callbacks)) {
     return false;
   }
 

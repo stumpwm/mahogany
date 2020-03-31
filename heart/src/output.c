@@ -33,6 +33,8 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
   puts("Output destroyed");
   struct hrt_output *output = wl_container_of(listener, output, destroy);
   wl_list_remove(&output->link);
+  struct hrt_server *server = output->server;
+  server->output_callback->output_removed(output);
 
   // wlr_output_layout removes the output by itself.
 
@@ -85,6 +87,8 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
   }
 
   wlr_output_create_global(wlr_output);
+
+  server->output_callback->output_added(output);
 }
 
 static void handle_output_manager_apply(struct wl_listener *listener, void *data) {
@@ -95,7 +99,8 @@ static void handle_output_manager_test(struct wl_listener *listener, void *data)
 
 }
 
-bool hrt_output_init(struct hrt_server *server) {
+bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks) {
+  server->output_callback = callbacks;
   server->new_output.notify = handle_new_output;
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
 

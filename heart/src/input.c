@@ -68,7 +68,9 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
   wlr_seat_set_capabilities(seat->seat, caps);
 }
 
-bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server) {
+bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
+		   const struct hrt_seat_callbacks *callbacks) {
+  seat->callbacks = callbacks;
   seat->server = server;
   seat->new_input.notify = new_input_notify;
   wl_signal_add(&server->backend->events.new_input, &seat->new_input);

@@ -27,6 +27,13 @@ struct hrt_seat {
   // keyboard events:
   struct wl_listener keyboard_key;
   struct wl_listener keyboard_modifiers;
+
+  const struct hrt_seat_callbacks *callbacks;
+};
+
+struct hrt_seat_callbacks {
+  void (*button_event)();
+  void (*wheel_event)();
 };
 
 struct hrt_input {
@@ -37,7 +44,8 @@ struct hrt_input {
   struct wl_listener destroy;
 };
 
-bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server);
+bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
+		   const struct hrt_seat_callbacks *callbacks);
 void hrt_cursor_init(struct hrt_seat *seat);
 void hrt_keyboard_init(struct hrt_seat *seat);
 

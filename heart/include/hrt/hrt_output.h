@@ -19,5 +19,10 @@ struct hrt_output {
   float color[4];
 };
 
-bool hrt_output_init(struct hrt_server *server);
+struct hrt_output_callbacks {
+  void (*output_added)(struct hrt_output *output);
+  void (*output_removed)(struct hrt_output *output);
+};
+
+bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks);
 #endif

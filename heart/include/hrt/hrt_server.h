@@ -11,10 +11,6 @@
 
 #include <hrt/hrt_input.h>
 
-struct hrt_callbacks {
-
-};
-
 struct hrt_server {
   struct wl_display *wl_display;
   struct wlr_backend *backend;
@@ -29,9 +25,12 @@ struct hrt_server {
   struct wl_listener output_manager_test;
 
   struct hrt_seat seat;
+
+  const struct hrt_output_callbacks *output_callback;
 };
 
-bool hrt_server_init(struct hrt_server *server);
+bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
+		     const struct hrt_seat_callbacks *seat_callbacks);
 
 bool hrt_server_start(struct hrt_server *server);
 

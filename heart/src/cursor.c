@@ -22,11 +22,13 @@ static void seat_motion_absolute(struct wl_listener *listener, void *data) {
 }
 
 static void seat_button(struct wl_listener *listener, void *data) {
-
+  struct hrt_seat *seat = wl_container_of(listener, seat, button);
+  seat->callbacks->button_event();
 }
 
 static void seat_axis(struct wl_listener *listener, void *data) {
-
+  struct hrt_seat *seat = wl_container_of(listener, seat, axis);
+  seat->callbacks->wheel_event();
 }
 
 static void seat_frame(struct wl_listener *listener, void *data) {
