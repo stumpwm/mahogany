@@ -1,15 +1,96 @@
 #include <stdio.h>
+#include <stdlib.h>
 
+// Temp: needed for exiting on escape key pressed:
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include <xkbcommon/xkbcommon-names.h>
 #include <wlr/types/wlr_seat.h>
 
+#include <wlr/backend/multi.h>
+#include <wlr/backend/session.h>
+
+#include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
-static void seat_handle_key(struct wl_listener *listener, void *data) {
-  puts("Keyobard key pressed");
-  struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
-  struct wlr_event_keyboard_key *ev = data;
+static size_t seat_translate_keysyms(struct hrt_seat *seat, xkb_keycode_t keycode,
+			       const xkb_keysym_t **keysyms, uint32_t *modifiers) {
+  struct wlr_input_device *device = seat->keyboard_group->input_device;
+  *modifiers = wlr_keyboard_get_modifiers(device->keyboard);
+  xkb_mod_mask_t consumed = xkb_state_key_get_consumed_mods2(device->keyboard->xkb_state,
+							     keycode,
+							     XKB_CONSUMED_MODE_XKB);
+  *modifiers = *modifiers & ~consumed;
 
-  wlr_seat_keyboard_notify_key(seat->seat, ev->time_msec, ev->keycode, ev->state);
+  return xkb_state_key_get_syms(device->keyboard->xkb_state, keycode, keysyms);
+}
+
+static size_t seat_raw_keysyms(struct hrt_seat *seat, xkb_keycode_t keycode,
+				   const xkb_keysym_t **keysyms, uint32_t *modifiers) {
+  struct wlr_input_device *device = seat->keyboard_group->input_device;
+  *modifiers = wlr_keyboard_get_modifiers(device->keyboard);
+
+  xkb_layout_index_t layout_index = xkb_state_key_get_layout(device->keyboard->xkb_state,
+							     keycode);
+  return xkb_keymap_key_get_syms_by_level(device->keyboard->keymap,
+					  keycode, layout_index, 0, keysyms);
+}
+
+static bool execute_hardcoded_bindings(struct hrt_server *server,
+				       const xkb_keysym_t *pressed_keysyms, uint32_t modifiers,
+				       size_t keysyms_len) {
+  for(size_t i = 0; i < keysyms_len; ++i) {
+    xkb_keysym_t keysym = pressed_keysyms[i];
+    if (keysym == XKB_KEY_Escape) {
+      exit(0);
+    }
+
+    if (keysym >= XKB_KEY_XF86Switch_VT_1 && keysym <= XKB_KEY_XF86Switch_VT_12) {
+      if (wlr_backend_is_multi(server->backend)) {
+	struct wlr_session *session = wlr_backend_get_session(server->backend);
+	if (session) {
+	  puts("Changing session");
+	  unsigned vt = keysym - XKB_KEY_XF86Switch_VT_1 + 1;
+	  wlr_session_change_vt(session, vt);
+	}
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+static void seat_handle_key(struct wl_listener *listener, void *data) {
+  puts("Keyboard key pressed");
+  struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
+  struct wlr_event_keyboard_key *event = data;
+  struct hrt_server *server = seat->server;
+
+  xkb_keycode_t keycode = event->keycode + 8;
+
+  const xkb_keysym_t *raw_keysyms;
+  uint32_t raw_modifiers;
+  size_t raw_keysyms_len = seat_raw_keysyms(seat, keycode, &raw_keysyms, &raw_modifiers);
+
+  const xkb_keysym_t *translated_keysyms;
+  uint32_t translated_modifiers;
+  size_t translated_keysyms_len = seat_translate_keysyms(seat, keycode,
+							 &translated_keysyms, &translated_modifiers);
+
+  bool handled = false;
+
+  if(!handled && event->state == WLR_KEY_PRESSED) {
+    handled = execute_hardcoded_bindings(server, raw_keysyms, raw_modifiers, raw_keysyms_len);
+  }
+
+  if(!handled && event->state == WLR_KEY_PRESSED) {
+    handled = execute_hardcoded_bindings(server, translated_keysyms, translated_modifiers,
+					 translated_keysyms_len);
+  }
+
+  // TODO: I don't know if this condition is correct
+  if(!handled || event->state == WLR_KEY_RELEASED) {
+    wlr_seat_keyboard_notify_key(seat->seat, event->time_msec, event->keycode, event->state);
+  }
 }
 
 static void seat_handle_modifiers(struct wl_listener *listener, void *data) {
