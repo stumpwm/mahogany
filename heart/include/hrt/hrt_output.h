@@ -1,5 +1,5 @@
-#ifndef HRT_OUTPUT_H
-#define HRT_OUTPUT_H
+#ifndef HRT_HRT_OUTPUT_H
+#define HRT_HRT_OUTPUT_H
 
 #include <wayland-server.h>
 

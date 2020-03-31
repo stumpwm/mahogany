@@ -1,5 +1,5 @@
-#ifndef HRT_SERVER_H
-#define HRT_SERVER_H
+#ifndef HRT_HRT_SERVER_H
+#define HRT_HRT_SERVER_H
 
 #include <stdbool.h>
 

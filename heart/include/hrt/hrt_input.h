@@ -1,5 +1,5 @@
-#ifndef HRT_INPUT_H
-#define HRT_INPUT_H
+#ifndef HRT_HRT_INPUT_H
+#define HRT_HRT_INPUT_H
 
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
