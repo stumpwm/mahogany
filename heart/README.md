@@ -9,6 +9,15 @@ foreign code needs to be called from the other language.
 The foreign code will interface with this library through a series of
 callbacks, which are orgainized based on their purpose.
 
+## Output callbacks
+This set of callbacks handls when outputs are added and
+removed. Outputs usually correspond to physical monitors, but they can
+also be VNC connections or other means of displaying a chunk of
+pixels.
+
++ **output_added**: Called when a new output is added.
++ **output_removed**: Called when an output is removed.
+
 ## Seat (input) callbacks
 This set of callbacks handles input events
 
