@@ -13,6 +13,11 @@ void output_callback(struct hrt_output *output) {
   puts("Output callback called");
 }
 
+bool keyboard_callback() {
+  puts("Keyboard callback called");
+  return false;
+}
+
 static const struct hrt_output_callbacks output_callbacks = {
   .output_added = &output_callback,
   .output_removed = &output_callback,
@@ -21,6 +26,7 @@ static const struct hrt_output_callbacks output_callbacks = {
 static const struct hrt_seat_callbacks seat_callbacks = {
   .button_event = &cursor_callback,
   .wheel_event = &cursor_callback,
+  .keyboard_key_event = &keyboard_callback,
 };
 
 int main(int argc, char *argv[]) {

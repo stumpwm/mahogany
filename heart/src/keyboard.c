@@ -78,6 +78,10 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
 
   bool handled = false;
 
+  if(event->state == WLR_KEY_PRESSED) {
+    seat->callbacks->keyboard_key_event();
+  }
+
   if(!handled && event->state == WLR_KEY_PRESSED) {
     handled = execute_hardcoded_bindings(server, raw_keysyms, raw_modifiers, raw_keysyms_len);
   }

@@ -32,8 +32,12 @@ struct hrt_seat {
 };
 
 struct hrt_seat_callbacks {
+  // TODO: these need parameters
   void (*button_event)();
   void (*wheel_event)();
+  bool (*keyboard_key_event)();
+  // TODO: I don't know if we need this event:
+  // bool (*keyboard_modifier_event)();
 };
 
 struct hrt_input {
