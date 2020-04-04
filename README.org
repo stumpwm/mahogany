@@ -1,63 +1,43 @@
-* NOTE: there is nothing notable implemented yet.
 * Mahogany
   Mahogany is a tiling window manager for Wayland modeled after
-  stumpwm. While it is not a drop-in replacement for stumpwm, stumpwm
+  StumpWM. While it is not a drop-in replacement for stumpwm, stumpwm
   users should be very comfortable with Mahogany. Its planned
   features are:
-  + [ ] Easy extensibility: through the use of different modes, users can
-    modify keybindings present in Mahogany, and even have different
-    keybindings for each program or window.
-  + [ ] Module system that allows users to load and use code at their
+  + Easy extensibility: through the use of different modes, users can
+    modify keybindings present in Mahogany.
+  + Module system that allows users to load and use code at their
     descretion.
-  + [ ] Programs to interact with other running services such as
+  + Programs to interact with other running services such as
     pulseaudio and alsamixer, as well as facilities to controll screen
     brightness. These are module based, so they don't have to be
     loaded if your system doesn't use them.
-  + [ ] Good support for floating windows
-  + [X] A Common Lisp code base.
-** TODO Installation
-   Currently, the only way to install Mahogany is to compile from
-   source.
-*** Requirements:
-    These are the requirements that must be manually installed. For
-    the lisp dependencies, it is enough to download the repositories
-    to where they can be found by =asdf=, the lisp dependency manager. Either
-    place them in =~/common-lisp=, or use
-    one of the methods described in the [[https://common-lisp.net/project/asdf/asdf/Configuring-ASDF-to-find-your-systems.html][relevant section of the asdf manual]].
-    + [[https://github.com/sdilts/cl-wayland][cl-wayland]]. As of the time of writing, the distribution included
-      with quicklisp is not up to date with the latest changes. Use
-      the devel branch of linked repository instead; it will always be
-      up to date.
-    + [[https://github.com/swaywm/wlroots][wlroots]] and [[https://github.com/swaywm/cl-wlroots][cl-wlroots]]. Install them per the directions in each project's
-      readme. The submodule included in the =cl-wlroots= repository will always
-      work, but may lag behind several commits. For all the features of Mahogany,
-      ensure that XWayland support is included.
-    + [[https://github.com/roswell/roswell][Roswell]]. Roswell is an lisp implementation manager that makes it
-      very easy to install common lisp implementations and create binaries.
-    + [[https://www.quicklisp.org/][Quicklisp]] for automatically installing some of the lisp
-      dependencies. Folow the instructions listed at the link. Not
-      needed if you are using Roswell.
-*** Instalation
-    You can build an executable by running =ros build mahogany.ros=
-    in the root directory of the project. While mahogany will run
-    using sbcl, it is recommended to use CCL, as rendering is much
-    more stable. To download ccl using roswell, run =ros install
-    ccl-bin=. Roswell may not use CCL by default, so use =ros -L
-    ccl-bin build mahogany.ros=
+  + Good support for floating windows.
+  + A configuration system using Common Lisp.
 
-** TODO Customizing Mahogany
-** TODO Adding new features/modes
-   Please see the [[./doc/devel/][documentation directory]] for details on how to extend
-   Mahogany.
-** TODO Contributing to Mahogany
-   Some parts of Mahogany are in a hackable state, and others can be adapted from other projects. If you want to work on
-   Mahogany, here are some things you can do, in no particular order:
-   + The basic infrastructure for getting keyboard input is implemented. Reading and holding the state of the keyboard
-     needs to be implemented. Rootson, the example compositor for wlroots is a good place to start. See the files
-     backend/input/keyobard.lisp in this repo and rootson/keyboard.c in the wlroots repo.
-   + Command suppoort. We could probably get away with using the command system used in
-     [[https://github.com/stumpwm/stumpwm][stumpwm]]. Everything is that we would need in present in the `command.lisp` file.
-     Put it into its own package, and submit a pull request for both stumpwm and mahogany: this is on stumpwm's todo iist
-     as well as Mahogany's.
-   + [[https://github.com/stumpwm/paulownia][Paulownia]] has some code that we could use as well, Notably, the following files
-     in the =base= directory: =data-dir.lisp=, =load-rc.lisp=, and =hooks.lisp=.
+  This branch contains a version of Mahogany using a backend written
+  in C. The old version written entirely in Common Lisp can be found in
+  the [[https://github.com/stumpwm/mahogany/tree/full-cl-old][full-cl-old]] branch.
+** Building
+   There are two parts to Mahogany that need to be compiled
+   seperately: the backend written in C, and the Common Lisp front
+   end. The CL front end has yet to be written.
+
+*** Building the backend
+    Requirements:
+    + =wlroots=, as taken from this fork: [[https://github.com/sdilts/wlroots/tree/0.10.0-layer-shell][0.10.0-layer-shell]]
+    + =xkbcommon=
+    + =xcb=, if xwayland support is enabled
+
+    Once the requirements are installed, build the backend found in
+    the =heart= directory:
+    #+BEGIN_SRC shell
+    mkdir heart/build
+    cd heart/build
+    meson ..
+    ninja
+    #+END_SRC
+
+    The test application can be ran with:
+    #+BEGIN_SRC shell
+    ./src/heart
+    #+END_SRC
