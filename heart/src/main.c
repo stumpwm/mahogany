@@ -27,6 +27,7 @@ static const struct hrt_seat_callbacks seat_callbacks = {
   .button_event = &cursor_callback,
   .wheel_event = &cursor_callback,
   .keyboard_key_event = &keyboard_callback,
+  .keyboard_modifier_event = &keyboard_callback,
 };
 
 int main(int argc, char *argv[]) {
