@@ -1,1 +1,2 @@
 option('xwayland', type: 'feature', value: 'auto', description: 'Enable support for X11 applications')
+option('example', type: 'boolean', value: true, description: 'Build example C application')

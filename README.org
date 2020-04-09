@@ -39,5 +39,5 @@
 
     The test application can be ran with:
     #+BEGIN_SRC shell
-    ./src/heart
+    ./example/heart
     #+END_SRC
