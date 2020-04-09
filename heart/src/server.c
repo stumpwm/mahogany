@@ -26,8 +26,6 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
   wlr_data_control_manager_v1_create(server->wl_display);
   wlr_gamma_control_manager_v1_create(server->wl_display);
 
-  server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
-
   if(!hrt_output_init(server, output_callbacks)) {
     return false;
   }
