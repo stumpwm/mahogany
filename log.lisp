@@ -50,7 +50,9 @@
       (:ignore (values 0)))))
 
 (defmacro log-string (log-lvl string &rest fmt)
-  "Log the input to *log-output-file* based on the current value of *log-level*"
+  "Log the input to *log-output-file* based on the current value of *log-level*.
+The string argument as well as the format args will not be evaluated if the current log
+level is not high enough."
   (check-type log-lvl debug-specifier)
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color)
