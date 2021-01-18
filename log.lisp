@@ -37,7 +37,7 @@
 
 ;; log-string is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
-(eval-when (:compile-toplevel :load-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defun get-print-data (level)
     (ecase level
       ;; higher values mean less importance
