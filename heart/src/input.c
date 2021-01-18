@@ -10,7 +10,10 @@
 static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
   struct wlr_keyboard *kb = input->wlr_input_device->keyboard;
   wlr_keyboard_set_keymap(kb, seat->keyboard_group->keyboard.keymap);
-  wlr_keyboard_group_add_keyboard(seat->keyboard_group, kb);
+  if(!wlr_keyboard_group_add_keyboard(seat->keyboard_group, kb)) {
+    puts("Could not add keyboard to keyboard group!");
+    exit(1);
+  }
 }
 
 static void add_new_pointer(struct hrt_input *input, struct hrt_seat *seat) {
