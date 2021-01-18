@@ -14,6 +14,9 @@
 
 (in-package #:mahogany/log)
 
+(deftype debug-specifier ()
+  '(member :trace :debug :info :warn :error :fatal :ignore))
+
 (defvar *log-output-file* *standard-output*
   "The file to print log messages")
 
@@ -47,7 +50,7 @@
 
 (defmacro log-string (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*"
-  (assert (keywordp log-lvl))
+  (check-type log-lvl debug-specifier)
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color)
 	(get-print-data log-lvl)
@@ -66,7 +69,7 @@
 
 (defun check-valid-log-level (level)
   ;; TODO: make this something with a use-value restart?
-  (assert (member level '(:trace :debug :info :warn :error :fatal))))
+  (check-type level debug-specifier))
 
 (defun log-debug-level ()
   *log-level*)
