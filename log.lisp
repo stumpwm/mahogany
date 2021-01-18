@@ -3,6 +3,7 @@
 (defpackage #:mahogany/log
   (:use :cl #:cl-ansi-text)
   (:export #:*log-level*
+	   #:log-level
 	   #:log-string
 	   #:log-init
 	   #:with-log-level
@@ -22,7 +23,7 @@
 ;; if you need to add more log levels, you may need to recompile, as
 ;; the level is translated to a number at read time. See log-string.
 (defvar *log-level* :info
-  "The amount of information printed to the *log-output-file*. The accepted values are:
+  "The amount of information printed when logging to the output file. The accepted values are:
 :ignore Print nothing to stdout
 :trace  this should be used for 'tracing' the code, such as when doing deep debugging.
 :debug  Information that is diagnostically helpful to people who are not project developers
@@ -31,13 +32,13 @@
         *log-output-file*. Use if something is wrong, but the app can still continue.
 :error  Something went wrong...
 :fatal  Better call the insurance company...")
+(declaim (type debug-specifier *log-level*))
 
 ;; log-string is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel)
   (defun get-print-data (level)
-    ;; would probably be better to use a hashtable or plist
-    (ccase level
+    (ecase level
       ;; higher values mean less importance
       (:trace  (values 6 :white))
       (:debug  (values 5 :cyan))
@@ -70,10 +71,10 @@
   ;; TODO: make this something with a use-value restart?
   (check-type level debug-specifier))
 
-(defun log-debug-level ()
+(defun log-level ()
   *log-level*)
 
-(defun (setf log-debug-level) (new-level)
+(defun (setf log-level) (new-level)
   (check-valid-log-level new-level)
   (setf *log-level* new-level))
 
