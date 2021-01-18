@@ -24,7 +24,7 @@
 
 *** Building the backend
     Requirements:
-    + =wlroots=, as taken from this fork: [[https://github.com/sdilts/wlroots/tree/0.10.0-layer-shell][0.10.0-layer-shell]]
+    + =wlroots=, version 0.12.0
     + =xkbcommon=
     + =xcb=, if xwayland support is enabled
 
