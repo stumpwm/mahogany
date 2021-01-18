@@ -4,6 +4,7 @@
   (:use :cl #:cl-ansi-text)
   (:export #:*log-level*
 	   #:log-level
+	   #:log-colored-p
 	   #:log-string
 	   #:log-init
 	   #:with-log-level
@@ -78,7 +79,7 @@
   (check-valid-log-level new-level)
   (setf *log-level* new-level))
 
-(defun log-colored ()
+(defun log-colored-p ()
   cl-ansi-text:*enabled*)
 
 (defun (setf log-colored) (enablep)
