@@ -4,7 +4,6 @@
   (:use :cl #:cl-ansi-text)
   (:export #:*log-level*
 	   #:log-string
-	   #:get-print-data
 	   #:log-init
 	   #:with-log-level
 	   #:with-log-color-enabled
