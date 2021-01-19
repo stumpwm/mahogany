@@ -24,17 +24,6 @@ static size_t seat_translate_keysyms(struct hrt_seat *seat, xkb_keycode_t keycod
   return xkb_state_key_get_syms(device->keyboard->xkb_state, keycode, keysyms);
 }
 
-static size_t seat_raw_keysyms(struct hrt_seat *seat, xkb_keycode_t keycode,
-				   const xkb_keysym_t **keysyms, uint32_t *modifiers) {
-  struct wlr_input_device *device = seat->keyboard_group->input_device;
-  *modifiers = wlr_keyboard_get_modifiers(device->keyboard);
-
-  xkb_layout_index_t layout_index = xkb_state_key_get_layout(device->keyboard->xkb_state,
-							     keycode);
-  return xkb_keymap_key_get_syms_by_level(device->keyboard->keymap,
-					  keycode, layout_index, 0, keysyms);
-}
-
 static bool execute_hardcoded_bindings(struct hrt_server *server,
 				       const xkb_keysym_t *pressed_keysyms, uint32_t modifiers,
 				       size_t keysyms_len) {
@@ -67,10 +56,6 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
 
   xkb_keycode_t keycode = event->keycode + 8;
 
-  const xkb_keysym_t *raw_keysyms;
-  uint32_t raw_modifiers;
-  size_t raw_keysyms_len = seat_raw_keysyms(seat, keycode, &raw_keysyms, &raw_modifiers);
-
   const xkb_keysym_t *translated_keysyms;
   uint32_t translated_modifiers;
   size_t translated_keysyms_len = seat_translate_keysyms(seat, keycode,
@@ -79,11 +64,7 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
   bool handled = false;
 
   if(event->state == WLR_KEY_PRESSED) {
-    seat->callbacks->keyboard_key_event();
-  }
-
-  if(!handled && event->state == WLR_KEY_PRESSED) {
-    handled = execute_hardcoded_bindings(server, raw_keysyms, raw_modifiers, raw_keysyms_len);
+    handled = seat->callbacks->keyboard_key_event();
   }
 
   if(!handled && event->state == WLR_KEY_PRESSED) {

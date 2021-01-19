@@ -27,7 +27,7 @@ wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
 xcb            = dependency('xcb', required: get_option('xwayland'))
 
-wlroots_version = ['>=0.10.0', '<0.11.0']
+wlroots_version = ['>=0.12.0', '<0.13.0']
 wlroots_proj = subproject(
 	'wlroots',
 	default_options: ['examples=false'],
@@ -52,8 +52,35 @@ have_xwayland = xcb.found() and wlroots_has_xwayland
 conf_data = configuration_data()
 conf_data.set10('HAVE_XWAYLAND', have_xwayland)
 
-heart_inc = include_directories('include')
+hrt_source_files = []
 
 subdir('include')
 subdir('protocols')
 subdir('src')
+
+hrt_deps = [
+  server_protos,
+  wayland_server,
+  wlroots,
+  xkbcommon,
+]
+
+hrt_inc = include_directories('include')
+proto_inc = include_directories('protocols')
+
+lib_hrt = library(
+  meson.project_name(), hrt_source_files,
+  dependencies: hrt_deps,
+  include_directories: [hrt_inc, proto_inc],
+  install: true
+)
+
+heart = declare_dependency(
+  link_with: lib_hrt,
+  dependencies: hrt_deps,
+  include_directories: hrt_inc,
+)
+
+if get_option('example')
+  subdir('example')
+endif
