@@ -13,8 +13,16 @@ void output_callback(struct hrt_output *output) {
   puts("Output callback called");
 }
 
-bool keyboard_callback() {
+bool keyboard_callback(struct hrt_keypress_info *info) {
   puts("Keyboard callback called");
+  printf("Modifiers: %d\n", info->modifiers);
+  printf("Keys pressed:");
+  for(size_t i = 0; i < info->keysyms_len; ++i) {
+	  char buffer[20];
+	  xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
+	  printf(" %s", buffer);
+  }
+  puts("\n\n");
   return false;
 }
 
@@ -26,8 +34,7 @@ static const struct hrt_output_callbacks output_callbacks = {
 static const struct hrt_seat_callbacks seat_callbacks = {
   .button_event = &cursor_callback,
   .wheel_event = &cursor_callback,
-  .keyboard_key_event = &keyboard_callback,
-  .keyboard_modifier_event = &keyboard_callback,
+  .keyboard_keypress_event = &keyboard_callback,
 };
 
 int main(int argc, char *argv[]) {
