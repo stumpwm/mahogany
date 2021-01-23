@@ -4,6 +4,7 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard_group.h>
+#include <xkbcommon/xkbcommon.h>
 
 struct hrt_server;
 
@@ -31,12 +32,23 @@ struct hrt_seat {
   const struct hrt_seat_callbacks *callbacks;
 };
 
+struct hrt_keypress_info {
+  const xkb_keysym_t *keysyms;
+  uint32_t modifiers;
+  size_t keysyms_len;
+};
+
 struct hrt_seat_callbacks {
   // TODO: these need parameters
   void (*button_event)();
   void (*wheel_event)();
-  bool (*keyboard_key_event)();
-  bool (*keyboard_modifier_event)();
+  // We will eventually want to pass in the event object, keyboard object and seat object
+  // to get anything beyond basic keybindings, but then this should work for the basics
+  // and we don't need to write wlroots bindings.
+  /**
+   * This callback is called whenever a non-modifier key is pressed (not released)
+   **/
+  bool (*keyboard_keypress_event)(struct hrt_keypress_info *info);
 };
 
 struct hrt_input {

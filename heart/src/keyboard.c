@@ -64,7 +64,12 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
   bool handled = false;
 
   if(event->state == WLR_KEY_PRESSED) {
-    handled = seat->callbacks->keyboard_key_event();
+    struct hrt_keypress_info key_info = {
+      .keysyms = translated_keysyms,
+      .keysyms_len = translated_keysyms_len,
+      .modifiers = translated_modifiers
+    };
+    handled = seat->callbacks->keyboard_keypress_event(&key_info);
   }
 
   if(!handled && event->state == WLR_KEY_PRESSED) {
