@@ -2,6 +2,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
 
+#include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
 static void seat_motion(struct wl_listener *listener, void *data) {
@@ -36,8 +37,17 @@ static void seat_frame(struct wl_listener *listener, void *data) {
   wlr_seat_pointer_notify_frame(seat->seat);
 }
 
-void hrt_cursor_init(struct hrt_seat *seat) {
+bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
+  seat->cursor = wlr_cursor_create();
+  if(!seat->cursor) {
+    return false;
+  }
+  wlr_cursor_attach_output_layout(seat->cursor, server->output_layout);
+
   seat->xcursor_manager = wlr_xcursor_manager_create(NULL, 24);
+  if(!seat->xcursor_manager) {
+    return false;
+  }
   wlr_xcursor_manager_load(seat->xcursor_manager, 1);
 
   seat->motion.notify = seat_motion;
@@ -50,4 +60,6 @@ void hrt_cursor_init(struct hrt_seat *seat) {
   wl_signal_add(&seat->cursor->events.axis, &seat->axis);
   seat->frame.notify = seat_frame;
   wl_signal_add(&seat->cursor->events.frame, &seat->frame);
+
+  return true;
 }

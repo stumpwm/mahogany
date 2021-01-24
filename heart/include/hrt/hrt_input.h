@@ -61,7 +61,7 @@ struct hrt_input {
 
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 		   const struct hrt_seat_callbacks *callbacks);
-void hrt_cursor_init(struct hrt_seat *seat);
+bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server);
 void hrt_keyboard_init(struct hrt_seat *seat);
 
 #endif
