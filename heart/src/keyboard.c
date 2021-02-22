@@ -63,7 +63,7 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
 
   bool handled = false;
 
-  if(event->state == WLR_KEY_PRESSED) {
+  if(event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
     struct hrt_keypress_info key_info = {
       .keysyms = translated_keysyms,
       .keysyms_len = translated_keysyms_len,
@@ -72,13 +72,13 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
     handled = seat->callbacks->keyboard_keypress_event(&key_info);
   }
 
-  if(!handled && event->state == WLR_KEY_PRESSED) {
+  if(!handled && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
     handled = execute_hardcoded_bindings(server, translated_keysyms, translated_modifiers,
 					 translated_keysyms_len);
   }
 
   // TODO: I don't know if this condition is correct
-  if(!handled || event->state == WLR_KEY_RELEASED) {
+  if(!handled || event->state == WL_KEYBOARD_KEY_STATE_RELEASED) {
     wlr_seat_keyboard_notify_key(seat->seat, event->time_msec, event->keycode, event->state);
   }
 }
