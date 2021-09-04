@@ -27,7 +27,7 @@ wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
 xcb            = dependency('xcb', required: get_option('xwayland'))
 
-wlroots_version = ['>=0.13.0', '<0.14.0']
+wlroots_version = ['>=0.14.0', '<0.15.0']
 wlroots_proj = subproject(
 	'wlroots',
 	default_options: ['examples=false'],
