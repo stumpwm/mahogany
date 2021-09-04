@@ -10,7 +10,7 @@
 bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
 		     const struct hrt_seat_callbacks *seat_callbacks) {
   server->wl_display = wl_display_create();
-  server->backend = wlr_backend_autocreate(server->wl_display, NULL);
+  server->backend = wlr_backend_autocreate(server->wl_display);
 
   if(!server->backend) {
     return false;
