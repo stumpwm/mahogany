@@ -24,7 +24,8 @@
 
 *** Building the backend
     Requirements:
-    + =wlroots=, version 0.12.0
+    + =wlroots=: Use version found in =heart/subprojects/wlroots=:
+      mahogany currently doesn't use a point release of wlroots.
     + =xkbcommon=
     + =xcb=, if xwayland support is enabled
 
