@@ -2,6 +2,7 @@
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
+#include <wlr/types/wlr_data_device.h>
 
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
@@ -16,10 +17,19 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
     return false;
   }
 
-  server->renderer = wlr_backend_get_renderer(server->backend);
+  server->renderer = wlr_renderer_autocreate(server->backend);
+  if(!server->renderer) {
+    return false;
+  }
   wlr_renderer_init_wl_display(server->renderer, server->wl_display);
 
+  server->allocator = wlr_allocator_autocreate(server->backend, server->renderer);
+  if(!server->allocator) {
+    return false;
+  }
+
   server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
+  wlr_data_device_manager_create(server->wl_display);
 
   wlr_export_dmabuf_manager_v1_create(server->wl_display);
   wlr_screencopy_manager_v1_create(server->wl_display);

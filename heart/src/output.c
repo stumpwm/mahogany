@@ -53,12 +53,13 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
   output->wlr_output = wlr_output;
   output->server = server;
 
+  wlr_output_init_render(wlr_output, server->allocator, server->renderer);
+
   output->frame.notify = handle_frame_notify;
   wl_signal_add(&wlr_output->events.frame, &output->frame);
 
-  wlr_output_layout_add_auto(server->output_layout, wlr_output);
-
   // temp background color:
+  // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
   output->color[0] = float_rand();
   output->color[1] = float_rand();
   output->color[2] = float_rand();
@@ -75,7 +76,9 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
   struct hrt_server *server = wl_container_of(listener, server, new_output);
 
   struct wlr_output *wlr_output = data;
+
   struct hrt_output *output = hrt_output_create(server, wlr_output);
+
   output->destroy.notify = handle_output_destroy;
   wl_signal_add(&wlr_output->events.destroy, &output->destroy);
   wl_list_insert(&server->outputs, &output->link);
@@ -83,10 +86,11 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
   struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
   if (mode != NULL) {
     wlr_output_set_mode(wlr_output, mode);
+    wlr_output_enable(wlr_output, true);
     wlr_output_commit(wlr_output);
   }
 
-  wlr_output_create_global(wlr_output);
+  wlr_output_layout_add_auto(server->output_layout, wlr_output);
 
   server->output_callback->output_added(output);
 }
