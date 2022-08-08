@@ -20,10 +20,35 @@ static void add_new_pointer(struct hrt_input *input, struct hrt_seat *seat) {
   wlr_cursor_attach_input_device(seat->cursor, input->wlr_input_device);
 }
 
+static uint32_t find_input_caps(struct hrt_seat *seat, struct hrt_input *input) {
+  uint32_t caps = 0;
+  wl_list_for_each(input, &seat->inputs, link) {
+    switch (input->wlr_input_device->type) {
+    case WLR_INPUT_DEVICE_KEYBOARD:
+      caps |= WL_SEAT_CAPABILITY_KEYBOARD;
+      break;
+    case WLR_INPUT_DEVICE_POINTER:
+      caps |= WL_SEAT_CAPABILITY_POINTER;
+      break;
+    case WLR_INPUT_DEVICE_TOUCH:
+      caps |= WL_SEAT_CAPABILITY_TOUCH;
+      break;
+    default:
+      /* This space deliberately left blank */
+      break;
+    }
+  }
+  return caps;
+}
+
 static void input_device_destroy(struct wl_listener *listener, void *data) {
   puts("input device destroyed");
 
   struct hrt_input *input = wl_container_of(listener, input, destroy);
+
+  uint32_t caps = find_input_caps(input->seat, input);
+  wlr_seat_set_capabilities(input->seat->seat, caps);
+
   wl_list_remove(&input->link);
   free(input);
 }
@@ -51,23 +76,7 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
     break;
   }
 
-  uint32_t caps = 0;
-  wl_list_for_each(input, &seat->inputs, link) {
-    switch (input->wlr_input_device->type) {
-    case WLR_INPUT_DEVICE_KEYBOARD:
-      caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-      break;
-    case WLR_INPUT_DEVICE_POINTER:
-      caps |= WL_SEAT_CAPABILITY_POINTER;
-      break;
-    case WLR_INPUT_DEVICE_TOUCH:
-      caps |= WL_SEAT_CAPABILITY_TOUCH;
-      break;
-    default:
-      /* This space deliberately left blank */
-      break;
-    }
-  }
+  uint32_t caps = find_input_caps(seat, input);
   wlr_seat_set_capabilities(seat->seat, caps);
 }
 
