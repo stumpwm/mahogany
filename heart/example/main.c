@@ -1,11 +1,12 @@
 #include <stdio.h>
 
+#include <string.h>
 #include <wlr/util/log.h>
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
-void cursor_callback() {
+void cursor_callback(struct hrt_seat *seat) {
   puts("Cursor callback called");
 }
 
@@ -13,7 +14,8 @@ void output_callback(struct hrt_output *output) {
   puts("Output callback called");
 }
 
-bool keyboard_callback(struct hrt_keypress_info *info) {
+static bool showNormalCursor = true;
+bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *info) {
   puts("Keyboard callback called");
   printf("Modifiers: %d\n", info->modifiers);
   printf("Keys pressed:");
@@ -21,6 +23,10 @@ bool keyboard_callback(struct hrt_keypress_info *info) {
 	  char buffer[20];
 	  xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
 	  printf(" %s", buffer);
+    if(strcmp(buffer, "c") == 0) {
+      hrt_seat_set_cursor_img(seat, showNormalCursor ? "crossed_circle" : "left_ptr");
+      showNormalCursor = !showNormalCursor;
+    }
   }
   puts("\n\n");
   return false;

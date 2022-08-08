@@ -40,16 +40,16 @@ struct hrt_keypress_info {
 };
 
 struct hrt_seat_callbacks {
-  // TODO: these need parameters
-  void (*button_event)();
-  void (*wheel_event)();
+  // TODO: these probably need more parameters
+  void (*button_event)(struct hrt_seat *seat);
+  void (*wheel_event)(struct hrt_seat *seat);
   // We will eventually want to pass in the event object, keyboard object and seat object
   // to get anything beyond basic keybindings, but then this should work for the basics
   // and we don't need to write wlroots bindings.
   /**
    * This callback is called whenever a non-modifier key is pressed (not released)
    **/
-  bool (*keyboard_keypress_event)(struct hrt_keypress_info *info);
+  bool (*keyboard_keypress_event)(struct hrt_seat *seat, struct hrt_keypress_info *info);
 };
 
 struct hrt_input {

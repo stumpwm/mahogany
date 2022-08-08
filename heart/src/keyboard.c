@@ -69,7 +69,7 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
       .keysyms_len = translated_keysyms_len,
       .modifiers = translated_modifiers
     };
-    handled = seat->callbacks->keyboard_keypress_event(&key_info);
+    handled = seat->callbacks->keyboard_keypress_event(seat, &key_info);
   }
 
   if(!handled && event->state == WL_KEYBOARD_KEY_STATE_RELEASED) {
