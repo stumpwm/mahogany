@@ -35,12 +35,12 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 
     if (keysym >= XKB_KEY_XF86Switch_VT_1 && keysym <= XKB_KEY_XF86Switch_VT_12) {
       if (wlr_backend_is_multi(server->backend)) {
-	struct wlr_session *session = wlr_backend_get_session(server->backend);
-	if (session) {
-	  puts("Changing session");
-	  unsigned vt = keysym - XKB_KEY_XF86Switch_VT_1 + 1;
-	  wlr_session_change_vt(session, vt);
-	}
+        struct wlr_session *session = wlr_backend_get_session(server->backend);
+        if (session) {
+          puts("Changing session");
+          unsigned vt = keysym - XKB_KEY_XF86Switch_VT_1 + 1;
+          wlr_session_change_vt(session, vt);
+        }
       }
       return true;
     }
