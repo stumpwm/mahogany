@@ -5,21 +5,25 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
+static void handle_cursor_motion(struct hrt_seat *seat) {
+  wlr_xcursor_manager_set_cursor_image(seat->xcursor_manager,
+				       seat->cursor_image, seat->cursor);
+}
+
 static void seat_motion(struct wl_listener *listener, void *data) {
   struct hrt_seat *seat = wl_container_of(listener, seat, motion);
   struct wlr_event_pointer_motion *ev = data;
-  wlr_xcursor_manager_set_cursor_image(seat->xcursor_manager,
-				       "left_ptr", seat->cursor);
 
   wlr_cursor_move(seat->cursor, ev->device, ev->delta_x, ev->delta_y);
+  handle_cursor_motion(seat);
 }
 
 static void seat_motion_absolute(struct wl_listener *listener, void *data) {
   struct hrt_seat *seat = wl_container_of(listener, seat, motion_absolute);
   struct wlr_event_pointer_motion_absolute *ev = data;
-  wlr_xcursor_manager_set_cursor_image(seat->xcursor_manager,
-				       "left_ptr", seat->cursor);
+
   wlr_cursor_warp_absolute(seat->cursor, ev->device, ev->x, ev->y);
+  handle_cursor_motion(seat);
 }
 
 static void seat_button(struct wl_listener *listener, void *data) {

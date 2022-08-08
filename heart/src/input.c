@@ -98,5 +98,7 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
   }
   wl_list_init(&seat->inputs);
 
+  seat->cursor_image = "left_ptr";
+
   return true;
 }

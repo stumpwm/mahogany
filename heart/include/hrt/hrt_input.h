@@ -30,6 +30,7 @@ struct hrt_seat {
   struct wl_listener keyboard_modifiers;
 
   const struct hrt_seat_callbacks *callbacks;
+  char *cursor_image;
 };
 
 struct hrt_keypress_info {
@@ -63,5 +64,14 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 		   const struct hrt_seat_callbacks *callbacks);
 bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server);
 void hrt_keyboard_init(struct hrt_seat *seat);
+
+/**
+ * Set the seat's default cursor image to the given cursor name.
+ *
+ * Does not take ownership of the string.
+ *
+ * See themes section of man xcursor(3) to find where to find valid cursor names.
+ */
+void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name);
 
 #endif
