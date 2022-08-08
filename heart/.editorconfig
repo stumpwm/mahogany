@@ -1,0 +1,9 @@
+[*.c]
+indent_style = space
+trim_trailing_whitespace = true
+indent_size = 2
+
+[*.h]
+indent_style = space
+trim_trailing_whitespace = true
+indent_size = 2
