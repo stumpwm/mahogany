@@ -51,11 +51,8 @@ bool hrt_server_start(struct hrt_server *server) {
     wlr_backend_destroy(server->backend);
     return false;
   }
-  return true;
-}
-
-void hrt_server_run(struct hrt_server *server) {
   wl_display_run(server->wl_display);
+  return true;
 }
 
 void hrt_server_finish(struct hrt_server *server) {

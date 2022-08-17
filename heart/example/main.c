@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
   }
 
   hrt_server_start(&server);
-  hrt_server_run(&server);
   hrt_server_finish(&server);
   return 0;
 }
