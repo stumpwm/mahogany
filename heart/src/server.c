@@ -1,3 +1,4 @@
+#include "wlr/util/log.h"
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -9,7 +10,8 @@
 #include <hrt/hrt_input.h>
 
 bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
-		     const struct hrt_seat_callbacks *seat_callbacks) {
+					 const struct hrt_seat_callbacks *seat_callbacks, enum wlr_log_importance log_level) {
+  wlr_log_init(log_level, NULL);
   server->wl_display = wl_display_create();
   server->backend = wlr_backend_autocreate(server->wl_display);
 

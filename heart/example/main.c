@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
   struct hrt_server server;
 
-  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks)) {
+  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks, WLR_DEBUG)) {
     return 1;
   }
 

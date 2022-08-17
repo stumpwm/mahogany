@@ -9,6 +9,7 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
 #include <wlr/render/allocator.h>
+#include <wlr/util/log.h>
 
 #include <hrt/hrt_input.h>
 
@@ -32,7 +33,7 @@ struct hrt_server {
 };
 
 bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
-		     const struct hrt_seat_callbacks *seat_callbacks);
+					 const struct hrt_seat_callbacks *seat_callbacks, enum wlr_log_importance log_level);
 
 bool hrt_server_start(struct hrt_server *server);
 
