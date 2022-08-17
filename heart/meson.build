@@ -81,6 +81,15 @@ heart = declare_dependency(
   include_directories: hrt_inc,
 )
 
+subdir('lisp')
+
+pkg = import('pkgconfig')
+pkg.generate(lib_hrt,
+             version: meson.project_version(),
+             filebase: meson.project_name(),
+             name: meson.project_name(),
+             description: 'Core package for mahogany wm')
+
 if get_option('example')
   subdir('example')
 endif
