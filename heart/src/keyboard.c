@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 // Temp: needed for exiting on escape key pressed:
+#include <wayland-server-core.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 #include <xkbcommon/xkbcommon-names.h>
 #include <wlr/types/wlr_seat.h>
@@ -30,7 +31,8 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
   for(size_t i = 0; i < keysyms_len; ++i) {
     xkb_keysym_t keysym = pressed_keysyms[i];
     if (keysym == XKB_KEY_Escape) {
-      exit(0);
+		puts("Exiting due to escape pressed");
+		wl_display_terminate(server->wl_display);
     }
 
     if (keysym >= XKB_KEY_XF86Switch_VT_1 && keysym <= XKB_KEY_XF86Switch_VT_12) {
