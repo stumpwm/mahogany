@@ -1,36 +1,17 @@
-(defpackage #:mahogany/backend-interface
-  (:use :cl)
-  (:export #:set-window-manager
-	   #:start-backend
-	   #:stop-backend
-	   #:cleanup-backend))
-
 (defpackage #:mahogany/wm-interface
   (:use :cl)
-  (:export #:output
-	   #:output-x
-	   #:output-y
-	   #:output-width
-	   #:output-height
-	   #:output-tree
-	   #:output-floating-windows
-	   #:configure-output
-	   ;; view interface:
-	   #:view
+  (:export #:view ; view interface
 	   #:view-x
 	   #:view-y
 	   #:view-opacity
-	   #:set-dimensions
-	   ;; wm callbacks:
-	   #:get-visible-views
-	   #:set-backend
-	   #:add-view
-	   #:add-output
-	   #:remove-view
-	   #:view-at))
+	   #:set-dimensions))
 
 (defpackage #:mahogany/tree
-  (:use :cl #:mahogany/log #:alexandria #:mahogany/util #:iterate
+  (:use :cl
+	#:alexandria
+	#:iterate
+	#:mahogany/log
+	#:mahogany/util
 	#:mahogany/wm-interface)
   (:export #:*split-frame-hook*
 	   #:*new-frame-hook*
@@ -65,7 +46,8 @@
 	   #:leafs-in))
 
 (defpackage #:mahogany
-  (:use :cl #:mahogany/log #:alexandria #:mahogany/wm-interface
-	#:mahogany/backend-interface
-	#:mahogany/tree)
-  (:export #:*wm* #:*backend*))
+  (:use :cl
+	#:alexandria
+	#:mahogany/log
+	#:mahogany/wm-interface
+	#:mahogany/tree))

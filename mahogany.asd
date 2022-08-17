@@ -16,8 +16,7 @@
 	       (:module interfaces
 			:depends-on ("package")
 			:components ((:file "view-interface")
-				     (:file "wm-interface")
-				     (:file "backend-interface")))
+				     ))
 	       (:module tree
 			:depends-on ("package" "log" "util" "interfaces")
 	       		:components ((:file "tree-interface")
