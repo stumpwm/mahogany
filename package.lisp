@@ -50,4 +50,5 @@
 	#:alexandria
 	#:mahogany/log
 	#:mahogany/wm-interface
+	#:mahogany/core
 	#:mahogany/tree))

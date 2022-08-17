@@ -1,3 +1,9 @@
 [submodule "heart/wlroots"]
 	path = heart/subprojects/wlroots
 	url = https://github.com/swaywm/wlroots.git
+[submodule "dependencies/cl-wayland"]
+	path = dependencies/cl-wayland
+	url = https://github.com/sdilts/cl-wayland.git
+[submodule "dependencies/cl-xkbcommon"]
+	path = dependencies/cl-xkbcommon
+	url = https://github.com/sdilts/cl-xkbcommon.git

@@ -11,3 +11,6 @@ doc/*.pdf
 
 # don't know what these files are, but we don't want them in the repo:
 *.whl
+
+# Build artifacts:
+build/
