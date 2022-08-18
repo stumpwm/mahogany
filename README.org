@@ -6,9 +6,9 @@
   + Easy extensibility: through the use of different modes, users can
     modify keybindings present in Mahogany.
   + Module system that allows users to load and use code at their
-    descretion.
+    discretion.
   + Programs to interact with other running services such as
-    pulseaudio and alsamixer, as well as facilities to controll screen
+    pulseaudio and alsamixer, as well as facilities to control screen
     brightness. These are module based, so they don't have to be
     loaded if your system doesn't use them.
   + Good support for floating windows.
@@ -59,7 +59,7 @@ other means, it is currently not supported by directly invoking =make=
 like these instructions suggest.
 
 *** Common Lisp Dependencies
-You will need a Common Lisp implemtation. While it should run on any
+You will need a Common Lisp implementation. While it should run on any
 version that the CFFI library supports, sbcl is recommended.
 
 The recommended way to install the dependencies is using
@@ -74,7 +74,7 @@ Once downloaded, install the dependencies:
 
 *** Building And Running
 At this point, all of the dependencies should be installed. You can
-now run `make` in the root directory of the project to build the C
+now run =make= in the root directory of the project to build the C
 backend and the mahogany executable.
 #+BEGIN_SRC sh
   make
@@ -84,4 +84,4 @@ backend and the mahogany executable.
 
 It is possible to run mahogany in an X11 or Wayland session, and is
 the recommended method of testing at this time. If you do choose to
-run the program in a TTY, press the `ESC` key to exit.
+run the program in a TTY, press the =ESC= key to exit.
