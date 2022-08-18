@@ -17,28 +17,71 @@
   This branch contains a version of Mahogany using a backend written
   in C. The old version written entirely in Common Lisp can be found in
   the [[https://github.com/stumpwm/mahogany/tree/full-cl-old][full-cl-old]] branch.
+
 ** Building
-   There are two parts to Mahogany that need to be compiled
-   seperately: the backend written in C, and the Common Lisp front
-   end. The CL front end has yet to be written.
+   There are two parts to Mahogany: a backend library implemented in C, and
+   the Common Lisp front end. Thus, you will need the following tools:
+   + A C compiler (tested with GCC and clang)
+   + Steel Bank Common Lisp
+   + GNU Make
+   + Meson
 
-*** Building the backend
-    Requirements:
-    + =wlroots=: Use version found in =heart/subprojects/wlroots=:
-      mahogany currently doesn't use a point release of wlroots.
-    + =xkbcommon=
-    + =xcb=, if xwayland support is enabled
+   Several dependencies are shipped with Mahogany as git
+   submodules. To download them, run the following git command:
 
-    Once the requirements are installed, build the backend found in
-    the =heart= directory:
-    #+BEGIN_SRC shell
-    mkdir heart/build
-    cd heart/build
-    meson ..
-    ninja
-    #+END_SRC
+   #+BEGIN_SRC
+   git submodule init
+   #+END_SRC
 
-    The test application can be ran with:
-    #+BEGIN_SRC shell
-    ./example/heart
-    #+END_SRC
+*** Backend Library Dependencies
+The backend library requires wlroots 0.15.1. This
+version is included as a git submodule and is used by
+default. It requires the following development dependencies to build:
++ wayland
++ wayland-protocols
++ EGL and GLESv2 (optional, for the GLES2 renderer)
++ Vulkan loader, headers and glslang (optional, for the Vulkan renderer)
++ libdrm
++ GBM
++ libinput (optional, for the libinput backend)
++ xkbcommon
++ udev
++ pixman
++ [libseat]
+
+You will need the development packages for these libraries, which
+are usually named with the packages' normal name with the =-devel=
+suffix. For example, the Wayland protocols development package is probably
+named =wayland-protocols-devel= in your package repository.
+
+While it is possible to use a prebuilt version of wlroots installed by
+other means, it is currently not supported by directly invoking =make=
+like these instructions suggest.
+
+*** Common Lisp Dependencies
+You will need a Common Lisp implemtation. While it should run on any
+version that the CFFI library supports, sbcl is recommended.
+
+The recommended way to install the dependencies is using
+Quicklisp. Follow the instructions at https://www.quicklisp.org/ to
+install it.
+
+Once downloaded, install the dependencies:
+#+BEGIN_SRC lisp
+  (ql:quickload '("alexandria" "cl-ansi-text" "terminfo"
+		  "snakes" "iterate" "cffi" "cffi-grovel" "closer-mop"))
+#+END_SRC
+
+*** Building And Running
+At this point, all of the dependencies should be installed. You can
+now run `make` in the root directory of the project to build the C
+backend and the mahogany executable.
+#+BEGIN_SRC sh
+  make
+  # if success, run the program!
+  ./build/mahogany
+#+END_SRC
+
+It is possible to run mahogany in an X11 or Wayland session, and is
+the recommended method of testing at this time. If you do choose to
+run the program in a TTY, press the `ESC` key to exit.
