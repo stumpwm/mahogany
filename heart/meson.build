@@ -81,8 +81,6 @@ heart = declare_dependency(
   include_directories: hrt_inc,
 )
 
-subdir('lisp')
-
 pkg = import('pkgconfig')
 pkg.generate(lib_hrt,
              version: meson.project_version(),
