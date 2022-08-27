@@ -25,6 +25,10 @@
 			:depends-on ("package")
 			:components ((:file "view-interface")
 				     ))
+	       (:module keyboard
+			:depends-on ("package" "util")
+			:components ((:file "keytrans")
+				     (:file "key")))
 	       (:module tree
 			:depends-on ("package" "log" "util" "interfaces")
 	       		:components ((:file "tree-interface")

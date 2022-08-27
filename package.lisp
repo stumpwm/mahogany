@@ -45,10 +45,24 @@
 	   #:fit-view-into-frame
 	   #:leafs-in))
 
+(defpackage #:mahogany/keyboard
+  (:use :cl
+	#:alexandria
+	#:mahogany/log
+	#:mahogany/util)
+  (:export #:key
+	   #:make-key
+	   #:print-key
+	   #:key-mods-p
+	   #:parse-key
+	   #:kbd
+	   #:kbd-parse-error))
+
 (defpackage #:mahogany
   (:use :cl
 	#:alexandria
 	#:mahogany/log
 	#:mahogany/wm-interface
 	#:mahogany/core
-	#:mahogany/tree))
+	#:mahogany/tree
+	#:mahogany/keyboard))

@@ -9,7 +9,12 @@
 (cffi:defcallback keyboard-callback :void
     ((seat (:pointer (:struct hrt-seat)))
      (info (:pointer (:struct hrt-keypress-info))))
-  (log-string :debug "keyboard callback called"))
+  (declare (ignore seat))
+  (log-string :debug "keyboard callback called")
+  (cffi:with-foreign-slots ((keysyms modifiers keysyms-len) info (:struct hrt-keypress-info))
+    (dotimes (i keysyms-len)
+      (let ((key (make-key (cffi:mem-aref keysyms :uint32 i) modifiers)))
+	(log-string :trace (lambda (s) (print key s) (print-key key s)))))))
 
 (pushnew #p"~/Programs/mahogany/build/lib64/" cffi:*foreign-library-directories* :test #'equal)
 

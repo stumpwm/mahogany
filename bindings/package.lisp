@@ -13,4 +13,7 @@
 	   #:hrt-server-init
 	   #:hrt-server-start
 	   #:hrt-server-run
-	   #:hrt-server-finish))
+	   #:hrt-server-finish
+	   #:keysyms
+	   #:modifiers
+	   #:keysyms-len))
