@@ -1,0 +1,16 @@
+name: Build and Test
+
+on:
+  push:
+    branches: master
+  pull_request:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build
+        run: git submodule update --init --recursive && docker build . --file Dockerfile -t mahogany
+      # - name: Test
+      #   run: docker run stumpwm make test
