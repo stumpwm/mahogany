@@ -6,6 +6,7 @@
 	   #:log-level
 	   #:log-colored-p
 	   #:log-string
+	   #:log-stream
 	   #:log-init
 	   #:with-log-level
 	   #:with-log-color-enabled
@@ -64,6 +65,20 @@ level is not high enough."
 	 (finish-output *log-output-file*)
 	 ,(when (= lvl 3)
 	    `(warn (format nil ,string ,@fmt)))))))
+
+(defmacro log-stream (log-lvl stream-fn)
+  "If the log level allows for logging, call STREAM-FN with the value of *log-output-file*."
+  (check-type log-lvl debug-specifier)
+  (unless (eql :ignore log-lvl)
+    (multiple-value-bind (lvl color)
+	(get-print-data log-lvl)
+      `(when (>= (get-print-data *log-level*), lvl)
+	 (let ((output (with-output-to-string (stream) (funcall ,stream-fn stream))))
+	   (with-color (,color :effect :bright)
+	     (write-string output *log-output-file*))
+	   (finish-output *log-output-file*)
+	   ,(when (= lvl 3)
+	      `(warn output)))))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
