@@ -8,10 +8,12 @@ This file is a part of mahogany.
 (asdf:defsystem #:mahogany-test
   :defsystem-depends-on (:prove-asdf)
   :depends-on (#:mahogany
-	       #:prove)
-  :components ((:module "test"
-			:components
-			((:test-file "tree-tests"))))
+	       #:prove
+	       #:fiasco)
+  :pathname "test/"
+  :components ((:test-file "tree-tests")
+	       (:file "keyboard-tests"))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
-                    (funcall (intern #.(string :run) :prove) c)))
+                    (and (funcall (intern #.(string :run) :prove) c)
+		    (uiop/package:symbol-call "FIASCO" "ALL-TESTS"))))
