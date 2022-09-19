@@ -28,7 +28,8 @@
 	       (:module keyboard
 			:depends-on ("package" "util")
 			:components ((:file "keytrans")
-				     (:file "key")))
+				     (:file "key")
+				     (:file "kmap")))
 	       (:module tree
 			:depends-on ("package" "log" "util" "interfaces")
 	       		:components ((:file "tree-interface")

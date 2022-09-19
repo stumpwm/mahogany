@@ -14,7 +14,6 @@
   `(is (equalp (parse-key ,kbd) (expand-key-description ,@to-be))))
 
 (fiasco:deftest test-parse-key ()
-
   (expect-key "C-l" :to-be (108 mahogany/keyboard::+modifier-ctrl+))
   (expect-key "C-L" :to-be (76 mahogany/keyboard::+modifier-ctrl+))
   (expect-key "C-s-l" :to-be (108 mahogany/keyboard::+modifier-ctrl+
@@ -28,3 +27,74 @@
 (fiasco:deftest parse-key-signals-errors ()
   (signals kbd-parse-error (parse-key "C-"))
   (signals kbd-parse-error (parse-key "B-")))
+
+(fiasco:deftest define-kmap-returns-kmap ()
+  (let ((kmap (define-kmap)))
+    (fiasco:is (kmap-p kmap))))
+
+(fiasco:deftest define-key-adds-binding ()
+  (let ((map (define-kmap))
+	(key (kbd "C-s"))
+	(command 'foo))
+    (define-key map key command)
+
+    (fiasco:is (equalp command
+		       (kmap-lookup map key)))))
+
+(fiasco:deftest define-key-overwrites-binding ()
+  (let ((map (define-kmap))
+	(key (kbd "M-8")))
+    (define-key map key 'foo)
+    (define-key map key 'bar)
+    (fiasco:is (equalp 'bar (kmap-lookup map key)))))
+
+(fiasco:deftest advance-key-state-returns-correct-finish-found-state ()
+  (let* ((key (kbd "C-s"))
+	 (command 'foo)
+	 (state (make-key-state (list (define-kmap key command))))
+	 (result (key-state-advance key state)))
+    (is (eql result command))))
+
+(fiasco:deftest advance-key-state-returns-correct-finish-not-found-state ()
+  (let* ((key (kbd "C-s"))
+	 (state (make-key-state (list (define-kmap))))
+	 (result (key-state-advance key state)))
+    (is (eql result T))))
+
+(fiasco:deftest advance-key-state-returns-correct-continue-state ()
+  (let* ((key (kbd "C-s"))
+	 (other-kmap (define-kmap))
+	 (state (make-key-state (list (define-kmap key other-kmap))))
+	 (result (key-state-advance key state)))
+    (is (eql result nil))
+    (is (equalp (mahogany/keyboard::key-state-kmaps state) (list other-kmap)))))
+
+(defparameter *test-kmap* (define-kmap))
+
+(fiasco:deftest advance-key-state-dereferences-dynamic-vars ()
+  (let* ((key (kbd "C-s"))
+	 (state (make-key-state (list (define-kmap key '*test-kmap*))))
+	 (result (key-state-advance key state)))
+    (is (eql result nil))
+    (is (equalp (mahogany/keyboard::key-state-kmaps state) (list '*test-kmap*)))))
+
+(fiasco:deftest advance-key-state-advances-all-when-not-found ()
+  (let* ((key (kbd "M-e"))
+	 (kmap-next (define-kmap (kbd "C-a") 'foo))
+	 (kmap1 (define-kmap key kmap-next))
+	 (kmap2 (define-kmap key *test-kmap*))
+	 (state (make-key-state (list kmap1 kmap2)))
+	 (result (key-state-advance key state)))
+    (is (eql result nil))
+    (is (equalp (mahogany/keyboard::key-state-kmaps state) (list kmap-next *test-kmap*)))))
+
+(fiasco:deftest advance-key-state-progression-works ()
+  (let* ((key (kbd "M-e"))
+	 (kmap-next (define-kmap (kbd "C-a") 'foo))
+	 (kmap1 (define-kmap key kmap-next))
+	 (kmap2 (define-kmap key *test-kmap*))
+	 (state (make-key-state (list kmap1 kmap2)))
+	 (result (progn
+		   (key-state-advance key state)
+		   (key-state-advance (kbd  "C-a") state))))
+    (is (eql result 'foo))))

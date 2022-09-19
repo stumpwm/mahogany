@@ -73,7 +73,6 @@
 	(format stream "MOD5"))))
     (format stream "))"))
 
-
 (defun %report-kbd-parse-error (c stream)
   (format stream "Failed to parse key string: ~s." (kbd-parse-error-string c))
   (when-let ((reason (kbd-parse-error-reason c)))

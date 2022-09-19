@@ -56,7 +56,16 @@
 	   #:key-mods-p
 	   #:parse-key
 	   #:kbd
-	   #:kbd-parse-error))
+	   #:kbd-parse-error
+	   #:define-kmap
+	   #:define-key
+	   #:kmap-p
+	   #:kmap
+	   #:kmap-lookup
+	   #:key-state
+	   #:make-key-state
+	   #:key-state-sequence
+	   #:key-state-advance))
 
 (defpackage #:mahogany
   (:use :cl
