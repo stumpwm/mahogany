@@ -26,4 +26,7 @@ clean: FORCE
 	ninja -C $(BUILD_DIR)/heart clean
 	rm $(BUILD_DIR)/mahogany
 
+test: $(BUILD_DIR)/heart/lib64/libheart.so
+	$(call $(LISP),run-tests.lisp)
+
 FORCE: ;

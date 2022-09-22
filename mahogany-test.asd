@@ -15,5 +15,5 @@ This file is a part of mahogany.
 	       (:file "keyboard-tests"))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
-                    (and (funcall (intern #.(string :run) :prove) c)
-		    (uiop/package:symbol-call "FIASCO" "ALL-TESTS"))))
+                    (and (uiop/package:symbol-call "FIASCO" "ALL-TESTS")
+			 (funcall (intern #.(string :run) :prove) c))))
