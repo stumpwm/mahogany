@@ -1,3 +1,7 @@
+ccl = cat $(1) | ccl -b
+
+sbcl = sbcl --non-interactive --load $(1)
+
 LISP=sbcl
 
 BUILD_DIR := $(shell pwd)/build
@@ -6,7 +10,7 @@ BUILD_DIR := $(shell pwd)/build
 CACHE := $(BUILD_DIR)/internal
 
 $(BUILD_DIR)/mahogany build-mahogany.lisp: $(BUILD_DIR)/heart/lib64/libheart.so FORCE
-	$(LISP) --load build-mahogany.lisp --non-interactive
+	$(call $(LISP), build-mahogany.lisp)
 
 $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart

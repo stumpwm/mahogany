@@ -82,6 +82,12 @@ backend and the mahogany executable.
   ./build/mahogany
 #+END_SRC
 
+If you want to build mahogany with CCL, you can do so by specifying
+the type when invoking make:
+#+BEGIN_SRC sh
+  make LISP=ccl
+#+END_SRC
+
 It is possible to run mahogany in an X11 or Wayland session, and is
 the recommended method of testing at this time. If you do choose to
 run the program in a TTY, press the =ESC= key to exit.
