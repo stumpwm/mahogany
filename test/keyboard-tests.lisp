@@ -23,7 +23,8 @@
 				     mahogany/keyboard::+modifier-shift+))
   (expect-key "C--" :to-be (45 mahogany/keyboard::+modifier-ctrl+))
   (expect-key "M-RET" :to-be (65293 mahogany/keyboard::+modifier-alt+))
-  (expect-key "-" :to-be (45))
+  (expect-key "-" :to-be (45)))
 
+(fiasco:deftest parse-key-signals-errors ()
   (signals kbd-parse-error (parse-key "C-"))
-  (signals kdb-parse-error (parske-key "B-")))
+  (signals kbd-parse-error (parse-key "B-")))
