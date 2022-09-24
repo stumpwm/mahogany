@@ -75,14 +75,14 @@
 
 
 (defun %report-kbd-parse-error (c stream)
-  (format stream "Failed to parse key string: ~s." (kdb-parse-error-string c))
+  (format stream "Failed to parse key string: ~s." (kbd-parse-error-string c))
   (when-let ((reason (kbd-parse-error-reason c)))
     (format stream "~%Reason: ~A" reason)))
 
 (define-condition kbd-parse-error (mahogany-error)
   ((string :initarg :string
 	   :reader kbd-parse-error-string)
-   (reason :initarg :reason :reader kdb-parse-error-reason
+   (reason :initarg :reason :reader kbd-parse-error-reason
 	   :initform nil))
   (:report %report-kbd-parse-error)
   (:documentation "Raised when a kbd string failed to parse."))
