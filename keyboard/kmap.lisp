@@ -11,6 +11,8 @@
 	    :read-only t))
 
 (defun define-key (map key cmd)
+  "Add a binding from the given key to the given command in the keymap. If the command
+is nil, remove the binding for the given key."
   (declare (type kmap map)
 	   (type key key))
   (let ((bindings (kmap-bindings map))
@@ -24,6 +26,12 @@
   map)
 
 (defmacro define-kmap (&body body)
+  "Create a keymap and add the given bindings to it.
+
+Example:
+   (define-kmap
+     (kbd \"C-s\") 'foo
+     (kbd \"M-;\") 'bar)"
   (let* ((map-var (gensym "kmap")))
     `(let ((,map-var (make-kmap)))
        ,@(do* ((next body (cddr next))
@@ -46,6 +54,7 @@
       (%kmap-symbol-p x)))
 
 (defun kmap-lookup (keymap key)
+  "Find the command associated with the given key in the keymap"
   (declare (type key key)
 	   (type kmap keymap))
   (let ((ret (find key (kmap-bindings keymap) :key 'binding-key :test 'equalp)))
