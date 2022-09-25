@@ -16,17 +16,8 @@
       (let ((key (make-key (cffi:mem-aref keysyms :uint32 i) modifiers)))
 	(log-string :trace (lambda (s) (print key s) (print-key key s)))))))
 
-(pushnew #p"~/Programs/mahogany/build/lib64/" cffi:*foreign-library-directories* :test #'equal)
-
-(cffi:define-foreign-library libheart
-  (:unix "libheart.so"))
-
-(cffi:define-foreign-library libwroots
-  (:unix "libwlroots.so"))
-
 (defun run-server ()
-  (cffi:use-foreign-library libwroots)
-  (cffi:use-foreign-library libheart)
+  (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt-seat-callbacks))

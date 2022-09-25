@@ -16,4 +16,5 @@
 	   #:hrt-server-finish
 	   #:keysyms
 	   #:modifiers
-	   #:keysyms-len))
+	   #:keysyms-len
+	   #:load-foreign-libraries))

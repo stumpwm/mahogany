@@ -18,7 +18,9 @@
   :components ((:file "log")
 	       (:file "util")
 	       (:module bindings
+			:serial t
 			:components ((:file "package")
+				     (:file "hrt-libs")
 				     (:file "hrt-bindings")))
 	       (:file "package")
 	       (:module interfaces

@@ -79,11 +79,14 @@ backend and the mahogany executable.
 #+BEGIN_SRC sh
   make
   # if success, run the program!
-  ./build/mahogany
+  make run
+  # Can also do:
+  LD_LIBRARY_PATH=build/lib64:build/lib ./build/mahogany
 #+END_SRC
 
-If you want to build mahogany with CCL, you can do so by specifying
-the type when invoking make:
+If you want to build mahogany (or execute any of the other build
+commands) with CCL, you can do so by specifying CCL when invoking
+make:
 #+BEGIN_SRC sh
   make LISP=ccl
 #+END_SRC
