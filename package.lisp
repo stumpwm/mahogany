@@ -54,6 +54,8 @@
 	   #:make-key
 	   #:print-key
 	   #:key-mods-p
+	   #:key-keysym
+	   #:key-modifier-mask
 	   #:parse-key
 	   #:kbd
 	   #:kbd-parse-error
