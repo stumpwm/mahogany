@@ -37,6 +37,8 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
 
 bool hrt_server_start(struct hrt_server *server);
 
+void hrt_server_stop(struct hrt_server *server);
+
 void hrt_server_finish(struct hrt_server *server);
 
 #endif

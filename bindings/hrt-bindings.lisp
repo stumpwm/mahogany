@@ -126,5 +126,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcfun ("hrt_server_start" hrt-server-start) :bool
   (server (:pointer (:struct hrt-server))))
 
+(cffi:defcfun ("hrt_server_stop" hrt-server-stop) :void
+  (server (:pointer (:struct hrt-server))))
+
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
