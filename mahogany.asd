@@ -38,8 +38,9 @@
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
 	       (:file "state" :depends-on ("package"))
+	       (:file "input" :depends-on ("state"))
 	       (:file "globals" :depends-on ("state"))
-	       (:file "main" :depends-on ("bindings" "keyboard" "package"))))
+	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable
   :build-operation program-op

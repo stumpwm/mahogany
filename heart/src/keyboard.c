@@ -30,10 +30,6 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 				       size_t keysyms_len) {
   for(size_t i = 0; i < keysyms_len; ++i) {
     xkb_keysym_t keysym = pressed_keysyms[i];
-    if (keysym == XKB_KEY_Escape) {
-		puts("Exiting due to escape pressed");
-		wl_display_terminate(server->wl_display);
-    }
 
     if (keysym >= XKB_KEY_XF86Switch_VT_1 && keysym <= XKB_KEY_XF86Switch_VT_12) {
       if (wlr_backend_is_multi(server->backend)) {

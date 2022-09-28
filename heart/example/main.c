@@ -20,6 +20,10 @@ bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *info) {
   printf("Modifiers: %d\n", info->modifiers);
   printf("Keys pressed:");
   for(size_t i = 0; i < info->keysyms_len; ++i) {
+	  if (info->keysyms[i] == XKB_KEY_Escape) {
+		  puts("Exiting due to escape pressed");
+		  hrt_server_stop(seat->server);
+	  }
 	  char buffer[20];
 	  xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
 	  printf(" %s", buffer);
