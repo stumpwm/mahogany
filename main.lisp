@@ -1,20 +1,23 @@
 (in-package #:mahogany)
 
 (cffi:defcallback cursor-callback :void ((seat (:pointer (:struct hrt-seat))))
-  (log-string :debug "cursor callback called"))
+  (log-string :trace "cursor callback called"))
 
 (cffi:defcallback output-callback :void ((seat (:pointer (:struct hrt-output))))
-  (log-string :debug "output change callback called"))
+  (log-string :trace "output change callback called"))
 
 (cffi:defcallback keyboard-callback :void
     ((seat (:pointer (:struct hrt-seat)))
      (info (:pointer (:struct hrt-keypress-info))))
   (declare (ignore seat))
-  (log-string :debug "keyboard callback called")
+  (log-string :trace "keyboard callback called")
   (cffi:with-foreign-slots ((keysyms modifiers keysyms-len) info (:struct hrt-keypress-info))
     (dotimes (i keysyms-len)
       (let ((key (make-key (cffi:mem-aref keysyms :uint32 i) modifiers)))
-	(log-string :trace (lambda (s) (print key s) (print-key key s)))))))
+	(log-string :trace (lambda (s)
+			     (print-key key)
+			     (format s ": ~A~%"
+				     (xkb:keysym-get-name (mahogany/keyboard::key-keysym key)))))))))
 
 (defun run-server ()
   (hrt:load-foreign-libraries)
