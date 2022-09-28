@@ -12,7 +12,7 @@
 	   #:hrt-server
 	   #:hrt-server-init
 	   #:hrt-server-start
-	   #:hrt-server-run
+	   #:hrt-server-stop
 	   #:hrt-server-finish
 	   #:keysyms
 	   #:modifiers

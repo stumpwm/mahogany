@@ -1,4 +1,5 @@
 #include "wlr/util/log.h"
+#include <wayland-server-core.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -55,6 +56,10 @@ bool hrt_server_start(struct hrt_server *server) {
   }
   wl_display_run(server->wl_display);
   return true;
+}
+
+void hrt_server_stop(struct hrt_server *server) {
+	wl_display_terminate(server->wl_display);
 }
 
 void hrt_server_finish(struct hrt_server *server) {
