@@ -53,9 +53,9 @@
   (:export #:key
 	   #:make-key
 	   #:print-key
-	   #:key-mods-p
 	   #:key-keysym
 	   #:key-modifier-mask
+	   #:key-modifier-key-p
 	   #:parse-key
 	   #:kbd
 	   #:kbd-parse-error
@@ -67,7 +67,8 @@
 	   #:key-state
 	   #:make-key-state
 	   #:key-state-sequence
-	   #:key-state-advance))
+	   #:key-state-advance
+	   #:key-state-active-p))
 
 (defpackage #:mahogany
   (:use :cl

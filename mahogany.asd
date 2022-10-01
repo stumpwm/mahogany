@@ -38,7 +38,7 @@
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
 	       (:file "state" :depends-on ("package"))
-	       (:file "input" :depends-on ("state"))
+	       (:file "input" :depends-on ("state" "keyboard"))
 	       (:file "globals" :depends-on ("state"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
 

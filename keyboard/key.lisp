@@ -112,6 +112,20 @@
 						:reason (format nil "Unknown modifer character ~A" (char mods i))))))))
     mod-mask))
 
+(defun key-modifier-key-p (key)
+  "Check if the given key is a modifier key like Shift or Control"
+  (declare (type key key))
+  ;; FIXME: don't hardcode these values.
+  ;; Using a cleverer datastructure might be good too.
+  (find (key-keysym key) #(65515 ; super
+			   65507 ; Control_L
+			   65508 ; Control_R
+			   65513 ; alt
+			   65505 ; Shift_L
+			   65506 ; Shilf_R
+			   )))
+
+
 (defun parse-key (string)
   "Parse STRING and return a key structure. Raise an error of type
 kbd-parse if the key failed to parse."

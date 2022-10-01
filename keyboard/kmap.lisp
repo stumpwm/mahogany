@@ -65,6 +65,13 @@ Example:
   (sequence nil :type list)
   (kmaps nil :type list))
 
+(declaim (inline key-state-active-p))
+(defun key-state-active-p (key-state)
+  "Return a truthy value if the key state has advanced beyond it's
+initial state."
+  (declare (type key-state key-state))
+  (car (key-state-sequence key-state)))
+
 (defun key-state-advance (key bindings-state)
   "Advance the key state with the given key by destructively modifying the
 given state and its properties.
@@ -82,7 +89,6 @@ Returns:
   (with-accessors ((kmaps key-state-kmaps)
                    (key-seq key-state-sequence))
       bindings-state
-    (push key key-seq)
     (let* ((matching-values (mapcar (lambda (m)
 				      (kmap-lookup (if (%kmap-symbol-p m)
 						      (symbol-value m)
@@ -92,11 +98,12 @@ Returns:
 	   (match (find-if-not #'null matching-values)))
       (cond
 	((kmap-or-kmap-symbol-p match)
+	 (push key key-seq)
 	 (setf (key-state-kmaps bindings-state) (delete-if-not 'kmap-or-kmap-symbol-p matching-values))
-	 (values nil))
+	 (values t nil))
 	(match
+	 (push key key-seq)
 	 (setf (key-state-kmaps bindings-state) nil)
-	 (values match))
+	 (values t match))
 	(t
-	 (setf kmaps nil)
-	 (values t))))))
+	 (values nil))))))
