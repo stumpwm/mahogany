@@ -10,7 +10,8 @@
 	   #:with-log-level
 	   #:with-log-color-enabled
 	   #:with-logging-to-file
-	   #:*log-output-file*))
+	   #:*log-output-file*)
+  (:local-nicknames (#:alex #:alexandria)))
 
 
 (in-package #:mahogany/log)
@@ -51,35 +52,38 @@
     (1  (values :fatal :red))
     (0 (values :ignore))))
 
+(defun %log-stream (lvl color stream-fn)
+  (declare (optimize speed)
+	   (type fixnum lvl)
+	   (type (function (stream) (values &optional)) stream-fn))
+  (when (>= *log-level* lvl)
+    (let ((output *log-output-file*))
+      (with-color (color :effect :bright :stream output)
+	(funcall stream-fn output))
+      (finish-output output))))
+
+(defun log-stream (log-lvl stream-fn)
+  "Call the given function with *log-output-file* as it's argument if the
+ log level allows for logging"
+  (unless (eql :ignore log-lvl)
+    (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
+      (%log-stream lvl color stream-fn))))
+
+(define-compiler-macro log-stream (&whole form log-lvl stream-fn)
+  (if (constantp log-lvl)
+      (unless (eql :ignore log-lvl)
+	(multiple-value-bind (lvl color) (get-log-level-data log-lvl)
+	  `(%log-stream ,lvl ,color ,stream-fn)))
+      (progn
+	(alex:simple-style-warning
+	 "Missed optimization in log-stream: the log level is not specificed as a constant")
+	form)))
+
 (defmacro log-string (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*.
 The string argument as well as the format args will not be evaluated if the current log
 level is not high enough."
-  (check-type log-lvl debug-specifier)
-  (unless (eql :ignore log-lvl)
-    (multiple-value-bind (lvl color)
-	(get-log-level-data log-lvl)
-      `(when (>= *log-level* ,lvl)
-	 (with-color (,color :effect :bright)
-	   (format *log-output-file* ,string ,@fmt)
-	   (format *log-output-file* "~%"))
-	 (finish-output *log-output-file*)
-	 ,(when (= lvl 3)
-	    `(warn (format nil ,string ,@fmt)))))))
-
-(defmacro log-stream (log-lvl stream-fn)
-  "If the log level allows for logging, call STREAM-FN with the value of *log-output-file*."
-  (check-type log-lvl debug-specifier)
-  (unless (eql :ignore log-lvl)
-    (multiple-value-bind (lvl color)
-	(get-log-level-data log-lvl)
-      `(when (>= *log-level* ,lvl)
-	 (let ((output (with-output-to-string (stream) (funcall ,stream-fn stream))))
-	   (with-color (,color :effect :bright)
-	     (write-string output *log-output-file*))
-	   (finish-output *log-output-file*)
-	   ,(when (= lvl 3)
-	      `(warn output)))))))
+  `(log-stream ,log-lvl (lambda (s) (format s ,string ,@fmt))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
