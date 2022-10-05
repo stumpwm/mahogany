@@ -12,7 +12,8 @@ This file is a part of mahogany.
 	       #:fiasco)
   :pathname "test/"
   :components ((:test-file "tree-tests")
-	       (:file "keyboard-tests"))
+	       (:file "keyboard-tests")
+	       (:file "log-tests"))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
                     (and (uiop/package:symbol-call "FIASCO" "ALL-TESTS")
