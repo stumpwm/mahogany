@@ -15,6 +15,7 @@
 	       #:iterate
 	       #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
+  :pathname #p"lisp/"
   :components ((:file "log")
 	       (:file "util")
 	       (:module bindings
