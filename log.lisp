@@ -83,7 +83,9 @@
   "Log the input to *log-output-file* based on the current value of *log-level*.
 The string argument as well as the format args will not be evaluated if the current log
 level is not high enough."
-  `(log-stream ,log-lvl (lambda (s) (format s ,string ,@fmt))))
+  `(log-stream ,log-lvl (lambda (s)
+			  (declare (type stream s))
+			  (format s ,string ,@fmt) (format s "~%"))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
