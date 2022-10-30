@@ -11,7 +11,6 @@
 (cffi:defcallback keyboard-callback :bool
     ((seat (:pointer (:struct hrt-seat)))
      (info (:pointer (:struct hrt-keypress-info))))
-  (log-string :trace "keyboard callback called")
   (cffi:with-foreign-slots ((keysyms modifiers keysyms-len) info (:struct hrt-keypress-info))
     (dotimes (i keysyms-len)
       (let ((key (make-key (cffi:mem-aref keysyms :uint32 i) modifiers)))
