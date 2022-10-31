@@ -1,4 +1,5 @@
 #include "wlr/util/log.h"
+#include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
@@ -52,17 +53,39 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
   return true;
 }
 
+static char *prev_wayland_display;
+
 bool hrt_server_start(struct hrt_server *server) {
-  if (!wlr_backend_start(server->backend)) {
-    wlr_backend_destroy(server->backend);
-    return false;
+  const char *socket = wl_display_add_socket_auto(server->wl_display);
+
+  if(!socket) {
+	  goto cleanup;
   }
+
+  if (!wlr_backend_start(server->backend)) {
+	  goto cleanup;
+  }
+
+  prev_wayland_display = getenv("WAYLAND_DISPLAY");
+  setenv("WAYLAND_DISPLAY", socket, true);
+  wlr_log(WLR_INFO, "Running on Wayland socket: %s", socket);
+
   wl_display_run(server->wl_display);
   return true;
+
+cleanup:
+  wlr_backend_destroy(server->backend);
+  return false;
 }
 
 void hrt_server_stop(struct hrt_server *server) {
 	wl_display_terminate(server->wl_display);
+
+	if(prev_wayland_display) {
+		setenv("WAYLAND_DISPLAY", prev_wayland_display, true);
+	} else {
+		unsetenv("WAYLAND_DISPLAY");
+	}
 }
 
 void hrt_server_finish(struct hrt_server *server) {
