@@ -29,6 +29,9 @@ struct hrt_server {
 
   struct hrt_seat seat;
 
+  struct wlr_xdg_shell *xdg_shell;
+  struct wl_listener new_xdg_surface;
+
   const struct hrt_output_callbacks *output_callback;
 };
 

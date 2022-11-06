@@ -97,7 +97,6 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
   (seat (:struct hrt-seat))
-  (scene :pointer #| (:struct wlr-scene) |# )
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-surface (:struct wl-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks))))

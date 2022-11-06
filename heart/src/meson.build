@@ -5,4 +5,5 @@ hrt_source_files += files(
   'seat.c',
   'keyboard.c',
   'cursor.c',
+  'xdg_shell.c',
   )
