@@ -5,6 +5,7 @@
 #include <wlr/types/wlr_data_control_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_data_device.h>
+#include <wlr/render/wlr_renderer.h>
 
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>

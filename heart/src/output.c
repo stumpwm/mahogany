@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <wlr/render/wlr_renderer.h>
+
 #include <hrt/hrt_output.h>
 
 static void handle_frame_notify(struct wl_listener *listener, void *data) {

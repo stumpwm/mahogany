@@ -11,20 +11,21 @@
 
 #include <wlr/backend/multi.h>
 #include <wlr/backend/session.h>
+#include <wlr/types/wlr_keyboard.h>
 
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
 static size_t seat_translate_keysyms(struct hrt_seat *seat, xkb_keycode_t keycode,
 			       const xkb_keysym_t **keysyms, uint32_t *modifiers) {
-  struct wlr_input_device *device = seat->keyboard_group->input_device;
-  *modifiers = wlr_keyboard_get_modifiers(device->keyboard);
-  xkb_mod_mask_t consumed = xkb_state_key_get_consumed_mods2(device->keyboard->xkb_state,
+  struct wlr_keyboard *keyboard = &seat->keyboard_group->keyboard;
+  *modifiers = wlr_keyboard_get_modifiers(keyboard);
+  xkb_mod_mask_t consumed = xkb_state_key_get_consumed_mods2(keyboard->xkb_state,
 							     keycode,
 							     XKB_CONSUMED_MODE_XKB);
   *modifiers = *modifiers & ~consumed;
 
-  return xkb_state_key_get_syms(device->keyboard->xkb_state, keycode, keysyms);
+  return xkb_state_key_get_syms(keyboard->xkb_state, keycode, keysyms);
 }
 
 static bool execute_hardcoded_bindings(struct hrt_server *server,
@@ -51,7 +52,7 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 static void seat_handle_key(struct wl_listener *listener, void *data) {
   wlr_log(WLR_DEBUG, "Keyboard key pressed");
   struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
-  struct wlr_event_keyboard_key *event = data;
+  struct wlr_keyboard_key_event *event = data;
   struct hrt_server *server = seat->server;
 
   xkb_keycode_t keycode = event->keycode + 8;

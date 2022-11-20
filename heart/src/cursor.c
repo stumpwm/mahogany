@@ -12,17 +12,17 @@ static void handle_cursor_motion(struct hrt_seat *seat) {
 
 static void seat_motion(struct wl_listener *listener, void *data) {
   struct hrt_seat *seat = wl_container_of(listener, seat, motion);
-  struct wlr_event_pointer_motion *ev = data;
+  struct wlr_pointer_motion_event *ev = data;
 
-  wlr_cursor_move(seat->cursor, ev->device, ev->delta_x, ev->delta_y);
+  wlr_cursor_move(seat->cursor, &ev->pointer->base, ev->delta_x, ev->delta_y);
   handle_cursor_motion(seat);
 }
 
 static void seat_motion_absolute(struct wl_listener *listener, void *data) {
   struct hrt_seat *seat = wl_container_of(listener, seat, motion_absolute);
-  struct wlr_event_pointer_motion_absolute *ev = data;
+  struct wlr_pointer_motion_absolute_event *ev = data;
 
-  wlr_cursor_warp_absolute(seat->cursor, ev->device, ev->x, ev->y);
+  wlr_cursor_warp_absolute(seat->cursor, &ev->pointer->base, ev->x, ev->y);
   handle_cursor_motion(seat);
 }
 

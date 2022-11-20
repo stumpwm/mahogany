@@ -9,7 +9,7 @@
 #include <hrt/hrt_server.h>
 
 static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
-  struct wlr_keyboard *kb = input->wlr_input_device->keyboard;
+  struct wlr_keyboard *kb = wlr_keyboard_from_input_device(input->wlr_input_device);
   wlr_keyboard_set_keymap(kb, seat->keyboard_group->keyboard.keymap);
   if(!wlr_keyboard_group_add_keyboard(seat->keyboard_group, kb)) {
     wlr_log(WLR_ERROR, "Could not add keyboard to keyboard group!");
@@ -18,7 +18,7 @@ static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
 }
 
 static void remove_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
-  struct wlr_keyboard *kb = input->wlr_input_device->keyboard;
+	struct wlr_keyboard *kb = wlr_keyboard_from_input_device(input->wlr_input_device);
   wlr_keyboard_group_remove_keyboard(seat->keyboard_group, kb);
 }
 
