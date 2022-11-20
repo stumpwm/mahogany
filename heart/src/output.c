@@ -30,7 +30,7 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 }
 
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
-  puts("Output destroyed");
+  wlr_log(WLR_DEBUG, "Output destroyed");
   struct hrt_output *output = wl_container_of(listener, output, destroy);
   wl_list_remove(&output->link);
   struct hrt_server *server = output->server;
@@ -72,7 +72,7 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
 }
 
 static void handle_new_output(struct wl_listener *listener, void *data) {
-  puts("New output detected");
+  wlr_log(WLR_DEBUG, "New output detected");
   struct hrt_server *server = wl_container_of(listener, server, new_output);
 
   struct wlr_output *wlr_output = data;

@@ -1,3 +1,4 @@
+#include <wlr/util/log.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,7 +37,7 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
       if (wlr_backend_is_multi(server->backend)) {
         struct wlr_session *session = wlr_backend_get_session(server->backend);
         if (session) {
-          puts("Changing session");
+          wlr_log(WLR_DEBUG, "Changing session");
           unsigned vt = keysym - XKB_KEY_XF86Switch_VT_1 + 1;
           wlr_session_change_vt(session, vt);
         }
@@ -48,7 +49,7 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 }
 
 static void seat_handle_key(struct wl_listener *listener, void *data) {
-  puts("Keyboard key pressed");
+  wlr_log(WLR_DEBUG, "Keyboard key pressed");
   struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
   struct wlr_event_keyboard_key *event = data;
   struct hrt_server *server = seat->server;
@@ -83,7 +84,7 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
 }
 
 static void seat_handle_modifiers(struct wl_listener *listener, void *data) {
-  puts("Keyboard modifier pressed");
+  wlr_log(WLR_DEBUG, "Keyboard modifier pressed");
   struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_modifiers);
 
   wlr_seat_keyboard_notify_modifiers(seat->seat, &seat->keyboard_group->keyboard.modifiers);

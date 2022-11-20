@@ -1,3 +1,4 @@
+#include <wlr/util/log.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -11,7 +12,7 @@ static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
   struct wlr_keyboard *kb = input->wlr_input_device->keyboard;
   wlr_keyboard_set_keymap(kb, seat->keyboard_group->keyboard.keymap);
   if(!wlr_keyboard_group_add_keyboard(seat->keyboard_group, kb)) {
-    puts("Could not add keyboard to keyboard group!");
+    wlr_log(WLR_ERROR, "Could not add keyboard to keyboard group!");
     exit(1);
   }
 }
@@ -51,7 +52,7 @@ static uint32_t find_input_caps(struct hrt_seat *seat, struct hrt_input *input) 
 }
 
 static void input_device_destroy(struct wl_listener *listener, void *data) {
-  puts("input device destroyed");
+  wlr_log(WLR_DEBUG, "input device destroyed");
 
   struct hrt_input *input = wl_container_of(listener, input, destroy);
 
@@ -74,7 +75,7 @@ static void input_device_destroy(struct wl_listener *listener, void *data) {
 }
 
 static void new_input_notify(struct wl_listener *listener, void *data) {
-  puts("New input device added");
+  wlr_log(WLR_DEBUG, "New input device added");
 
   struct hrt_seat *seat = wl_container_of(listener,seat, new_input);
   struct wlr_input_device *dev = data;
