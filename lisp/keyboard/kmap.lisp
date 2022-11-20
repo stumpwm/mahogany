@@ -80,9 +80,8 @@ Arguments:
    BINDINGS-STATE: The key-state object to advance
 
 Returns:
-   NIL: The key state is not finished and needs more keys to reach the end.
-   T:   The key state has reached the end of the kmaps without finding a command
-   non-T object: The key state has finished and the returned object was found."
+   First value: T if something was matched, nil otherwise.
+   Second value: The value of the leaf node if one was found."
   (declare (type key-state bindings-state)
            (type key key)
 	   (optimize speed))
