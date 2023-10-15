@@ -27,15 +27,16 @@
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun get-log-level-data (level)
-    (the fixnum (ecase level
-		  ;; higher values mean less importance
-		  (:trace  (values 6 :white))
-		  (:debug  (values 5 :cyan))
-		  (:info   (values 4 :blue))
-		  (:warn   (values 3 :yellow))
-		  (:error  (values 2 :red))
-		  (:fatal  (values 1 :red))
-		  (:ignore (values 0))))))
+    (declare (type debug-specifier level))
+    (ecase level
+      ;; higher values mean less importance
+      (:trace  (values 6 :white))
+      (:debug  (values 5 :cyan))
+      (:info   (values 4 :blue))
+      (:warn   (values 3 :yellow))
+      (:error  (values 2 :red))
+      (:fatal  (values 1 :red))
+      (:ignore (values 0)))))
 
 ;; if you need to add more log levels, you may need to recompile, as
 ;; the level is translated to a number at read time. See log-string.
