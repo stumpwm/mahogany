@@ -114,7 +114,8 @@ level is not high enough."
 :error  Something went wrong...
 :fatal  Bye bye compositor..."
   (check-valid-log-level new-level)
-  (setf *log-level* (get-log-level-data new-level)))
+  (setf *log-level* (get-log-level-data new-level))
+  new-level)
 
 (defun log-colored-p ()
   cl-ansi-text:*enabled*)
