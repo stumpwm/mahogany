@@ -63,8 +63,10 @@
       (finish-output output))))
 
 (defun log-stream (log-lvl stream-fn)
-  "Call the given function with *log-output-file* as it's argument if the
+  "Call the given function with *log-output-file* as its argument if the
  log level allows for logging"
+  (declare (type debug-specifier log-lvl)
+	   (type (function (stream) (values &optional)) stream-fn))
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
       (%log-stream lvl color stream-fn))))
@@ -85,7 +87,8 @@ The string argument as well as the format args will not be evaluated if the curr
 level is not high enough."
   `(log-stream ,log-lvl (lambda (s)
 			  (declare (type stream s))
-			  (format s ,string ,@fmt) (format s "~%"))))
+			  (format s ,string ,@fmt) (format s "~%")
+			  (values))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
