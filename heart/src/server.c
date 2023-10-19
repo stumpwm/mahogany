@@ -4,6 +4,7 @@
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
+#include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/render/wlr_renderer.h>
 
@@ -33,6 +34,7 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
   }
 
   server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
+  wlr_subcompositor_create(server->wl_display);
   wlr_data_device_manager_create(server->wl_display);
 
   wlr_export_dmabuf_manager_v1_create(server->wl_display);
