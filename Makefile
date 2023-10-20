@@ -4,13 +4,21 @@ sbcl = sbcl --non-interactive --load $(1)
 
 LISP=sbcl
 
+ROOT := $(shell pwd)
 BUILD_DIR := $(shell pwd)/build
 # In order to not watch heart build files but still detect fresh builds,
 # use files in the internal directory as as placeholder:
 CACHE := $(BUILD_DIR)/internal
 
-$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so build-mahogany.lisp FORCE
+# We actually want to watch the build output (build/include/hrt), but those files
+# might not exist
+HRT_INCLUDES = $(shell find $(ROOT)/heart/include/hrt/ -type f)
+
+$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so lisp/bindings/hrt-bindings.lisp build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
+
+lisp/bindings/hrt-bindings.lisp: $(ROOT)/lisp/bindings/hrt-bindings.yml $(HRT_INCLUDES)
+	cl-bindgen b lisp/bindings/hrt-bindings.yml
 
 $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart

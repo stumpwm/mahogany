@@ -1,21 +1,6 @@
 (cl:in-package #:hrt)
 
-;; next section imported from file build/include/hrt/hrt_group.h
-
-#| MACRO_DEFINITION
-(defconstant +hrt-group+ ACTUAL_VALUE_HERE)
-|#
-
-(cffi:defcstruct hrt-group
-  (name (:pointer :char))
-  (scene :pointer)
-  (views (:struct wl-list)))
-
 ;; next section imported from file build/include/hrt/hrt_input.h
-
-#| MACRO_DEFINITION
-(defconstant +hrt-hrt-input-h+ ACTUAL_VALUE_HERE)
-|#
 
 (cffi:defcstruct hrt-server)
 
@@ -26,10 +11,10 @@
 
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
-  (cursor :pointer)
-  (keyboard-group :pointer)
-  (xcursor-manager :pointer)
-  (seat :pointer)
+  (cursor :pointer #| (:struct wlr-cursor) |# )
+  (keyboard-group :pointer #| (:struct wlr-keyboard-group) |# )
+  (xcursor-manager :pointer #| (:struct wlr-xcursor-manager) |# )
+  (seat :pointer #| (:struct wlr-seat) |# )
   (inputs (:struct wl-list))
   (new-input (:struct wl-listener))
   (motion (:struct wl-listener))
@@ -43,12 +28,17 @@
   (cursor-image (:pointer :char)))
 
 (cffi:defcstruct hrt-keypress-info
-  (keysyms (:pointer xkb:keysym))
+  (keysyms :pointer #| xkb-keysym-t |# )
   (modifiers :uint32)
   (keysyms-len :size))
 
+(cffi:defcstruct hrt-seat-callbacks
+  (button-event :pointer #| function ptr void (struct hrt_seat *) |#)
+  (wheel-event :pointer #| function ptr void (struct hrt_seat *) |#)
+  (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
+
 (cffi:defcstruct hrt-input
-  (wlr-input-device :pointer)
+  (wlr-input-device :pointer #| (:struct wlr-input-device) |# )
   (seat (:pointer (:struct hrt-seat)))
   (link (:struct wl-list))
   (destroy (:struct wl-listener)))
@@ -76,12 +66,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 
 ;; next section imported from file build/include/hrt/hrt_output.h
 
-#| MACRO_DEFINITION
-(defconstant +hrt-hrt-output-h+ ACTUAL_VALUE_HERE)
-|#
-
 (cffi:defcstruct hrt-output
-  (wlr-output :pointer)
+  (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
   (link (:struct wl-list))
   (frame (:struct wl-listener))
@@ -98,30 +84,29 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 
 ;; next section imported from file build/include/hrt/hrt_server.h
 
-#| MACRO_DEFINITION
-(defconstant +hrt-hrt-server-h+ ACTUAL_VALUE_HERE)
-|#
-
 (cffi:defcstruct hrt-server
-  (wl-display :pointer)
-  (backend :pointer)
-  (renderer :pointer)
-  (compositor :pointer)
-  (allocator :pointer)
+  (wl-display :pointer #| (:struct wl-display) |# )
+  (backend :pointer #| (:struct wlr-backend) |# )
+  (renderer :pointer #| (:struct wlr-renderer) |# )
+  (compositor :pointer #| (:struct wlr-compositor) |# )
+  (allocator :pointer #| (:struct wlr-allocator) |# )
   (outputs (:struct wl-list))
   (new-output (:struct wl-listener))
-  (output-manager :pointer)
-  (output-layout :pointer)
+  (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
+  (output-layout :pointer #| (:struct wlr-output-layout) |# )
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
   (seat (:struct hrt-seat))
+  (scene :pointer #| (:struct wlr-scene) |# )
+  (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
+  (new-xdg-surface (:struct wl-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks))))
 
 (cffi:defcfun ("hrt_server_init" hrt-server-init) :bool
   (server (:pointer (:struct hrt-server)))
   (output-callbacks (:pointer (:struct hrt-output-callbacks)))
   (seat-callbacks (:pointer (:struct hrt-seat-callbacks)))
-  (log-level :int))
+  (log-level :int #| enum wlr-log-importance |#))
 
 (cffi:defcfun ("hrt_server_start" hrt-server-start) :bool
   (server (:pointer (:struct hrt-server))))

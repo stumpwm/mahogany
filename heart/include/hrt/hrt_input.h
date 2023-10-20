@@ -7,6 +7,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 struct hrt_server;
+struct hrt_seat_callbacks;
 
 struct hrt_seat {
   struct hrt_server *server;

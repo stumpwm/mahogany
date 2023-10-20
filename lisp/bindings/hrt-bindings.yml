@@ -1,0 +1,15 @@
+output: lisp/bindings/hrt-bindings.lisp
+package: hrt
+pkg-config:
+  - wlroots
+arguments:
+  - "-DWLR_USE_UNSTABLE"
+  - "-Iheart/include"
+files:
+  - build/include/hrt/hrt_input.h
+  - build/include/hrt/hrt_output.h
+  - build/include/hrt/hrt_server.h
+
+pointer-expansion:
+  include:
+    match: "hrt.*"
