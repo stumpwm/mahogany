@@ -30,7 +30,7 @@
    submodules. To download them, run the following git command:
 
    #+BEGIN_SRC
-   git submodule init
+   git submodule update --init
    #+END_SRC
 
 *** Backend Library Dependencies
