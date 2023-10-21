@@ -20,7 +20,14 @@
 				     (xkb:keysym-get-name (mahogany/keyboard::key-keysym key)))))
 	(handle-key-event key seat)))))
 
+(defun disable-fpu-exceptions ()
+  #+sbcl
+  (sb-int:set-floating-point-modes :traps nil)
+  #+ccl
+  (set-fpu-mode :overflow nil))
+
 (defun run-server ()
+  (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt-output-callbacks))
