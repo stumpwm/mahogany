@@ -8,27 +8,14 @@
 
 static void handle_frame_notify(struct wl_listener *listener, void *data) {
   struct hrt_output *output = wl_container_of(listener, output, frame);
-  struct hrt_server *server = output->server;
-  struct wlr_renderer *renderer = server->renderer;
+  struct wlr_scene *scene = output->server->scene;
 
-  //TODO: damage tracking
-  if (!wlr_output_attach_render(output->wlr_output, NULL)) {
-    return;
-  }
+  struct wlr_scene_output *scene_output = wlr_scene_get_scene_output(scene, output->wlr_output);
+  wlr_scene_output_commit(scene_output);
 
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
-
-  int width, height;
-  wlr_output_effective_resolution(output->wlr_output, &width, &height);
-  wlr_renderer_begin(renderer, width, height);
-
-  wlr_renderer_clear(renderer, output->color);
-
-  wlr_output_render_software_cursors(output->wlr_output, NULL);
-
-  wlr_renderer_end(renderer);
-  wlr_output_commit(output->wlr_output);
+  wlr_scene_output_send_frame_done(scene_output, &now);
 }
 
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
@@ -111,6 +98,8 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
 
   server->output_layout = wlr_output_layout_create();
+  server->scene = wlr_scene_create();
+  wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
   server->output_manager = wlr_output_manager_v1_create(server->wl_display);
 
