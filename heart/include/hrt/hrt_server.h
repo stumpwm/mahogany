@@ -8,6 +8,7 @@
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output_management_v1.h>
+#include <wlr/types/wlr_scene.h>
 #include <wlr/render/allocator.h>
 #include <wlr/util/log.h>
 
@@ -20,6 +21,7 @@ struct hrt_server {
   struct wlr_compositor *compositor;
   struct wlr_allocator *allocator;
 
+  struct wlr_scene *scene;
   struct wl_list outputs;
   struct wl_listener new_output;
   struct wlr_output_manager_v1 *output_manager;

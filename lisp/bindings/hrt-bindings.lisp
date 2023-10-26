@@ -90,6 +90,7 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (renderer :pointer #| (:struct wlr-renderer) |# )
   (compositor :pointer #| (:struct wlr-compositor) |# )
   (allocator :pointer #| (:struct wlr-allocator) |# )
+  (scene :pointer #| (:struct wlr-scene) |# )
   (outputs (:struct wl-list))
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
@@ -115,3 +116,12 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
+
+;; next section imported from file build/include/hrt/hrt_view.h
+
+(cffi:defcstruct hrt-view
+  (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
+  (scene-tree :pointer #| (:struct wlr-scene-tree) |# )
+  (map (:struct wl-listener))
+  (unmap (:struct wl-listener))
+  (destroy (:struct wl-listener)))
