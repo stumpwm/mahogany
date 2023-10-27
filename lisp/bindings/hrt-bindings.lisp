@@ -120,8 +120,26 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 ;; next section imported from file build/include/hrt/hrt_view.h
 
 (cffi:defcstruct hrt-view
+  (xdg-surface :pointer #| (:struct wlr-xdg-surface) |# )
   (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
   (scene-tree :pointer #| (:struct wlr-scene-tree) |# )
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (destroy (:struct wl-listener)))
+
+(cffi:defcfun ("hrt_view_init" hrt-view-init) :void
+  "Fully initialize the view and place it in the given scene tree."
+  (view (:pointer (:struct hrt-view)))
+  (tree :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
+  "Request that this view be the given size. Returns the associated configure serial."
+  (view (:pointer (:struct hrt-view)))
+  (width :int)
+  (height :int))
+
+(cffi:defcfun ("hrt_view_set_relative" hrt-view-set-relative) :void
+  "Sets the view to the given coordinates relative to its parent."
+  (view (:pointer (:struct hrt-view)))
+  (x :int)
+  (y :int))
