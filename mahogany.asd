@@ -18,6 +18,7 @@
   :pathname #p"lisp/"
   :components ((:file "log")
 	       (:file "util")
+	       (:file "system")
 	       (:module bindings
 			:serial t
 			:components ((:file "package")
@@ -40,7 +41,7 @@
 				     (:file "view" :depends-on ("tree-interface"))))
 	       (:file "state" :depends-on ("package"))
 	       (:file "input" :depends-on ("state" "keyboard"))
-	       (:file "globals" :depends-on ("state"))
+	       (:file "globals" :depends-on ("state" "system"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable
