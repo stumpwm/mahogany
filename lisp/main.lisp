@@ -32,12 +32,18 @@
        (setf ,@(loop for pair in sets
 		     append (list (car pair) `(cffi:callback ,(cadr pair))))))))
 
+(defun init-view-callbacks (view-callbacks)
+  (init-callback-struct view-callbacks (:struct hrt-view-callbacks)
+    (new-view handle-new-view-event)
+    (view-destroyed handle-view-destroyed-event)))
+
 (defun run-server ()
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt-seat-callbacks))
+			      (view-callbacks '(:struct hrt-view-callbacks))
 			      (server '(:struct hrt-server)))
     (init-callback-struct output-callbacks (:struct hrt-output-callbacks)
       (output-added output-callback)
@@ -46,9 +52,11 @@
       (button-event cursor-callback)
       (wheel-event cursor-callback)
       (keyboard-keypress-event keyboard-callback))
+    (init-view-callbacks view-callbacks)
+
     (setf (mahogany-state-server *compositor-state*) server)
     (log-string :debug "Initialized mahogany state")
-    (hrt-server-init server output-callbacks seat-callbacks 3)
+    (hrt-server-init server output-callbacks seat-callbacks view-callbacks 3)
     (log-string :debug "Initialized heart state")
     (unwind-protect
 	 (hrt-server-start server)

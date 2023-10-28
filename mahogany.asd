@@ -40,6 +40,7 @@
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
 	       (:file "state" :depends-on ("package"))
+	       (:file "view" :depends-on ("package" "bindings"))
 	       (:file "input" :depends-on ("state" "keyboard"))
 	       (:file "globals" :depends-on ("state" "system"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))

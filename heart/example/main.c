@@ -5,17 +5,26 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
+#include <hrt/hrt_view.h>
 
-void cursor_callback(struct hrt_seat *seat) {
+static void cursor_callback(struct hrt_seat *seat) {
   puts("Cursor callback called");
 }
 
-void output_callback(struct hrt_output *output) {
+static void output_callback(struct hrt_output *output) {
   puts("Output callback called");
 }
 
+static void new_view_callback(struct hrt_view *view) {
+  puts("New view callback called!");
+}
+
+static void view_destroy_callback(struct hrt_view *view) {
+  puts("View destroy callback called");
+}
+
 static bool showNormalCursor = true;
-bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *info) {
+static bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *info) {
   puts("Keyboard callback called");
   printf("Modifiers: %d\n", info->modifiers);
   printf("Keys pressed:");
@@ -42,9 +51,14 @@ static const struct hrt_output_callbacks output_callbacks = {
 };
 
 static const struct hrt_seat_callbacks seat_callbacks = {
-  .button_event = &cursor_callback,
-  .wheel_event = &cursor_callback,
-  .keyboard_keypress_event = &keyboard_callback,
+    .button_event = &cursor_callback,
+    .wheel_event = &cursor_callback,
+    .keyboard_keypress_event = &keyboard_callback,
+};
+
+static const struct hrt_view_callbacks view_callbacks = {
+	.new_view = &new_view_callback,
+	.view_destroyed = &view_destroy_callback,
 };
 
 int main(int argc, char *argv[]) {
@@ -52,7 +66,7 @@ int main(int argc, char *argv[]) {
 
   struct hrt_server server;
 
-  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks, WLR_DEBUG)) {
+  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks, &view_callbacks, WLR_DEBUG)) {
     return 1;
   }
 

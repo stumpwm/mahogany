@@ -2,6 +2,10 @@
 #include <wayland-server-core.h>
 #include "hrt/hrt_server.h"
 
+struct hrt_view;
+
+typedef void (*view_destroy_handler)(struct hrt_view *view);
+
 struct hrt_view {
 	struct wlr_xdg_surface *xdg_surface;
 	struct wlr_xdg_toplevel *xdg_toplevel;
@@ -10,9 +14,21 @@ struct hrt_view {
 	  plus decorations and that sort of thing.
 	 */
 	struct wlr_scene_tree *scene_tree;
+
+	// internal state:
 	struct wl_listener map;
 	struct wl_listener unmap;
 	struct wl_listener destroy;
+	view_destroy_handler destroy_handler;
+};
+
+struct hrt_view_callbacks {
+	/**
+	 * A new view has been created. Must call `hrt_view_init` for the
+	 * view to be displayed.
+	 **/
+	void (*new_view)(struct hrt_view *view);
+	view_destroy_handler view_destroyed;
 };
 
 /**
