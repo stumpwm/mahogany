@@ -1,7 +1,6 @@
 (in-package #:mahogany)
 
 (defun execute-command (function key-sequence seat)
-  (declare (ignore key-sequence seat))
   (funcall function key-sequence seat))
 
 (defun check-and-run-keybinding (key seat)
