@@ -17,11 +17,11 @@
 ;; (defmethod initialize-instance :after ((object mahogany-state) &key &allow-other-keys))
 
 (defun server-state-reset (state)
-  (declare (type state mahogany-state))
+  (declare (type mahogany-state state))
   (setf (mahogany-state-server state) nil))
 
 (defun server-stop (state)
-  (declare (type state mahogany-state))
+  (declare (type mahogany-state state))
   (hrt:hrt-server-stop (mahogany-state-server state)))
 
 (defun server-keystate-reset (state)
