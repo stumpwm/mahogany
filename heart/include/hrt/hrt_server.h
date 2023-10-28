@@ -35,15 +35,21 @@ struct hrt_server {
   struct wl_listener new_xdg_surface;
 
   const struct hrt_output_callbacks *output_callback;
+  const struct hrt_view_callbacks *view_callbacks;
 };
 
-bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
-					 const struct hrt_seat_callbacks *seat_callbacks, enum wlr_log_importance log_level);
+bool hrt_server_init(struct hrt_server *server,
+					 const struct hrt_output_callbacks *output_callbacks,
+					 const struct hrt_seat_callbacks *seat_callbacks,
+					 const struct hrt_view_callbacks *view_callbacks,
+					 enum wlr_log_importance log_level);
 
 bool hrt_server_start(struct hrt_server *server);
 
 void hrt_server_stop(struct hrt_server *server);
 
 void hrt_server_finish(struct hrt_server *server);
+
+struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server);
 
 #endif

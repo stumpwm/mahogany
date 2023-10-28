@@ -15,8 +15,11 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
-bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callbacks *output_callbacks,
-					 const struct hrt_seat_callbacks *seat_callbacks, enum wlr_log_importance log_level) {
+bool hrt_server_init(struct hrt_server *server,
+					 const struct hrt_output_callbacks *output_callbacks,
+					 const struct hrt_seat_callbacks *seat_callbacks,
+					 const struct hrt_view_callbacks *view_callbacks,
+					 enum wlr_log_importance log_level) {
   wlr_log_init(log_level, NULL);
   server->wl_display = wl_display_create();
   server->backend = wlr_backend_autocreate(server->wl_display);
@@ -46,6 +49,8 @@ bool hrt_server_init(struct hrt_server *server, const struct hrt_output_callback
   wlr_gamma_control_manager_v1_create(server->wl_display);
 
   server->output_layout = wlr_output_layout_create();
+
+  server->view_callbacks = view_callbacks;
 
   server->xdg_shell = wlr_xdg_shell_create(server->wl_display, 3);
   server->new_xdg_surface.notify = handle_new_xdg_surface;
@@ -100,4 +105,8 @@ void hrt_server_stop(struct hrt_server *server) {
 void hrt_server_finish(struct hrt_server *server) {
   wl_display_destroy_clients(server->wl_display);
   wl_display_destroy(server->wl_display);
+}
+
+struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server) {
+	return &server->scene->tree;
 }

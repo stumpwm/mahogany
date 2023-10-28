@@ -25,6 +25,8 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
 	wlr_log(WLR_DEBUG, "XDG Toplevel Destroyed!");
 	struct hrt_view *view = wl_container_of(listener, view, destroy);
 
+	view->destroy_handler(view);
+
 	wl_list_remove(&view->map.link);
 	wl_list_remove(&view->unmap.link);
 	wl_list_remove(&view->destroy.link);
@@ -32,12 +34,13 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
 	free(view);
 }
 
-static struct hrt_view *create_view_from_xdg_surface(struct wlr_xdg_surface *xdg_surface) {
+static struct hrt_view *create_view_from_xdg_surface(struct wlr_xdg_surface *xdg_surface, view_destroy_handler destroy_handler) {
 	// This method can only deal with toplevel xdg_surfaces:
 	assert(xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL);
 	struct hrt_view *view = calloc(1, sizeof(struct hrt_view));
 	view->xdg_toplevel = xdg_surface->toplevel;
 	view->xdg_surface = xdg_surface;
+	view->destroy_handler = destroy_handler;
 
 	view->map.notify = handle_xdg_toplevel_map;
 	wl_signal_add(&xdg_surface->events.map, &view->map);
@@ -72,8 +75,11 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data) {
 	// Initialization occurs in two steps so the consumer can place the view where it needs to go;
 	// in order to create a scene tree node, it must have a parent.
 	// We don't have it until the callback.
-	struct hrt_view *view = create_view_from_xdg_surface(xdg_surface);
+	struct hrt_view *view = create_view_from_xdg_surface(xdg_surface,
+														 server->view_callbacks->view_destroyed);
 	// At some point, we will want the front end to call this, as it should decide what node
 	// of the scene graph the view gets added to:
-	hrt_view_init(view, &server->scene->tree);
+	// hrt_view_init(view, &server->scene->tree);
+
+	server->view_callbacks->new_view(view);
 }
