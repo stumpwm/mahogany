@@ -1,7 +1,11 @@
+#include "hrt/hrt_server.h"
+#include "wlr/util/log.h"
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <wayland-server-core.h>
+#include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
 
 #include <hrt/hrt_output.h>
@@ -24,9 +28,20 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
   struct hrt_server *server = output->server;
   server->output_callback->output_removed(output);
 
+  wl_list_remove(&output->frame.link);
+  wl_list_remove(&output->mode.link);
+
   // wlr_output_layout removes the output by itself.
 
   free(output);
+}
+
+static void handle_mode_change(struct wl_listener *listener, void *data) {
+	wlr_log(WLR_DEBUG, "Output mode changed");
+	struct hrt_output *output = wl_container_of(listener, output, mode);
+	if(output->mode_change_handler) {
+		output->mode_change_handler(output);
+	}
 }
 
 // temp random float generator
@@ -40,11 +55,14 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
   struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
   output->wlr_output = wlr_output;
   output->server = server;
+  output->mode_change_handler = server->output_callback->output_mode_changed;
 
   wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
   output->frame.notify = handle_frame_notify;
   wl_signal_add(&wlr_output->events.frame, &output->frame);
+  output->mode.notify = handle_mode_change;
+  wl_signal_add(&wlr_output->events.mode, &output->mode);
 
   // temp background color:
   // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -111,4 +129,8 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   srand(time(0));
 
   return true;
+}
+
+void hrt_output_resolution(struct hrt_output *output, int *width, int *height) {
+	wlr_output_effective_resolution(output->wlr_output, width, height);
 }

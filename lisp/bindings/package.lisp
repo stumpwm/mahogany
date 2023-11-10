@@ -11,8 +11,13 @@
 	   #:hrt-seat
 	   #:hrt-output
 	   #:hrt-keypress-info
+	   ;; output callbacks
 	   #:output-added
 	   #:output-removed
+	   #:output-mode-changed
+	   ;; output methods:
+	   #:output-resolution
+	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
 	   #:hrt-server-scene-tree
