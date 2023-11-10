@@ -21,7 +21,6 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
   wlr_log(WLR_DEBUG, "Output destroyed");
   struct hrt_output *output = wl_container_of(listener, output, destroy);
-  wl_list_remove(&output->link);
   struct hrt_server *server = output->server;
   server->output_callback->output_removed(output);
 
@@ -70,7 +69,6 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
 
   output->destroy.notify = handle_output_destroy;
   wl_signal_add(&wlr_output->events.destroy, &output->destroy);
-  wl_list_insert(&server->outputs, &output->link);
 
   struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
   if (mode != NULL) {
@@ -108,8 +106,6 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   }
   server->output_manager_apply.notify = handle_output_manager_apply;
   server->output_manager_test.notify = handle_output_manager_test;
-
-  wl_list_init(&server->outputs);
 
   // temporary random seed:
   srand(time(0));

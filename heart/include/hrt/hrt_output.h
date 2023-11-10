@@ -10,7 +10,6 @@
 struct hrt_output {
   struct wlr_output *wlr_output;
   struct hrt_server *server;
-  struct wl_list link;
 
   struct wl_listener frame;
   struct wl_listener destroy;
