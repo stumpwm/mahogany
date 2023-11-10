@@ -22,7 +22,6 @@ struct hrt_server {
   struct wlr_allocator *allocator;
 
   struct wlr_scene *scene;
-  struct wl_list outputs;
   struct wl_listener new_output;
   struct wlr_output_manager_v1 *output_manager;
   struct wlr_output_layout *output_layout;

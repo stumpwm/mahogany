@@ -105,7 +105,6 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
-  (link (:struct wl-list))
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
   (color :float :count 4))
@@ -127,7 +126,6 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (compositor :pointer #| (:struct wlr-compositor) |# )
   (allocator :pointer #| (:struct wlr-allocator) |# )
   (scene :pointer #| (:struct wlr-scene) |# )
-  (outputs (:struct wl-list))
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
   (output-layout :pointer #| (:struct wlr-output-layout) |# )
