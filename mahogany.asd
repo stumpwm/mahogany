@@ -23,7 +23,8 @@
 			:serial t
 			:components ((:file "package")
 				     (:file "hrt-libs")
-				     (:file "hrt-bindings")))
+				     (:file "hrt-bindings")
+				     (:file "wrappers")))
 	       (:file "package")
 	       (:module interfaces
 			:depends-on ("package")

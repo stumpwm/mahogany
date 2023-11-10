@@ -105,17 +105,27 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
+  (mode-change-handler :pointer #| function ptr void (struct hrt_output *) |#)
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
+  (mode (:struct wl-listener))
   (color :float :count 4))
 
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-removed :pointer #| function ptr void (struct hrt_output *) |#))
+  (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
+  (output-mode-changed :pointer #| function ptr void (struct hrt_output *) |#))
 
 (cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
   (server (:pointer (:struct hrt-server)))
   (callbacks (:pointer (:struct hrt-output-callbacks))))
+
+(cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void
+  "Get the effective output resolution of the output that can be used to
+set the width and height of views."
+  (output (:pointer (:struct hrt-output)))
+  (width (:pointer :int))
+  (height (:pointer :int)))
 
 ;; next section imported from file build/include/hrt/hrt_server.h
 
@@ -153,5 +163,5 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
   (server (:pointer (:struct hrt-server))))
