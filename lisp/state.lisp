@@ -10,6 +10,12 @@
    (keybindings :type list
 		:initform nil
 		:reader mahogany-state-keybindings)
+   (outputs :type vector
+	    :initform (make-array 0
+				  :element-type 'mahogany-output
+				  :adjustable t
+				  :fill-pointer t)
+	    :accessor mahogany-state-outputs)
    (views :type list
 	  :initform nil
 	  :reader mahogany-state-views)))

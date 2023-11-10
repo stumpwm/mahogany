@@ -4,10 +4,6 @@
   (declare (ignore seat))
   (log-string :trace "cursor callback called"))
 
-(cffi:defcallback output-callback :void ((seat (:pointer (:struct hrt-output))))
-  (declare (ignore seat))
-  (log-string :trace "output change callback called"))
-
 (cffi:defcallback keyboard-callback :bool
     ((seat (:pointer (:struct hrt-seat)))
      (info (:pointer (:struct hrt-keypress-info))))
@@ -46,8 +42,8 @@
 			      (view-callbacks '(:struct hrt-view-callbacks))
 			      (server '(:struct hrt-server)))
     (init-callback-struct output-callbacks (:struct hrt-output-callbacks)
-      (output-added output-callback)
-      (output-removed  output-callback))
+      (output-added handle-new-output)
+      (output-removed handle-output-removed))
     (init-callback-struct seat-callbacks (:struct hrt-seat-callbacks)
       (button-event cursor-callback)
       (wheel-event cursor-callback)
