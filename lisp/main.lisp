@@ -26,11 +26,36 @@
     (hrt:new-view handle-new-view-event)
     (hrt:view-destroyed handle-view-destroyed-event)))
 
+(defun load-config-file (&optional (catch-errors t))
+  "Load the user's config file. Returns a values list: whether the file loaded (t if no
+rc files exist), the error if it didn't, and the config file that was
+loaded. When CATCH-ERRORS is nil, errors are left to be handled
+further up. "
+  (let* ((xdg-config
+           (probe-file (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))))
+	 (fallback-config
+	   (probe-file (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
+	 (config-file (or xdg-config fallback-config)))
+    (if config-file
+	(progn
+	  (log-string :debug "Found config file at ~a" config-file)
+          (if catch-errors
+	      (handler-case (load config-file)
+		(error (c) (values nil (format nil "~a" c) config-file))
+		(:no-error (&rest args) (declare (ignore args)) (values t nil config-file)))
+              (progn
+		(load config-file)
+		(values t nil config-file))))
+	(progn
+	  (log-string :debug "Did not find config file")
+	  (values t nil nil)))))
+
 (defun run-server ()
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (enable-debugger)
+  (load-config-file)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
 			      (view-callbacks '(:struct hrt:hrt-view-callbacks))
