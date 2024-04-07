@@ -105,7 +105,7 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
-  (mode-change-handler :pointer #| function ptr void (struct hrt_output *) |#)
+  (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
   (mode (:struct wl-listener))
@@ -113,8 +113,7 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-mode-changed :pointer #| function ptr void (struct hrt_output *) |#))
+  (output-removed :pointer #| function ptr void (struct hrt_output *) |#))
 
 (cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
   (server (:pointer (:struct hrt-server)))
@@ -132,10 +131,12 @@ set the width and height of views."
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |# )
   (backend :pointer #| (:struct wlr-backend) |# )
+  (session :pointer #| (:struct wlr-session) |# )
   (renderer :pointer #| (:struct wlr-renderer) |# )
   (compositor :pointer #| (:struct wlr-compositor) |# )
   (allocator :pointer #| (:struct wlr-allocator) |# )
   (scene :pointer #| (:struct wlr-scene) |# )
+  (scene-layout :pointer #| (:struct wlr-scene-output-layout) |# )
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
   (output-layout :pointer #| (:struct wlr-output-layout) |# )

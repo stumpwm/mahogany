@@ -10,12 +10,19 @@
 
 #include <hrt/hrt_output.h>
 
+static void handle_request_state(struct wl_listener *listener, void *data) {
+	wlr_log(WLR_DEBUG, "Request State Handled");
+	struct hrt_output* output = wl_container_of(listener, output, request_state);
+	const struct wlr_output_event_request_state *event = data;
+	wlr_output_commit_state(output->wlr_output, event->state);
+}
+
 static void handle_frame_notify(struct wl_listener *listener, void *data) {
   struct hrt_output *output = wl_container_of(listener, output, frame);
   struct wlr_scene *scene = output->server->scene;
 
   struct wlr_scene_output *scene_output = wlr_scene_get_scene_output(scene, output->wlr_output);
-  wlr_scene_output_commit(scene_output);
+  wlr_scene_output_commit(scene_output, NULL);
 
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
@@ -29,19 +36,10 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
   server->output_callback->output_removed(output);
 
   wl_list_remove(&output->frame.link);
-  wl_list_remove(&output->mode.link);
 
   // wlr_output_layout removes the output by itself.
 
   free(output);
-}
-
-static void handle_mode_change(struct wl_listener *listener, void *data) {
-	wlr_log(WLR_DEBUG, "Output mode changed");
-	struct hrt_output *output = wl_container_of(listener, output, mode);
-	if(output->mode_change_handler) {
-		output->mode_change_handler(output);
-	}
 }
 
 // temp random float generator
@@ -55,14 +53,11 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
   struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
   output->wlr_output = wlr_output;
   output->server = server;
-  output->mode_change_handler = server->output_callback->output_mode_changed;
-
-  wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
   output->frame.notify = handle_frame_notify;
   wl_signal_add(&wlr_output->events.frame, &output->frame);
-  output->mode.notify = handle_mode_change;
-  wl_signal_add(&wlr_output->events.mode, &output->mode);
+  output->request_state.notify = handle_request_state;
+  wl_signal_add(&wlr_output->events.request_state, &output->request_state);
 
   // temp background color:
   // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -83,19 +78,31 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
 
   struct wlr_output *wlr_output = data;
 
+  wlr_output_init_render(wlr_output, server->allocator, server->renderer);
+
+  struct wlr_output_state state;
+  wlr_output_state_init(&state);
+  wlr_output_state_set_enabled(&state, true);
+
+  struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
+  if (mode != NULL) {
+	wlr_output_state_set_mode(&state, mode);
+  }
+
+  if (!wlr_output_commit_state(wlr_output, &state)) {
+    // FIXME: Actually do some error handling instead of just logging:
+	wlr_log(WLR_ERROR, "Output state could not be commited");
+  }
+  wlr_output_state_finish(&state);
+
+  struct wlr_output_layout_output* l_output = wlr_output_layout_add_auto(server->output_layout, wlr_output);
+  struct wlr_scene_output *scene_output = wlr_scene_output_create(server->scene, wlr_output);
+  wlr_scene_output_layout_add_output(server->scene_layout, l_output, scene_output);
+
   struct hrt_output *output = hrt_output_create(server, wlr_output);
 
   output->destroy.notify = handle_output_destroy;
   wl_signal_add(&wlr_output->events.destroy, &output->destroy);
-
-  struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
-  if (mode != NULL) {
-    wlr_output_set_mode(wlr_output, mode);
-    wlr_output_enable(wlr_output, true);
-    wlr_output_commit(wlr_output);
-  }
-
-  wlr_output_layout_add_auto(server->output_layout, wlr_output);
 
   server->output_callback->output_added(output);
 }
@@ -115,6 +122,7 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
 
   server->output_layout = wlr_output_layout_create();
   server->scene = wlr_scene_create();
+  server->scene_layout = wlr_scene_attach_output_layout(server->scene, server->output_layout);
   wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
   server->output_manager = wlr_output_manager_v1_create(server->wl_display);

@@ -1,6 +1,6 @@
 [submodule "heart/wlroots"]
 	path = heart/subprojects/wlroots
-	url = https://github.com/swaywm/wlroots.git
+	url = https://gitlab.freedesktop.org/wlroots/wlroots.git
 [submodule "dependencies/cl-wayland"]
 	path = dependencies/cl-wayland
 	url = https://github.com/sdilts/cl-wayland.git
