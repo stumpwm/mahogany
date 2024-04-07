@@ -36,6 +36,8 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
   server->output_callback->output_removed(output);
 
   wl_list_remove(&output->frame.link);
+  wl_list_remove(&output->request_state.link);
+  wl_list_remove(&output->destroy.link);
 
   // wlr_output_layout removes the output by itself.
 
@@ -123,7 +125,6 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   server->output_layout = wlr_output_layout_create();
   server->scene = wlr_scene_create();
   server->scene_layout = wlr_scene_attach_output_layout(server->scene, server->output_layout);
-  wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
   server->output_manager = wlr_output_manager_v1_create(server->wl_display);
 

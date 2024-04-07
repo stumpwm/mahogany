@@ -108,7 +108,6 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
-  (mode (:struct wl-listener))
   (color :float :count 4))
 
 (cffi:defcstruct hrt-output-callbacks
