@@ -40,11 +40,12 @@
 	       		:components ((:file "tree-interface")
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
-	       (:file "state" :depends-on ("package"))
-	       (:file "output" :depends-on ("package" "bindings"))
-	       (:file "view" :depends-on ("package" "bindings"))
+	       (:file "objects" :depends-on ("package"))
+	       (:file "state" :depends-on ("objects" "keyboard"))
+	       (:file "globals" :depends-on ("state" "objects" "system"))
+	       (:file "output" :depends-on ("objects" "bindings"))
+	       (:file "view" :depends-on ("globals" "state" "objects" "bindings"))
 	       (:file "input" :depends-on ("state" "keyboard"))
-	       (:file "globals" :depends-on ("state" "system"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable

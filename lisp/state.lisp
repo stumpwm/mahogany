@@ -1,25 +1,5 @@
 (in-package #:mahogany)
 
-(defclass mahogany-state ()
-  ((hrt-server :type hrt-server
-	       :initarg server
-	       :accessor mahogany-state-server)
-   (key-state :type key-state
-	      :initform (make-key-state nil)
-	      :accessor mahogany-state-key-state)
-   (keybindings :type list
-		:initform nil
-		:reader mahogany-state-keybindings)
-   (outputs :type vector
-	    :initform (make-array 0
-				  :element-type 'mahogany-output
-				  :adjustable t
-				  :fill-pointer t)
-	    :accessor mahogany-state-outputs)
-   (views :type list
-	  :initform nil
-	  :reader mahogany-state-views)))
-
 ;; (defmethod initialize-instance :after ((object mahogany-state) &key &allow-other-keys))
 
 (defun server-state-reset (state)
