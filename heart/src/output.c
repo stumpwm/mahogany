@@ -127,6 +127,10 @@ static void handle_output_manager_test(struct wl_listener *listener, void *data)
 
 }
 
+static void handle_output_layout_changed(struct wl_listener *listener, void *data) {
+  wlr_log(WLR_DEBUG, "Output Layout changed");
+}
+
 bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks) {
   server->output_callback = callbacks;
   server->new_output.notify = handle_new_output;
@@ -135,6 +139,9 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   server->output_layout = wlr_output_layout_create(server->wl_display);
   server->scene = wlr_scene_create();
   server->scene_layout = wlr_scene_attach_output_layout(server->scene, server->output_layout);
+
+  server->output_layout_changed.notify = handle_output_layout_changed;
+  wl_signal_add(&server->output_layout->events.change, &server->output_layout_changed);
 
   server->output_manager = wlr_output_manager_v1_create(server->wl_display);
 
@@ -156,6 +163,7 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
 
 void hrt_output_destroy(struct hrt_server *server) {
   wlr_scene_node_destroy(&server->scene->tree.node);
+  wl_list_remove(&server->output_layout_changed.link);
   // The output layout  gets destroyed when the display does:
   // wlr_output_layout_destroy(server->output_layout);
 }
