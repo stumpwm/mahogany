@@ -34,7 +34,7 @@
    #+END_SRC
 
 *** Backend Library Dependencies
-The backend library requires wlroots 0.16.x. This
+The backend library requires wlroots 0.17.x. This
 version is included as a git submodule and is used by
 default. It requires the following development dependencies to build:
 + wayland
