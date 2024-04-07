@@ -141,6 +141,7 @@ set the width and height of views."
   (output-layout :pointer #| (:struct wlr-output-layout) |# )
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
+  (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-surface (:struct wl-listener))

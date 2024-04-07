@@ -109,6 +109,16 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
   server->output_callback->output_added(output);
 }
 
+static void handle_output_manager_destroy(struct wl_listener *listener, void *data) {
+	wlr_log(WLR_DEBUG, "Output Manager destroyed");
+
+	struct hrt_server *server = wl_container_of(listener, server, output_manager_destroy);
+
+	wl_list_remove(&server->output_manager_apply.link);
+	wl_list_remove(&server->output_manager_test.link);
+	wl_list_remove(&server->output_manager_destroy.link);
+}
+
 static void handle_output_manager_apply(struct wl_listener *listener, void *data) {
 
 }
@@ -132,7 +142,11 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
     return false;
   }
   server->output_manager_apply.notify = handle_output_manager_apply;
+  wl_signal_add(&server->output_manager->events.apply, &server->output_manager_apply);
   server->output_manager_test.notify = handle_output_manager_test;
+  wl_signal_add(&server->output_manager->events.apply, &server->output_manager_test);
+  server->output_manager_destroy.notify = handle_output_manager_destroy;
+  wl_signal_add(&server->output_manager->events.destroy, &server->output_manager_destroy);
 
   // temporary random seed:
   srand(time(0));

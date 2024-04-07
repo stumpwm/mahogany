@@ -30,6 +30,7 @@ struct hrt_server {
   struct wlr_output_layout *output_layout;
   struct wl_listener output_manager_apply;
   struct wl_listener output_manager_test;
+  struct wl_listener output_manager_destroy;
 
   struct hrt_seat seat;
 
