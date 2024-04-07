@@ -122,7 +122,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-removed :pointer #| function ptr void (struct hrt_output *) |#))
+  (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
+  (output-layout-changed :pointer #| function ptr void (struct hrt_output *) |#))
 
 (cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
   (server (:pointer (:struct hrt-server)))
@@ -170,6 +171,7 @@ set the width and height of views."
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
   (output-layout :pointer #| (:struct wlr-output-layout) |# )
+  (output-layout-changed (:struct wl-listener))
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
   (output-manager-destroy (:struct wl-listener))
