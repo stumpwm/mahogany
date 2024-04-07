@@ -125,6 +125,23 @@ set the width and height of views."
   (width (:pointer :int))
   (height (:pointer :int)))
 
+(cffi:defcfun ("hrt_output_position" hrt-output-position) :void
+  (output (:pointer (:struct hrt-output)))
+  (x (:pointer :int))
+  (y (:pointer :int)))
+
+(cffi:defcfun ("hrt_output_name" hrt-output-name) (:pointer :char)
+  (output (:pointer (:struct hrt-output))))
+
+(cffi:defcfun ("hrt_output_make" hrt-output-make) (:pointer :char)
+  (output (:pointer (:struct hrt-output))))
+
+(cffi:defcfun ("hrt_output_model" hrt-output-model) (:pointer :char)
+  (output (:pointer (:struct hrt-output))))
+
+(cffi:defcfun ("hrt_output_serial" hrt-output-serial) (:pointer :char)
+  (output (:pointer (:struct hrt-output))))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server

@@ -31,4 +31,15 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
  * set the width and height of views.
  **/
 void hrt_output_resolution(struct hrt_output *output, int *width, int *height);
+
+void hrt_output_position(struct hrt_output *output, int *x, int *y);
+
+char *hrt_output_name(struct hrt_output *output);
+
+char *hrt_output_make(struct hrt_output *output);
+
+char *hrt_output_model(struct hrt_output *output);
+
+char *hrt_output_serial(struct hrt_output *output);
+
 #endif

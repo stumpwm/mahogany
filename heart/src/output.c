@@ -153,7 +153,3 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
 
   return true;
 }
-
-void hrt_output_resolution(struct hrt_output *output, int *width, int *height) {
-	wlr_output_effective_resolution(output->wlr_output, width, height);
-}

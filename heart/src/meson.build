@@ -3,6 +3,7 @@ hrt_source_files += files(
   'input.c',
   'keyboard.c',
   'output.c',
+  'output_methods.c',
   'seat.c',
   'server.c',
   'view.c',
