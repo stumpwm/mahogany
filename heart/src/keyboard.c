@@ -36,7 +36,7 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 
     if (keysym >= XKB_KEY_XF86Switch_VT_1 && keysym <= XKB_KEY_XF86Switch_VT_12) {
       if (wlr_backend_is_multi(server->backend)) {
-        struct wlr_session *session = wlr_backend_get_session(server->backend);
+        struct wlr_session *session = server->session;
         if (session) {
           wlr_log(WLR_DEBUG, "Changing session");
           unsigned vt = keysym - XKB_KEY_XF86Switch_VT_1 + 1;

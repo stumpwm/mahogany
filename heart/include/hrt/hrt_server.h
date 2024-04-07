@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_SERVER_H
 #define HRT_HRT_SERVER_H
 
+#include "wlr/backend/session.h"
 #include <stdbool.h>
 
 #include <wayland-server.h>
@@ -17,11 +18,13 @@
 struct hrt_server {
   struct wl_display *wl_display;
   struct wlr_backend *backend;
+  struct wlr_session *session;
   struct wlr_renderer *renderer;
   struct wlr_compositor *compositor;
   struct wlr_allocator *allocator;
 
   struct wlr_scene *scene;
+  struct wlr_scene_output_layout *scene_layout;
   struct wl_listener new_output;
   struct wlr_output_manager_v1 *output_manager;
   struct wlr_output_layout *output_layout;

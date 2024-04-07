@@ -22,7 +22,7 @@ bool hrt_server_init(struct hrt_server *server,
 					 enum wlr_log_importance log_level) {
   wlr_log_init(log_level, NULL);
   server->wl_display = wl_display_create();
-  server->backend = wlr_backend_autocreate(server->wl_display);
+  server->backend = wlr_backend_autocreate(server->wl_display, &server->session);
 
   if(!server->backend) {
     return false;
@@ -39,7 +39,7 @@ bool hrt_server_init(struct hrt_server *server,
     return false;
   }
 
-  server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
+  server->compositor = wlr_compositor_create(server->wl_display, 5, server->renderer);
   wlr_subcompositor_create(server->wl_display);
   wlr_data_device_manager_create(server->wl_display);
 

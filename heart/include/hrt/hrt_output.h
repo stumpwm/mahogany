@@ -10,8 +10,8 @@
 struct hrt_output {
   struct wlr_output *wlr_output;
   struct hrt_server *server;
-  void (*mode_change_handler)(struct hrt_output *output);
 
+  struct wl_listener request_state;
   struct wl_listener frame;
   struct wl_listener destroy;
   struct wl_listener mode;
@@ -23,7 +23,6 @@ struct hrt_output {
 struct hrt_output_callbacks {
   void (*output_added)(struct hrt_output *output);
   void (*output_removed)(struct hrt_output *output);
-  void (*output_mode_changed)(struct hrt_output *output);
 };
 
 bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks);

@@ -43,9 +43,9 @@ static struct hrt_view *create_view_from_xdg_surface(struct wlr_xdg_surface *xdg
 	view->destroy_handler = destroy_handler;
 
 	view->map.notify = handle_xdg_toplevel_map;
-	wl_signal_add(&xdg_surface->events.map, &view->map);
+	wl_signal_add(&xdg_surface->surface->events.map, &view->map);
 	view->unmap.notify = handle_xdg_toplevel_unmap;
-	wl_signal_add(&xdg_surface->events.unmap, &view->unmap);
+	wl_signal_add(&xdg_surface->surface->events.unmap, &view->unmap);
 	view->destroy.notify = handle_xdg_toplevel_destroy;
 	wl_signal_add(&xdg_surface->events.destroy, &view->destroy);
 
@@ -60,7 +60,7 @@ void handle_new_xdg_surface(struct wl_listener *listener, void *data) {
 	if(xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
 		// The front end doesn't need to know about popups; wlroots handles it for us.
 		// we do need to set some internal data so that they can be rendered though.
-		struct wlr_xdg_surface *parent = wlr_xdg_surface_from_wlr_surface(xdg_surface->popup->parent);
+		struct wlr_xdg_surface *parent = wlr_xdg_surface_try_from_wlr_surface(xdg_surface->popup->parent);
 		struct wlr_scene_tree *parent_tree = parent->data;
 		// The parent view might not have been initizlized properly. In that case, it
 		// isn't being displayed, so we just ignore it:
