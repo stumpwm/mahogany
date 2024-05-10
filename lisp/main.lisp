@@ -17,12 +17,6 @@
 				     (xkb:keysym-get-name (mahogany/keyboard::key-keysym key)))))
 	(handle-key-event key seat)))))
 
-(defun disable-fpu-exceptions ()
-  #+sbcl
-  (sb-int:set-floating-point-modes :traps nil)
-  #+ccl
-  (set-fpu-mode :overflow nil))
-
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
     `(cffi:with-foreign-slots (,vars ,variable ,type)
@@ -38,7 +32,7 @@
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
-  (sb-ext:enable-debugger)
+  (enable-debugger)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt-seat-callbacks))
 			      (view-callbacks '(:struct hrt-view-callbacks))

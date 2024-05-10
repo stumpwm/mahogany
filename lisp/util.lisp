@@ -2,7 +2,8 @@
 (defpackage #:mahogany/util
   (:use #:cl)
   (:export #:mahogany-error
-	   #:defglobal))
+	   #:defglobal
+	   #:enable-debugger))
 
 (in-package #:mahogany/util)
 
@@ -25,3 +26,13 @@
   `(ccl:defstatic ,name ,value ,doc)
   #+(not (or ccl sbcl))
   `(defvar ,name ,value ,doc))
+
+(defun enable-debugger ()
+  #+sbcl
+  (sb-ext:enable-debugger))
+
+(defun disable-fpu-exceptions ()
+  #+sbcl
+  (sb-int:set-floating-point-modes :traps nil)
+  #+ccl
+  (set-fpu-mode :overflow nil))
