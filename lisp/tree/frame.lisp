@@ -36,12 +36,10 @@
 	(tmp-y (frame-y frame1))
 	(tmp-width (frame-width frame1))
 	(tmp-height (frame-height frame1)))
-    (setf (frame-x frame1) (frame-x frame2)
-	  (frame-y frame1) (frame-y frame2))
+    (set-position frame1 (frame-x frame2) (frame-y frame2))
     (set-dimensions frame1 (frame-width frame2) (frame-height frame2))
 
-    (setf (frame-x frame2) tmp-x
-	  (frame-y frame2) tmp-y)
+    (set-position frame2 tmp-x tmp-y)
     (set-dimensions frame2 tmp-width tmp-height))
 
   (let ((frame1-parent (frame-parent frame1))
@@ -101,6 +99,10 @@
   (setf (frame-width frame) width
 	(frame-height frame) height))
 
+(defmethod set-position ((frame frame) x y)
+  (setf (frame-x frame) x
+	(frame-y frame) y))
+
 (defmethod split-frame-h :before ((frame frame) &key ratio direction)
   (declare (ignore frame direction))
   (when ratio
@@ -141,8 +143,7 @@ of FRAME to those of ROOT."
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
   (set-dimensions frame (frame-width root) (frame-height root))
-  (setf (frame-x frame) (frame-x root)
-	(frame-y frame) (frame-y root)))
+  (set-position frame (frame-x root) (frame-y root)))
 
 (defun binary-split-h (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
