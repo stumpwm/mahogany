@@ -45,3 +45,14 @@
 	   #:keysyms-len
 	   #:wl-key-state
 	   #:load-foreign-libraries))
+
+(defpackage #:wlr
+  (:use :cl #:wayland-server-core)
+  (:export
+   #:scene-tree-create
+   #:scene-node-destroy
+   #:scene-node-set-position
+   #:scene-node-reparent
+   #:scene-node-set-enabled
+   ;; scene node slot:
+   #:node))
