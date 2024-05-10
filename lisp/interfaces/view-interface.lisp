@@ -34,3 +34,6 @@
   (print-unreadable-object (object stream :type t)
     (with-slots (x y) object
       (format stream ":x ~S :y ~S" x y))))
+
+(defgeneric set-position (object x y)
+  (:documentation "Set the x-y position of the object"))
