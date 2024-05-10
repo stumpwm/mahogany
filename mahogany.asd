@@ -27,6 +27,7 @@
 		        :serial t
 			:depends-on ("interfaces")
 			:components ((:file "package")
+				     (:file "wlr-bindings")
 				     (:file "hrt-libs")
 				     (:file "hrt-bindings")
 				     (:file "wrappers")))

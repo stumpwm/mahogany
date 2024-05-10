@@ -13,12 +13,16 @@ CACHE := $(BUILD_DIR)/internal
 # We actually want to watch the build output (build/include/hrt), but those files
 # might not exist
 HRT_INCLUDES = $(shell find $(ROOT)/heart/include/hrt/ -type f)
+# WLR_INCLUDES = $(shell find $(ROOT)/heart/subprojects/wlroots/include/wlr/ -type f)
 
-$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so lisp/bindings/hrt-bindings.lisp build-mahogany.lisp FORCE
+$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so lisp/bindings/hrt-bindings.lisp lisp/bindings/wlr-bindings.lisp build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
 
 lisp/bindings/hrt-bindings.lisp: $(ROOT)/lisp/bindings/hrt-bindings.yml $(HRT_INCLUDES)
 	cl-bindgen b lisp/bindings/hrt-bindings.yml
+
+lisp/bindings/wlr-bindings.lisp: $(ROOT)/lisp/bindings/wlr-bindings.yml
+	cl-bindgen b lisp/bindings/wlr-bindings.yml
 
 $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart
