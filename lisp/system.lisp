@@ -18,7 +18,7 @@ Mahogany is running under")
     (UIOP/RUN-PROGRAM:SUBPROCESS-ERROR nil)))
 
 (defun open-terminal ()
-  (let ((programs #("konsole" "gnome-terminal")))
+  (let ((programs #("konsole" "gnome-terminal" "wezterm" "foot")))
     (loop for i across programs
 	  do (alex:when-let ((program (find-program i)))
 	       (uiop:launch-program program)
