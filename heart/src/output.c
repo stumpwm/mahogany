@@ -132,7 +132,7 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
   server->new_output.notify = handle_new_output;
   wl_signal_add(&server->backend->events.new_output, &server->new_output);
 
-  server->output_layout = wlr_output_layout_create();
+  server->output_layout = wlr_output_layout_create(server->wl_display);
   server->scene = wlr_scene_create();
   server->scene_layout = wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
@@ -155,6 +155,7 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
 }
 
 void hrt_output_destroy(struct hrt_server *server) {
-	wlr_scene_node_destroy(&server->scene->tree.node);
-	wlr_output_layout_destroy(server->output_layout);
+  wlr_scene_node_destroy(&server->scene->tree.node);
+  // The output layout  gets destroyed when the display does:
+  // wlr_output_layout_destroy(server->output_layout);
 }

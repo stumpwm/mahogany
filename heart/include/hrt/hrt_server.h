@@ -4,6 +4,7 @@
 #include "wlr/backend/session.h"
 #include <stdbool.h>
 
+#include <wayland-server-core.h>
 #include <wayland-server.h>
 #include <wlr/backend.h>
 #include <wlr/types/wlr_compositor.h>
@@ -18,6 +19,7 @@
 struct hrt_server {
   struct wl_display *wl_display;
   struct wlr_backend *backend;
+  struct wl_listener backend_destroy;
   struct wlr_session *session;
   struct wlr_renderer *renderer;
   struct wlr_compositor *compositor;
@@ -35,7 +37,9 @@ struct hrt_server {
   struct hrt_seat seat;
 
   struct wlr_xdg_shell *xdg_shell;
-  struct wl_listener new_xdg_surface;
+  struct wl_listener new_xdg_toplevel;
+  struct wl_listener new_xdg_popup;
+
 
   const struct hrt_output_callbacks *output_callback;
   const struct hrt_view_callbacks *view_callbacks;
