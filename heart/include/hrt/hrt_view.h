@@ -18,6 +18,7 @@ struct hrt_view {
 	// internal state:
 	struct wl_listener map;
 	struct wl_listener unmap;
+	struct wl_listener commit;
 	struct wl_listener destroy;
 	view_destroy_handler destroy_handler;
 };

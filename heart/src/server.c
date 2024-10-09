@@ -2,6 +2,7 @@
 #include "xdg_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
+#include <wayland-util.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -15,6 +16,12 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
+static void handle_backend_destroyed(struct wl_listener *listener, void *data) {
+  struct hrt_server *server =
+      wl_container_of(listener, server, backend_destroy);
+  wl_display_terminate(server->wl_display);
+}
+
 bool hrt_server_init(struct hrt_server *server,
 					 const struct hrt_output_callbacks *output_callbacks,
 					 const struct hrt_seat_callbacks *seat_callbacks,
@@ -22,7 +29,11 @@ bool hrt_server_init(struct hrt_server *server,
 					 enum wlr_log_importance log_level) {
   wlr_log_init(log_level, NULL);
   server->wl_display = wl_display_create();
-  server->backend = wlr_backend_autocreate(server->wl_display, &server->session);
+  server->backend = wlr_backend_autocreate(
+      wl_display_get_event_loop(server->wl_display), &server->session);
+
+  server->backend_destroy.notify = &handle_backend_destroyed;
+  wl_signal_add(&server->backend->events.destroy, &server->backend_destroy);
 
   if(!server->backend) {
     return false;
@@ -48,13 +59,13 @@ bool hrt_server_init(struct hrt_server *server,
   wlr_data_control_manager_v1_create(server->wl_display);
   wlr_gamma_control_manager_v1_create(server->wl_display);
 
-  server->output_layout = wlr_output_layout_create();
+  server->output_layout = wlr_output_layout_create(server->wl_display);
 
   server->view_callbacks = view_callbacks;
 
-  server->xdg_shell = wlr_xdg_shell_create(server->wl_display, 3);
-  server->new_xdg_surface.notify = handle_new_xdg_surface;
-  wl_signal_add(&server->xdg_shell->events.new_surface, &server->new_xdg_surface);
+  if (!hrt_xdg_shell_init(server)) {
+    return false;
+  }
 
 
   if(!hrt_output_init(server, output_callbacks)) {
