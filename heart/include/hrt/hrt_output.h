@@ -25,7 +25,7 @@ struct hrt_output_callbacks {
 };
 
 bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks);
-
+void hrt_output_destroy(struct hrt_server *server);
 /**
  * Get the effective output resolution of the output that can be used to
  * set the width and height of views.

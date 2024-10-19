@@ -123,3 +123,9 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 
   return true;
 }
+
+void hrt_seat_destroy(struct hrt_seat *seat) {
+  wlr_seat_destroy(seat->seat);
+  hrt_keyboard_destroy(seat);
+  hrt_cursor_destroy(seat);
+}

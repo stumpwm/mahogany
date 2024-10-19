@@ -67,3 +67,8 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
 
   return true;
 }
+
+void hrt_cursor_destroy(struct hrt_seat *seat) {
+	wlr_xcursor_manager_destroy(seat->xcursor_manager);
+	wlr_cursor_destroy(seat->cursor);
+}
