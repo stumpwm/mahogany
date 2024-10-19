@@ -67,7 +67,12 @@ static void input_device_destroy(struct wl_listener *listener, void *data) {
     break;
   }
 
+  // Signals
+  wl_list_remove(&input->destroy.link);
+
   wl_list_remove(&input->link);
+
+
   uint32_t caps = find_input_caps(input->seat, input);
   wlr_seat_set_capabilities(input->seat->seat, caps);
 
@@ -82,8 +87,11 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
   struct hrt_input *input = calloc(1, sizeof(struct hrt_input));
   input->wlr_input_device = dev;
   input->seat = seat;
+
+  /// Signals
   input->destroy.notify = input_device_destroy;
   wl_signal_add(&dev->events.destroy, &input->destroy);
+
   wl_list_insert(&seat->inputs, &input->link);
 
   switch(dev->type) {
