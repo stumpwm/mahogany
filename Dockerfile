@@ -14,4 +14,4 @@ RUN curl -O https://beta.quicklisp.org/quicklisp.lisp \
 COPY . .
 
 # RUN git submodule init
-RUN make test
+RUN make && make test
