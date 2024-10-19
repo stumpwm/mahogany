@@ -153,3 +153,8 @@ bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callback
 
   return true;
 }
+
+void hrt_output_destroy(struct hrt_server *server) {
+	wlr_scene_node_destroy(&server->scene->tree.node);
+	wlr_output_layout_destroy(server->output_layout);
+}

@@ -104,6 +104,11 @@ void hrt_server_stop(struct hrt_server *server) {
 
 void hrt_server_finish(struct hrt_server *server) {
   wl_display_destroy_clients(server->wl_display);
+  hrt_output_destroy(server);
+
+  wlr_allocator_destroy(server->allocator);
+  wlr_renderer_destroy(server->renderer);
+  wlr_backend_destroy(server->backend);
   wl_display_destroy(server->wl_display);
 }
 

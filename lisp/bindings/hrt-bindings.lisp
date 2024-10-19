@@ -84,11 +84,20 @@
   (server (:pointer (:struct hrt-server)))
   (callbacks (:pointer (:struct hrt-seat-callbacks))))
 
+(cffi:defcfun ("hrt_seat_destroy" hrt-seat-destroy) :void
+  (seat (:pointer (:struct hrt-seat))))
+
 (cffi:defcfun ("hrt_cursor_init" hrt-cursor-init) :bool
   (seat (:pointer (:struct hrt-seat)))
   (server (:pointer (:struct hrt-server))))
 
+(cffi:defcfun ("hrt_cursor_destroy" hrt-cursor-destroy) :void
+  (seat (:pointer (:struct hrt-seat))))
+
 (cffi:defcfun ("hrt_keyboard_init" hrt-keyboard-init) :void
+  (seat (:pointer (:struct hrt-seat))))
+
+(cffi:defcfun ("hrt_keyboard_destroy" hrt-keyboard-destroy) :void
   (seat (:pointer (:struct hrt-seat))))
 
 (cffi:defcfun ("hrt_seat_set_cursor_img" hrt-seat-set-cursor-img) :void
@@ -117,6 +126,9 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
   (server (:pointer (:struct hrt-server)))
   (callbacks (:pointer (:struct hrt-output-callbacks))))
+
+(cffi:defcfun ("hrt_output_destroy" hrt-output-destroy) :void
+  (server (:pointer (:struct hrt-server))))
 
 (cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void
   "Get the effective output resolution of the output that can be used to
