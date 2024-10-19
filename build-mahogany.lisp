@@ -6,7 +6,7 @@
 ;; to be used instead of anything that asdf can find in our environment
 (asdf:initialize-source-registry
  `(:source-registry
-   (:directory ,(merge-pathnames (uiop/os:getcwd) #P"src"))
+   (:directory ,(uiop/os:getcwd))
    (:tree ,(merge-pathnames (uiop/os:getcwd) #P"dependencies"))
    ;; Use whatever the user has configured in their environment to find the rest.
    :inherit-configuration))
