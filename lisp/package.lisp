@@ -25,6 +25,7 @@
 	   #:frame-height
 	   #:frame-parent
 	   #:tree-container
+	   #:make-basic-tree
 	   #:root-tree
 	   #:tree-frame
 	   #:tree-children
@@ -43,7 +44,9 @@
 	   #:frame-view
 	   #:frame-modes
 	   #:fit-view-into-frame
-	   #:leafs-in))
+	   #:leafs-in
+	   #:set-dimensions
+	   #:set-position))
 
 (defpackage #:mahogany/keyboard
   (:use :cl

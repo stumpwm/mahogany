@@ -10,3 +10,8 @@
   (declare (type cffi:foreign-pointer output))
   (with-return-by-value ((width :int) (height :int))
     (hrt-output-resolution output width height)))
+
+(defun output-position (output)
+  (declare (type cffi:foreign-pointer output))
+  (with-return-by-value ((x :int) (y :int))
+    (hrt-output-position output x y)))
