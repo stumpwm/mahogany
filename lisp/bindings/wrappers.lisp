@@ -15,3 +15,17 @@
   (declare (type cffi:foreign-pointer output))
   (with-return-by-value ((x :int) (y :int))
     (hrt-output-position output x y)))
+
+(defstruct (view (:constructor %make-view (hrt-view)))
+  (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
+
+(defun view-init (hrt-view scene-tree)
+  (let ((view (%make-view hrt-view)))
+    (hrt-view-init hrt-view scene-tree)
+    view))
+
+(defmethod mh/interface:set-dimensions ((view view) width height)
+  (hrt-view-set-size (view-hrt-view view) width height))
+
+(defmethod mh/interface:set-position ((view view) x y)
+  (hrt-view-set-relative (view-hrt-view view) x y))

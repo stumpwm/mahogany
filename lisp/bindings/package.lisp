@@ -1,12 +1,12 @@
 (defpackage #:mahogany/core
   (:use :cl #:wayland-server-core #:xkb)
+  (:local-nicknames (#:mh/interface #:mahogany/wm-interface))
   (:nicknames #:hrt)
   (:export #:hrt-output-callbacks
 	   #:hrt-seat-callbacks
 	   #:hrt-view-callbacks
 	   #:new-view
 	   #:hrt-view
-	   #:hrt-view-init
 	   #:view-destroyed
 	   #:hrt-seat
 	   #:hrt-output
@@ -22,6 +22,10 @@
 	   ;; output methods:
 	   #:output-resolution
 	   #:output-position
+	   ;; view-methods
+	   #:view
+	   #:view-init
+	   #:view-hrt-view
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
