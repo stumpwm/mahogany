@@ -22,9 +22,9 @@ to match."
 		 mh-output
 	       (alexandria:when-let ((tree (gethash full-name output-map)))
 		 (multiple-value-bind (x y) (hrt:output-position hrt-output)
-		   (mahogany/tree:set-position (root-tree tree) x y))
+		   (set-position (root-tree tree) x y))
 		 (multiple-value-bind (width height) (hrt:output-resolution hrt-output)
-		   (mahogany/tree:set-dimensions (root-tree tree) width height)))))))
+		   (set-dimensions (root-tree tree) width height)))))))
 
 
 (defun group-remove-output (group output)
