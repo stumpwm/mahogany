@@ -19,27 +19,28 @@
   :components ((:file "log")
 	       (:file "util")
 	       (:file "system")
+	       (:module interfaces
+			:components ((:file "view-interface")))
 	       (:module bindings
-			:serial t
+		        :serial t
+			:depends-on ("interfaces")
 			:components ((:file "package")
 				     (:file "hrt-libs")
 				     (:file "hrt-bindings")
 				     (:file "wrappers")))
-	       (:file "package")
-	       (:module interfaces
-			:depends-on ("package")
-			:components ((:file "view-interface")
-				     ))
 	       (:module keyboard
-			:depends-on ("package" "util")
-			:components ((:file "keytrans")
+			:depends-on ("util")
+		        :components ((:file "package")
+				     (:file "keytrans")
 				     (:file "key")
 				     (:file "kmap")))
 	       (:module tree
-			:depends-on ("package" "log" "util" "interfaces")
-	       		:components ((:file "tree-interface")
+			:depends-on ("log" "util" "interfaces")
+	       	        :components ((:file "package")
+				     (:file "tree-interface")
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
+	       (:file "package")
 	       (:file "objects" :depends-on ("package"))
 	       (:file "group" :depends-on ("objects" "bindings"))
 	       (:file "state" :depends-on ("objects" "keyboard"))

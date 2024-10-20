@@ -1,3 +1,8 @@
+(defpackage #:mahogany/wm-interface
+  (:use :cl)
+  (:export #:set-position
+	   #:set-dimensions))
+
 (in-package #:mahogany/wm-interface)
 
 (defclass view ()
