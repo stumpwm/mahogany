@@ -22,7 +22,7 @@ struct hrt_output {
 struct hrt_output_callbacks {
   void (*output_added)(struct hrt_output *output);
   void (*output_removed)(struct hrt_output *output);
-  void (*output_layout_changed)(struct hrt_output *output);
+  void (*output_layout_changed)();
 };
 
 bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks);

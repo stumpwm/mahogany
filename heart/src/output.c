@@ -128,7 +128,11 @@ static void handle_output_manager_test(struct wl_listener *listener, void *data)
 }
 
 static void handle_output_layout_changed(struct wl_listener *listener, void *data) {
-  wlr_log(WLR_DEBUG, "Output Layout changed");
+  struct hrt_server *server =
+      wl_container_of(listener, server, output_layout_changed);
+  // struct wlr_output_layout *output_layout = data;
+
+  server->output_callback->output_layout_changed();
 }
 
 bool hrt_output_init(struct hrt_server *server, const struct hrt_output_callbacks *callbacks) {

@@ -10,13 +10,18 @@
 	   #:view-destroyed
 	   #:hrt-seat
 	   #:hrt-output
+	   #:hrt-output-name
+	   #:hrt-output-make
+	   #:hrt-output-model
+	   #:hrt-output-serial
 	   #:hrt-keypress-info
 	   ;; output callbacks
 	   #:output-added
 	   #:output-removed
-	   #:output-mode-changed
+	   #:output-layout-changed
 	   ;; output methods:
 	   #:output-resolution
+	   #:output-position
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server

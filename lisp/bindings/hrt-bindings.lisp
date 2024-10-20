@@ -123,7 +123,7 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
   (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-layout-changed :pointer #| function ptr void (struct hrt_output *) |#))
+  (output-layout-changed :pointer #| function ptr void () |#))
 
 (cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
   (server (:pointer (:struct hrt-server)))
@@ -144,16 +144,16 @@ set the width and height of views."
   (x (:pointer :int))
   (y (:pointer :int)))
 
-(cffi:defcfun ("hrt_output_name" hrt-output-name) (:pointer :char)
+(cffi:defcfun ("hrt_output_name" hrt-output-name) :string ;; (:pointer :char)
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_make" hrt-output-make) (:pointer :char)
+(cffi:defcfun ("hrt_output_make" hrt-output-make) :string ;; (:pointer :char)
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_model" hrt-output-model) (:pointer :char)
+(cffi:defcfun ("hrt_output_model" hrt-output-model) :string ;; (:pointer :char)
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_serial" hrt-output-serial) (:pointer :char)
+(cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string ;; (:pointer :char)
   (output (:pointer (:struct hrt-output))))
 
 ;; next section imported from file build/include/hrt/hrt_server.h
@@ -198,5 +198,5 @@ set the width and height of views."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))

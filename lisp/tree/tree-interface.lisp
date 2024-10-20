@@ -120,6 +120,13 @@ a view assigned to it."))
   ;; the root frame's parent will be a tree-container:
   (typep (frame-parent frame) 'tree-container))
 
+(defun make-basic-tree (&key (x 0) (y 0) (width 100) (height 100))
+  (let ((container (make-instance 'tree-container))
+	(frame (make-instance 'view-frame :x x :y y :width width :height height)))
+    (setf (frame-parent frame) container)
+    (setf (root-tree container) frame)
+    (values container frame)))
+
 (snakes:defgenerator leafs-in (frame)
   (check-type frame frame)
   (if (typep frame 'tree-frame)
