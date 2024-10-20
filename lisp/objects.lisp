@@ -4,8 +4,9 @@
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
-(defstruct (mahogany-group (:constructor make-mahogany-group (name)))
+(defstruct (mahogany-group (:constructor make-mahogany-group (name number)))
   (name "" :type string)
+  (number 1 :type fixnum :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
   (views nil :type list))
 

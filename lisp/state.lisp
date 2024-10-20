@@ -1,7 +1,7 @@
 (in-package #:mahogany)
 
 (defmethod initialize-instance :after ((object mahogany-state) &key &allow-other-keys)
-  (let ((default-group (make-mahogany-group "DEFAULT")))
+  (let ((default-group (make-mahogany-group "DEFAULT" 1)))
     (setf (slot-value object 'current-group) default-group)
     (vector-push-extend default-group (mahogany-state-groups object))))
 
