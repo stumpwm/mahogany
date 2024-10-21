@@ -55,7 +55,8 @@
 	  do (group-reconfigure-outputs g (mahogany-state-outputs state)))))
 
 (defun mahogany-state-view-add (state view)
-  (declare (type mahogany-state state))
+  (declare (type mahogany-state state)
+	   (type hrt:view view))
   (push view (slot-value state 'views))
   (group-add-view (mahogany-current-group state) view)
   (log-string :trace "Views: ~S" (slot-value state 'views)))
@@ -64,5 +65,5 @@
   (declare (type mahogany-state state))
   (with-slots (views) state
     (group-remove-view (mahogany-current-group state) view)
-    (setf views (remove view views :test #'cffi:pointer-eq))
+    (setf views (remove view views :test #'cffi:pointer-eq :key #'view-hrt-view))
     (log-string :trace "Views: ~S" views)))
