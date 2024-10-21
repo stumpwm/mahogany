@@ -32,10 +32,8 @@
 	   #:get-empty-frames
 	   #:get-populated-frames
 	   #:root-frame-p
+	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
-	   #:frame-modes
-	   #:fit-view-into-frame
-	   #:leafs-in
-	   #:set-dimensions
-	   #:set-position))
+	   #:put-view-in-frame
+	   #:leafs-in))

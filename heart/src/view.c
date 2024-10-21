@@ -5,7 +5,9 @@
 #include "hrt/hrt_view.h"
 
 void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
-	view->scene_tree = wlr_scene_tree_create(tree);
+  view->scene_tree = wlr_scene_tree_create(tree);
+  view->width = 0;
+  view->height = 0;
 
 	struct wlr_scene_tree *xdg_tree =
 		wlr_scene_xdg_surface_create(view->scene_tree, view->xdg_toplevel->base);
@@ -14,7 +16,12 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
 }
 
 uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height) {
-	return wlr_xdg_toplevel_set_size(view->xdg_toplevel, width, height);
+  view->width = width;
+  view->height = height;
+  if(view->xdg_surface->initialized) {
+	  return wlr_xdg_toplevel_set_size(view->xdg_toplevel, width, height);
+  }
+  return 0;
 }
 
 void hrt_view_set_relative(struct hrt_view *view, int x, int y) {

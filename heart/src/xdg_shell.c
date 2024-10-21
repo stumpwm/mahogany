@@ -40,8 +40,7 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
                                        void *data) {
 	struct hrt_view *view = wl_container_of(listener, view, commit);
 	if (view->xdg_toplevel->base->initial_commit) {
-		// TODO: we probably want to explicitly pick the size here:
-		wlr_xdg_toplevel_set_size(view->xdg_toplevel, 0,0);
+		wlr_xdg_toplevel_set_size(view->xdg_toplevel, view->width,view->height);
 	}
 }
 

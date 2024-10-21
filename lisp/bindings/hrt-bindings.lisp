@@ -7,6 +7,8 @@
 (cffi:defctype view-destroy-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
 (cffi:defcstruct hrt-view
+  (width :int)
+  (height :int)
   (xdg-surface :pointer #| (:struct wlr-xdg-surface) |# )
   (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
   (scene-tree :pointer #| (:struct wlr-scene-tree) |# )

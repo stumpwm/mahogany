@@ -33,10 +33,22 @@ to match."
   (remhash (mahogany-output-full-name output) (mahogany-group-output-map group)))
 
 (defun group-add-view (group view)
-  (declare (type mahogany-group group))
-  (push view (mahogany-group-views group)))
+  (declare (type mahogany-group group)
+	   (type hrt:view view))
+  (with-accessors ((views mahogany-group-views)
+		   (outputs mahogany-group-output-map))
+      group
+    (push view (mahogany-group-views group))
+    ;; (with-hash-table-iterator (iter outputs)
+    (loop for tree being the hash-values of outputs
+	  do (when-let ((empty (find-empty-frame tree)))
+	       (log-string :trace "Found frame for view")
+	       (put-view-in-frame view empty)
+	       (return-from group-add-view)))
+    ;; TODO: get algorithm to place new views so they can be seen:
+    (log-string :trace "Could not find frame for new view")))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)) group
-    (setf view-list (remove view view-list :test #'cffi:pointer-eq))))
+    (setf view-list (remove view view-list :test equalp))))

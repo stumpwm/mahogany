@@ -7,6 +7,7 @@ struct hrt_view;
 typedef void (*view_destroy_handler)(struct hrt_view *view);
 
 struct hrt_view {
+	int width, height;
 	struct wlr_xdg_surface *xdg_surface;
 	struct wlr_xdg_toplevel *xdg_toplevel;
 	/*
