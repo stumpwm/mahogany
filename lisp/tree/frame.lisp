@@ -70,7 +70,32 @@
       frame
     (let ((diff (- old-x new-x)))
       (dolist (child children)
-	(setf (frame-x child) (+ diff (frame-x child)))))))
+	(setf (frame-x child) (- (frame-x child) diff))))))
+
+(defmethod (setf frame-y) :before (new-y (frame tree-frame))
+  "Translate the child frames so that geometry is preserved"
+  (with-accessors ((children tree-children)
+		   (old-y frame-y))
+      frame
+    (let ((diff (- old-y new-y)))
+      (dolist (child children)
+	(setf (frame-y child) (- (frame-y child) diff))))))
+
+(defmethod set-position ((frame frame) x y)
+  ;; Set slots directly to avoid calling the setf methods:
+  (setf (slot-value frame 'x) x
+	(slot-value frame 'y) y))
+
+(defmethod set-position :before ((frame tree-frame) new-x new-y)
+  (when (or (not (= (frame-x frame) new-x)) (not (= (frame-y frame) new-y)))
+    (with-accessors ((children tree-children)
+		     (old-x frame-x)
+		     (old-y frame-y))
+	frame
+      (let ((x-diff (- old-x new-x))
+	    (y-diff (- old-y new-y)))
+	(dolist (child children)
+	  (set-position child (- (frame-x child) x-diff) (- (frame-y child) y-diff)))))))
 
 (defmethod (setf frame-height) :before (new-height (frame tree-frame))
   "Scale and shift the children so that geometry is preserved"
@@ -86,22 +111,9 @@
 	  (setf (frame-y child) new-y)
 	  (setf shift (+ adjusted-height shift)))))))
 
-(defmethod (setf frame-y) :before (new-y (frame tree-frame))
-  "Translate the child frames so that geometry is preserved"
-  (with-accessors ((children tree-children)
-		   (old-y frame-y))
-      frame
-    (let ((diff (- old-y new-y)))
-      (dolist (child children)
-	(setf (frame-y child) (+ diff (frame-y child)))))))
-
 (defmethod set-dimensions ((frame frame) width height)
   (setf (frame-width frame) width
 	(frame-height frame) height))
-
-(defmethod set-position ((frame frame) x y)
-  (setf (frame-x frame) x
-	(frame-y frame) y))
 
 (defmethod split-frame-h :before ((frame frame) &key ratio direction)
   (declare (ignore frame direction))
