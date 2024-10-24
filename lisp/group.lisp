@@ -44,11 +44,12 @@ to match."
 	  do (when-let ((empty (find-empty-frame tree)))
 	       (log-string :trace "Found frame for view")
 	       (put-view-in-frame view empty)
+	       (log-string :trace "Current tree: ~S" (root-tree tree))
 	       (return-from group-add-view)))
     ;; TODO: get algorithm to place new views so they can be seen:
-    (log-string :trace "Could not find frame for new view")))
+    (log-string :error "Could not find frame for new view")))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)) group
-    (setf view-list (remove view view-list :test equalp))))
+    (setf view-list (remove view view-list :test #'equalp))))

@@ -54,16 +54,23 @@
     (loop for g across groups
 	  do (group-reconfigure-outputs g (mahogany-state-outputs state)))))
 
-(defun mahogany-state-view-add (state view)
+(defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
-	   (type hrt:view view))
-  (push view (slot-value state 'views))
-  (group-add-view (mahogany-current-group state) view)
-  (log-string :trace "Views: ~S" (slot-value state 'views)))
+	   (type cffi:foreign-pointer view-ptr))
+  (with-accessors ((view-tbl mahogany-state-views)
+		   (current-group mahogany-current-group)
+		   (server mahogany-state-server))
+      state
+    (let ((new-view (hrt:view-init view-ptr (hrt-server-scene-tree server))))
+      (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view)
+      (group-add-view current-group new-view))))
 
-(defun mahogany-state-view-remove (state view)
-  (declare (type mahogany-state state))
+(defun mahogany-state-view-remove (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
   (with-slots (views) state
-    (group-remove-view (mahogany-current-group state) view)
-    (setf views (remove view views :test #'cffi:pointer-eq :key #'view-hrt-view))
-    (log-string :trace "Views: ~S" views)))
+    (alexandria:if-let ((view (gethash (cffi:pointer-address view-ptr) views)))
+      (progn
+	(group-remove-view (mahogany-current-group state) view)
+	(remhash (cffi:pointer-address view-ptr) views))
+      (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
