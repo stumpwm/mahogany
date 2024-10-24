@@ -64,3 +64,10 @@
     (is (= (frame-x child-1) 100))
     (is (= (frame-y child-2) 0))
     (is (= (frame-x child-2) 151))))
+
+(fiasco:deftest single-frame--frame-at-test ()
+  (let ((frame (make-instance 'frame :x 0 :y 0 :width 100 :height 100)))
+    (is (equal frame (frame-at frame 50 50)))
+    (is (not (frame-at frame -1 50)))
+    (is (not (frame-at frame 50 -1)))
+    (is (not (frame-at frame -1 -1)))))
