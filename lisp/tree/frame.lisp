@@ -49,20 +49,6 @@
     (setf (frame-parent frame1) frame2-parent
   	  (frame-parent frame2) frame1-parent)))
 
-(defmethod (setf frame-width) :before (new-width (frame tree-frame))
-  "Scale and shift the children so that geometry is preserved"
-  (with-accessors ((children tree-children)
-		   (old-width frame-width))
-      frame
-    (let ((diff (/ new-width old-width))
-	  (shift 0))
-      (dolist (child children)
-	(let ((adjusted-width (* diff (frame-width child)))
-	      (new-x (+ (frame-x frame) shift)))
-	  (setf (frame-width child) adjusted-width)
-	  (setf (frame-x child) new-x)
-	  (setf shift (+ adjusted-width shift)))))))
-
 (defmethod (setf frame-x) :before (new-x (frame tree-frame))
   "Translate the child frames so that geometry is preserved"
   (with-accessors ((children tree-children)
@@ -111,9 +97,44 @@
 	  (setf (frame-y child) new-y)
 	  (setf shift (+ adjusted-height shift)))))))
 
+(defmethod (setf frame-width) :before (new-width (frame tree-frame))
+  "Scale and shift the children so that geometry is preserved"
+  (with-accessors ((children tree-children)
+		   (old-width frame-width))
+      frame
+    (let ((diff (/ new-width old-width))
+	  (shift 0))
+      (dolist (child children)
+	(let ((adjusted-width (* diff (frame-width child)))
+	      (new-x (+ (frame-x frame) shift)))
+	  (setf (frame-width child) adjusted-width)
+	  (setf (frame-x child) new-x)
+	  (setf shift (+ adjusted-width shift)))))))
+
 (defmethod set-dimensions ((frame frame) width height)
-  (setf (frame-width frame) width
-	(frame-height frame) height))
+  ;; Set slots to avoid calling methods:
+  (setf (slot-value frame 'width) width
+	(slot-value frame 'height) height))
+
+(defmethod set-dimensions :before ((frame tree-frame) new-width new-height)
+  (with-accessors ((children tree-children)
+		   (old-height frame-height)
+		   (old-width frame-width))
+      frame
+    (let ((height-diff (/ new-height old-height))
+	  (height-shift 0)
+	  (width-diff (/ new-width old-width))
+	  (width-shift 0))
+      (dolist (child children)
+	(let ((adjusted-height (* height-diff (frame-height child)))
+	      (new-y (+ (frame-y frame) height-shift))
+	      (adjusted-width (* width-diff (frame-width child)))
+	      (new-x (+ (frame-x frame) width-shift)))
+	  (setf height-shift (+ adjusted-height height-shift))
+	  (setf width-shift (+ adjusted-width width-shift))
+
+	  (set-position child new-x new-y)
+	  (set-dimensions child adjusted-width adjusted-height))))))
 
 (defmethod split-frame-h :before ((frame frame) &key ratio direction)
   (declare (ignore frame direction))
