@@ -31,6 +31,6 @@
    (groups :type vector
 	   :accessor mahogany-state-groups
 	   :initform (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t))
-   (views :type list
-	  :initform nil
+   (views :type hash-table
+	  :initform (make-hash-table)
 	  :reader mahogany-state-views)))

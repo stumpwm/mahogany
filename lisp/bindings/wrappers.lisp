@@ -22,7 +22,7 @@
 (defun view-init (hrt-view scene-tree)
   (let ((view (%make-view hrt-view)))
     (hrt-view-init hrt-view scene-tree)
-    view))
+    (the view view)))
 
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
