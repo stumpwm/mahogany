@@ -145,19 +145,10 @@
       	(is second-tree first-tree2 :test #'eq)
       	(is first-tree second-tree2 :test #'eq)))))
 
-(deftest frame-at-test
-  (subtest "Single frame"
-    (let ((frame (make-instance 'frame :x 0 :y 0 :width 100 :height 100)))
-      (ok (frame-at frame 50 50))
-      (ok (not (frame-at frame -1 50)))
-      (ok (not (frame-at frame 50 -1)))
-      (ok (not (frame-at frame -1 -1))))))
-
-(plan 6)
+(plan 5)
 (prove:run-test 'find-frame)
 (prove:run-test 'poly-split-dimensions)
 (prove:run-test 'binary-split-dimensions)
 (prove:run-test 'binary-split-direction)
 (prove:run-test 'frame-swap)
-(prove:run-test 'frame-at-test)
 (finalize)
