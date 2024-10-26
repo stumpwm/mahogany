@@ -36,4 +36,4 @@
   #+sbcl
   (sb-int:set-floating-point-modes :traps nil)
   #+ccl
-  (set-fpu-mode :overflow nil))
+  (ccl:set-fpu-mode :overflow nil))
