@@ -30,7 +30,7 @@
 (defmethod swap-positions ((frame1 frame) (frame2 frame))
   ;; don't swap if a frame is a parent of the other:
   (when (or (find-frame frame1 frame2) (find-frame frame2 frame1))
-    (error 'invalid-operation "Cannot swap positions with a frame higher in the tree."))
+    (error 'invalid-operation :text "Cannot swap positions with a frame higher in the tree."))
   ;; resize the frames so they will fit in the other's position:
   (let ((tmp-x (frame-x frame1))
 	(tmp-y (frame-y frame1))
