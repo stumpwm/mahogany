@@ -43,6 +43,9 @@ of an already existing frame with the `set-split-frame-type` function")
 	:documentation "Holds the root of a frame-tree"))
   (:documentation "A class that contains a frame-tree"))
 
+(deftype split-frame-type ()
+  '(member :vertical :horizontal))
+
 (defclass tree-frame (frame)
   ((children :initarg :children
 	     :initform nil
@@ -50,7 +53,7 @@ of an already existing frame with the `set-split-frame-type` function")
 	    :type list)
    (split-direction :initarg :split-direction
 		    :reader tree-split-direction
-		    :type keyword))
+		    :type split-frame-type))
   (:documentation "An inner node of a frame-tree"))
 
 (defclass floating-frame (frame)

@@ -195,7 +195,8 @@ of FRAME to those of ROOT."
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
   (declare (type frame frame)
-	   (type keyword direction)
+	   (type (or number null) ratio)
+	   (type (member :right :left) direction)
 	   (type symbol parent-type))
   (with-accessors ((old-width frame-width)
 		   (old-height frame-height)
@@ -241,7 +242,8 @@ Used to initially split all frames, regardless of type."
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
   (declare (type frame frame)
-	   (type keyword direction)
+	   (type (member :top :bottom) direction)
+	   (type number ratio)
 	   (type symbol parent-type))
   (with-accessors ((old-width frame-width)
 		   (old-height frame-height)
@@ -285,7 +287,9 @@ Used to initially split all frames, regardless of type."
 
 (defun poly-split-frame-h (frame ratio direction)
   "Add another child to a horizontally oriented poly-tree-frame"
-  (declare (type poly-tree-frame frame))
+  (declare (type poly-tree-frame frame)
+	   (type (member :right :left) direction)
+	   (type (or number null) ratio))
   (assert (eql (tree-split-direction frame) :horizontal))
   ;; we alread have children, so add and re-adjust:
   (with-accessors ((parent-width frame-width)
@@ -336,7 +340,8 @@ Used to initially split all frames, regardless of type."
 
 (defun poly-split-frame-v (frame ratio direction)
   "Add another child to a horizontally oriented poly-tree-frame"
-  (declare (type poly-tree-frame frame))
+  (declare (type poly-tree-frame frame)
+	   (type (member :top :bottom) direction))
   (assert (eql (tree-split-direction frame) :vertical))
   ;; we alread have children, so add and re-adjust:
   (with-accessors ((parent-width frame-width)
