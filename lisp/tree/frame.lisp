@@ -88,28 +88,36 @@
   (with-accessors ((children tree-children)
 		   (old-height frame-height))
       frame
-    (let ((diff (/ new-height old-height))
-	  (shift 0))
-      (dolist (child children)
-	(let ((adjusted-height (* diff (frame-height child)))
-	      (new-y (+ (frame-y frame) shift)))
-	  (setf (frame-height child) adjusted-height)
-	  (setf (frame-y child) new-y)
-	  (setf shift (+ adjusted-height shift)))))))
+    (let ((diff (/ new-height old-height)))
+      (cond
+	((eql (tree-split-direction frame) :horizontal)
+	 (let ((shift (frame-y frame)))
+	   (dolist (child children)
+	     (let ((adjusted-height (* diff (frame-height child))))
+	       (setf (frame-height child) shift)
+	       (setf (frame-y child) new-y)
+	       (setf shift (+ adjusted-height shift))))))
+	(t
+	 (dolist (child children)
+	   (setf (frame-height child) (* diff (frame-height child)))))))))
 
 (defmethod (setf frame-width) :before (new-width (frame tree-frame))
   "Scale and shift the children so that geometry is preserved"
   (with-accessors ((children tree-children)
 		   (old-width frame-width))
       frame
-    (let ((diff (/ new-width old-width))
-	  (shift 0))
-      (dolist (child children)
-	(let ((adjusted-width (* diff (frame-width child)))
-	      (new-x (+ (frame-x frame) shift)))
-	  (setf (frame-width child) adjusted-width)
-	  (setf (frame-x child) new-x)
-	  (setf shift (+ adjusted-width shift)))))))
+    (let ((diff (/ new-width old-width)))
+      (cond
+	((eql (tree-split-direction frame) :horizontal)
+	 (let ((shift (frame-x frame)))
+	   (dolist (child children)
+	     (let ((adjusted-width (* diff (frame-width child))))
+	       (setf (frame-width child) adjusted-width)
+	       (setf (frame-x child) shift)
+	       (setf shift (+ adjusted-width shift))))))
+	(t
+	 (dolist (child children)
+	   (setf (frame-width child) (* diff (frame-width child)))))))))
 
 (defmethod set-dimensions ((frame frame) width height)
   ;; Set slots to avoid calling methods:
