@@ -43,10 +43,10 @@
 			   :key #'mahogany-output-hrt-output
 			   :test #'cffi:pointer-eq)))
       (log-string :trace "Output removed ~S" (mahogany-output-full-name mh-output))
-      ;; TODO: Is there a better way to remove an item from a vector when we know the index?
       (loop for g across groups
 	    do (group-remove-output g mh-output))
-      (setf outputs (delete mh-output outputs)))))
+      ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
+      (setf outputs (delete mh-output outputs :test #'equalp)))))
 
 (defun mahogany-state-output-reconfigure (state)
   (log-string :trace "Output layout changed!")
