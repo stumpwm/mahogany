@@ -9,7 +9,7 @@
     (multiple-value-bind (x y) (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height) (hrt:output-resolution (mahogany-output-hrt-output output))
 	(setf (gethash (mahogany-output-full-name output) output-map)
-	      (make-basic-tree :x x :y y :width width :height height))
+	      (tree:make-basic-tree :x x :y y :width width :height height))
 	(log-string :trace "Group map: ~S" output-map)))))
 
 (defun group-reconfigure-outputs (group outputs)
@@ -22,10 +22,9 @@ to match."
 		 mh-output
 	       (alexandria:when-let ((tree (gethash full-name output-map)))
 		 (multiple-value-bind (x y) (hrt:output-position hrt-output)
-		   (set-position (root-tree tree) x y))
+		   (set-position (tree:root-tree tree) x y))
 		 (multiple-value-bind (width height) (hrt:output-resolution hrt-output)
-		   (set-dimensions (root-tree tree) width height)))))))
-
+		   (set-dimensions (tree:root-tree tree) width height)))))))
 
 (defun group-remove-output (group output)
   (declare (type mahogany-output output)
@@ -41,10 +40,10 @@ to match."
     (push view (mahogany-group-views group))
     ;; (with-hash-table-iterator (iter outputs)
     (loop for tree being the hash-values of outputs
-	  do (when-let ((empty (find-empty-frame tree)))
+	  do (when-let ((empty (tree:find-empty-frame tree)))
 	       (log-string :trace "Found frame for view")
-	       (put-view-in-frame view empty)
-	       (log-string :trace "Current tree: ~S" (root-tree tree))
+	       (tree:put-view-in-frame view empty)
+	       (log-string :trace "Current tree: ~S" (tree:root-tree tree))
 	       (return-from group-add-view)))
     ;; TODO: get algorithm to place new views so they can be seen:
     (log-string :error "Could not find frame for new view")))
