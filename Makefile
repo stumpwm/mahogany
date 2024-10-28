@@ -35,7 +35,10 @@ run: $(BUILD_DIR)/mahogany
 
 clean: FORCE
 	ninja -C $(BUILD_DIR)/heart clean
-	rm $(BUILD_DIR)/mahogany
+	rm -f $(BUILD_DIR)/mahogany
+	rm -rf $(BUILD_DIR)/lib64
+	rm -rf $(BUILD_DIR)/include
+	rm -rf $(BUILD_DIR)/install_output.txt
 
 test: $(BUILD_DIR)/heart/lib64/libheart.so
 	$(call $(LISP),run-tests.lisp)
