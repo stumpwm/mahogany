@@ -32,8 +32,11 @@
 	   #:get-empty-frames
 	   #:get-populated-frames
 	   #:root-frame-p
+	   #:find-frame-container
+	   #:find-first-leaf
+	   #:mark-frame-focused
+	   #:unmark-frame-focused
 	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
-	   #:put-view-in-frame
 	   #:leafs-in))

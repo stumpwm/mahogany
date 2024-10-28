@@ -33,7 +33,11 @@ of an already existing frame with the `set-split-frame-type` function")
 	   :accessor frame-height
 	   :type real)
    (parent :initarg :parent
-	   :accessor frame-parent))
+	   :accessor frame-parent)
+   (focused :initarg :focused
+	    :reader frame-focused
+	    :initform nil
+	    :type boolean))
   (:documentation "A frame that is displayed on an output"))
 
 (defclass tree-container ()
@@ -117,11 +121,27 @@ a view assigned to it."))
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))
 
+(defgeneric mark-frame-focused (frame)
+  (:documentation "Mark the frame as being focused")
+  (:method ((frame frame))
+    (setf (slot-value frame 'focused) t)))
+
+(defgeneric unmark-frame-focused (frame)
+  (:documentation "Mark the frame as being focused")
+  (:method ((frame frame))
+    (setf (slot-value frame 'focused) nil)))
+
 ;; helper functions:
 
 (defun root-frame-p (frame)
   ;; the root frame's parent will be a tree-container:
   (typep (frame-parent frame) 'tree-container))
+
+(defun find-frame-container (frame)
+  "Find the toplevel frame container for this frame"
+  (declare (type frame frame))
+  (do ((cur-frame frame (frame-parent cur-frame)))
+      ((typep cur-frame 'tree-container) cur-frame)))
 
 (defun make-basic-tree (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree-container))

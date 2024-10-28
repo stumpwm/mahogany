@@ -8,6 +8,7 @@
   (name "" :type string)
   (number 1 :type fixnum :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
+  (current-frame nil :type (or tree:frame null))
   (views nil :type list))
 
 (defclass mahogany-state ()

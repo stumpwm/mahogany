@@ -74,3 +74,6 @@
 	(group-remove-view (mahogany-current-group state) view)
 	(remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
+
+(defun mahogany-current-frame (state)
+  (mahogany-group-current-frame (mahogany-current-group state)))

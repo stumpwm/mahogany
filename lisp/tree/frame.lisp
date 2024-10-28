@@ -507,6 +507,12 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod find-empty-frame ((root tree-container))
   (find-empty-frame (root-tree root)))
 
+(defun find-first-leaf (container)
+  (declare (type tree-container container))
+  ;; TODO: you don't need the generator to do this:
+  (iter (for (frame) snakes:in-generator (leafs-in (root-tree container)))
+	(return-from find-first-leaf frame)))
+
 (defmethod get-empty-frames ((root frame))
   (let ((empties nil))
     (iter (for (frame) snakes:in-generator (leafs-in root))

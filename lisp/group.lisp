@@ -1,16 +1,30 @@
 (in-package #:mahogany)
 
+(defun group-focus-frame (group frame)
+  (with-accessors ((current-frame mahogany-group-current-frame)) group
+    (when current-frame
+      (group-unfocus-frame group current-frame))
+    (tree:mark-frame-focused frame)
+    (setf current-frame frame)))
 
+(defun group-unfocus-frame (group frame)
+  (with-accessors ((current-frame mahogany-group-current-frame)) group
+    (tree:unmark-frame-focused frame)
+    (setf current-frame nil)))
 
 (defun group-add-output (group output)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
-  (with-accessors ((output-map mahogany-group-output-map)) group
+  (with-accessors ((output-map mahogany-group-output-map)
+		   (current-frame mahogany-group-current-frame))
+      group
     (multiple-value-bind (x y) (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height) (hrt:output-resolution (mahogany-output-hrt-output output))
-	(setf (gethash (mahogany-output-full-name output) output-map)
-	      (tree:make-basic-tree :x x :y y :width width :height height))
-	(log-string :trace "Group map: ~S" output-map)))))
+	(let ((new-tree (tree:make-basic-tree :x x :y y :width width :height height)))
+	(setf (gethash (mahogany-output-full-name output) output-map) new-tree)
+	(when (not current-frame)
+	  (group-focus-frame group (tree:find-first-leaf new-tree))))))
+    (log-string :trace "Group map: ~S" output-map)))
 
 (defun group-reconfigure-outputs (group outputs)
   "Re-examine where the outputs are and adjust the trees that are associated with them
@@ -26,10 +40,27 @@ to match."
 		 (multiple-value-bind (width height) (hrt:output-resolution hrt-output)
 		   (set-dimensions (tree:root-tree tree) width height)))))))
 
+(defun %first-hash-table-value (table)
+  (declare (type hash-table table)
+	   (optimize (speed 3) (safety 0)))
+  (with-hash-table-iterator (iter table)
+    (multiple-value-bind (found key value) (iter)
+      (declare (ignore found key))
+      value)))
+
 (defun group-remove-output (group output)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
-  (remhash (mahogany-output-full-name output) (mahogany-group-output-map group)))
+  (with-accessors ((output-map mahogany-group-output-map)) group
+    (let* ((output-name (mahogany-output-full-name output))
+	   (tree-container (gethash output-name output-map)))
+      (remhash output-name output-map)
+      (when (equalp tree-container (tree:find-frame-container (mahogany-group-current-frame group)))
+	(group-unfocus-frame group (mahogany-group-current-frame group))
+	(alexandria:when-let ((other-container (%first-hash-table-value output-map)))
+	  (group-focus-frame group (tree:find-first-leaf other-container))))
+      (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
+	(group-unfocus-frame group (mahogany-group-current-frame group))))))
 
 (defun group-add-view (group view)
   (declare (type mahogany-group group)
@@ -38,17 +69,30 @@ to match."
 		   (outputs mahogany-group-output-map))
       group
     (push view (mahogany-group-views group))
-    ;; (with-hash-table-iterator (iter outputs)
-    (loop for tree being the hash-values of outputs
-	  do (when-let ((empty (tree:find-empty-frame tree)))
-	       (log-string :trace "Found frame for view")
-	       (tree:put-view-in-frame view empty)
-	       (log-string :trace "Current tree: ~S" (tree:root-tree tree))
-	       (return-from group-add-view)))
-    ;; TODO: get algorithm to place new views so they can be seen:
-    (log-string :error "Could not find frame for new view")))
+    (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
+      (setf (tree:frame-view current-frame) view))))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
-  (with-accessors ((view-list mahogany-group-views)) group
+  (with-accessors ((view-list mahogany-group-views)
+		   (output-map mahogany-group-output-map))
+      group
+    (maphash (lambda (key container)
+	       (declare (ignore key))
+	       ;; OPTIMIZE ME: get-pouplated frames builds a list, we could use an iterator instead.
+	       (dolist (f (mahogany/tree:get-populated-frames (mahogany/tree:root-tree container)))
+		 (when (equalp (tree:frame-view f) view)
+		   (log-string :trace "Removing view from frame")
+		   (setf (tree:frame-view f) nil))))
+	     output-map)
     (setf view-list (remove view view-list :test #'equalp))))
+
+(defmethod tree:find-empty-frame ((group mahogany-group))
+  (with-hash-table-iterator (iter (mahogany-group-output-map group))
+    (tagbody
+     :top (multiple-value-bind (found name frame) (iter)
+	    (declare (ignore name))
+	    (when found
+	      (alexandria:if-let ((view-frame (tree:find-empty-frame frame)))
+		(return-from tree:find-empty-frame view-frame)
+		(go :top)))))))

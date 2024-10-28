@@ -7,16 +7,12 @@
 	 :type (or hrt:view null)
 	 :documentation "The client of the frame")))
 
-(defun fit-view-into-frame (view frame)
-  "Make the view fit in the dimensions of the frame"
-  (set-position view (round (frame-x frame)) (round (frame-y frame)))
-  (set-dimensions view (round (frame-width frame)) (round (frame-height frame))))
-
-(defun put-view-in-frame (view view-frame)
+(defmethod (setf frame-view) :after (view (frame view-frame))
   "Place the view in the frame and make it have the same dimensions
 and position as the frame"
-  (setf (frame-view view-frame) view)
-  (fit-view-into-frame view view-frame))
+  (when view
+    (set-position view (round (frame-x frame)) (round (frame-y frame)))
+    (set-dimensions view (round (frame-width frame)) (round (frame-height frame)))))
 
 (defmethod print-object ((object view-frame) stream)
   (print-unreadable-object (object stream :type t)
