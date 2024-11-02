@@ -6,8 +6,8 @@ arguments:
   - "-DWLR_USE_UNSTABLE"
   - "-Iheart/include"
 files:
-  - build/include/hrt/hrt_view.h
   - build/include/hrt/hrt_input.h
+  - build/include/hrt/hrt_view.h
   - build/include/hrt/hrt_output.h
   - build/include/hrt/hrt_server.h
 pointer-expansion:

@@ -1,18 +1,18 @@
 (in-package #:mahogany)
 
-(defun group-focus-frame (group frame)
+(defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
     (when current-frame
-      (group-unfocus-frame group current-frame))
-    (tree:mark-frame-focused frame)
+      (group-unfocus-frame group current-frame seat))
+    (tree:mark-frame-focused frame seat)
     (setf current-frame frame)))
 
-(defun group-unfocus-frame (group frame)
+(defun group-unfocus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
-    (tree:unmark-frame-focused frame)
+    (tree:unmark-frame-focused frame seat)
     (setf current-frame nil)))
 
-(defun group-add-output (group output)
+(defun group-add-output (group output seat)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
@@ -23,7 +23,7 @@
 	(let ((new-tree (tree:make-basic-tree :x x :y y :width width :height height)))
 	(setf (gethash (mahogany-output-full-name output) output-map) new-tree)
 	(when (not current-frame)
-	  (group-focus-frame group (tree:find-first-leaf new-tree))))))
+	  (group-focus-frame group (tree:find-first-leaf new-tree) seat)))))
     (log-string :trace "Group map: ~S" output-map)))
 
 (defun group-reconfigure-outputs (group outputs)
@@ -48,7 +48,7 @@ to match."
       (declare (ignore found key))
       value)))
 
-(defun group-remove-output (group output)
+(defun group-remove-output (group output seat)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)) group
@@ -56,11 +56,11 @@ to match."
 	   (tree-container (gethash output-name output-map)))
       (remhash output-name output-map)
       (when (equalp tree-container (tree:find-frame-container (mahogany-group-current-frame group)))
-	(group-unfocus-frame group (mahogany-group-current-frame group))
+	(group-unfocus-frame group (mahogany-group-current-frame group) seat)
 	(alexandria:when-let ((other-container (%first-hash-table-value output-map)))
-	  (group-focus-frame group (tree:find-first-leaf other-container))))
+	  (group-focus-frame group (tree:find-first-leaf other-container) seat)))
       (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
-	(group-unfocus-frame group (mahogany-group-current-frame group))))))
+	(group-unfocus-frame group (mahogany-group-current-frame group) seat)))))
 
 (defun group-add-view (group view)
   (declare (type mahogany-group group)

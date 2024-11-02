@@ -24,6 +24,16 @@
     (hrt-view-init hrt-view scene-tree)
     (the view view)))
 
+(declaim (inline focus-view))
+(defun focus-view (view seat)
+  (declare (type view view))
+  (hrt-view-focus (view-hrt-view view) seat))
+
+(declaim (inline unfocus-view))
+(defun unfocus-view (view seat)
+  (declare (type view view))
+  (hrt-view-unfocus (view-hrt-view view) seat))
+
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
 

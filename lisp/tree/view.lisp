@@ -5,14 +5,29 @@
 	 :accessor frame-view
 	 :initform nil
 	 :type (or hrt:view null)
-	 :documentation "The client of the frame")))
+	 :documentation "The client of the frame")
+   (seat :initform nil)))
 
 (defmethod (setf frame-view) :after (view (frame view-frame))
   "Place the view in the frame and make it have the same dimensions
 and position as the frame"
   (when view
     (set-position view (round (frame-x frame)) (round (frame-y frame)))
-    (set-dimensions view (round (frame-width frame)) (round (frame-height frame)))))
+    (set-dimensions view (round (frame-width frame)) (round (frame-height frame)))
+    (when (frame-focused frame)
+      (hrt:focus-view view (slot-value frame 'seat)))))
+
+(defmethod mark-frame-focused :after ((frame view-frame) seat)
+  (setf (slot-value frame 'seat) seat)
+  (alexandria:when-let ((hrt-view (frame-view frame)))
+    (log-string :trace "view frame focused")
+    (hrt:focus-view hrt-view seat)))
+
+(defmethod unmark-frame-focused :after ((frame view-frame) seat)
+  (alexandria:when-let ((hrt-view (frame-view frame)))
+    (log-string :trace "view frame unfocused")
+    (hrt:unfocus-view hrt-view seat))
+  (setf (slot-value frame 'seat) nil))
 
 (defmethod print-object ((object view-frame) stream)
   (print-unreadable-object (object stream :type t)

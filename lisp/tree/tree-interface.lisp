@@ -121,14 +121,18 @@ a view assigned to it."))
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))
 
-(defgeneric mark-frame-focused (frame)
+(defgeneric mark-frame-focused (frame seat)
   (:documentation "Mark the frame as being focused")
-  (:method ((frame frame))
+  (:method ((frame frame) seat)
+    (declare (ignore seat))
+    (log-string :trace "frame focused")
     (setf (slot-value frame 'focused) t)))
 
-(defgeneric unmark-frame-focused (frame)
+(defgeneric unmark-frame-focused (frame seat)
   (:documentation "Mark the frame as being focused")
-  (:method ((frame frame))
+  (:method ((frame frame) seat)
+    (declare (ignore seat))
+    (log-string :trace "frame focused")
     (setf (slot-value frame 'focused) nil)))
 
 ;; helper functions:

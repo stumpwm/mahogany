@@ -13,6 +13,10 @@
   (declare (type mahogany-state state))
   (hrt:hrt-server-stop (mahogany-state-server state)))
 
+(declaim (inline server-seat))
+(defun server-seat (state)
+  (hrt:hrt-server-seat (mahogany-state-server state)))
+
 (defun server-keystate-reset (state)
   (setf (mahogany-state-key-state state)
 	(make-key-state (mahogany-state-keybindings state))))
@@ -33,7 +37,7 @@
     (log-string :trace "New output added ~S" (mahogany-output-full-name mh-output))
     (vector-push-extend mh-output outputs)
     (loop for g across groups
-	  do (group-add-output g mh-output))))
+	  do (group-add-output g mh-output (server-seat state)))))
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs mahogany-state-outputs)
@@ -44,7 +48,7 @@
 			   :test #'cffi:pointer-eq)))
       (log-string :trace "Output removed ~S" (mahogany-output-full-name mh-output))
       (loop for g across groups
-	    do (group-remove-output g mh-output))
+	    do (group-remove-output g mh-output (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
       (setf outputs (delete mh-output outputs :test #'equalp)))))
 
