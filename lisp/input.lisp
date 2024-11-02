@@ -29,11 +29,11 @@
 		(t  nil)))
 	  (log-string :trace "Keyboard state: ~A" (mahogany-state-key-state *compositor-state*)))))))
 
-(defun handle-key-event (key seat event-state)
+(defun handle-key-event (state key seat event-state)
   (declare (type key key)
 	   (type bit event-state)
 	   (optimize(speed 3)))
-  (let ((key-state (mahogany-state-key-state *compositor-state*)))
+  (let ((key-state (mahogany-state-key-state state)))
     (declare (type key-state key-state))
     (if (= event-state 1)
 	(or (check-and-run-keybinding key seat key-state)

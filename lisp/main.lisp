@@ -12,7 +12,7 @@
     ;; I'm not sure why this is an array, but it's what tinywl does:
     (dotimes (i hrt:keysyms-len)
       (let ((key (make-key (cffi:mem-aref hrt:keysyms :uint32 i) hrt:modifiers)))
-	(when (handle-key-event key seat hrt:wl-key-state)
+	(when (handle-key-event *compositor-state* key seat hrt:wl-key-state)
 	  (return t))))))
 
 (defmacro init-callback-struct (variable type &body sets)
