@@ -1,44 +1,5 @@
 (cl:in-package #:hrt)
 
-;; next section imported from file build/include/hrt/hrt_view.h
-
-(cffi:defcstruct hrt-view)
-
-(cffi:defctype view-destroy-handler :pointer #| function ptr void (struct hrt_view *) |#)
-
-(cffi:defcstruct hrt-view
-  (width :int)
-  (height :int)
-  (xdg-surface :pointer #| (:struct wlr-xdg-surface) |# )
-  (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
-  (scene-tree :pointer #| (:struct wlr-scene-tree) |# )
-  (map (:struct wl-listener))
-  (unmap (:struct wl-listener))
-  (commit (:struct wl-listener))
-  (destroy (:struct wl-listener))
-  (destroy-handler view-destroy-handler))
-
-(cffi:defcstruct hrt-view-callbacks
-  (new-view :pointer #| function ptr void (struct hrt_view *) |#)
-  (view-destroyed view-destroy-handler))
-
-(cffi:defcfun ("hrt_view_init" hrt-view-init) :void
-  "Fully initialize the view and place it in the given scene tree."
-  (view (:pointer (:struct hrt-view)))
-  (tree :pointer #| (:struct wlr-scene-tree) |# ))
-
-(cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
-  "Request that this view be the given size. Returns the associated configure serial."
-  (view (:pointer (:struct hrt-view)))
-  (width :int)
-  (height :int))
-
-(cffi:defcfun ("hrt_view_set_relative" hrt-view-set-relative) :void
-  "Sets the view to the given coordinates relative to its parent."
-  (view (:pointer (:struct hrt-view)))
-  (x :int)
-  (y :int))
-
 ;; next section imported from file build/include/hrt/hrt_input.h
 
 (cffi:defcstruct hrt-server)
@@ -112,6 +73,59 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
 
+;; next section imported from file build/include/hrt/hrt_view.h
+
+(cffi:defcstruct hrt-view)
+
+(cffi:defctype view-destroy-handler :pointer #| function ptr void (struct hrt_view *) |#)
+
+(cffi:defctype new-view-handler :pointer #| function ptr void (struct hrt_view *) |#)
+
+(cffi:defcstruct hrt-view
+  (width :int)
+  (height :int)
+  (xdg-surface :pointer #| (:struct wlr-xdg-surface) |# )
+  (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
+  (scene-tree :pointer #| (:struct wlr-scene-tree) |# )
+  (map (:struct wl-listener))
+  (unmap (:struct wl-listener))
+  (commit (:struct wl-listener))
+  (destroy (:struct wl-listener))
+  (new-view-handler new-view-handler)
+  (destroy-handler view-destroy-handler))
+
+(cffi:defcstruct hrt-view-callbacks
+  (new-view new-view-handler)
+  (view-destroyed view-destroy-handler))
+
+(cffi:defcfun ("hrt_view_init" hrt-view-init) :void
+  "Fully initialize the view and place it in the given scene tree."
+  (view (:pointer (:struct hrt-view)))
+  (tree :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
+  "Request that this view be the given size. Returns the associated configure serial."
+  (view (:pointer (:struct hrt-view)))
+  (width :int)
+  (height :int))
+
+(cffi:defcfun ("hrt_view_set_relative" hrt-view-set-relative) :void
+  "Sets the view to the given coordinates relative to its parent."
+  (view (:pointer (:struct hrt-view)))
+  (x :int)
+  (y :int))
+
+(cffi:defcfun ("hrt_view_focus" hrt-view-focus) :void
+  "Focus the given view and perform the needed tasks to make
+it visible to the user."
+  (view (:pointer (:struct hrt-view)))
+  (seat (:pointer (:struct hrt-seat))))
+
+(cffi:defcfun ("hrt_view_unfocus" hrt-view-unfocus) :void
+  "Unfocus the given view."
+  (view (:pointer (:struct hrt-view)))
+  (seat (:pointer (:struct hrt-seat))))
+
 ;; next section imported from file build/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-output
@@ -146,16 +160,16 @@ set the width and height of views."
   (x (:pointer :int))
   (y (:pointer :int)))
 
-(cffi:defcfun ("hrt_output_name" hrt-output-name) :string ;; (:pointer :char)
+(cffi:defcfun ("hrt_output_name" hrt-output-name) :string
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_make" hrt-output-make) :string ;; (:pointer :char)
+(cffi:defcfun ("hrt_output_make" hrt-output-make) :string
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_model" hrt-output-model) :string ;; (:pointer :char)
+(cffi:defcfun ("hrt_output_model" hrt-output-model) :string
   (output (:pointer (:struct hrt-output))))
 
-(cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string ;; (:pointer :char)
+(cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string
   (output (:pointer (:struct hrt-output))))
 
 ;; next section imported from file build/include/hrt/hrt_server.h
@@ -200,5 +214,8 @@ set the width and height of views."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+  (server (:pointer (:struct hrt-server))))
+
+(cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
   (server (:pointer (:struct hrt-server))))

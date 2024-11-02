@@ -1,10 +1,12 @@
 #include <stdint.h>
 #include <wayland-server-core.h>
-#include "hrt/hrt_server.h"
+#include <hrt/hrt_server.h>
+#include "hrt_input.h"
 
 struct hrt_view;
 
 typedef void (*view_destroy_handler)(struct hrt_view *view);
+typedef void (*new_view_handler)(struct hrt_view *view);
 
 struct hrt_view {
 	int width, height;
@@ -21,6 +23,7 @@ struct hrt_view {
 	struct wl_listener unmap;
 	struct wl_listener commit;
 	struct wl_listener destroy;
+	new_view_handler new_view_handler;
 	view_destroy_handler destroy_handler;
 };
 
@@ -29,7 +32,7 @@ struct hrt_view_callbacks {
 	 * A new view has been created. Must call `hrt_view_init` for the
 	 * view to be displayed.
 	 **/
-	void (*new_view)(struct hrt_view *view);
+	new_view_handler new_view;
 	view_destroy_handler view_destroyed;
 };
 
@@ -47,3 +50,14 @@ uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height);
  * Sets the view to the given coordinates relative to its parent.
  **/
 void hrt_view_set_relative(struct hrt_view *view, int x, int y);
+
+/**
+ * Focus the given view and perform the needed tasks to make
+ * it visible to the user.
+ **/
+void hrt_view_focus(struct hrt_view *view, struct hrt_seat *seat);
+
+/**
+ * Unfocus the given view.
+ **/
+void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat);

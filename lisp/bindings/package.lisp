@@ -26,10 +26,13 @@
 	   #:view
 	   #:view-init
 	   #:view-hrt-view
+	   #:focus-view
+	   #:unfocus-view
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
 	   #:hrt-server-scene-tree
+	   #:hrt-server-seat
 	   #:hrt-server-init
 	   #:hrt-server-start
 	   #:hrt-server-stop

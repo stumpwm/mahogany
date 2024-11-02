@@ -60,4 +60,6 @@ void hrt_server_finish(struct hrt_server *server);
 
 struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server);
 
+struct hrt_seat *hrt_server_seat(struct hrt_server *server);
+
 #endif
