@@ -107,6 +107,8 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
   wl_signal_add(&kb->events.key, &seat->keyboard_key);
   seat->keyboard_modifiers.notify = seat_handle_modifiers;
   wl_signal_add(&kb->events.modifiers, &seat->keyboard_modifiers);
+
+  wlr_seat_set_keyboard(seat->seat, kb);
 }
 
 void hrt_keyboard_destroy(struct hrt_seat *seat) {
