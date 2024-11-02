@@ -65,7 +65,7 @@
 		   (current-group mahogany-current-group)
 		   (server mahogany-state-server))
       state
-    (let ((new-view (hrt:view-init view-ptr (hrt-server-scene-tree server))))
+    (let ((new-view (hrt:view-init view-ptr (hrt:hrt-server-scene-tree server))))
       (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view)
       (group-add-view current-group new-view))))
 
