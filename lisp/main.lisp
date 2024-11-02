@@ -10,11 +10,6 @@
   (cffi:with-foreign-slots ((keysyms modifiers keysyms-len) info (:struct hrt-keypress-info))
     (dotimes (i keysyms-len)
       (let ((key (make-key (cffi:mem-aref keysyms :uint32 i) modifiers)))
-	(log-string :trace (lambda (s)
-			     (format s "Key Pressed: ")
-			     (print-key key s)
-			     (format s ": ~A"
-				     (xkb:keysym-get-name (mahogany/keyboard::key-keysym key)))))
 	(handle-key-event key seat)))))
 
 (defmacro init-callback-struct (variable type &body sets)
