@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_INPUT_H
 #define HRT_HRT_INPUT_H
 
+#include <wayland-server-protocol.h>
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard_group.h>
@@ -38,6 +39,7 @@ struct hrt_keypress_info {
   const xkb_keysym_t *keysyms;
   uint32_t modifiers;
   size_t keysyms_len;
+  enum wl_keyboard_key_state wl_key_state;
 };
 
 struct hrt_seat_callbacks {

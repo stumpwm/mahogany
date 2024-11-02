@@ -68,7 +68,8 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
     struct hrt_keypress_info key_info = {
       .keysyms = translated_keysyms,
       .keysyms_len = translated_keysyms_len,
-      .modifiers = translated_modifiers
+      .modifiers = translated_modifiers,
+	  .wl_key_state = event->state
     };
     handled = seat->callbacks->keyboard_keypress_event(seat, &key_info);
   }

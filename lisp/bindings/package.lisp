@@ -37,7 +37,9 @@
 	   #:hrt-server-start
 	   #:hrt-server-stop
 	   #:hrt-server-finish
+	   ;; keypress info slots:
 	   #:keysyms
 	   #:modifiers
 	   #:keysyms-len
+	   #:key-state
 	   #:load-foreign-libraries))
