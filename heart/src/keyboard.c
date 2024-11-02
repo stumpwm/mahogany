@@ -80,7 +80,7 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
   }
 
   // TODO: I don't know if this condition is correct
-  if(!handled || event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+  if(!handled) {
     wlr_seat_keyboard_notify_key(seat->seat, event->time_msec, event->keycode, event->state);
   }
 }

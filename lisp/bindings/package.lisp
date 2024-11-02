@@ -41,5 +41,5 @@
 	   #:keysyms
 	   #:modifiers
 	   #:keysyms-len
-	   #:key-state
+	   #:wl-key-state
 	   #:load-foreign-libraries))

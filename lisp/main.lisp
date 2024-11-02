@@ -7,10 +7,13 @@
 (cffi:defcallback keyboard-callback :bool
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (info (:pointer (:struct hrt:hrt-keypress-info))))
-  (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len) info (:struct hrt:hrt-keypress-info))
+  (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
+			    info (:struct hrt:hrt-keypress-info))
+    ;; I'm not sure why this is an array, but it's what tinywl does:
     (dotimes (i hrt:keysyms-len)
       (let ((key (make-key (cffi:mem-aref hrt:keysyms :uint32 i) hrt:modifiers)))
-	(handle-key-event key seat)))))
+	(when (handle-key-event key seat hrt:wl-key-state)
+	  (return t))))))
 
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
