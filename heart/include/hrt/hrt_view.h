@@ -1,3 +1,6 @@
+#ifndef HRT_VIEW
+#define HRT_VIEW
+
 #include <stdint.h>
 #include <wayland-server-core.h>
 #include <hrt/hrt_server.h>
@@ -61,3 +64,5 @@ void hrt_view_focus(struct hrt_view *view, struct hrt_seat *seat);
  * Unfocus the given view.
  **/
 void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat);
+
+#endif
