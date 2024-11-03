@@ -20,6 +20,15 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
 	view->xdg_surface->data = xdg_tree;
 }
 
+void hrt_view_cleanup(struct hrt_view *view) {
+	if(view->xdg_surface->data) {
+		wlr_scene_node_destroy(view->xdg_surface->data);
+	}
+	if(view->scene_tree) {
+		wlr_scene_node_destroy(&view->scene_tree->node);
+	}
+}
+
 uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height) {
   view->width = width;
   view->height = height;

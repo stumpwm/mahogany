@@ -8,6 +8,7 @@
 #include "hrt/hrt_input.h"
 #include "xdg_impl.h"
 #include "hrt/hrt_view.h"
+#include "view_impl.h"
 
 #include <wlr/types/wlr_xdg_shell.h>
 
@@ -33,6 +34,7 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
 	wl_list_remove(&view->destroy.link);
 	wl_list_remove(&view->commit.link);
 
+	hrt_view_cleanup(view);
 	free(view);
 }
 
