@@ -74,5 +74,6 @@ void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat);
  **/
 void hrt_view_set_hidden(struct hrt_view *view, bool hidden);
 
+void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node);
 
 #endif

@@ -129,6 +129,10 @@ it visible to the user."
   (view (:pointer (:struct hrt-view)))
   (hidden :bool))
 
+(cffi:defcfun ("hrt_view_reparent" hrt-view-reparent) :void
+  (view (:pointer (:struct hrt-view)))
+  (node :pointer #| (:struct wlr-scene-tree) |# ))
+
 ;; next section imported from file build/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-output
