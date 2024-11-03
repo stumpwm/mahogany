@@ -22,6 +22,9 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
 
 void hrt_view_cleanup(struct hrt_view *view) {
 	if(view->xdg_surface->data) {
+		// TODO: There's no obvious documentation
+		//  on if the xdg_scene_tree gets cleaned up automatically.
+		//  If it does, this might cause problems:
 		wlr_scene_node_destroy(view->xdg_surface->data);
 	}
 	if(view->scene_tree) {
@@ -72,4 +75,8 @@ void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat) {
 
 void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
 	wlr_scene_node_set_enabled(&view->scene_tree->node, !hidden);
+}
+
+void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node) {
+	wlr_scene_node_reparent(&view->scene_tree->node, node);
 }
