@@ -19,6 +19,8 @@
   :components ((:file "log")
 	       (:file "util")
 	       (:file "system")
+	       (:module ring-list
+			:components ((:file "ring-list")))
 	       (:module interfaces
 			:components ((:file "view-interface")))
 	       (:module bindings
