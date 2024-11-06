@@ -9,6 +9,7 @@
   (number 1 :type fixnum :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
   (current-frame nil :type (or tree:frame null))
+  (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)
   (views nil :type list))
 
 (defclass mahogany-state ()

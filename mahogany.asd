@@ -43,7 +43,7 @@
 	       			     (:file "frame" :depends-on ("tree-interface"))
 				     (:file "view" :depends-on ("tree-interface"))))
 	       (:file "package")
-	       (:file "objects" :depends-on ("package"))
+	       (:file "objects" :depends-on ("package" "ring-list"))
 	       (:file "group" :depends-on ("objects" "bindings"))
 	       (:file "state" :depends-on ("objects" "keyboard"))
 	       (:file "globals" :depends-on ("state" "objects" "system"))
