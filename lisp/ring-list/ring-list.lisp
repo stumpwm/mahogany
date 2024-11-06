@@ -3,6 +3,7 @@
   (:export
    #:make-ring-list
    #:ring-list
+   #:ring-list-size
    #:add-item
    #:remove-item
    #:pop-item
