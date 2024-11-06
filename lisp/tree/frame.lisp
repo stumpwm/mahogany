@@ -469,6 +469,11 @@ REMOVE-FUNC is called with one argument: the view that was removed."
     (declare (type frame tree))
     (remove-frame-from-parent tree frame cleanup-func)))
 
+(defmethod replace-frame ((root frame) frame &optional (cleanup-func #'identity))
+  (unless (eql root frame)
+    (funcall cleanup-func frame)
+    (%replace-frame frame frame)))
+
 (defmethod replace-frame ((root tree-frame) frame &optional (cleanup-func #'identity))
   (let ((stack (tree-children root)))
     (iter (for child = (pop stack))

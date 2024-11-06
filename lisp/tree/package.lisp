@@ -36,6 +36,7 @@
 	   #:find-first-leaf
 	   #:mark-frame-focused
 	   #:unmark-frame-focused
+	   #:replace-frame
 	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
