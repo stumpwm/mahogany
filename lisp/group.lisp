@@ -102,3 +102,13 @@ to match."
 	      (alexandria:if-let ((view-frame (tree:find-empty-frame frame)))
 		(return-from tree:find-empty-frame view-frame)
 		(go :top)))))))
+
+(defun group-maximize-current-frame (group)
+  (declare (type mahogany-group group))
+  (let* ((current-frame (mahogany-group-current-frame group))
+	 (container (mahogany/tree:find-frame-container current-frame))
+	 (tree-root (tree:root-tree container)))
+    (flet ((hide-and-disable (view-frame)
+	       (alexandria:when-let (view (tree:frame-view view-frame))
+		 (ring-list:add-item (mahogany-group-hidden-views group) view))))
+      (tree:replace-frame tree-root current-frame #'hide-and-disable))))
