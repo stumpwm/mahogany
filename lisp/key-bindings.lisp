@@ -24,6 +24,11 @@
     (when frame
       (tree:split-frame-v frame :direction :top))))
 
+(defun maximize-current-frame (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-maximize-current-frame group)))
+
 (setf (mahogany-state-keybindings *compositor-state*)
       (list (define-kmap
 	      (kbd "C-t") (define-kmap
@@ -31,4 +36,5 @@
 			    (kbd "c") #'open-terminal
 			    (kbd "s") #'split-frame-v
 			    (kbd "S") #'split-frame-h
+			    (kbd "Q") #'maximize-current-frame
 			    (kbd "+") #'open-kcalc))))
