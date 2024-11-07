@@ -127,6 +127,11 @@ it visible to the user."
   (view (:pointer (:struct hrt-view)))
   (seat (:pointer (:struct hrt-seat))))
 
+(cffi:defcfun ("hrt_view_set_hidden" hrt-view-set-hidden) :void
+  "Stop the given view from being displayed"
+  (view (:pointer (:struct hrt-view)))
+  (hidden :bool))
+
 ;; next section imported from file build/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-output

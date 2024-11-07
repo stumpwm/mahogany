@@ -34,6 +34,12 @@
   (declare (type view view))
   (hrt-view-unfocus (view-hrt-view view) seat))
 
+(declaim (inline view-set-hidden))
+(defun view-set-hidden (view hidden)
+  (declare (type view view)
+	   (type boolean hidden))
+  (hrt-view-set-hidden (view-hrt-view view) hidden))
+
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
 

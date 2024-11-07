@@ -65,4 +65,10 @@ void hrt_view_focus(struct hrt_view *view, struct hrt_seat *seat);
  **/
 void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat);
 
+/**
+ * Stop the given view from being displayed
+ **/
+void hrt_view_set_hidden(struct hrt_view *view, bool hidden);
+
+
 #endif
