@@ -29,6 +29,18 @@
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-maximize-current-frame group)))
 
+(defun next-view (sequence seat)
+  "Raise the next hidden view in the current group"
+  (declare (ignore sequence seat))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-next-hidden group)))
+
+(defun previous-view (sequence seat)
+  "Raise the next hidden view in the current group"
+  (declare (ignore sequence seat))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-previous-hidden group)))
+
 (setf (mahogany-state-keybindings *compositor-state*)
       (list (define-kmap
 	      (kbd "C-t") (define-kmap
@@ -37,4 +49,6 @@
 			    (kbd "s") #'split-frame-v
 			    (kbd "S") #'split-frame-h
 			    (kbd "Q") #'maximize-current-frame
+			    (kbd "n") #'next-view
+			    (kbd "p") #'previous-view
 			    (kbd "+") #'open-kcalc))))
