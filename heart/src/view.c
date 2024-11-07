@@ -69,3 +69,7 @@ void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat) {
 	wlr_xdg_toplevel_set_activated(toplevel, false);
 	wlr_seat_keyboard_notify_clear_focus(seat->seat);
 }
+
+void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
+	wlr_scene_node_set_enabled(&view->scene_tree->node, !hidden);
+}
