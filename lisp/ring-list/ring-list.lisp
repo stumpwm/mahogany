@@ -7,6 +7,7 @@
    #:add-item
    #:remove-item
    #:pop-item
+   #:pop-item-prev
    #:swap-next
    #:swap-previous
    #:swap-next-find
@@ -82,6 +83,14 @@ found and removed"
     (when head
       (%remove-item ring-list head)
       (ring-item-item head))))
+
+(defun pop-item-prev (ring-list)
+  (declare (type ring-list ring-list))
+  (let ((head (ring-item-prev (ring-list-head ring-list))))
+    (when head
+      (let ((prev (ring-item-prev head)))
+	(%remove-item ring-list prev)
+	(ring-item-item prev)))))
 
 (defun %swap-find (ring-list item test swap-fn)
   (declare (type ring-list ring-list)
