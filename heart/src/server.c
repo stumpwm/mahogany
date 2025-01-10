@@ -132,5 +132,5 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 size_t hrt_server_struct_size() {
-  return sizeof(hrt_server);
+  return sizeof(struct hrt_server);
 }
