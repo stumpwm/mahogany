@@ -26,7 +26,7 @@
     (hrt:new-view handle-new-view-event)
     (hrt:view-destroyed handle-view-destroyed-event)))
 
-(defun load-config-file (&optional (catch-errors t))
+(defun load-config-file (&optional (catch-errors nil))
   "Load the user's config file. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the config file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
