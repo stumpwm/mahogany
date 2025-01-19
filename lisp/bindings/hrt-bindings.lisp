@@ -4,10 +4,7 @@
 
 (cffi:defcstruct hrt-server)
 
-(cffi:defcstruct hrt-seat-callbacks
-  (button-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (wheel-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
+(cffi:defcstruct hrt-seat-callbacks)
 
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
