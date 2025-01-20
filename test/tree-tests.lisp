@@ -4,6 +4,11 @@
 
 (in-package :mahogany-test/tree)
 
+(defun make-tree-for-test (&key (x 0) (y 0) (width 100) (height 100))
+  (let* ((container (make-instance 'tree:tree-container))
+	 (frame (tree:tree-container-add container :x x :y y :width width :height height)))
+    (values frame container)))
+
 (defmacro tree-subtest (subtest-name (tree-name container-name &rest tree-args) &body body)
   `(subtest ,subtest-name
      (multiple-value-bind (,tree-name ,container-name) ,(if tree-args
@@ -11,12 +16,6 @@
 							    `(make-tree-for-test))
        ,@body)))
 
-(defun make-tree-for-test (&key (x 0) (y 0) (width 100) (height 100))
-  (multiple-value-bind (container frame) (tree:make-basic-tree :x x
-									:y y
-									:width width
-									:height height)
-    (values frame container)))
 (deftest binary-split-direction
   (tree-subtest "Errors" (tree container)
     (declare (ignore tree))

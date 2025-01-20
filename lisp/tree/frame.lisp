@@ -1,4 +1,4 @@
-(in-package :mahogany/tree)
+(in-package #:mahogany/tree)
 
 (defun replace-item (lst old-itm new-itm &key (test #'equal))
   (alexandria:if-let ((found (member old-itm lst :test test)))
@@ -133,14 +133,14 @@
 (defun swap-in-parent (frame new-parent)
   "In FRAME's parent, swap FRAME for NEW-PARENT. Don't change the dimensions of FRAME."
   ;; TODO: also swap the parent pointer in NEW-PARENT
-  (if (root-frame-p frame)
-      (setf (root-tree (frame-parent frame)) new-parent)
-      (replace-item (tree-children (frame-parent frame)) frame new-parent)))
+  (replace-item (tree-children (frame-parent frame)) frame new-parent))
 
 (defun %replace-frame (root frame)
   "Replace ROOT with FRAME without any cleanup. Change the dimensions and position
 of FRAME to those of ROOT."
-  (if (root-frame-p root)
+  ;; check to see if we are replacing the topmost node in a tree
+  ;; and the output node we are associated with has no siblings
+  (if (and (root-frame-p root) (not (cdr (tree-children (frame-parent (frame-parent root))))))
       (setf (%frame-next frame) frame
 	    (%frame-prev frame) frame)
       (psetf (%frame-next (frame-prev root)) frame
@@ -408,6 +408,9 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	;; (setf (frame-view frame) nil)
 	))
 
+(defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
+  (assert (equal (frame-parent frame) parent)))
+
 (defmethod remove-frame-from-parent :after ((parent tree-frame) frame cleanup-func)
   (declare (ignore parent))
   (release-frames frame cleanup-func))
@@ -444,9 +447,14 @@ REMOVE-FUNC is called with one argument: the view that was removed."
     (%replace-frame parent other-child)))
 
 (defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
-  (let ((tree (root-tree root)))
-    (declare (type frame tree))
-    (remove-frame-from-parent tree frame cleanup-func)))
+  ;; TODO: test me!
+  (with-accessors ((tree-children tree-children)) root
+    (setf (tree-children root) (remove frame (tree-children root) :test #'equal))
+    (when (cdr tree-children)
+      (let ((frame-prev (frame-prev frame))
+	    (frame-next (frame-next frame)))
+	(setf (%frame-next frame-prev) frame-next
+	      (%frame-prev frame-next) frame-prev)))))
 
 (defmethod replace-frame ((root frame) frame &optional (cleanup-func #'identity))
   (unless (eql root frame)
@@ -507,14 +515,14 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	  (return-from find-empty-frame frame))))
 
 (defmethod find-empty-frame ((root tree-container))
-  (find-empty-frame (root-tree root)))
+  (dolist (tree (tree-children root))
+    (alexandria:when-let (empty (find-empty-frame tree))
+      (return-from find-empty-frame empty)))
+  nil)
 
-(defun find-first-leaf (container)
-  (declare (type tree-container container))
-  ;; TODO: you don't need the generator to do this:
-  (iter (for (frame) snakes:in-generator (leafs-in (root-tree container)))
-	(return-from find-first-leaf frame)))
-
+(defun find-first-leaf (tree)
+  (let ((prev-frame (frame-prev tree)))
+    (frame-next prev-frame)))
 
 (defun get-populated-frames (root)
   "Return a list of view-frames that contain views"

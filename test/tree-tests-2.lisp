@@ -5,10 +5,8 @@
 (in-package #:mahogany-tests/tree-2)
 
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
-  (multiple-value-bind (container frame) (mahogany/tree:make-basic-tree :x x
-									:y y
-									:width width
-									:height height)
+  (let* ((container (make-instance 'tree:tree-container))
+	 (frame (tree:tree-container-add container :x x :y y :width width :height height)))
     (values frame container)))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))
@@ -232,10 +230,22 @@
     (multiple-value-bind (tree container) (make-tree-for-tests)
       (poly-split-dim-test 4 tree #'tree:split-frame-v #'tree:frame-height))))
 
+(fiasco:deftest poly-split-frame-vertical-replaces-parent ()
+  (let ((tree:*new-split-type* :many))
+    (multiple-value-bind (tree container) (make-tree-for-tests)
+      (multiple-value-bind (frame parent) (tree:split-frame-v tree)
+	(is (find parent (tree:tree-children container) :test #'equal))))))
+
 (fiasco:deftest poly-split-frame-horizontal-has-correct-dimensions ()
   (let ((tree:*new-split-type* :many))
     (multiple-value-bind (tree container) (make-tree-for-tests)
       (poly-split-dim-test 4 tree #'tree:split-frame-h #'tree:frame-height))))
+
+(fiasco:deftest poly-split-frame-horizontal-replaces-parent ()
+  (let ((tree:*new-split-type* :many))
+    (multiple-value-bind (tree container) (make-tree-for-tests)
+      (multiple-value-bind (frame parent) (tree:split-frame-h tree)
+	(is (find parent (tree:tree-children container) :test #'equal))))))
 
 (fiasco:deftest binary-split-frame-vertial-has-correct-dimensions ()
   (let ((tree:*new-split-type* :binary))
