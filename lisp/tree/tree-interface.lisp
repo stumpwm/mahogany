@@ -128,9 +128,6 @@ from the tree. "))
   (:documentation "Finds the first veiw-frame in the given tree that doesn't have
 a view assigned to it."))
 
-(defgeneric get-empty-frames (root)
-  (:documentation "Gets a list of empty frames in the tree."))
-
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))
 
