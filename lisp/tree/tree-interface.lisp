@@ -121,9 +121,6 @@ CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (:documentation "Replace ROOT with FRAME. Call CLEANUP-FUNC on every view-frame that is removed
 from the tree. "))
 
-(defgeneric swap-positions (frame1 frame2)
-  (:documentation "Swap the positions of the two frames in their trees."))
-
 (defgeneric find-empty-frame (root)
   (:documentation "Finds the first veiw-frame in the given tree that doesn't have
 a view assigned to it."))

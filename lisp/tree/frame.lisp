@@ -4,51 +4,6 @@
   (alexandria:if-let ((found (member old-itm lst :test test)))
     (setf (car found) new-itm)))
 
-(defun swap-items (lst1 item1 lst2 item2 &key (test #'equal))
-  (alexandria:if-let ((found1 (member item1 lst1 :test test))
-		      (found2 (member item2 lst2 :test test)))
-    (progn (setf (car found1) item2)
-	   (setf (car found2) item1))))
-
-(defun find-frame (parent frame)
-  (labels ((rec-func (item to-search)
-	     (let ((frame (pop to-search)))
-	       (cond
-		 ((equal item frame)
-		  (return-from rec-func item))
-		 ((null frame)
-		  (return-from rec-func nil))
-		 ((typep frame 'tree-frame)
-		  (setf to-search (append (tree-children frame)
-					  to-search))))
-	       (rec-func item to-search))))
-    (if (equal parent frame)
-	(return-from find-frame frame)
-	(when (typep parent 'tree-frame)
-	  (rec-func frame (tree-children parent))))))
-
-(defmethod swap-positions ((frame1 frame) (frame2 frame))
-  ;; don't swap if a frame is a parent of the other:
-  (when (or (find-frame frame1 frame2) (find-frame frame2 frame1))
-    (error 'invalid-operation :text "Cannot swap positions with a frame higher in the tree."))
-  ;; resize the frames so they will fit in the other's position:
-  (let ((tmp-x (frame-x frame1))
-	(tmp-y (frame-y frame1))
-	(tmp-width (frame-width frame1))
-	(tmp-height (frame-height frame1)))
-    (set-position frame1 (frame-x frame2) (frame-y frame2))
-    (set-dimensions frame1 (frame-width frame2) (frame-height frame2))
-
-    (set-position frame2 tmp-x tmp-y)
-    (set-dimensions frame2 tmp-width tmp-height))
-
-  (let ((frame1-parent (frame-parent frame1))
-  	(frame2-parent (frame-parent frame2)))
-    (swap-items (tree-children frame1-parent) frame1
-    		(tree-children frame2-parent) frame2 :test #'eq)
-    (setf (frame-parent frame1) frame2-parent
-  	  (frame-parent frame2) frame1-parent)))
-
 (defmethod (setf frame-x) :before (new-x (frame tree-frame))
   "Translate the child frames so that geometry is preserved"
   (with-accessors ((children tree-children)
