@@ -18,6 +18,17 @@
   in C. The old version written entirely in Common Lisp can be found in
   the [[https://github.com/stumpwm/mahogany/tree/full-cl-old][full-cl-old]] branch.
 
+** Contributing / Hacking
+
+Mahogany is still in an early stage of development. See the 
+[[https://github.com/stumpwm/mahogany/milestones][list of milestones]]
+for features or work that is ready to be started.
+
+You can also browse the issue list for labels marked with
+[[https://github.com/stumpwm/mahogany/labels/good%20first%20issue][Good First Issue]].
+
+Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]]
+
 ** Building
    There are two parts to Mahogany: a backend library implemented in C, and
    the Common Lisp front end. Thus, you will need the following tools:
@@ -33,34 +44,23 @@
    git submodule update --init
    #+END_SRC
 
+To see a full example of this process, see the 
+[[https://github.com/stumpwm/mahogany/blob/master/Dockerfile][CI's Dockerfile]]
+
 *** Backend Library Dependencies
 The backend library requires wlroots 0.18.x. This
 version is included as a git submodule and is used by
-default. It requires the following development dependencies to build:
-+ wayland
-+ wayland-protocols
-+ EGL and GLESv2 (optional, for the GLES2 renderer)
-+ Vulkan loader, headers and glslang (optional, for the Vulkan renderer)
-+ libdrm
-+ GBM
-+ libinput (optional, for the libinput backend)
-+ xkbcommon
-+ udev
-+ pixman
-+ [libseat]
-
-You will need the development packages for these libraries, which
-are usually named with the packages' normal name with the =-devel=
-suffix. For example, the Wayland protocols development package is probably
-named =wayland-protocols-devel= in your package repository.
+default. See the README in the submodule or consult
+the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/0.18.2?ref_type=tags][project's git repo]]
+on how to build it.
 
 While it is possible to use a prebuilt version of wlroots installed by
 other means, it is currently not supported by directly invoking =make=
-like these instructions suggest.
+like these instructions suggest. (See [[https://github.com/stumpwm/mahogany/issues/80][#80]])
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
-version that the CFFI library supports, sbcl is recommended.
+version that the CFFI library supports, SBCL and CCL are supported.
 
 The recommended way to install the dependencies is using
 Quicklisp. Follow the instructions at https://www.quicklisp.org/ to
@@ -94,7 +94,3 @@ make:
 It is possible to run mahogany in an X11 or Wayland session, and is
 the recommended method of testing at this time. If you do choose to
 run the program in a TTY, press the =ESC= key to exit.
-
-** Contributing / Hacking
-
-See [[CONTRIBUTING.md][CONTRIBUTING.md]]
