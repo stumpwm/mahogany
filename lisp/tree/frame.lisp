@@ -188,8 +188,10 @@ of FRAME to those of ROOT."
   (if (root-frame-p root)
       (setf (%frame-next frame) frame
 	    (%frame-prev frame) frame)
-      (setf (%frame-next (frame-prev root) frame)
-	    (%frame-prev (frame-next root) frame)))
+      (psetf (%frame-next (frame-prev root)) frame
+	     (%frame-prev (frame-next root)) frame
+	     (%frame-prev frame) (frame-prev root)
+	     (%frame-next frame) (frame-next root)))
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
