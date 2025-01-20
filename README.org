@@ -22,10 +22,12 @@
 
 Mahogany is still in an early stage of development. See the 
 [[https://github.com/stumpwm/mahogany/milestones][list of milestones]]
-for features or work that is ready to be started.
-
-You can also browse the issue list for labels marked with
+for features or work that is ready to be started. You can also browse the
+issue list for labels marked with
 [[https://github.com/stumpwm/mahogany/labels/good%20first%20issue][Good First Issue]].
+
+In general, if it's in stumpwm and you want it, we will consider adding it. Create
+an issue for the issue tracker so we can plan on how to get it done.
 
 Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]]
 
