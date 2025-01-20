@@ -90,12 +90,12 @@
       frame
     (let ((diff (/ new-height old-height)))
       (cond
-	((eql (tree-split-direction frame) :horizontal)
+	((eql (tree-split-direction frame) :vertical)
 	 (let ((shift (frame-y frame)))
 	   (dolist (child children)
 	     (let ((adjusted-height (* diff (frame-height child))))
-	       (setf (frame-height child) shift)
-	       (setf (frame-y child) new-y)
+	       (setf (frame-height child) adjusted-height)
+	       (setf (frame-y child) shift)
 	       (setf shift (+ adjusted-height shift))))))
 	(t
 	 (dolist (child children)
