@@ -40,6 +40,19 @@ of an already existing frame with the `set-split-frame-type` function")
 	    :type boolean))
   (:documentation "A frame that is displayed on an output"))
 
+(defgeneric frame-prev (frame)
+  (:documentation "Get the previous edge node in the tree from this node"))
+
+(defgeneric frame-next (frame)
+  (:documentation "Get the next edge node in the tree from this node"))
+
+;; Use a different symbol for the setters so we don't export them:
+(defgeneric (setf %frame-prev) (prev frame)
+  (:documentation "Set the previous frame from this frame"))
+
+(defgeneric (setf %frame-next) (next frame)
+  (:documentation "Set tne next frame for this frame"))
+
 (defclass tree-container ()
   ((tree :initarg :root
 	:accessor root-tree
@@ -150,6 +163,8 @@ a view assigned to it."))
 (defun make-basic-tree (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree-container))
 	(frame (make-instance 'view-frame :x x :y y :width width :height height)))
+    (setf (%frame-next frame) frame
+	  (%frame-prev frame) frame)
     (setf (frame-parent frame) container)
     (setf (root-tree container) frame)
     (values container frame)))

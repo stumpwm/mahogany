@@ -6,7 +6,21 @@
 	 :initform nil
 	 :type (or hrt:view null)
 	 :documentation "The client of the frame")
+   (next :initarg next-frame
+	 :initform nil
+	 :type (or view-frame null)
+	 :reader frame-next)
+   (prev :initarg prev-frame
+	 :initform nil
+	 :type (or view-frame null)
+	 :reader frame-prev)
    (seat :initform nil)))
+
+(defmethod (setf %frame-prev) (prev (frame view-frame))
+  (setf (slot-value frame 'prev) prev))
+
+(defmethod (setf %frame-next) (next (frame view-frame))
+  (setf (slot-value frame 'next) next))
 
 (defmethod (setf frame-view) :after (view (frame view-frame))
   "Place the view in the frame and make it have the same dimensions

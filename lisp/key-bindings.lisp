@@ -16,13 +16,13 @@
   (declare (ignore sequence seat))
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
-      (tree:split-frame-h frame :direction :left))))
+      (tree:split-frame-h frame :direction :right))))
 
 (defun split-frame-v (sequence seat)
   (declare (ignore sequence seat))
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
-      (tree:split-frame-v frame :direction :top))))
+      (tree:split-frame-v frame :direction :bottom))))
 
 (defun maximize-current-frame (sequence seat)
   (declare (ignore sequence seat))
@@ -41,9 +41,21 @@
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-previous-hidden group)))
 
+(defun next-frame (sequence seat)
+  (declare (ignore sequence))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-next-frame group seat)))
+
+(defun prev-frame (sequence seat)
+  (declare (ignore sequence))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-prev-frame group seat)))
+
 (setf (mahogany-state-keybindings *compositor-state*)
       (list (define-kmap
 	      (kbd "C-t") (define-kmap
+			    (kbd "o") #'next-frame
+			    (kbd "O") #'prev-frame
 			    (kbd "q") #'handle-server-stop
 			    (kbd "c") #'open-terminal
 			    (kbd "s") #'split-frame-v

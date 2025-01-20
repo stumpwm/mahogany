@@ -157,3 +157,15 @@ currently focused frame"
 	(setf next-view (%swap-prev-hidden hidden-views view))
 	(setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view))))
+
+(defun group-next-frame (group seat)
+  (declare (type mahogany-group group))
+  (let* ((current-frame (mahogany-group-current-frame group))
+	 (next-frame (tree:frame-next current-frame)))
+    (group-focus-frame group next-frame seat)))
+
+(defun group-prev-frame (group seat)
+  (declare (type mahogany-group group))
+  (let* ((current-frame (mahogany-group-current-frame group))
+	 (prev-frame (tree:frame-prev current-frame)))
+    (group-focus-frame group prev-frame seat)))

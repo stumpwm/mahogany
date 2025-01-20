@@ -185,6 +185,11 @@
 (defun %replace-frame (root frame)
   "Replace ROOT with FRAME without any cleanup. Change the dimensions and position
 of FRAME to those of ROOT."
+  (if (root-frame-p root)
+      (setf (%frame-next frame) frame
+	    (%frame-prev frame) frame)
+      (setf (%frame-next (frame-prev root) frame)
+	    (%frame-prev (frame-next root) frame)))
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
@@ -221,18 +226,27 @@ Used to initially split all frames, regardless of type."
 					  :height old-height
 					  :x (+ old-x (- old-width new-frame-width))
 					  :y old-y))
-	   (setf (frame-width frame) (- old-width new-frame-width))
-	   (setf (tree-children new-parent) (list frame new-frame)))
+	   (setf (frame-width frame) (- old-width new-frame-width)
+		 (tree-children new-parent) (list frame new-frame))
+	   (psetf (%frame-prev new-frame) frame
+		  (%frame-next new-frame) (frame-next frame)
+		  (%frame-next frame) new-frame
+		  (%frame-prev (frame-next frame)) new-frame))
 	  (:left
 	   (setf new-frame (make-instance 'view-frame
 					  :parent new-parent
 					  :width (- old-width new-frame-width)
 					  :height old-height
 					  :x old-x
-					  :y old-y))
-	   (setf (frame-width frame) (- old-width new-frame-width))
-	   (setf (frame-x frame) (+ old-x new-frame-width))
-	   (setf (tree-children new-parent) (list new-frame frame))))
+					  :y old-y)
+		 (frame-width frame) (- old-width new-frame-width)
+		 (frame-x frame) (+ old-x new-frame-width)
+		 (tree-children new-parent) (list new-frame frame))
+	   (psetf (%frame-prev new-frame) (frame-prev frame)
+		  (%frame-next new-frame) frame
+		  (%frame-prev frame) new-frame
+		  (%frame-next (frame-prev frame)) new-frame)))
+	(log-string :trace "frame split new: ~S old: ~S" frame new-frame)
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
 	(setf (frame-parent frame) new-parent)
@@ -270,7 +284,11 @@ Used to initially split all frames, regardless of type."
 					   :y old-y))
 	   (setf (frame-height frame) (- old-height new-frame-height))
 	   (setf (frame-y frame) (+ old-y new-frame-height))
-	   (setf (tree-children new-parent) (list new-frame frame)))
+	   (setf (tree-children new-parent) (list new-frame frame))
+	   (psetf (%frame-prev new-frame) (frame-prev frame)
+		  (%frame-next new-frame) frame
+		  (%frame-prev frame) new-frame
+		  (%frame-next (frame-prev frame)) new-frame))
 	  (:bottom
 	   (setf new-frame (make-instance 'view-frame
 					   :parent new-parent
@@ -279,7 +297,11 @@ Used to initially split all frames, regardless of type."
 					   :x old-x
 					   :y (+ old-y (- old-height new-frame-height))))
 	     (setf (frame-height frame) (- old-height new-frame-height))
-	     (setf (tree-children new-parent) (list frame new-frame))))
+	     (setf (tree-children new-parent) (list frame new-frame))
+	     (psetf (%frame-prev new-frame) frame
+		  (%frame-next new-frame) (frame-next frame)
+		  (%frame-next frame) new-frame
+		  (%frame-prev (frame-next frame)) new-frame)))
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
 	(setf (frame-parent frame) new-parent)
@@ -485,6 +507,24 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	      (frame
 	       (funcall cleanup-func child))))))
   (%replace-frame root frame))
+
+(defmethod frame-prev ((frame tree-frame))
+  (with-slots (children) frame
+    (frame-prev (first children))))
+
+(defmethod (setf %frame-prev) (prev (frame tree-frame))
+  (with-slots (children) frame
+    (let ((first-child (first children)))
+      (setf (%frame-prev first-child) prev))))
+
+(defmethod frame-next ((frame tree-frame))
+  (with-slots (children) frame
+    (frame-next (car (last children)))))
+
+(defmethod (setf %frame-next) (next (frame tree-frame))
+  (with-slots (children) frame
+    (let ((last-child (car (last children))))
+      (setf (%frame-next last-child) next))))
 
 ;; (defgeneric replace-frame ((frame frame) frame &optional (cleanup-func #'identity))
 ;;   (%replace-frame root frame)

@@ -40,4 +40,6 @@
 	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
+	   #:frame-next
+	   #:frame-prev
 	   #:leafs-in))
