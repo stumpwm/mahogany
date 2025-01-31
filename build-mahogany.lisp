@@ -14,4 +14,6 @@
 ;; (asdf:find-system "mahogany/executable")
 ;; (asdf:clear-configuration)
 
+(declaim (optimize (debug 3)))
+
 (asdf:make "mahogany/executable")
