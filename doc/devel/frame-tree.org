@@ -20,6 +20,6 @@ The =output-node= class is the root of a frame tree, and has exactly
 one child, which is the actual tree graph. This class is here so that
 there is a fixed object that we can refer to when looking at the trees
 in the =tree-container= class; otherwise, operations like
-=replace-frame= become much more difficult to implement, as it
-provides a fixed node to refer to instead of one that may be
-deleted or moved elsewhere in the tree.
+=replace-frame= and output manipulation become much more difficult to
+implement; without this, there is no fixed node to refer to instead of
+one that may be deleted or moved elsewhere in the tree.
