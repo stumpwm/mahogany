@@ -22,6 +22,34 @@ static void handle_xdg_toplevel_unmap(struct wl_listener *listener,
 	wlr_log(WLR_DEBUG, "XDG Toplevel unmapped!");
 }
 
+static void send_dummy_configure(struct hrt_view *view) {
+	if (view->xdg_toplevel->base->initialized) {
+		wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
+	}
+}
+
+static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
+                                                 void *data) {
+	wlr_log(WLR_DEBUG, "XDG Toplevel request maximize");
+	struct hrt_view *view =
+		wl_container_of(listener, view, request_maximize);
+	// The protocol specifies that after this request is made, we must
+	// send a configure event. Since we don't support this,
+	// send one that keeps the previous configuration:
+	send_dummy_configure(view);
+}
+
+static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener,
+												   void *data) {
+	wlr_log(WLR_DEBUG, "XDG Toplevel request fullscreen");
+	struct hrt_view *view =
+		wl_container_of(listener, view, request_maximize);
+	// The protocol specifies that after this request is made, we must
+	// send a configure event. Since we don't support this,
+	// send one that keeps the previous configuration:
+	send_dummy_configure(view);
+}
+
 static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
                                         void *data) {
 	wlr_log(WLR_DEBUG, "XDG Toplevel Destroyed!");
@@ -33,6 +61,8 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
 	wl_list_remove(&view->unmap.link);
 	wl_list_remove(&view->destroy.link);
 	wl_list_remove(&view->commit.link);
+	wl_list_remove(&view->request_fullscreen.link);
+	wl_list_remove(&view->request_maximize.link);
 
 	hrt_view_cleanup(view);
 	free(view);
@@ -64,6 +94,14 @@ static struct hrt_view *create_view_from_xdg_surface(struct wlr_xdg_toplevel *xd
 	wl_signal_add(&xdg_surface->events.destroy, &view->destroy);
 	view->commit.notify = handle_xdg_toplevel_commit;
 	wl_signal_add(&xdg_toplevel->base->surface->events.commit, &view->commit);
+
+	view->request_fullscreen.notify =
+		handle_xdg_toplevel_request_fullscreen;
+	wl_signal_add(&xdg_toplevel->events.request_fullscreen,
+		&view->request_fullscreen);
+	view->request_maximize.notify = &handle_xdg_toplevel_request_maximize;
+	wl_signal_add(&xdg_toplevel->events.request_maximize,
+		&view->request_maximize);
 	// TODO: We need to listen to the commit event so we can send the configure message on first commit
 
 	return view;
