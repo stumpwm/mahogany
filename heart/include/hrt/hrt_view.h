@@ -26,6 +26,10 @@ struct hrt_view {
 	struct wl_listener unmap;
 	struct wl_listener commit;
 	struct wl_listener destroy;
+
+	struct wl_listener request_maximize;
+	struct wl_listener request_fullscreen;
+
 	new_view_handler new_view_handler;
 	view_destroy_handler destroy_handler;
 };
