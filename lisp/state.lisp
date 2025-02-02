@@ -158,5 +158,19 @@
 	(remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
+(defun state-next-hidden-group (state)
+  (declare (type mahogany-state state))
+  (let ((current-group (mahogany-current-group state))
+		(hidden-groups (mahogany-state-hidden-groups state)))
+	(when (> (ring-list:ring-list-size hidden-groups) 0)
+      (setf (mahogany-current-group state) (ring-list:swap-next hidden-groups current-group)))))
+
+(defun state-prev-hidden-group (state)
+  (declare (type mahogany-state state))
+  (let ((current-group (mahogany-current-group state))
+		(hidden-groups (mahogany-state-hidden-groups state)))
+	(when (> (ring-list:ring-list-size hidden-groups) 0)
+      (setf (mahogany-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
+
 (defun mahogany-current-frame (state)
   (mahogany-group-current-frame (mahogany-current-group state)))
