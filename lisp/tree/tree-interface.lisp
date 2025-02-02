@@ -150,7 +150,7 @@ a view assigned to it."))
   (:documentation "Mark the frame as being focused")
   (:method ((frame frame) seat)
     (declare (ignore seat))
-    (log-string :trace "frame focused")
+    (log-string :trace "frame unfocused")
     (setf (slot-value frame 'focused) nil)))
 
 ;; helper functions:
