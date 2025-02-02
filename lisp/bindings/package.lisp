@@ -25,6 +25,7 @@
 	   ;; view-methods
 	   #:view
 	   #:view-init
+	   #:view-reparent
 	   #:view-hrt-view
 	   #:focus-view
 	   #:unfocus-view

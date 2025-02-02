@@ -43,7 +43,7 @@
 (declaim (inline view-reparent))
 (defun view-reparent (view new-parent)
   (declare (type view view))
-  (hrt-view-reparent view new-parent))
+  (hrt-view-reparent (view-hrt-view view) new-parent))
 
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
