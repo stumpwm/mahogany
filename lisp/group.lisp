@@ -1,5 +1,48 @@
 (in-package #:mahogany)
 
+(defun make-mahogany-group (name number scene-tree)
+  (let ((scene-node (wlr:scene-tree-create scene-tree)))
+    (wlr:scene-node-set-enabled scene-node nil)
+    (log-string :debug "Created group ~A" name)
+    (%make-mahogany-group name number scene-node)))
+
+(defun destroy-mahogany-group (group scene-tree)
+  (alexandria:when-let ((views (mahogany-group-views group)))
+    (log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
+    (dolist (v views)
+      (hrt:view-reparent v scene-tree)))
+  (wlr:scene-node-destroy (mahogany-group-scene-tree group))
+  (log-string :debug "Destroyed group ~A" (mahogany-group-name group)))
+
+(defun group-suspend (group seat)
+  (declare (type mahogany-group group))
+  (with-accessors ((focused-frame mahogany-group-current-frame)
+                   (scene-tree mahogany-group-scene-tree))
+      group
+    (log-string :debug "Suspending group ~A" (mahogany-group-name group))
+    (when focused-frame
+      (tree:unmark-frame-focused focused-frame seat))
+    (wlr:scene-node-set-enabled scene-tree nil)))
+
+(defun group-wakeup (group seat)
+  (declare (type mahogany-group group))
+  (with-accessors ((focused-frame mahogany-group-current-frame)
+                   (scene-tree mahogany-group-scene-tree))
+      group
+    (log-string :debug "Waking up group ~A" (mahogany-group-name group))
+    (when focused-frame
+      (tree:mark-frame-focused focused-frame seat))
+    (wlr:scene-node-set-enabled scene-tree t)))
+
+(defun group-transfer-views (group to-transfer)
+  (declare (type mahogany-group group to-transfer))
+  (let ((scene-tree (mahogany-group-scene-tree group))
+        (hidden-list (mahogany-group-hidden-views group)))
+    (dolist (other-view (mahogany-group-views to-transfer))
+      (group-remove-view to-transfer other-view scene-tree)
+      (push other-view (mahogany-group-views group))
+      (%add-hidden hidden-list other-view))))
+
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
     (when current-frame
@@ -86,20 +129,27 @@ to match."
     (hrt:view-set-hidden popped nil)
     popped))
 
-(defun group-add-view (group view)
+(defun %group-add-view (group view)
   (declare (type mahogany-group group)
-	   (type hrt:view view))
+           (type hrt:view view))
   (with-accessors ((views mahogany-group-views)
-		   (outputs mahogany-group-output-map)
-		   (hidden mahogany-group-hidden-views))
+                   (outputs mahogany-group-output-map)
+                   (hidden mahogany-group-hidden-views))
       group
     (push view (mahogany-group-views group))
     (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
       (alexandria:when-let ((view (tree:frame-view current-frame)))
-	(%add-hidden hidden view))
+        (%add-hidden hidden view))
       (setf (tree:frame-view current-frame) view))))
 
-(defun group-remove-view (group view)
+(defun group-add-initialize-view (group view-ptr)
+  (declare (type mahogany-group group)
+           (type cffi:foreign-pointer view-ptr))
+  (let ((view (hrt:view-init view-ptr (mahogany-group-scene-tree group))))
+    (%group-add-view group view)
+    view))
+
+(defun group-remove-view (group view &optional new-scene-tree)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
 		   (output-map mahogany-group-output-map)
@@ -111,6 +161,8 @@ to match."
 	  (setf (tree:frame-view f) nil)
 	  (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
 	    (setf (tree:frame-view f) new-view)))))
+	(when new-scene-tree
+	  (hrt:view-reparent view new-scene-tree))
     (ring-list:remove-item hidden view)
     (setf view-list (remove view view-list :test #'equalp))))
 

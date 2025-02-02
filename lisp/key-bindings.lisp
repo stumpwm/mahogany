@@ -57,17 +57,42 @@
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-prev-frame group seat)))
 
-(setf (mahogany-state-keybindings *compositor-state*)
-      (list (define-kmap
-	      (kbd "C-t") (define-kmap
-			    (kbd "o") #'next-frame
-			    (kbd "O") #'prev-frame
-			    (kbd "q") #'handle-server-stop
-				(kbd "k") #'close-current-view
-			    (kbd "c") #'open-terminal
-			    (kbd "s") #'split-frame-v
-			    (kbd "S") #'split-frame-h
-			    (kbd "Q") #'maximize-current-frame
-			    (kbd "n") #'next-view
-			    (kbd "p") #'previous-view
-			    (kbd "+") #'open-kcalc))))
+(defun gnew (sequence seat)
+  (declare (ignore sequence seat))
+  (mahogany-state-group-add *compositor-state*))
+
+(defun gkill (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((current-group (mahogany-current-group *compositor-state*)))
+    (mahogany-state-group-remove *compositor-state* current-group)))
+
+(defun gnext (sequence seat)
+  (declare (ignore sequence seat))
+  (state-next-hidden-group *compositor-state*))
+
+(defun gprev (sequence seat)
+  (declare (ignore sequence seat))
+  (state-next-hidden-group *compositor-state*))
+
+
+(let* ((group-map (define-kmap
+                    (kbd "c") #'gnew
+                    (kbd "k") #'gkill
+                    (kbd "n") #'gnext
+                    (kbd "p") #'gprev))
+       (root-map (define-kmap
+                   (kbd "o") #'next-frame
+                   (kbd "O") #'prev-frame
+                   (kbd "q") #'handle-server-stop
+                   (kbd "k") #'close-current-view
+                   (kbd "c") #'open-terminal
+                   (kbd "s") #'split-frame-v
+                   (kbd "S") #'split-frame-h
+                   (kbd "Q") #'maximize-current-frame
+                   (kbd "n") #'next-view
+                   (kbd "p") #'previous-view
+                   (kbd "+") #'open-kcalc
+                   (kbd "g") group-map)))
+  (setf (mahogany-state-keybindings *compositor-state*)
+        (list (define-kmap
+                (kbd "C-t") root-map))))

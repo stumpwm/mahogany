@@ -70,14 +70,13 @@ further up. "
       (hrt:keyboard-keypress-event keyboard-callback))
     (init-view-callbacks view-callbacks)
 
-    (setf (mahogany-state-server *compositor-state*) server)
+    (server-state-init *compositor-state* server
+                       output-callbacks seat-callbacks view-callbacks
+                       :debug-level 3)
     (log-string :debug "Initialized mahogany state")
-    (hrt:hrt-server-init server output-callbacks seat-callbacks view-callbacks 3)
-    (log-string :debug "Initialized heart state")
     (unwind-protect
 	 (hrt:hrt-server-start server)
       (log-string :debug "Cleaning up...")
       (server-stop *compositor-state*)
-      (hrt:hrt-server-finish server)
       (server-state-reset *compositor-state*)
       (log-string :debug "Shutdown reached."))))
