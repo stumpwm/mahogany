@@ -52,14 +52,23 @@
     (group-prev-frame group seat)))
 
 (defun suspend-group (sequence seat)
-  (declare (ignore sequence seat))
+  (declare (ignore sequence))
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-suspend group seat)))
 
 (defun wakeup-group (sequence seat)
-  (declare (ignore sequence seat))
+  (declare (ignore sequence))
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-wakeup group seat)))
+
+(defun gnew (sequence seat)
+  (declare (ignore sequence seat))
+  (mahogany-state-group-add *compositor-state*))
+
+(defun gkill (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((current-group (mahogany-current-group *compositor-state*)))
+	(mahogany-state-group-remove *compositor-state* current-group)))
 
 (setf (mahogany-state-keybindings *compositor-state*)
       (list (define-kmap
@@ -76,4 +85,6 @@
 			    (kbd "+") #'open-kcalc
 				(kbd "g") (define-kmap
 						   (kbd "s") #'suspend-group
-						   (kbd "w") #'wakeup-group)))))
+						   (kbd "w") #'wakeup-group
+						   (kbd "n") #'gnew
+						   (kbd "k") #'gkill)))))

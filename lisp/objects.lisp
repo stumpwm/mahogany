@@ -35,6 +35,9 @@
    (groups :type vector
 	   :accessor mahogany-state-groups
 	   :initform (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t))
+   (hidden-groups :initform (ring-list:make-ring-list)
+				  :type ring-list:ring-list
+				  :reader mahogany-state-hidden-groups)
    (views :type hash-table
 	  :initform (make-hash-table)
 	  :reader mahogany-state-views)))
