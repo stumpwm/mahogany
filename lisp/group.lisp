@@ -1,5 +1,32 @@
 (in-package #:mahogany)
 
+(defun make-mahogany-group (name number scene-tree)
+  (let ((scene-node (wlr:scene-tree-create scene-tree)))
+	(%make-mahogany-group name number scene-node)))
+
+(defun destroy-mahogany-group (group scene-tree)
+  (alexandria:when-let ((views (mahogany-group-views group)))
+	(log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
+	(dolist (v views)
+	  (hrt:view-reparent v scene-tree)))
+  (wlr:scene-node-destroy (mahogany-group-scene-tree group)))
+
+(defun group-suspend (group seat)
+  (declare (type mahogany-group group))
+  (with-accessors ((focused-frame mahogany-group-current-frame)
+				   (scene-tree mahogany-group-scene-tree))
+	  group
+	(tree:unmark-frame-focused focused-frame seat)
+	(wlr:scene-node-set-enabled scene-tree nil)))
+
+(defun group-wakeup (group seat)
+  (declare (type mahogany-group group))
+  (with-accessors ((focused-frame mahogany-group-current-frame)
+				   (scene-tree mahogany-group-scene-tree))
+	  group
+	(tree:mark-frame-focused focused-frame seat)
+	(wlr:scene-node-set-enabled scene-tree t)))
+
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
     (when current-frame
@@ -88,16 +115,23 @@ to match."
 
 (defun group-add-view (group view)
   (declare (type mahogany-group group)
-	   (type hrt:view view))
+		   (type hrt:view view))
   (with-accessors ((views mahogany-group-views)
-		   (outputs mahogany-group-output-map)
-		   (hidden mahogany-group-hidden-views))
-      group
+				   (outputs mahogany-group-output-map)
+				   (hidden mahogany-group-hidden-views))
+	  group
     (push view (mahogany-group-views group))
     (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
-      (alexandria:when-let ((view (tree:frame-view current-frame)))
-	(%add-hidden hidden view))
-      (setf (tree:frame-view current-frame) view))))
+	  (alexandria:when-let ((view (tree:frame-view current-frame)))
+		(%add-hidden hidden view))
+	  (setf (tree:frame-view current-frame) view))))
+
+(defun group-add-initialize-view (group view-ptr)
+  (declare (type mahogany-group group)
+		   (type cffi:foreign-pointer view-ptr))
+  (let ((view (hrt:view-init view-ptr (mahogany-group-scene-tree group))))
+	(group-add-view group view)
+	view))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))

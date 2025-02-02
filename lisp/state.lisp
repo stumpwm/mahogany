@@ -1,13 +1,29 @@
 (in-package #:mahogany)
 
-(defmethod initialize-instance :after ((object mahogany-state) &key &allow-other-keys)
-  (let ((default-group (make-mahogany-group "DEFAULT" 1)))
-    (setf (slot-value object 'current-group) default-group)
-    (vector-push-extend default-group (mahogany-state-groups object))))
+(defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+						  &key (debug-level 3))
+  (with-accessors ((groups mahogany-state-groups)
+				   (current-group mahogany-current-group))
+	  state
+	(setf (mahogany-state-server state) server)
+	(hrt:hrt-server-init server
+						 output-callbacks seat-callbacks view-callbacks
+						 debug-level)
+	(let* ((scene-tree (hrt:hrt-server-scene-tree server))
+		   (default-group (make-mahogany-group "DEFAULT" 1 scene-tree)))
+      (setf current-group default-group)
+      (vector-push-extend default-group groups))))
 
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
-  (setf (mahogany-state-server state) nil))
+  (with-accessors ((groups mahogany-state-groups)
+				   (server mahogany-state-server))
+	  state
+	(let ((scene-tree (hrt:hrt-server-scene-tree server)))
+	  (loop for g across groups
+			:do (destroy-mahogany-group g scene-tree)))
+	(hrt:hrt-server-finish server)
+	(setf server nil)))
 
 (defun server-stop (state)
   (declare (type mahogany-state state))
@@ -65,9 +81,8 @@
 		   (current-group mahogany-current-group)
 		   (server mahogany-state-server))
       state
-    (let ((new-view (hrt:view-init view-ptr (hrt:hrt-server-scene-tree server))))
-      (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view)
-      (group-add-view current-group new-view))))
+    (let ((new-view (group-add-initialize-view current-group view-ptr)))
+      (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view))))
 
 (defun mahogany-state-view-remove (state view-ptr)
   (declare (type mahogany-state state)
