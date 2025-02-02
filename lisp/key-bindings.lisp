@@ -51,6 +51,16 @@
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-prev-frame group seat)))
 
+(defun suspend-group (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-suspend group seat)))
+
+(defun wakeup-group (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((group (mahogany-current-group *compositor-state*)))
+    (group-wakeup group seat)))
+
 (setf (mahogany-state-keybindings *compositor-state*)
       (list (define-kmap
 	      (kbd "C-t") (define-kmap
@@ -63,4 +73,7 @@
 			    (kbd "Q") #'maximize-current-frame
 			    (kbd "n") #'next-view
 			    (kbd "p") #'previous-view
-			    (kbd "+") #'open-kcalc))))
+			    (kbd "+") #'open-kcalc
+				(kbd "g") (define-kmap
+						   (kbd "s") #'suspend-group
+						   (kbd "w") #'wakeup-group)))))
