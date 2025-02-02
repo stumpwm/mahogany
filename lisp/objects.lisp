@@ -4,9 +4,10 @@
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
-(defstruct (mahogany-group (:constructor make-mahogany-group (name number)))
+(defstruct (mahogany-group (:constructor %make-mahogany-group (name number scene-tree)))
   (name "" :type string)
   (number 1 :type fixnum :read-only t)
+  (scene-tree (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (tree-container (make-instance 'tree:tree-container) :type tree:tree-container :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
   (current-frame nil :type (or tree:frame null))
@@ -34,6 +35,9 @@
    (groups :type vector
 	   :accessor mahogany-state-groups
 	   :initform (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t))
+   (hidden-groups :initform (ring-list:make-ring-list)
+				  :type ring-list:ring-list
+				  :reader mahogany-state-hidden-groups)
    (views :type hash-table
 	  :initform (make-hash-table)
 	  :reader mahogany-state-views)))
