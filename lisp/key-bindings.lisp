@@ -29,6 +29,12 @@
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-maximize-current-frame group)))
 
+(defun close-current-view (sequence seat)
+  (declare (ignore sequence seat))
+  (let ((frame (mahogany-current-frame *compositor-state*)))
+	(alexandria:when-let ((view (mahogany/tree:frame-view frame)))
+	  (hrt:view-request-close view))))
+
 (defun next-view (sequence seat)
   "Raise the next hidden view in the current group"
   (declare (ignore sequence seat))
@@ -57,6 +63,7 @@
 			    (kbd "o") #'next-frame
 			    (kbd "O") #'prev-frame
 			    (kbd "q") #'handle-server-stop
+				(kbd "k") #'close-current-view
 			    (kbd "c") #'open-terminal
 			    (kbd "s") #'split-frame-v
 			    (kbd "S") #'split-frame-h

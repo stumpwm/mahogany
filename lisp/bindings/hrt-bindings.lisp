@@ -89,6 +89,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
   (destroy (:struct wl-listener))
+  (request-maximize (:struct wl-listener))
+  (request-fullscreen (:struct wl-listener))
   (new-view-handler new-view-handler)
   (destroy-handler view-destroy-handler))
 
@@ -132,6 +134,13 @@ it visible to the user."
 (cffi:defcfun ("hrt_view_reparent" hrt-view-reparent) :void
   (view (:pointer (:struct hrt-view)))
   (node :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_view_request_close" hrt-view-request-close) :void
+  "Request that the view be closed. This is the \"nice\" version
+that is the same as clicking the close button on window decorations.
+It does not garentee that the application actually closes, but
+well behaved ones should."
+  (view (:pointer (:struct hrt-view))))
 
 ;; next section imported from file build/include/hrt/hrt_output.h
 
