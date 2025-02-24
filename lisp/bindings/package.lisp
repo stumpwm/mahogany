@@ -26,6 +26,7 @@
 	   #:view
 	   #:view-init
 	   #:view-reparent
+	   #:view-request-close
 	   #:view-hrt-view
 	   #:focus-view
 	   #:unfocus-view

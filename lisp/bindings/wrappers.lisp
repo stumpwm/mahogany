@@ -45,6 +45,11 @@
   (declare (type view view))
   (hrt-view-reparent (view-hrt-view view) new-parent))
 
+(declaim (inline view-request-close))
+(defun view-request-close (view)
+  (declare (type view view))
+  (hrt-view-request-close (view-hrt-view view)))
+
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
 

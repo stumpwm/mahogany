@@ -76,4 +76,12 @@ void hrt_view_set_hidden(struct hrt_view *view, bool hidden);
 
 void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node);
 
+/**
+ * Request that the view be closed. This is the "nice" version
+ * that is the same as clicking the close button on window decorations.
+ * It does not garentee that the application actually closes, but
+ * well behaved ones should.
+ **/
+void hrt_view_request_close(struct hrt_view *view);
+
 #endif

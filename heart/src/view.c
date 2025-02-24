@@ -80,3 +80,7 @@ void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
 void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node) {
 	wlr_scene_node_reparent(&view->scene_tree->node, node);
 }
+
+void hrt_view_request_close(struct hrt_view *view) {
+	wlr_xdg_toplevel_send_close(view->xdg_toplevel);
+}
