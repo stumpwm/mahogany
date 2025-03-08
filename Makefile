@@ -30,12 +30,12 @@ $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart install > $(BUILD_DIR)/install_output.txt
 
 $(CACHE)/wlroots-configured:
-	mkdir -p $(BUILD_DIR)/heart && meson setup $(BUILD_DIR)/heart heart/ -Dprefix=$(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/heart && meson setup $(BUILD_DIR)/heart heart/ -Dprefix=$(BUILD_DIR) -Dlibdir=lib
 	mkdir -p $(CACHE)
 	touch $(CACHE)/wlroots-configured
 
 run: $(BUILD_DIR)/mahogany
-	LD_LIBRARY_PATH=build/lib64/:build/lib/ ./build/mahogany
+	LD_LIBRARY_PATH=build/lib/ ./build/mahogany
 
 clean: FORCE
 	ninja -C $(BUILD_DIR)/heart clean
