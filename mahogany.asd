@@ -18,7 +18,7 @@
   :pathname #p"lisp/"
   :components ((:file "log")
 	       (:file "util")
-	       (:file "system")
+	       (:file "system" :depends-on ("util"))
 	       (:module ring-list
 			:components ((:file "ring-list")))
 	       (:module interfaces

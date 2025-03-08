@@ -4,7 +4,8 @@
   (:export #:mahogany-error
 	   #:defglobal
 	   #:disable-fpu-exceptions
-	   #:enable-debugger))
+	   #:enable-debugger
+	   #:if-let*))
 
 (in-package #:mahogany/util)
 
@@ -37,3 +38,17 @@
   (sb-int:set-floating-point-modes :traps nil)
   #+ccl
   (ccl:set-fpu-mode :overflow nil))
+
+(defmacro if-let* (vars &body (then-form &optional else-form))
+  (let* ((end-tag (gensym "exit"))
+		 (var-reverse (reverse vars))
+		 (let-body `(alexandria:when-let (,(car var-reverse))
+                      ,then-form
+					  (go ,end-tag))))
+    (dolist (v (reverse (rest var-reverse)))
+      (setf let-body `(alexandria:when-let (,v)
+						,let-body)))
+	`(tagbody
+		,let-body
+		,else-form
+		,end-tag)))
