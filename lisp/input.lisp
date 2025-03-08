@@ -26,8 +26,7 @@
 		 (reset-state)
 		 t)
 		;; No action was taken, return nil
-		(t  nil)))
-	  (log-string :trace "Keyboard state: ~A" (mahogany-state-key-state *compositor-state*)))))))
+		(t  nil))))))))
 
 (defun handle-key-event (state key seat event-state)
   (declare (type key key)
