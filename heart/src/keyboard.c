@@ -50,7 +50,6 @@ static bool execute_hardcoded_bindings(struct hrt_server *server,
 }
 
 static void seat_handle_key(struct wl_listener *listener, void *data) {
-  wlr_log(WLR_DEBUG, "Keyboard key pressed");
   struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
   struct wlr_keyboard_key_event *event = data;
   struct hrt_server *server = seat->server;
@@ -82,6 +81,8 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
   // TODO: I don't know if this condition is correct
   if(!handled) {
     wlr_seat_keyboard_notify_key(seat->seat, event->time_msec, event->keycode, event->state);
+  } else {
+    wlr_log(WLR_DEBUG, "Keypress handled by keybinding");
   }
 }
 
