@@ -19,8 +19,8 @@ Mahogany is running under")
 
 (defun open-terminal ()
   (if-let* ((term (uiop:getenv "TERMINAL"))
-		   (prog-path (find-program term)))
-    (uiop:launch-program prog-path)
+			(prog-path (find-program term)))
+      (uiop:launch-program prog-path)
 	(let ((programs #("konsole" "gnome-terminal" "wezterm" "foot")))
       (loop for i across programs
 			do (alex:when-let ((program (find-program i)))
