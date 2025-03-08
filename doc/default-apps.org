@@ -5,10 +5,11 @@ is a guide on how to customize those applications.
 
 ** Terminal Emulator
 
-Mahogany as a function called `open-terminal` that opens a terminal
+Mahogany has a function called =open-terminal= that opens a terminal
 emulator. It uses the following scheme to find the right one to open:
-1. Examines the `$TERMINAL` environment variable. If it has a value
-   and is on `$PATH`, it uses this application.
+1. Examines the =$TERMINAL= environment variable. If it has a value
+   and a corresponding executable on =$PATH=, it uses that
+   application.
 2. Goes through the following list of common terminal apps and tries
    to open them in order:
    1. konsole
