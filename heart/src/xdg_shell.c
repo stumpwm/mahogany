@@ -139,6 +139,8 @@ static void handle_new_xdg_popup(struct wl_listener *listener, void *data) {
   if (parent_tree) {
 	  xdg_popup->base->data = wlr_scene_xdg_surface_create(parent_tree, xdg_popup->base);
 	  struct hrt_xdg_popup *popup = calloc(1, sizeof(*popup));
+		popup->xdg_popup = xdg_popup;
+
 	  popup->commit.notify = handle_xdg_popup_commit;
 	  wl_signal_add(&xdg_popup->base->surface->events.commit,
 					&popup->commit);
