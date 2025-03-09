@@ -12,20 +12,21 @@
 
 #include <wlr/types/wlr_xdg_shell.h>
 
+static void send_dummy_configure(struct hrt_view *view) {
+	if (view->xdg_toplevel->base->initialized) {
+		wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
+	}
+}
 
 static void handle_xdg_toplevel_map(struct wl_listener *listener, void *data) {
-	wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
+  wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
+  struct hrt_view *view = wl_container_of(listener, view, map);
+  send_dummy_configure(view);
 }
 
 static void handle_xdg_toplevel_unmap(struct wl_listener *listener,
                                       void *data) {
 	wlr_log(WLR_DEBUG, "XDG Toplevel unmapped!");
-}
-
-static void send_dummy_configure(struct hrt_view *view) {
-	if (view->xdg_toplevel->base->initialized) {
-		wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
-	}
 }
 
 static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
