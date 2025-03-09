@@ -45,9 +45,14 @@ static bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *i
   return false;
 }
 
+static void layout_changed() {
+
+}
+
 static const struct hrt_output_callbacks output_callbacks = {
   .output_added = &output_callback,
   .output_removed = &output_callback,
+  .output_layout_changed = &layout_changed,
 };
 
 static const struct hrt_seat_callbacks seat_callbacks = {
