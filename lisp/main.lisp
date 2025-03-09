@@ -1,31 +1,5 @@
 (in-package #:mahogany)
 
-(cffi:defcallback cursor-callback :void ((seat (:pointer (:struct hrt:hrt-seat))))
-  (declare (ignore seat))
-  (log-string :trace "cursor callback called"))
-
-(cffi:defcallback keyboard-callback :bool
-    ((seat (:pointer (:struct hrt:hrt-seat)))
-     (info (:pointer (:struct hrt:hrt-keypress-info))))
-  (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
-			    info (:struct hrt:hrt-keypress-info))
-    ;; I'm not sure why this is an array, but it's what tinywl does:
-    (dotimes (i hrt:keysyms-len)
-      (let ((key (make-key (cffi:mem-aref hrt:keysyms :uint32 i) hrt:modifiers)))
-	(when (handle-key-event *compositor-state* key seat hrt:wl-key-state)
-	  (return t))))))
-
-(defmacro init-callback-struct (variable type &body sets)
-  (let ((vars (mapcar #'car sets)))
-    `(cffi:with-foreign-slots (,vars ,variable ,type)
-       (setf ,@(loop for pair in sets
-		     append (list (car pair) `(cffi:callback ,(cadr pair))))))))
-
-(defun init-view-callbacks (view-callbacks)
-  (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
-    (hrt:new-view handle-new-view-event)
-    (hrt:view-destroyed handle-view-destroyed-event)))
-
 (defun load-config-file (&optional (catch-errors nil))
   "Load the user's config file. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the config file that was
@@ -49,6 +23,17 @@ further up. "
 	(progn
 	  (log-string :debug "Did not find config file")
 	  (values t nil nil)))))
+
+(defmacro init-callback-struct (variable type &body sets)
+  (let ((vars (mapcar #'car sets)))
+	`(cffi:with-foreign-slots (,vars ,variable ,type)
+	   (setf ,@(loop for pair in sets
+			 append (list (car pair) `(cffi:callback ,(cadr pair))))))))
+
+(defun init-view-callbacks (view-callbacks)
+  (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
+	(hrt:new-view handle-new-view-event)
+	(hrt:view-destroyed handle-view-destroyed-event)))
 
 (defun run-server ()
   (disable-fpu-exceptions)
