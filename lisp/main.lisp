@@ -35,12 +35,14 @@ further up. "
 	(hrt:new-view handle-new-view-event)
 	(hrt:view-destroyed handle-view-destroyed-event)))
 
-(defun run-server ()
+(defun run-server (args)
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (enable-debugger)
-  (load-config-file)
+  (if (cl-argparse:get-value "skip-init" args)
+      (log-string :debug "Init file loading skipped")
+      (load-config-file))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
 			      (view-callbacks '(:struct hrt:hrt-view-callbacks))
@@ -65,3 +67,19 @@ further up. "
       (server-stop *compositor-state*)
       (server-state-reset *compositor-state*)
       (log-string :debug "Shutdown reached."))))
+
+(defun %parse-cmd-line-args (args)
+  (let ((parser (cl-argparse:create-main-parser (main-parser "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
+                                                             "mahogany")
+                  (cl-argparse:add-flag main-parser
+                                        :short "q" :long "no-init-file"
+                                        :help "Do not load an init file on startup"
+                                        :var "skip-init"))))
+    (cl-argparse:parse parser args)))
+
+(defun main ()
+  (handler-case
+      (let ((args (%parse-cmd-line-args (uiop:command-line-arguments))))
+        (run-server args))
+    (cl-argparse:cancel-parsing-error (e)
+      (format t "~a~%" e))))
