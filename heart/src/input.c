@@ -1,3 +1,5 @@
+#include <wayland-server-core.h>
+#include <wayland-util.h>
 #include <wlr/util/log.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -109,6 +111,17 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
   wlr_seat_set_capabilities(seat->seat, caps);
 }
 
+static void handle_request_set_cursor(struct wl_listener *listener,
+                                      void *data) {
+  struct hrt_seat *seat = wl_container_of(listener, seat, request_cursor);
+  struct wlr_seat_pointer_request_set_cursor_event *event = data;
+
+  struct wlr_seat_client *focused = seat->seat->pointer_state.focused_client;
+  if (focused == event->seat_client) {
+    wlr_cursor_set_surface(seat->cursor, event->surface, event->hotspot_x, event->hotspot_y);
+  }
+}
+
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 		   const struct hrt_seat_callbacks *callbacks) {
   seat->callbacks = callbacks;
@@ -121,6 +134,9 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     return false;
   }
   wl_list_init(&seat->inputs);
+
+  seat->request_cursor.notify = handle_request_set_cursor;
+  wl_signal_add(&seat->seat->events.request_set_cursor, &seat->request_cursor);
 
   if(!hrt_cursor_init(seat, server)) {
      return false;

@@ -19,6 +19,7 @@
   (button (:struct wl-listener))
   (axis (:struct wl-listener))
   (frame (:struct wl-listener))
+  (request-cursor (:struct wl-listener))
   (keyboard-key (:struct wl-listener))
   (keyboard-modifiers (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
