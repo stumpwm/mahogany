@@ -70,7 +70,7 @@ install it.
 
 Once downloaded, install the dependencies:
 #+BEGIN_SRC lisp
-  (ql:quickload '("alexandria" "cl-ansi-text" "terminfo"
+  (ql:quickload '("alexandria" "cl-ansi-text" "terminfo" "cl-argparse"
 		  "snakes" "iterate" "cffi" "cffi-grovel" "closer-mop"))
 #+END_SRC
 

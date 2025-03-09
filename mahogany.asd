@@ -9,6 +9,7 @@
 	       #:alexandria
 	       #:cl-ansi-text
 	       #:terminfo
+		   #:cl-argparse
 	       #:xkbcommon
 	       #:cl-wayland
 	       #:snakes
@@ -57,6 +58,6 @@
 
 (asdf:defsystem #:mahogany/executable
   :build-operation program-op
-  :entry-point "mahogany::run-server"
+  :entry-point "mahogany::main"
   :build-pathname "build/mahogany"
   :depends-on (#:mahogany))
