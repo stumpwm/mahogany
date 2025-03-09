@@ -152,7 +152,7 @@ static void handle_new_xdg_popup(struct wl_listener *listener, void *data) {
 }
 
 static void handle_new_xdg_toplevel(struct wl_listener *listener, void * data) {
-	wlr_log(WLR_DEBUG, "New XDG Popup received");
+	wlr_log(WLR_DEBUG, "New XDG Toplevel received");
 	struct hrt_server *server =
 		wl_container_of(listener, server, new_xdg_toplevel);
 	struct wlr_xdg_toplevel *toplevel = data;
