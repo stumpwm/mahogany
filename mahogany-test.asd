@@ -3,10 +3,7 @@ This file is a part of mahogany.
 
 |#
 
-(asdf:register-system-packages "prove-asdf" "prove")
-
 (asdf:defsystem #:mahogany-test
-  :defsystem-depends-on (:prove-asdf)
   :depends-on (#:mahogany
 	       #:fiasco)
   :pathname "test/"
