@@ -20,6 +20,8 @@
   :components ((:file "log")
 	       (:file "util")
 	       (:file "system" :depends-on ("util"))
+               (:module config
+			:components ((:file "config-system")))
 	       (:module ring-list
 			:components ((:file "ring-list")))
 	       (:module interfaces
