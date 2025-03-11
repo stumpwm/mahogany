@@ -69,7 +69,7 @@ of an already existing frame with the `set-split-frame-type` function")
 	    :type list)
    (parent :initarg :parent
 	   :initform nil
-	   :type tree-container
+	   :type (or null tree-container)
 	   :accessor frame-parent)))
 
 (deftype split-frame-type ()
