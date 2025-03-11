@@ -41,9 +41,15 @@
 	      t))
 	 (key-state-active-p key-state))))
 
-(cffi:defcallback cursor-callback :void ((seat (:pointer (:struct hrt:hrt-seat))))
-  (declare (ignore seat))
-  (log-string :trace "cursor callback called"))
+(cffi:defcallback handle-mouse-wheel-event :void ((seat (:pointer (:struct hrt:hrt-seat)))
+					    (event :pointer))
+  (log-string :trace "mouse wheel callback called")
+  (hrt:hrt-seat-notify-axis seat event))
+
+(cffi:defcallback handle-mouse-button-event :void ((seat (:pointer (:struct hrt:hrt-seat)))
+					    (event :pointer))
+  (log-string :trace "mouse button callback called")
+  (hrt:hrt-seat-notify-button seat event))
 
 (cffi:defcallback keyboard-callback :bool
 	((seat (:pointer (:struct hrt:hrt-seat)))

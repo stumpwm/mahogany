@@ -52,8 +52,8 @@ further up. "
       (hrt:output-removed handle-output-removed)
       (hrt:output-layout-changed handle-output-layout-change))
     (init-callback-struct seat-callbacks (:struct hrt:hrt-seat-callbacks)
-      (hrt:button-event cursor-callback)
-      (hrt:wheel-event cursor-callback)
+      (hrt:button-event handle-mouse-button-event)
+      (hrt:wheel-event handle-mouse-wheel-event)
       (hrt:keyboard-keypress-event keyboard-callback))
     (init-view-callbacks view-callbacks)
 

@@ -32,8 +32,8 @@
   (wl-key-state :int #| enum wl-keyboard-key-state |#))
 
 (cffi:defcstruct hrt-seat-callbacks
-  (button-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (wheel-event :pointer #| function ptr void (struct hrt_seat *) |#)
+  (button-event :pointer #| function ptr void (struct hrt_seat *, struct wlr_pointer_button_event *) |#)
+  (wheel-event :pointer #| function ptr void (struct hrt_seat *, struct wlr_pointer_axis_event *) |#)
   (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
 
 (cffi:defcstruct hrt-input
@@ -68,9 +68,18 @@
 
 Does not take ownership of the string.
 
-See themes section of man xcursor(3) to find where to find valid cursor names."
+See themes section of man xcursor(3) to find where to find valid cursor
+names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
+
+(cffi:defcfun ("hrt_seat_notify_button" hrt-seat-notify-button) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (event :pointer #| (:struct wlr-pointer-button-event) |# ))
+
+(cffi:defcfun ("hrt_seat_notify_axis" hrt-seat-notify-axis) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
 
 ;; next section imported from file build/include/hrt/hrt_view.h
 
@@ -105,7 +114,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (tree :pointer #| (:struct wlr-scene-tree) |# ))
 
 (cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
-  "Request that this view be the given size. Returns the associated configure serial."
+  "Request that this view be the given size. Returns the associated configure
+serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))

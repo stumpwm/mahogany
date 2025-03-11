@@ -9,6 +9,8 @@
 	   #:hrt-view
 	   #:view-destroyed
 	   #:hrt-seat
+	   #:hrt-seat-notify-button
+	   #:hrt-seat-notify-axis
 	   #:hrt-output
 	   #:hrt-output-name
 	   #:hrt-output-make
