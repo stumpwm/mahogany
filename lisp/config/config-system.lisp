@@ -2,7 +2,7 @@
   (:use :cl #:alexandria)
   (:export config-info
            config-info-name
-           config-info-validator
+           config-info-type
            config-info-default
            config-info-doc
            config-info-value
@@ -27,7 +27,7 @@
 
 (defstruct config-info
   (name t :type symbol :read-only t)
-  (validator #'identity :type (function (t) boolean))
+  (type nil :read-only t) ; this is a type specifier
   (default nil :read-only t)
   (value nil)
   (doc "" :type string :read-only t))
@@ -48,12 +48,13 @@
 
 (defun describe-config-info (info &optional (stream *standard-output*))
   (declare (type config-info info))
-  (format stream "Setting Name: ~A~%  Documentation:~%    ~A~%  Default value: ~S~%Current value: ~S~%  Validator function: ~A~%"
+  (format stream "Setting Name: ~A~%  Documentation:~%    ~A~%  Default value: ~S~%Current value: ~S~%"
           (%full-symbol-string (config-info-name info))
           (config-info-doc info)
           (config-info-default info)
-          (config-info-value info)
-          (config-info-validator info)))
+          (config-info-value info))
+  (alexandria:when-let ((type-specifier (config-info-type info)))
+    (format stream "Type designator: ~A~%" type-specifier)))
 
 (defun %make-match-readtable (str)
   "Try to make the given string have the correct case for a symbol"
@@ -110,34 +111,27 @@
                 (%full-symbol-string place-symbol) alternatives)
         (format s  "Setting ~A not found." (%full-symbol-string place-symbol)))))))
 
-(defun %generate-config-var-code (declare-type name default validator documentation)
-  ;; if we wanted to get fancy, we could define a special type for this enumeration at this point too
+(defun %generate-config-var-code (declare-type name default type-specifier documentation)
   (check-type documentation string)
   (check-type name symbol)
-  (with-gensyms (default-value is-valid func)
+  (with-gensyms (default-value)
     `(progn
-       (,declare-type ,name ,default ,@(when documentation
-                                         (list documentation)))
-       (let* ((,default-value ,name)
-              (,func ,validator)
-              (,is-valid (funcall ,func ,default-value)))
-         (if ,is-valid
-             (setf (gethash (quote ,name) *config-vars*)
-                   (make-config-info :name (quote ,name) :default ,default-value
-                                     :validator ,func :doc ,documentation))
+       (let* ((,default-value ,name))
+         (if (typep ,default-value (quote ,type-specifier))
+	     (progn
+               (setf (gethash (quote ,name) *config-vars*)
+                     (make-config-info :name (quote ,name) :default ,default-value
+                                       :type (quote ,type-specifier) :doc ,documentation))
+	       (declaim (type ,type-specifier ,name))
+	       (,declare-type ,name ,default ,@(when documentation
+				  (list documentation))))
              (error 'invalid-datum-error :place (quote ,name) :value ,default-value))))))
 
-(defmacro defconfig (name default validator documentation &key reinitialize)
+(defmacro defconfig (name default type-specifier documentation &key reinitialize)
   "Create and register a configurable variable with the given default value,
-validator function, and documentation"
+type specifier, and documentation"
   (%generate-config-var-code (if reinitialize `defparameter 'defvar)
-                             name default validator documentation))
-
-(defmacro define-config-enum (name default values &key (test-fn #'equal) documentation reinitialize)
-  "Same as DEFCONFIG, except the validation function
-is built by creating a function that checks if the set value is in the VALUES list."
-  `(defconfig ,name ,default (lambda (x) (member x ,values :test ,test-fn))
-              :documentation ,documentation :reinitialize ,reinitialize))
+                             name default type-specifier documentation))
 
 (defun all-config-info (&key (name-matches ".*") (package-matches ".*"))
   "List all of the available customizable settings matching the given criteria."
@@ -172,7 +166,7 @@ is built by creating a function that checks if the set value is in the VALUES li
   (with-gensyms (actual-value info)
     `(let ((,actual-value ,value))
        (if-let ((,info (get-config-info (quote ,setting-name))))
-         (if (funcall (config-info-validator ,info) ,actual-value)
+         (if (typep ,actual-value (config-info-type ,info))
              (setf ,setting-name ,actual-value)
              (error 'invalid-datum-error :place (quote ,setting-name) :value ,actual-value))
          (error 'config-not-found-error

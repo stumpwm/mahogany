@@ -19,44 +19,42 @@
 (defvar *bar* "test variable")
 
 (defconfig-test defconfig-var-stores-info ()
-  ((let ((default "1")
-         (validator #'stringp))
-     (defconfig *foo* default validator "documentation")))
+  ((let ((default "1"))
+     (defconfig *foo* default string "documentation")))
   (let ((info (gethash '*foo* config-system::*config-vars*))
         (default "1")
-        (validator #'stringp))
+        (validator 'string))
     (is info)
     (is (config-info-default info) default)
     (is (config-info-name info) '*foo*)
     (is (config-info-doc info) "documentation")
-    (is (config-info-validator info) validator)))
+    (is (config-info-type info) validator)))
 
 (defconfig-test get-config-info-finds-info ()
-    ((let ((default "1")
-           (validator #'stringp))
-       (defconfig *foo* default validator "documentation")))
+    ((let ((default "1"))
+       (defconfig *foo* default string "documentation")))
   (let ((info (get-config-info '*foo*))
         (default "1")
-        (validator #'stringp))
+        (validator 'string))
     (is info)
     (is (config-info-default info) default)
     (is (config-info-name info) '*foo*)
     (is (config-info-doc info) "documentation")
-    (is (config-info-validator info) validator)))
+    (is (config-info-type info) validator)))
 
 (defconfig-test all-config-info-shows-all ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "11" validator "documentation")
-       (defconfig *bar* "21" validator "documentation")))
+    ((progn
+       (defconfig *foo* "11" string "documentation")
+       (defconfig *bar* "21" string "documentation")))
   (let ((configs (all-config-info)))
     (is (length configs) 2)
     (is (member (get-config-info '*foo*) configs :test #'eql))
     (is (member (get-config-info '*bar*) configs :test #'eql))))
 
 (defconfig-test all-config-info-gets-correct-values ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "11" validator "documentation")
-       (defconfig *bar* "21" validator "documentation")))
+    ((progn
+       (defconfig *foo* "11" string "documentation")
+       (defconfig *bar* "21" string "documentation")))
   (let ((configs (all-config-info)))
     (is (length configs) 2)
     (let ((foo (find (get-config-info '*foo*) configs :test #'eql))
@@ -67,13 +65,13 @@
       (is (config-info-value bar) "21"))))
 
 (defconfig-test set-config-throws-on-not-found ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "11" validator "documentation")))
+    ((progn
+       (defconfig *foo* "11" string "documentation")))
 	(signals config-not-found-error (set-config *bar* 11)))
 
 (defconfig-test set-config-throws-on-invalid ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "11" validator "documentation")))
+    ((progn
+       (defconfig *foo* "11" string "documentation")))
   (signals invalid-datum-error (set-config *foo* 111)))
 
 (defconfig-test set-config-checks-arg-length ()
@@ -81,14 +79,14 @@
   (signals error (macroexpand '(set-config *foo* 111 *bar*))))
 
 (defconfig-test set-config-sets-valid ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "11" validator "documentation")))
+    ((progn
+       (defconfig *foo* "11" string "documentation")))
   (set-config *foo* "12")
   (is *foo* "12"))
 
 (defconfig-test reset-config-works ()
-    ((defconfig *foo* "11" #'stringp "documentation")
-     (defconfig *bar* "22" #'stringp "documentation"))
+    ((defconfig *foo* "11" string "documentation")
+     (defconfig *bar* "22" string "documentation"))
   (set-config *foo* "asdf"
                      *bar* "qwerty")
   (reset-config *foo* *bar*)
@@ -96,9 +94,9 @@
   (is *bar* "22"))
 
 (defconfig-test with-atomic-update-restores-values ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "qwerty" validator "documentation")
-       (defconfig *bar* "asdf" validator "documentation")))
+    ((progn
+       (defconfig *foo* "qwerty" string "documentation")
+       (defconfig *bar* "asdf" string "documentation")))
   (ignore-errors
     (with-atomic-update (*foo* *bar*)
       (set-config *foo* "set")
@@ -107,9 +105,9 @@
   (is *bar* "asdf"))
 
 (defconfig-test set-config-atomic-restores-values ()
-    ((let ((validator #'stringp))
-       (defconfig *foo* "qwerty" validator "documentation")
-       (defconfig *bar* "asdf" validator "documentation")))
+    ((progn
+       (defconfig *foo* "qwerty" string "documentation")
+       (defconfig *bar* "asdf" string "documentation")))
   (ignore-errors
     (set-config-atomic *foo* "set"
                               *bar* 11))
