@@ -111,27 +111,26 @@
                 (%full-symbol-string place-symbol) alternatives)
         (format s  "Setting ~A not found." (%full-symbol-string place-symbol)))))))
 
-(defun %generate-config-var-code (declare-type name default type-specifier documentation)
+(defun %add-config-info (name default-value type-specifier documentation)
+  (setf (gethash name *config-vars*)
+        (make-config-info :name name :default default-value
+                          :type type-specifier :doc documentation)))
+
+(defmacro defconfig (name default type-specifier documentation)
+  "Create and register a configurable variable with the given default value,
+type specifier, and documentation"
   (check-type documentation string)
   (check-type name symbol)
   (with-gensyms (default-value)
     `(progn
-       (let* ((,default-value ,name))
+       (let* ((,default-value ,default))
          (if (typep ,default-value (quote ,type-specifier))
-	     (progn
-               (setf (gethash (quote ,name) *config-vars*)
-                     (make-config-info :name (quote ,name) :default ,default-value
-                                       :type (quote ,type-specifier) :doc ,documentation))
-	       (declaim (type ,type-specifier ,name))
-	       (,declare-type ,name ,default ,@(when documentation
-				  (list documentation))))
+             (progn
+               (%add-config-info (quote ,name) ,default (quote ,type-specifier) ,documentation)
+               (declaim (type ,type-specifier ,name))
+               (defvar ,name ,default-value ,@(when documentation
+                                  (list documentation))))
              (error 'invalid-datum-error :place (quote ,name) :value ,default-value))))))
-
-(defmacro defconfig (name default type-specifier documentation &key reinitialize)
-  "Create and register a configurable variable with the given default value,
-type specifier, and documentation"
-  (%generate-config-var-code (if reinitialize `defparameter 'defvar)
-                             name default type-specifier documentation))
 
 (defun all-config-info (&key (name-matches ".*") (package-matches ".*"))
   "List all of the available customizable settings matching the given criteria."

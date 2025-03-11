@@ -18,6 +18,11 @@
 (defvar *foo* "test variable")
 (defvar *bar* "test variable")
 
+(defconfig-test defconfig-sets-default ()
+  ((let ((default 1))
+     (defconfig *defconfig-sets-default* default integer "an int")))
+  (is *defconfig-sets-default* 1))
+
 (defconfig-test defconfig-var-stores-info ()
   ((let ((default "1"))
      (defconfig *foo* default string "documentation")))
