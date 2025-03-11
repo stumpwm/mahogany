@@ -12,35 +12,35 @@ typedef void (*view_destroy_handler)(struct hrt_view *view);
 typedef void (*new_view_handler)(struct hrt_view *view);
 
 struct hrt_view {
-	int width, height;
-	struct wlr_xdg_surface *xdg_surface;
-	struct wlr_xdg_toplevel *xdg_toplevel;
-	/*
-	  Contains the tree with the xdg surface tree
-	  plus decorations and that sort of thing.
-	 */
-	struct wlr_scene_tree *scene_tree;
+    int width, height;
+    struct wlr_xdg_surface *xdg_surface;
+    struct wlr_xdg_toplevel *xdg_toplevel;
+    /*
+      Contains the tree with the xdg surface tree
+      plus decorations and that sort of thing.
+     */
+    struct wlr_scene_tree *scene_tree;
 
-	// internal state:
-	struct wl_listener map;
-	struct wl_listener unmap;
-	struct wl_listener commit;
-	struct wl_listener destroy;
+    // internal state:
+    struct wl_listener map;
+    struct wl_listener unmap;
+    struct wl_listener commit;
+    struct wl_listener destroy;
 
-	struct wl_listener request_maximize;
-	struct wl_listener request_fullscreen;
+    struct wl_listener request_maximize;
+    struct wl_listener request_fullscreen;
 
-	new_view_handler new_view_handler;
-	view_destroy_handler destroy_handler;
+    new_view_handler new_view_handler;
+    view_destroy_handler destroy_handler;
 };
 
 struct hrt_view_callbacks {
-	/**
-	 * A new view has been created. Must call `hrt_view_init` for the
-	 * view to be displayed.
-	 **/
-	new_view_handler new_view;
-	view_destroy_handler view_destroyed;
+    /**
+     * A new view has been created. Must call `hrt_view_init` for the
+     * view to be displayed.
+     **/
+    new_view_handler new_view;
+    view_destroy_handler view_destroyed;
 };
 
 /**
@@ -49,7 +49,8 @@ struct hrt_view_callbacks {
 void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree);
 
 /**
- * Request that this view be the given size. Returns the associated configure serial.
+ * Request that this view be the given size. Returns the associated configure
+ *serial.
  **/
 uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height);
 
