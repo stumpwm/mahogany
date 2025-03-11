@@ -1,0 +1,67 @@
+#+TITLE: Configuration
+
+Mahogany is configured by setting various properties via Common Lisp
+code. To get the full list of available properties, evaluate the
+function =describe-all-config-info=:
+
+#+BEGIN_SRC lisp
+(config-system:describe-all-config-info)
+#+END_SRC
+
+You can specify a regex to search by name or package using keyword parameters:
+
+#+BEGIN_SRC lisp
+(config-system:describe-all-config-info :name-matches ".*" :package-matches ".*")
+#+END_SRC
+
+** Setting Configuration Properties
+
+Mahogany configuration properties are regular dynamically-scoped
+variables, and can be set as such. However, they are strongly typed,
+and it is recommended to use the various setter macros that are
+available to avoid causing problems with the system.
+
+*** =set-config=
+The macro =set-config= works the same as =setf=, and sets each
+property given to it sequentially:
+
+#+BEGIN_SRC lisp
+  (set-config property-1 val-1
+  	    property-2 val-2)
+#+END_SRC
+
+*** =with-atomic-update=
+This macro will reset the given properties to their value before the
+form if an error occurs while it is being executed.
+
+#+BEGIN_SRC lisp
+  (with-atomic-update (property-1 property-2)
+    (set-config property-1 val-1))
+  ;; property-1 has the value val-1 here
+  (with-atomic-update (property-1 property-2)
+    (set-config property-1 val-2)
+    (error "error"))
+  ;; property-1 still has value val-1 here
+#+END_SRC
+
+*** =set-config-atomic=
+Sets the given variables to the given values, but set them back to
+their original values if an error occurs during the form's execution.
+
+#+BEGIN_SRC lisp
+  (set-config-atomic prop-1 val-1
+  		   prop-2 val-2)
+#+END_SRC
+
+** Error Handling
+
+While setting a configuration property through the macros above, there
+are two possible errors that can occur.
+
+*** =config-not-found-error=
+This error is signaled when the specified configuration property does
+not exist.
+
+*** =invalid-datum-error=
+This error occurs when an attempt is made to set a configuration
+property to a value that is not allowed.
