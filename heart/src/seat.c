@@ -22,3 +22,11 @@ void hrt_seat_notify_axis(struct hrt_seat *seat,
         seat->seat, event->time_msec, event->orientation, event->delta,
         event->delta_discrete, event->source, event->relative_direction);
 }
+
+double hrt_seat_cursor_lx(struct hrt_seat *seat) {
+  return seat->cursor->x;
+}
+
+double hrt_seat_cursor_ly(struct hrt_seat *seat) {
+  return seat->cursor->y;
+}

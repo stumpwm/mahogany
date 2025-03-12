@@ -81,6 +81,12 @@ names."
   (seat (:pointer (:struct hrt-seat)))
   (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
 
+(cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
+  (seat (:pointer (:struct hrt-seat))))
+
+(cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
+  (seat (:pointer (:struct hrt-seat))))
+
 ;; next section imported from file build/include/hrt/hrt_view.h
 
 (cffi:defcstruct hrt-view)

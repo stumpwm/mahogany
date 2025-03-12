@@ -11,6 +11,8 @@
 	   #:hrt-seat
 	   #:hrt-seat-notify-button
 	   #:hrt-seat-notify-axis
+	   #:hrt-seat-cursor-lx
+	   #:hrt-seat-cursor-ly
 	   #:hrt-output
 	   #:hrt-output-name
 	   #:hrt-output-make

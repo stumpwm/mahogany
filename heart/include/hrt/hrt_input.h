@@ -97,4 +97,8 @@ void hrt_seat_notify_button(struct hrt_seat *seat,
 void hrt_seat_notify_axis(struct hrt_seat *seat,
                           struct wlr_pointer_axis_event *event);
 
+double hrt_seat_cursor_lx(struct hrt_seat *seat);
+
+double hrt_seat_cursor_ly(struct hrt_seat *seat);
+
 #endif
