@@ -54,20 +54,19 @@ of an already existing frame with the `set-split-frame-type` function")
 (defgeneric (setf %frame-next) (next frame)
   (:documentation "Set tne next frame for this frame"))
 
-(defclass tree-container ()
-  ((trees :initarg :root
-	  :initform nil
-	  :accessor tree-children
-	  :type list
-	  :documentation "Holds the trees of this conatiner"))
+(defclass tree-parent ()
+  ((children :initarg :children
+	 :initform nil
+	 :accessor tree-children
+	 :type list
+	 :documentation "Holds the trees of this conatiner")))
+
+(defclass tree-container (tree-parent)
+  ()
   (:documentation "A class that contains a frame-tree"))
 
-(defclass output-node ()
-  ((children :initarg children
-	    :initform nil
-	    :accessor tree-children
-	    :type list)
-   (parent :initarg :parent
+(defclass output-node (tree-parent)
+  ((parent :initarg :parent
 	   :initform nil
 	   :type (or null tree-container)
 	   :accessor frame-parent)))
@@ -75,12 +74,8 @@ of an already existing frame with the `set-split-frame-type` function")
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
 
-(defclass tree-frame (frame)
-  ((children :initarg :children
-	     :initform nil
-	    :accessor tree-children
-	    :type list)
-   (split-direction :initarg :split-direction
+(defclass tree-frame (tree-parent frame)
+  ((split-direction :initarg :split-direction
 		    :reader tree-split-direction
 		    :type split-frame-type))
   (:documentation "An inner node of a frame-tree"))

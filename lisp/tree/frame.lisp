@@ -514,7 +514,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	(unless (frame-view frame)
 	  (return-from find-empty-frame frame))))
 
-(defmethod find-empty-frame ((root tree-container))
+(defmethod find-empty-frame ((root tree-parent))
   (dolist (tree (tree-children root))
     (alexandria:when-let (empty (find-empty-frame tree))
       (return-from find-empty-frame empty)))
@@ -529,23 +529,36 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (remove-if (lambda (x) (not (frame-view x)))
 	     (snakes:generator->list (leafs-in root))))
 
-(defun in-frame-p (frame x y)
-  (declare (type frame frame))
-  (with-accessors ((frame-x frame-x)
-		   (frame-y frame-y)
-		   (frame-width frame-width)
-		   (frame-height frame-height))
-      frame
+;; This is really awkward, as we don't want to
+;; declare an in-frame-p method for the tree-parent class,
+;; as we would overshadow the implementation for the `tree-frame`
+;; type, which needs to use the regular `frame` implementation:
+(defmethod in-frame-p ((parent output-node) x y)
+  ;; output nodes have exactly 1 child:
+  (let ((f (car (tree-children parent))))
+    (in-frame-p f x y)))
+
+(defmethod frame-at ((parent output-node) x y)
+  ;; output nodes have exactly 1 child:
+  (let ((f (car (tree-children parent))))
+    (frame-at f x y)))
+
+(defmethod in-frame-p ((frame frame) x y)
+  (declare (type real x y))
+  (let ((frame-x (frame-x frame))
+	(frame-y (frame-y frame))
+	(frame-width (frame-width frame))
+	(frame-height (frame-height frame)))
     (and (<= frame-x x)
 	 (<  x (+ frame-x frame-width))
 	 (<= frame-y y)
 	 (<  y (+ frame-y frame-height)))))
 
-(defmethod frame-at ((root tree-frame) x y)
+(defmethod frame-at ((root tree-parent) x y)
   (declare (type real x y))
   (dolist (cur-frame (tree-children root))
-      (when (in-frame-p cur-frame x y)
-	(return-from frame-at (frame-at cur-frame x y)))))
+    (when (in-frame-p cur-frame x y)
+      (return-from frame-at (frame-at cur-frame x y)))))
 
 (defmethod frame-at ((frame frame) x y)
   (declare (type real x y))
