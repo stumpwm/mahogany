@@ -1,5 +1,9 @@
 (in-package #:mahogany)
 
+(config-system:defconfig *keyboard-focus-type* :click
+  (member :click-and-wheel :click :ignore :sloppy)
+  "How keyboard focus is controlled by the mouse")
+
 (defun execute-command (function key-sequence seat)
   (funcall function key-sequence seat))
 
@@ -41,9 +45,24 @@
 	      t))
 	 (key-state-active-p key-state))))
 
-(cffi:defcallback cursor-callback :void ((seat (:pointer (:struct hrt:hrt-seat))))
-  (declare (ignore seat))
-  (log-string :trace "cursor callback called"))
+(defun %focus-frame-under-cursor (seat)
+  (let* ((group (mahogany-current-group *compositor-state*))
+	 (found (tree:frame-at (mahogany-group-tree-container group)
+			       (hrt:hrt-seat-cursor-lx seat)
+			       (hrt:hrt-seat-cursor-ly seat))))
+    (group-focus-frame group found seat)))
+
+(cffi:defcallback handle-mouse-wheel-event :void ((seat (:pointer (:struct hrt:hrt-seat)))
+						  (event :pointer))
+  (when (eq *keyboard-focus-type* :click-and-wheel)
+    (%focus-frame-under-cursor seat))
+  (hrt:hrt-seat-notify-axis seat event))
+
+(cffi:defcallback handle-mouse-button-event :void ((seat (:pointer (:struct hrt:hrt-seat)))
+					    (event :pointer))
+  (when (or (eq *keyboard-focus-type* :click) (eq *keyboard-focus-type* :click-and-wheel))
+    (%focus-frame-under-cursor seat))
+  (hrt:hrt-seat-notify-button seat event))
 
 (cffi:defcallback keyboard-callback :bool
 	((seat (:pointer (:struct hrt:hrt-seat)))

@@ -73,20 +73,15 @@ static void seat_button(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, button);
     struct wlr_pointer_button_event *event = data;
     /* Notify the client with pointer focus that a button press has occurred */
-    wlr_seat_pointer_notify_button(seat->seat, event->time_msec, event->button,
-                                   event->state);
-    seat->callbacks->button_event(seat);
+
+    seat->callbacks->button_event(seat, event);
 }
 
 static void seat_axis(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat             = wl_container_of(listener, seat, axis);
     struct wlr_pointer_axis_event *ev = data;
 
-    wlr_seat_pointer_notify_axis(seat->seat, ev->time_msec, ev->orientation,
-                                 ev->delta, ev->delta_discrete, ev->source,
-                                 ev->relative_direction);
-
-    seat->callbacks->wheel_event(seat);
+    seat->callbacks->wheel_event(seat, ev);
 }
 
 static void seat_frame(struct wl_listener *listener, void *data) {

@@ -5,6 +5,9 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard_group.h>
+#include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_pointer.h>
+
 #include <xkbcommon/xkbcommon.h>
 
 struct hrt_server;
@@ -44,15 +47,14 @@ struct hrt_keypress_info {
 
 struct hrt_seat_callbacks {
     // TODO: these probably need more parameters
-    void (*button_event)(struct hrt_seat *seat);
+    void (*button_event)(struct hrt_seat *seat,
+                         struct wlr_pointer_button_event *event);
     /**
      * This event triggers when the mouse wheel moves in any direction,
      * including left and right:
      **/
-    void (*wheel_event)(struct hrt_seat *seat);
-    // We will eventually want to pass in the event object, keyboard object and
-    // seat object to get anything beyond basic keybindings, but then this
-    // should work for the basics and we don't need to write wlroots bindings.
+    void (*wheel_event)(struct hrt_seat *seat,
+                        struct wlr_pointer_axis_event *event);
     /**
      * This callback is called whenever a non-modifier key is pressed (not
      * released)
@@ -88,5 +90,15 @@ void hrt_keyboard_destroy(struct hrt_seat *seat);
  * names.
  */
 void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name);
+
+void hrt_seat_notify_button(struct hrt_seat *seat,
+                            struct wlr_pointer_button_event *event);
+
+void hrt_seat_notify_axis(struct hrt_seat *seat,
+                          struct wlr_pointer_axis_event *event);
+
+double hrt_seat_cursor_lx(struct hrt_seat *seat);
+
+double hrt_seat_cursor_ly(struct hrt_seat *seat);
 
 #endif

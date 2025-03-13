@@ -45,10 +45,11 @@
 
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
-    (when current-frame
-      (group-unfocus-frame group current-frame seat))
-    (tree:mark-frame-focused frame seat)
-    (setf current-frame frame)))
+    (unless (eql current-frame frame)
+      (when current-frame
+	(group-unfocus-frame group current-frame seat))
+      (tree:mark-frame-focused frame seat)
+      (setf current-frame frame))))
 
 (defun group-unfocus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
