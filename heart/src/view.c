@@ -8,6 +8,10 @@
 #include "hrt/hrt_view.h"
 #include "wlr/util/log.h"
 
+void hrt_view_info(struct hrt_view *view) {
+  wlr_log(WLR_DEBUG, "New view: %s", view->xdg_toplevel->app_id);
+}
+
 void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
     assert(view->scene_tree == NULL && "View already initialized");
     view->scene_tree = wlr_scene_tree_create(tree);
@@ -18,6 +22,7 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
         view->scene_tree, view->xdg_toplevel->base);
     xdg_tree->node.data     = view;
     view->xdg_surface->data = xdg_tree;
+    hrt_view_info(view);
 }
 
 void hrt_view_cleanup(struct hrt_view *view) {
