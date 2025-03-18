@@ -41,6 +41,9 @@ struct hrt_server {
     struct wl_listener new_xdg_toplevel;
     struct wl_listener new_xdg_popup;
 
+    struct wlr_layer_shell_v1 *layer_shell;
+    struct wl_listener layer_shell_surface;
+
     const struct hrt_output_callbacks *output_callback;
     const struct hrt_view_callbacks *view_callbacks;
 };

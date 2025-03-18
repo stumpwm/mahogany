@@ -231,6 +231,8 @@ set the width and height of views."
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))
+  (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |# )
+  (layer-shell-surface (:struct wl-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks))))
 

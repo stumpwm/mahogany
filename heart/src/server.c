@@ -1,5 +1,6 @@
 #include "wlr/util/log.h"
 #include "xdg_impl.h"
+#include "layer_shell_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -66,6 +67,10 @@ bool hrt_server_init(struct hrt_server *server,
     server->view_callbacks = view_callbacks;
 
     if (!hrt_xdg_shell_init(server)) {
+        return false;
+    }
+
+    if (!hrt_layer_shell_init(server)) {
         return false;
     }
 
