@@ -19,7 +19,7 @@ settings that control how focus moves from one surface to another.
       or scrolled.
     - =:ignore= :: Ignore the mouse, and just use commands.
     - =:sloppy= :: Set the keyboard focus to whatever surface the cursors is over.
-* Cursor focus
+* Cursor focus (not yet implemented)
   Cursor focus has two different modes: following the keyboard, or
   having its own seperate focus.
   + =(set-mouse-focus-policy wm type)= :: Sets the way the keyboard
