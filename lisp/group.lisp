@@ -110,6 +110,7 @@ to match."
       (tree:remove-frame tree))))
 
 (defun %add-hidden (hidden-list view)
+  (log-string :trace "Hiding view ~S" view)
   (ring-list:add-item hidden-list view)
   (hrt:view-set-hidden view t))
 

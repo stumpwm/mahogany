@@ -12,7 +12,7 @@ further up. "
 	 (config-file (or xdg-config fallback-config)))
     (if config-file
 	(progn
-	  (log-string :debug "Found config file at ~a" config-file)
+	  (log-string :info "Found config file at ~a" config-file)
           (if catch-errors
 	      (handler-case (load config-file)
 		(error (c) (values nil (format nil "~a" c) config-file))
@@ -21,7 +21,7 @@ further up. "
 		(load config-file)
 		(values t nil config-file))))
 	(progn
-	  (log-string :debug "Did not find config file")
+	  (log-string :info "Did not find config file")
 	  (values t nil nil)))))
 
 (defmacro init-callback-struct (variable type &body sets)
@@ -41,7 +41,7 @@ further up. "
   (log-init :level :trace)
   (enable-debugger)
   (if (cl-argparse:get-value "skip-init" args)
-      (log-string :debug "Init file loading skipped")
+      (log-string :info "Init file loading skipped")
       (load-config-file))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
