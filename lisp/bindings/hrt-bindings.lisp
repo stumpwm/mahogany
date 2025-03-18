@@ -119,6 +119,9 @@ names."
   (view (:pointer (:struct hrt-view)))
   (tree :pointer #| (:struct wlr-scene-tree) |# ))
 
+(cffi:defcfun ("hrt_view_info" hrt-view-info) :void
+  (view (:pointer (:struct hrt-view))))
+
 (cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
   "Request that this view be the given size. Returns the associated configure
 serial."
