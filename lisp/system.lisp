@@ -1,7 +1,7 @@
 (defpackage #:mahogany/system
   (:documentation "Package for functions interacting with the system that
 Mahogany is running under")
-  (:use :cl)
+  (:use :cl #:mahogany/util)
   (:local-nicknames (#:alex #:alexandria))
   (:nicknames #:sys)
   (:export #:find-program
@@ -18,9 +18,12 @@ Mahogany is running under")
     (UIOP/RUN-PROGRAM:SUBPROCESS-ERROR nil)))
 
 (defun open-terminal ()
-  (let ((programs #("konsole" "gnome-terminal" "wezterm" "foot")))
-    (loop for i across programs
-	  do (alex:when-let ((program (find-program i)))
-	       (uiop:launch-program program)
-	       (return t)))
-    (values nil)))
+  (if-let* ((term (uiop:getenv "TERMINAL"))
+			(prog-path (find-program term)))
+      (uiop:launch-program prog-path)
+	(let ((programs #("konsole" "gnome-terminal" "wezterm" "foot")))
+      (loop for i across programs
+			do (alex:when-let ((program (find-program i)))
+				 (uiop:launch-program program)
+				 (return t)))
+      (values nil))))

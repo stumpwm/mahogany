@@ -4,10 +4,7 @@
 
 (cffi:defcstruct hrt-server)
 
-(cffi:defcstruct hrt-seat-callbacks
-  (button-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (wheel-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
+(cffi:defcstruct hrt-seat-callbacks)
 
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
@@ -22,6 +19,7 @@
   (button (:struct wl-listener))
   (axis (:struct wl-listener))
   (frame (:struct wl-listener))
+  (request-cursor (:struct wl-listener))
   (keyboard-key (:struct wl-listener))
   (keyboard-modifiers (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
@@ -34,8 +32,8 @@
   (wl-key-state :int #| enum wl-keyboard-key-state |#))
 
 (cffi:defcstruct hrt-seat-callbacks
-  (button-event :pointer #| function ptr void (struct hrt_seat *) |#)
-  (wheel-event :pointer #| function ptr void (struct hrt_seat *) |#)
+  (button-event :pointer #| function ptr void (struct hrt_seat *, struct wlr_pointer_button_event *) |#)
+  (wheel-event :pointer #| function ptr void (struct hrt_seat *, struct wlr_pointer_axis_event *) |#)
   (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
 
 (cffi:defcstruct hrt-input
@@ -70,9 +68,24 @@
 
 Does not take ownership of the string.
 
-See themes section of man xcursor(3) to find where to find valid cursor names."
+See themes section of man xcursor(3) to find where to find valid cursor
+names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
+
+(cffi:defcfun ("hrt_seat_notify_button" hrt-seat-notify-button) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (event :pointer #| (:struct wlr-pointer-button-event) |# ))
+
+(cffi:defcfun ("hrt_seat_notify_axis" hrt-seat-notify-axis) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
+
+(cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
+  (seat (:pointer (:struct hrt-seat))))
+
+(cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
+  (seat (:pointer (:struct hrt-seat))))
 
 ;; next section imported from file build/include/hrt/hrt_view.h
 
@@ -92,6 +105,8 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
   (destroy (:struct wl-listener))
+  (request-maximize (:struct wl-listener))
+  (request-fullscreen (:struct wl-listener))
   (new-view-handler new-view-handler)
   (destroy-handler view-destroy-handler))
 
@@ -104,8 +119,12 @@ See themes section of man xcursor(3) to find where to find valid cursor names."
   (view (:pointer (:struct hrt-view)))
   (tree :pointer #| (:struct wlr-scene-tree) |# ))
 
+(cffi:defcfun ("hrt_view_info" hrt-view-info) :void
+  (view (:pointer (:struct hrt-view))))
+
 (cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
-  "Request that this view be the given size. Returns the associated configure serial."
+  "Request that this view be the given size. Returns the associated configure
+serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))
@@ -131,6 +150,17 @@ it visible to the user."
   "Stop the given view from being displayed"
   (view (:pointer (:struct hrt-view)))
   (hidden :bool))
+
+(cffi:defcfun ("hrt_view_reparent" hrt-view-reparent) :void
+  (view (:pointer (:struct hrt-view)))
+  (node :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_view_request_close" hrt-view-request-close) :void
+  "Request that the view be closed. This is the \"nice\" version
+that is the same as clicking the close button on window decorations.
+It does not garentee that the application actually closes, but
+well behaved ones should."
+  (view (:pointer (:struct hrt-view))))
 
 ;; next section imported from file build/include/hrt/hrt_output.h
 

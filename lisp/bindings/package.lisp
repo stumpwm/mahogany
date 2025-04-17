@@ -9,6 +9,10 @@
 	   #:hrt-view
 	   #:view-destroyed
 	   #:hrt-seat
+	   #:hrt-seat-notify-button
+	   #:hrt-seat-notify-axis
+	   #:hrt-seat-cursor-lx
+	   #:hrt-seat-cursor-ly
 	   #:hrt-output
 	   #:hrt-output-name
 	   #:hrt-output-make
@@ -25,6 +29,8 @@
 	   ;; view-methods
 	   #:view
 	   #:view-init
+	   #:view-reparent
+	   #:view-request-close
 	   #:view-hrt-view
 	   #:focus-view
 	   #:unfocus-view
@@ -44,3 +50,14 @@
 	   #:keysyms-len
 	   #:wl-key-state
 	   #:load-foreign-libraries))
+
+(defpackage #:wlr
+  (:use :cl #:wayland-server-core)
+  (:export
+   #:scene-tree-create
+   #:scene-node-destroy
+   #:scene-node-set-position
+   #:scene-node-reparent
+   #:scene-node-set-enabled
+   ;; scene node slot:
+   #:node))

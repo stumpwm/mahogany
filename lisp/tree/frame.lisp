@@ -1,53 +1,8 @@
-(in-package :mahogany/tree)
+(in-package #:mahogany/tree)
 
 (defun replace-item (lst old-itm new-itm &key (test #'equal))
   (alexandria:if-let ((found (member old-itm lst :test test)))
     (setf (car found) new-itm)))
-
-(defun swap-items (lst1 item1 lst2 item2 &key (test #'equal))
-  (alexandria:if-let ((found1 (member item1 lst1 :test test))
-		      (found2 (member item2 lst2 :test test)))
-    (progn (setf (car found1) item2)
-	   (setf (car found2) item1))))
-
-(defun find-frame (parent frame)
-  (labels ((rec-func (item to-search)
-	     (let ((frame (pop to-search)))
-	       (cond
-		 ((equal item frame)
-		  (return-from rec-func item))
-		 ((null frame)
-		  (return-from rec-func nil))
-		 ((typep frame 'tree-frame)
-		  (setf to-search (append (tree-children frame)
-					  to-search))))
-	       (rec-func item to-search))))
-    (if (equal parent frame)
-	(return-from find-frame frame)
-	(when (typep parent 'tree-frame)
-	  (rec-func frame (tree-children parent))))))
-
-(defmethod swap-positions ((frame1 frame) (frame2 frame))
-  ;; don't swap if a frame is a parent of the other:
-  (when (or (find-frame frame1 frame2) (find-frame frame2 frame1))
-    (error 'invalid-operation :text "Cannot swap positions with a frame higher in the tree."))
-  ;; resize the frames so they will fit in the other's position:
-  (let ((tmp-x (frame-x frame1))
-	(tmp-y (frame-y frame1))
-	(tmp-width (frame-width frame1))
-	(tmp-height (frame-height frame1)))
-    (set-position frame1 (frame-x frame2) (frame-y frame2))
-    (set-dimensions frame1 (frame-width frame2) (frame-height frame2))
-
-    (set-position frame2 tmp-x tmp-y)
-    (set-dimensions frame2 tmp-width tmp-height))
-
-  (let ((frame1-parent (frame-parent frame1))
-  	(frame2-parent (frame-parent frame2)))
-    (swap-items (tree-children frame1-parent) frame1
-    		(tree-children frame2-parent) frame2 :test #'eq)
-    (setf (frame-parent frame1) frame2-parent
-  	  (frame-parent frame2) frame1-parent)))
 
 (defmethod (setf frame-x) :before (new-x (frame tree-frame))
   "Translate the child frames so that geometry is preserved"
@@ -90,12 +45,12 @@
       frame
     (let ((diff (/ new-height old-height)))
       (cond
-	((eql (tree-split-direction frame) :horizontal)
+	((eql (tree-split-direction frame) :vertical)
 	 (let ((shift (frame-y frame)))
 	   (dolist (child children)
 	     (let ((adjusted-height (* diff (frame-height child))))
-	       (setf (frame-height child) shift)
-	       (setf (frame-y child) new-y)
+	       (setf (frame-height child) adjusted-height)
+	       (setf (frame-y child) shift)
 	       (setf shift (+ adjusted-height shift))))))
 	(t
 	 (dolist (child children)
@@ -178,13 +133,20 @@
 (defun swap-in-parent (frame new-parent)
   "In FRAME's parent, swap FRAME for NEW-PARENT. Don't change the dimensions of FRAME."
   ;; TODO: also swap the parent pointer in NEW-PARENT
-  (if (root-frame-p frame)
-      (setf (root-tree (frame-parent frame)) new-parent)
-      (replace-item (tree-children (frame-parent frame)) frame new-parent)))
+  (replace-item (tree-children (frame-parent frame)) frame new-parent))
 
 (defun %replace-frame (root frame)
   "Replace ROOT with FRAME without any cleanup. Change the dimensions and position
 of FRAME to those of ROOT."
+  ;; check to see if we are replacing the topmost node in a tree
+  ;; and the output node we are associated with has no siblings
+  (if (and (root-frame-p root) (not (cdr (tree-children (frame-parent (frame-parent root))))))
+      (setf (%frame-next frame) frame
+	    (%frame-prev frame) frame)
+      (psetf (%frame-next (frame-prev root)) frame
+	     (%frame-prev (frame-next root)) frame
+	     (%frame-prev frame) (frame-prev root)
+	     (%frame-next frame) (frame-next root)))
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
   ;; don't bother with an if-statement to see which values to change:
@@ -221,18 +183,27 @@ Used to initially split all frames, regardless of type."
 					  :height old-height
 					  :x (+ old-x (- old-width new-frame-width))
 					  :y old-y))
-	   (setf (frame-width frame) (- old-width new-frame-width))
-	   (setf (tree-children new-parent) (list frame new-frame)))
+	   (setf (frame-width frame) (- old-width new-frame-width)
+		 (tree-children new-parent) (list frame new-frame))
+	   (psetf (%frame-prev new-frame) frame
+		  (%frame-next new-frame) (frame-next frame)
+		  (%frame-next frame) new-frame
+		  (%frame-prev (frame-next frame)) new-frame))
 	  (:left
 	   (setf new-frame (make-instance 'view-frame
 					  :parent new-parent
 					  :width (- old-width new-frame-width)
 					  :height old-height
 					  :x old-x
-					  :y old-y))
-	   (setf (frame-width frame) (- old-width new-frame-width))
-	   (setf (frame-x frame) (+ old-x new-frame-width))
-	   (setf (tree-children new-parent) (list new-frame frame))))
+					  :y old-y)
+		 (frame-width frame) (- old-width new-frame-width)
+		 (frame-x frame) (+ old-x new-frame-width)
+		 (tree-children new-parent) (list new-frame frame))
+	   (psetf (%frame-prev new-frame) (frame-prev frame)
+		  (%frame-next new-frame) frame
+		  (%frame-prev frame) new-frame
+		  (%frame-next (frame-prev frame)) new-frame)))
+	(log-string :trace "frame split new: ~S old: ~S" frame new-frame)
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
 	(setf (frame-parent frame) new-parent)
@@ -270,7 +241,11 @@ Used to initially split all frames, regardless of type."
 					   :y old-y))
 	   (setf (frame-height frame) (- old-height new-frame-height))
 	   (setf (frame-y frame) (+ old-y new-frame-height))
-	   (setf (tree-children new-parent) (list new-frame frame)))
+	   (setf (tree-children new-parent) (list new-frame frame))
+	   (psetf (%frame-prev new-frame) (frame-prev frame)
+		  (%frame-next new-frame) frame
+		  (%frame-prev frame) new-frame
+		  (%frame-next (frame-prev frame)) new-frame))
 	  (:bottom
 	   (setf new-frame (make-instance 'view-frame
 					   :parent new-parent
@@ -279,7 +254,11 @@ Used to initially split all frames, regardless of type."
 					   :x old-x
 					   :y (+ old-y (- old-height new-frame-height))))
 	     (setf (frame-height frame) (- old-height new-frame-height))
-	     (setf (tree-children new-parent) (list frame new-frame))))
+	     (setf (tree-children new-parent) (list frame new-frame))
+	     (psetf (%frame-prev new-frame) frame
+		  (%frame-next new-frame) (frame-next frame)
+		  (%frame-next frame) new-frame
+		  (%frame-prev (frame-next frame)) new-frame)))
 	;; insert the new node into the tree:
 	(swap-in-parent frame new-parent)
 	(setf (frame-parent frame) new-parent)
@@ -429,6 +408,9 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	;; (setf (frame-view frame) nil)
 	))
 
+(defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
+  (assert (equal (frame-parent frame) parent)))
+
 (defmethod remove-frame-from-parent :after ((parent tree-frame) frame cleanup-func)
   (declare (ignore parent))
   (release-frames frame cleanup-func))
@@ -465,9 +447,14 @@ REMOVE-FUNC is called with one argument: the view that was removed."
     (%replace-frame parent other-child)))
 
 (defmethod remove-frame-from-parent ((root tree-container) frame cleanup-func)
-  (let ((tree (root-tree root)))
-    (declare (type frame tree))
-    (remove-frame-from-parent tree frame cleanup-func)))
+  ;; TODO: test me!
+  (with-accessors ((tree-children tree-children)) root
+    (setf (tree-children root) (remove frame (tree-children root) :test #'equal))
+    (when (cdr tree-children)
+      (let ((frame-prev (frame-prev frame))
+	    (frame-next (frame-next frame)))
+	(setf (%frame-next frame-prev) frame-next
+	      (%frame-prev frame-next) frame-prev)))))
 
 (defmethod replace-frame ((root frame) frame &optional (cleanup-func #'identity))
   (unless (eql root frame)
@@ -485,6 +472,24 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	      (frame
 	       (funcall cleanup-func child))))))
   (%replace-frame root frame))
+
+(defmethod frame-prev ((frame tree-frame))
+  (with-slots (children) frame
+    (frame-prev (first children))))
+
+(defmethod (setf %frame-prev) (prev (frame tree-frame))
+  (with-slots (children) frame
+    (let ((first-child (first children)))
+      (setf (%frame-prev first-child) prev))))
+
+(defmethod frame-next ((frame tree-frame))
+  (with-slots (children) frame
+    (frame-next (car (last children)))))
+
+(defmethod (setf %frame-next) (next (frame tree-frame))
+  (with-slots (children) frame
+    (let ((last-child (car (last children))))
+      (setf (%frame-next last-child) next))))
 
 ;; (defgeneric replace-frame ((frame frame) frame &optional (cleanup-func #'identity))
 ;;   (%replace-frame root frame)
@@ -509,47 +514,51 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	(unless (frame-view frame)
 	  (return-from find-empty-frame frame))))
 
-(defmethod find-empty-frame ((root tree-container))
-  (find-empty-frame (root-tree root)))
+(defmethod find-empty-frame ((root tree-parent))
+  (dolist (tree (tree-children root))
+    (alexandria:when-let (empty (find-empty-frame tree))
+      (return-from find-empty-frame empty)))
+  nil)
 
-(defun find-first-leaf (container)
-  (declare (type tree-container container))
-  ;; TODO: you don't need the generator to do this:
-  (iter (for (frame) snakes:in-generator (leafs-in (root-tree container)))
-	(return-from find-first-leaf frame)))
-
-(defmethod get-empty-frames ((root frame))
-  (let ((empties nil))
-    (iter (for (frame) snakes:in-generator (leafs-in root))
-	  (unless (frame-view frame)
-	    (push frame empties)))
-    empties))
-
-(defmethod get-empty-frames ((root tree-container))
-  (get-empty-frames (root-tree root)))
+(defun find-first-leaf (tree)
+  (let ((prev-frame (frame-prev tree)))
+    (frame-next prev-frame)))
 
 (defun get-populated-frames (root)
   "Return a list of view-frames that contain views"
   (remove-if (lambda (x) (not (frame-view x)))
 	     (snakes:generator->list (leafs-in root))))
 
-(defun in-frame-p (frame x y)
-  (declare (type frame frame))
-  (with-accessors ((frame-x frame-x)
-		   (frame-y frame-y)
-		   (frame-width frame-width)
-		   (frame-height frame-height))
-      frame
+;; This is really awkward, as we don't want to
+;; declare an in-frame-p method for the tree-parent class,
+;; as we would overshadow the implementation for the `tree-frame`
+;; type, which needs to use the regular `frame` implementation:
+(defmethod in-frame-p ((parent output-node) x y)
+  ;; output nodes have exactly 1 child:
+  (let ((f (car (tree-children parent))))
+    (in-frame-p f x y)))
+
+(defmethod frame-at ((parent output-node) x y)
+  ;; output nodes have exactly 1 child:
+  (let ((f (car (tree-children parent))))
+    (frame-at f x y)))
+
+(defmethod in-frame-p ((frame frame) x y)
+  (declare (type real x y))
+  (let ((frame-x (frame-x frame))
+	(frame-y (frame-y frame))
+	(frame-width (frame-width frame))
+	(frame-height (frame-height frame)))
     (and (<= frame-x x)
 	 (<  x (+ frame-x frame-width))
 	 (<= frame-y y)
 	 (<  y (+ frame-y frame-height)))))
 
-(defmethod frame-at ((root tree-frame) x y)
+(defmethod frame-at ((root tree-parent) x y)
   (declare (type real x y))
   (dolist (cur-frame (tree-children root))
-      (when (in-frame-p cur-frame x y)
-	(return-from frame-at (frame-at cur-frame x y)))))
+    (when (in-frame-p cur-frame x y)
+      (return-from frame-at (frame-at cur-frame x y)))))
 
 (defmethod frame-at ((frame frame) x y)
   (declare (type real x y))

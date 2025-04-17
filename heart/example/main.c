@@ -7,7 +7,11 @@
 #include <hrt/hrt_input.h>
 #include <hrt/hrt_view.h>
 
-static void cursor_callback(struct hrt_seat *seat) {
+static void cursor_button_callback(struct hrt_seat *seat, struct wlr_pointer_button_event *event) {
+  puts("Cursor callback called");
+}
+
+static void cursor_wheel_callback(struct hrt_seat *seat, struct wlr_pointer_axis_event *event) {
   puts("Cursor callback called");
 }
 
@@ -45,14 +49,19 @@ static bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *i
   return false;
 }
 
+static void layout_changed() {
+
+}
+
 static const struct hrt_output_callbacks output_callbacks = {
   .output_added = &output_callback,
   .output_removed = &output_callback,
+  .output_layout_changed = &layout_changed,
 };
 
 static const struct hrt_seat_callbacks seat_callbacks = {
-    .button_event = &cursor_callback,
-    .wheel_event = &cursor_callback,
+  .button_event = &cursor_button_callback,
+    .wheel_event = &cursor_wheel_callback,
     .keyboard_keypress_event = &keyboard_callback,
 };
 

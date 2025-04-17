@@ -17,7 +17,7 @@
 	   #:frame-height
 	   #:frame-parent
 	   #:tree-container
-	   #:make-basic-tree
+	   #:tree-container-add
 	   #:root-tree
 	   #:tree-frame
 	   #:tree-children
@@ -29,10 +29,9 @@
 	   #:remove-frame
 	   #:swap-positions
 	   #:find-empty-frame
-	   #:get-empty-frames
 	   #:get-populated-frames
 	   #:root-frame-p
-	   #:find-frame-container
+	   #:find-root-frame
 	   #:find-first-leaf
 	   #:mark-frame-focused
 	   #:unmark-frame-focused
@@ -40,4 +39,6 @@
 	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
+	   #:frame-next
+	   #:frame-prev
 	   #:leafs-in))

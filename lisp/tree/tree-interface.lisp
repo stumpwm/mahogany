@@ -33,6 +33,7 @@ of an already existing frame with the `set-split-frame-type` function")
 	   :accessor frame-height
 	   :type real)
    (parent :initarg :parent
+	   :type (or output-node frame)
 	   :accessor frame-parent)
    (focused :initarg :focused
 	    :reader frame-focused
@@ -40,22 +41,41 @@ of an already existing frame with the `set-split-frame-type` function")
 	    :type boolean))
   (:documentation "A frame that is displayed on an output"))
 
-(defclass tree-container ()
-  ((tree :initarg :root
-	:accessor root-tree
-	:type frame
-	:documentation "Holds the root of a frame-tree"))
+(defgeneric frame-prev (frame)
+  (:documentation "Get the previous edge node in the tree from this node"))
+
+(defgeneric frame-next (frame)
+  (:documentation "Get the next edge node in the tree from this node"))
+
+;; Use a different symbol for the setters so we don't export them:
+(defgeneric (setf %frame-prev) (prev frame)
+  (:documentation "Set the previous frame from this frame"))
+
+(defgeneric (setf %frame-next) (next frame)
+  (:documentation "Set tne next frame for this frame"))
+
+(defclass tree-parent ()
+  ((children :initarg :children
+	 :initform nil
+	 :accessor tree-children
+	 :type list
+	 :documentation "Holds the trees of this conatiner")))
+
+(defclass tree-container (tree-parent)
+  ()
   (:documentation "A class that contains a frame-tree"))
+
+(defclass output-node (tree-parent)
+  ((parent :initarg :parent
+	   :initform nil
+	   :type (or null tree-container)
+	   :accessor frame-parent)))
 
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
 
-(defclass tree-frame (frame)
-  ((children :initarg :children
-	     :initform nil
-	    :accessor tree-children
-	    :type list)
-   (split-direction :initarg :split-direction
+(defclass tree-frame (tree-parent frame)
+  ((split-direction :initarg :split-direction
 		    :reader tree-split-direction
 		    :type split-frame-type))
   (:documentation "An inner node of a frame-tree"))
@@ -101,22 +121,15 @@ The parent tree is modified appropriately.
 e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
 will be (40, 40). If a tree only has one child left, it is replaced with its child.
 CLEANUP-FUNC is called on the removed frame(s) after they are removed."
-  (check-type frame frame)
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
 (defgeneric replace-frame (root frame &optional cleanup-func)
   (:documentation "Replace ROOT with FRAME. Call CLEANUP-FUNC on every view-frame that is removed
 from the tree. "))
 
-(defgeneric swap-positions (frame1 frame2)
-  (:documentation "Swap the positions of the two frames in their trees."))
-
 (defgeneric find-empty-frame (root)
   (:documentation "Finds the first veiw-frame in the given tree that doesn't have
 a view assigned to it."))
-
-(defgeneric get-empty-frames (root)
-  (:documentation "Gets a list of empty frames in the tree."))
 
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))
@@ -132,31 +145,46 @@ a view assigned to it."))
   (:documentation "Mark the frame as being focused")
   (:method ((frame frame) seat)
     (declare (ignore seat))
-    (log-string :trace "frame focused")
+    (log-string :trace "frame unfocused")
     (setf (slot-value frame 'focused) nil)))
 
 ;; helper functions:
 
 (defun root-frame-p (frame)
   ;; the root frame's parent will be a tree-container:
-  (typep (frame-parent frame) 'tree-container))
+  (let ((parent (frame-parent frame)))
+    (typep parent 'output-node)))
 
-(defun find-frame-container (frame)
-  "Find the toplevel frame container for this frame"
+(defun find-root-frame (frame)
+  "Find the output node for this frame"
   (declare (type frame frame))
   (do ((cur-frame frame (frame-parent cur-frame)))
-      ((typep cur-frame 'tree-container) cur-frame)))
+      ((root-frame-p cur-frame) cur-frame)))
 
-(defun make-basic-tree (&key (x 0) (y 0) (width 100) (height 100))
-  (let ((container (make-instance 'tree-container))
-	(frame (make-instance 'view-frame :x x :y y :width width :height height)))
-    (setf (frame-parent frame) container)
-    (setf (root-tree container) frame)
-    (values container frame)))
+(defun tree-container-add (tree-container &key (x 0) (y 0) (width 100) (height 100))
+  (declare (type tree-container tree-container))
+  (with-accessors ((container-children tree-children)) tree-container
+    (let* ((new-output (make-instance 'output-node :parent tree-container))
+	   (new-tree (make-instance 'view-frame :x x :y y :width width :height height
+				   :parent new-output))
+	   (prev-output (first container-children)))
+      ;; We'll need to place it somewhere in the middle of the list eventually:
+      (push new-output container-children)
+      (push new-tree (tree-children new-output))
+      (if prev-output
+	  (let* ((prev-head (first (tree-children prev-output)))
+		 (prev-frame (frame-prev prev-head)))
+	    (setf (%frame-next prev-frame) new-tree
+		  (%frame-prev new-tree) prev-frame
+		  (%frame-prev prev-head) new-tree
+		  (%frame-next new-tree) prev-head))
+	  (setf (%frame-next new-tree) new-tree
+		(%frame-prev new-tree) new-tree))
+      (values new-output new-tree))))
 
 (snakes:defgenerator leafs-in (frame)
-  (check-type frame frame)
-  (if (typep frame 'tree-frame)
+  (if (or (typep frame 'tree-frame)
+	  (typep frame 'output-node))
       (let ((stack (tree-children frame)))
 	(iter (for child = (pop stack))
 	      (while child)
