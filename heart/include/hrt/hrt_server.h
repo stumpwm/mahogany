@@ -61,4 +61,6 @@ struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server);
 
 struct hrt_seat *hrt_server_seat(struct hrt_server *server);
 
+size_t hrt_server_struct_size();
+
 #endif
