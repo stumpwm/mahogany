@@ -19,10 +19,10 @@ $(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so lisp/bindings/hrt-bi
 	$(call $(LISP), build-mahogany.lisp)
 
 lisp/bindings/hrt-bindings.lisp: $(ROOT)/lisp/bindings/hrt-bindings.yml $(HRT_INCLUDES)
-	cl-bindgen b lisp/bindings/hrt-bindings.yml
+	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b lisp/bindings/hrt-bindings.yml
 
 lisp/bindings/wlr-bindings.lisp: $(ROOT)/lisp/bindings/wlr-bindings.yml
-	cl-bindgen b lisp/bindings/wlr-bindings.yml
+	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b lisp/bindings/wlr-bindings.yml
 
 $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart

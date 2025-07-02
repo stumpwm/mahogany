@@ -1,7 +1,7 @@
 output: lisp/bindings/wlr-bindings.lisp
 package: wlr
 pkg-config:
-  - wlroots
+  - wlroots-0.18
 arguments:
   - "-DWLR_USE_UNSTABLE"
   - "-Ibuild/include/wlroots-0.18/"
