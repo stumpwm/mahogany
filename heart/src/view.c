@@ -46,6 +46,14 @@ uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height) {
     return 0;
 }
 
+bool hrt_view_mapped(struct hrt_view *view) {
+  if(view->xdg_surface && view->xdg_surface->surface) {
+      return view->xdg_surface->surface->mapped;
+  } else {
+      return false;
+  }
+}
+
 void hrt_view_set_relative(struct hrt_view *view, int x, int y) {
     wlr_scene_node_set_position(&view->scene_tree->node, x, y);
 }

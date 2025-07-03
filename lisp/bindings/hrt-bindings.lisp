@@ -95,6 +95,14 @@ names."
 
 (cffi:defctype new-view-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
+(cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
+
+(cffi:defcstruct hrt-view-callbacks
+  (new-view new-view-handler)
+  (view-mapped view-mapped-handler)
+  (view-unmapped view-mapped-handler)
+  (view-destroyed view-destroy-handler))
+
 (cffi:defcstruct hrt-view
   (width :int)
   (height :int)
@@ -107,12 +115,7 @@ names."
   (destroy (:struct wl-listener))
   (request-maximize (:struct wl-listener))
   (request-fullscreen (:struct wl-listener))
-  (new-view-handler new-view-handler)
-  (destroy-handler view-destroy-handler))
-
-(cffi:defcstruct hrt-view-callbacks
-  (new-view new-view-handler)
-  (view-destroyed view-destroy-handler))
+  (callbacks (:pointer (:struct hrt-view-callbacks))))
 
 (cffi:defcfun ("hrt_view_init" hrt-view-init) :void
   "Fully initialize the view and place it in the given scene tree."
@@ -128,6 +131,9 @@ serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))
+
+(cffi:defcfun ("hrt_view_mapped" hrt-view-mapped) :bool
+  (view (:pointer (:struct hrt-view))))
 
 (cffi:defcfun ("hrt_view_set_relative" hrt-view-set-relative) :void
   "Sets the view to the given coordinates relative to its parent."

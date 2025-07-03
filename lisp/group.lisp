@@ -35,13 +35,15 @@
     (wlr:scene-node-set-enabled scene-tree t)))
 
 (defun group-transfer-views (group to-transfer)
+  "Transfer the views from to-transfer to group"
   (declare (type mahogany-group group to-transfer))
   (let ((scene-tree (mahogany-group-scene-tree group))
         (hidden-list (mahogany-group-hidden-views group)))
     (dolist (other-view (mahogany-group-views to-transfer))
       (group-remove-view to-transfer other-view scene-tree)
       (push other-view (mahogany-group-views group))
-      (%add-hidden hidden-list other-view))))
+      (when (hrt:view-mapped-p other-view)
+	(%add-hidden hidden-list other-view)))))
 
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
@@ -138,7 +140,6 @@ to match."
                    (outputs mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
       group
-    (push view (mahogany-group-views group))
     (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
       (alexandria:when-let ((view (tree:frame-view current-frame)))
         (%add-hidden hidden view))
@@ -148,10 +149,20 @@ to match."
   (declare (type mahogany-group group)
            (type cffi:foreign-pointer view-ptr))
   (let ((view (hrt:view-init view-ptr (mahogany-group-scene-tree group))))
-    (%group-add-view group view)
+    (push view (mahogany-group-views group))
+    ;; We need to send a configure event, so we might as well
+    ;; guess the size of the window:
+    (with-accessors ((focused-frame mahogany-group-current-frame))
+	group
+      (if focused-frame
+	  (set-dimensions view (tree:frame-width focused-frame) (tree:frame-height focused-frame))
+	  (set-dimensions view 0 0)))
     view))
 
-(defun group-remove-view (group view &optional new-scene-tree)
+(defun group-map-view (group view)
+  (%group-add-view group view))
+
+(defun %group-remove-view (group view &optional new-scene-tree)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
 		   (output-map mahogany-group-output-map)
@@ -163,9 +174,20 @@ to match."
 	  (setf (tree:frame-view f) nil)
 	  (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
 	    (setf (tree:frame-view f) new-view)))))
-	(when new-scene-tree
-	  (hrt:view-reparent view new-scene-tree))
-    (ring-list:remove-item hidden view)
+    (when new-scene-tree
+      (hrt:view-reparent view new-scene-tree))
+    (ring-list:remove-item hidden view)))
+
+(defun group-unmap-view (group view)
+  (%group-remove-view group view))
+
+(defun group-remove-view (group view &optional new-scene-tree)
+  (declare (type mahogany-group group))
+  (with-accessors ((view-list mahogany-group-views)
+		   (output-map mahogany-group-output-map)
+		   (hidden mahogany-group-hidden-views))
+      group
+    (%group-remove-view group view new-scene-tree)
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))

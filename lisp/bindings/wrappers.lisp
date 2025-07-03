@@ -34,6 +34,11 @@
   (declare (type view view))
   (hrt-view-unfocus (view-hrt-view view) seat))
 
+(declaim (inline view-mapped-p))
+(defun view-mapped-p (view)
+  (declare (type view view))
+  (hrt-view-mapped (view-hrt-view view)))
+
 (declaim (inline view-set-hidden))
 (defun view-set-hidden (view hidden)
   (declare (type view view)

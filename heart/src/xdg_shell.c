@@ -21,12 +21,16 @@ static void send_dummy_configure(struct hrt_view *view) {
 static void handle_xdg_toplevel_map(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
     struct hrt_view *view = wl_container_of(listener, view, map);
-    send_dummy_configure(view);
+    view->callbacks->view_mapped(view);
+    // The callback should be sending a configure event:
+    // send_dummy_configure(view);
 }
 
 static void handle_xdg_toplevel_unmap(struct wl_listener *listener,
                                       void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel unmapped!");
+    struct hrt_view *view = wl_container_of(listener, view, unmap);
+    view->callbacks->view_unmapped(view);
 }
 
 static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
@@ -54,7 +58,7 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
     wlr_log(WLR_DEBUG, "XDG Toplevel Destroyed!");
     struct hrt_view *view = wl_container_of(listener, view, destroy);
 
-    view->destroy_handler(view);
+    view->callbacks->view_destroyed(view);
 
     wl_list_remove(&view->map.link);
     wl_list_remove(&view->unmap.link);
@@ -71,7 +75,7 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
                                        void *data) {
     struct hrt_view *view = wl_container_of(listener, view, commit);
     if (view->xdg_toplevel->base->initial_commit) {
-        view->new_view_handler(view);
+        view->callbacks->new_view(view);
     }
 }
 
@@ -83,9 +87,7 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     struct wlr_xdg_surface *xdg_surface = xdg_toplevel->base;
     // TODO: Maybe remove view->xdg_surface? We can get to it via the toplevel.
     view->xdg_surface = xdg_surface;
-    // Should we just put struct hrt_view_callbacks in view objects?
-    view->destroy_handler  = callbacks->view_destroyed;
-    view->new_view_handler = callbacks->new_view;
+    view->callbacks = callbacks;
 
     view->map.notify = handle_xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &view->map);
