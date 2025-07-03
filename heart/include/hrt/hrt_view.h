@@ -10,6 +10,18 @@ struct hrt_view;
 
 typedef void (*view_destroy_handler)(struct hrt_view *view);
 typedef void (*new_view_handler)(struct hrt_view *view);
+typedef void (*view_mapped_handler)(struct hrt_view *view);
+
+struct hrt_view_callbacks {
+    /**
+     * A new view has been created. Must call `hrt_view_init` for the
+     * view to be displayed.
+     **/
+    new_view_handler new_view;
+    view_mapped_handler view_mapped;
+    view_mapped_handler view_unmapped;
+    view_destroy_handler view_destroyed;
+};
 
 struct hrt_view {
     int width, height;
@@ -30,17 +42,7 @@ struct hrt_view {
     struct wl_listener request_maximize;
     struct wl_listener request_fullscreen;
 
-    new_view_handler new_view_handler;
-    view_destroy_handler destroy_handler;
-};
-
-struct hrt_view_callbacks {
-    /**
-     * A new view has been created. Must call `hrt_view_init` for the
-     * view to be displayed.
-     **/
-    new_view_handler new_view;
-    view_destroy_handler view_destroyed;
+    const struct hrt_view_callbacks *callbacks;
 };
 
 /**
@@ -55,6 +57,8 @@ void hrt_view_info(struct hrt_view *view);
  *serial.
  **/
 uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height);
+
+bool hrt_view_mapped(struct hrt_view *view);
 
 /**
  * Sets the view to the given coordinates relative to its parent.

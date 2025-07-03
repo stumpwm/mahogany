@@ -32,8 +32,10 @@ further up. "
 
 (defun init-view-callbacks (view-callbacks)
   (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
-	(hrt:new-view handle-new-view-event)
-	(hrt:view-destroyed handle-view-destroyed-event)))
+    (hrt:new-view handle-new-view-event)
+    (hrt:view-mapped handle-view-mapped)
+    (hrt:view-unmapped handle-view-unmapped)
+    (hrt:view-destroyed handle-view-destroyed-event)))
 
 (defun run-server (args)
   (disable-fpu-exceptions)

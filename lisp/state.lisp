@@ -149,15 +149,46 @@
     (let ((new-view (group-add-initialize-view current-group view-ptr)))
       (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view))))
 
+(defmacro %with-found-view (state (view-var view-ptr) &body body)
+  `(alexandria:if-let ((,view-var (gethash (cffi:pointer-address ,view-ptr)
+					   (slot-value ,state 'views))))
+     (progn
+       ,@body)
+     (log-string :error "Could not find mahogany view associated with pointer ~S" ,view-ptr)))
+
+(defun %find-view-in-groups (view groups)
+  (find-if (lambda (g) (member view (mahogany-group-views g))) groups))
+
+(defmacro %with-found-group (state (group-var view) &body body)
+  `(alexandria:if-let ((,group-var (%find-view-in-groups ,view (mahogany-state-groups ,state))))
+     (progn
+       ,@body)
+     (log-string :error "Could not find mahogany view in any groups!")))
+
 (defun mahogany-state-view-remove (state view-ptr)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer view-ptr))
-  (with-slots (views) state
+  (with-slots (views groups) state
     (alexandria:if-let ((view (gethash (cffi:pointer-address view-ptr) views)))
       (progn
-        (group-remove-view (mahogany-current-group state) view)
+	(%with-found-group state (group view)
+	  (group-remove-view group view))
         (remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
+
+(defun mahogany-state-view-map (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    (%with-found-group state (group view)
+      (group-map-view group view))))
+
+(defun mahogany-state-view-unmap (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    (%with-found-group state (group view)
+      (group-unmap-view group view))))
 
 (defun state-next-hidden-group (state)
   (declare (type mahogany-state state))

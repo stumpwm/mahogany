@@ -7,7 +7,10 @@
 	   #:hrt-view-callbacks
 	   #:new-view
 	   #:hrt-view
+	   #:view-mapped
+	   #:view-unmapped
 	   #:view-destroyed
+	   #:view-mapped-p
 	   #:hrt-seat
 	   #:hrt-seat-notify-button
 	   #:hrt-seat-notify-axis
