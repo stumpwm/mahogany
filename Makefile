@@ -15,7 +15,7 @@ CACHE := $(BUILD_DIR)/internal
 HRT_INCLUDES = $(shell find $(ROOT)/heart/include/hrt/ -type f)
 # WLR_INCLUDES = $(shell find $(ROOT)/heart/subprojects/wlroots/include/wlr/ -type f)
 
-$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so lisp/bindings/hrt-bindings.lisp lisp/bindings/wlr-bindings.lisp build-mahogany.lisp FORCE
+$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
 
 lisp/bindings/hrt-bindings.lisp: $(ROOT)/lisp/bindings/hrt-bindings.yml $(HRT_INCLUDES)
