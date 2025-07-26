@@ -118,7 +118,9 @@ Values:
          (found (tree:frame-at (mahogany-group-tiled-container group)
                                (hrt:hrt-seat-cursor-lx seat)
                                (hrt:hrt-seat-cursor-ly seat))))
-    (group-focus-frame group found seat)))
+    (if found
+      (group-focus-frame group found seat)
+      nil)))
 
 (hrt:define-hrt-callback handle-mouse-wheel-event :void
     ((seat (:pointer (:struct hrt:hrt-seat)))

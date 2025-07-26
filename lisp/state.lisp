@@ -22,11 +22,13 @@
       default-group)))
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (state-server state) server)
   (hrt:server-init server
-                   output-callbacks seat-callbacks view-callbacks
-                   debug-level)
+                       output-callbacks seat-callbacks view-callbacks
+		       layer-shell-callbacks
+                       debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (state-current-group state) default-group)))
 
@@ -272,3 +274,25 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       ;; some sort of usable error message?
       ;; Either that, or just turn this into a warning or return a boolean?
       (error 'xkb:keymap-creation-error))))
+
+(defun %get-or-autoassign-output (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
+      (with-accessors ((outputs mahogany-state-outputs)) state
+        (the (or mahogany-output null) (%find-output hrt-output outputs)))
+    (let ((current-output (group-current-output (mahogany-current-group state))))
+      ;; TODO: try to use the fallback output:
+      (unless current-output
+	    (log-string :error "Could not auto-assign output to layer surface")
+	    (return-from %get-or-autoassign-output nil))
+      (hrt:hrt-layer-shell-surface-set-output hrt-layer-shell
+                                              (hrt:output-hrt-output current-output))
+      (the hrt:output current-output))))
+
+(defun mahogany-state-layer-shell-handle (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
+    (progn
+      (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
+      (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
+    (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))

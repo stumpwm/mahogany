@@ -18,6 +18,10 @@
            #:hrt-seat-callbacks
            ;; view callbacks:
            #:hrt-view-callbacks
+           #:hrt-layer-shell-callbacks
+           #:new-layer-surface
+           #:layer-surface-mapped
+           #:layer-surface-unmapped
            #:new-view
            #:view-size-changed
            #:hrt-view
@@ -114,4 +118,10 @@
            #:hrt-scene-fullscreen-node-destroy
            #:scene-fullscreen-configure
            #:scene-fullscreen-swap
-           #:load-foreign-libraries))
+           #:load-foreign-libraries
+           ;; layer shell methods
+           #:layer-surface-output
+           #:hrt-layer-shell-surface-set-output
+           #:hrt-layer-shell-surface-abort
+           #:hrt-layer-shell-surface-place
+           #:hrt-layer-shell-finish-init))

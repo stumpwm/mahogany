@@ -39,6 +39,7 @@
            #:root-frame-p
            #:find-root-frame
            #:find-topmost-frame
+           #:find-output
            #:find-first-leaf
            #:mark-frame-focused
            #:unmark-frame-focused
