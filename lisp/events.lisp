@@ -64,3 +64,7 @@
     ()
     ()
   (mahogany-state-output-reconfigure *compositor-state*))
+
+(cffi:defcallback handle-layer-shell-recieved :void ((surface :pointer))
+  (log-string :trace "Layer shell recieved")
+  (mahogany-state-layer-shell-handle *compositor-state* surface))
