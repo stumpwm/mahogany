@@ -60,7 +60,7 @@ further up. "
     (init-view-callbacks view-callbacks)
 
     (server-state-init *compositor-state* server
-                       output-callbacks seat-callbacks view-callbacks
+                       output-callbacks seat-callbacks view-callbacks (cffi:null-pointer)
                        :debug-level 3)
     (log-string :debug "Initialized mahogany state")
     (unwind-protect
