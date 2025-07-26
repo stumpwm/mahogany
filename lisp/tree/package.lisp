@@ -33,6 +33,7 @@
            #:get-populated-frames
            #:root-frame-p
            #:find-root-frame
+           #:find-output
            #:find-first-leaf
            #:mark-frame-focused
            #:unmark-frame-focused
