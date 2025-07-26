@@ -38,6 +38,7 @@
                                      (:file "hrt-debug" :if-feature :hrt-debug)
                                      (:file "wrappers")
                                      (:file "view")
+                                     (:file "layer-shell")
                                      (:file "scene-group")))
                (:module keyboard
                         :depends-on ("util")
