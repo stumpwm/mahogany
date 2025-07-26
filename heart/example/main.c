@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
     wl_list_init(&server.outputs);
 
     if (!hrt_server_init(&server.server, &output_callbacks, &seat_callbacks,
-                         &view_callbacks, WLR_DEBUG)) {
+                         &view_callbacks, NULL, WLR_DEBUG)) {
         return 1;
     }
 

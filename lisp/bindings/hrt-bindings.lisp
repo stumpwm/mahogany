@@ -255,7 +255,8 @@ set the width and height of views."
   (background :pointer #| (:struct wlr-scene-tree) |#)
   (bottom :pointer #| (:struct wlr-scene-tree) |#)
   (top :pointer #| (:struct wlr-scene-tree) |#)
-  (overlay :pointer #| (:struct wlr-scene-tree) |#))
+  (overlay :pointer #| (:struct wlr-scene-tree) |#)
+  (output (:pointer (:struct hrt-output))))
 
 (cffi:defcstruct hrt-scene-group
   (normal :pointer #| (:struct wlr-scene-tree) |#)
@@ -277,6 +278,11 @@ set the width and height of views."
 (declaim (inline hrt-scene-output-destroy))
 (cffi:defcfun ("hrt_scene_output_destroy" hrt-scene-output-destroy) :void
   (output (:pointer (:struct hrt-scene-output))))
+
+(declaim (inline hrt-scene-output-get-layer))
+(cffi:defcfun ("hrt_scene_output_get_layer" hrt-scene-output-get-layer) :pointer #| (:struct wlr-scene-tree) |#
+  (output (:pointer (:struct hrt-scene-output)))
+  (layer-type :int #| enum zwlr-layer-shell-v1-layer |#))
 
 (declaim (inline hrt-scene-group-destroy))
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void
@@ -392,12 +398,64 @@ Returns the view that was in the node."
 (cffi:defcfun ("hrt_event_loop_remove" hrt-event-loop-remove) :void
   (source :pointer #| (:struct wl-event-source) |#))
 
+;; next section imported from file build/include/hrt/hrt_layer_shell.h
+
+(cffi:defcstruct hrt-layer-shell-surface-events
+  (commit (:struct wl-listener))
+  (map (:struct wl-listener))
+  (unmap (:struct wl-listener))
+  (new-popup (:struct wl-listener))
+  (scene-destroy (:struct wl-listener)))
+
+(cffi:defcstruct hrt-layer-shell-surface
+  (layer-surface :pointer #| (:struct wlr-layer-surface-v1) |#)
+  (scene-surface :pointer #| (:struct wlr-scene-layer-surface-v1) |#)
+  (output (:pointer (:struct hrt-output)))
+  (mapped :bool)
+  (events (:struct hrt-layer-shell-surface-events)))
+
+(cffi:defctype layer-shell-event-handler :pointer #| function ptr void (struct hrt_layer_shell_surface *) |#)
+
+(cffi:defcstruct hrt-layer-shell-callbacks
+  (new-layer-surface layer-shell-event-handler))
+
+(declaim (inline hrt-layer-shell-surface-create))
+(cffi:defcfun ("hrt_layer_shell_surface_create" hrt-layer-shell-surface-create) (:pointer (:struct hrt-layer-shell-surface))
+  (surface :pointer #| (:struct wlr-layer-surface-v1) |#))
+
+(declaim (inline hrt-layer-shell-surface-abort))
+(cffi:defcfun ("hrt_layer_shell_surface_abort" hrt-layer-shell-surface-abort) :void
+  "Destroy a partially created hrt_layer_shell-surface object"
+  (surface (:pointer (:struct hrt-layer-shell-surface))))
+
+(declaim (inline hrt-layer-surface-output))
+(cffi:defcfun ("hrt_layer_surface_output" hrt-layer-surface-output) (:pointer (:struct hrt-output))
+  (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
+
+(declaim (inline hrt-layer-shell-surface-set-output))
+(cffi:defcfun ("hrt_layer_shell_surface_set_output" hrt-layer-shell-surface-set-output) :void
+  (layer-shell (:pointer (:struct hrt-layer-shell-surface)))
+  (output (:pointer (:struct hrt-output))))
+
+(declaim (inline hrt-layer-shell-surface-place))
+(cffi:defcfun ("hrt_layer_shell_surface_place" hrt-layer-shell-surface-place) :void
+  "Place a freshly-initialized surface in an output. Should only be called once during
+intial placement."
+  (surface (:pointer (:struct hrt-layer-shell-surface)))
+  (output (:pointer (:struct hrt-output))))
+
+(declaim (inline hrt-layer-shell-finish-init))
+(cffi:defcfun ("hrt_layer_shell_finish_init" hrt-layer-shell-finish-init) :void
+  "Finish initializing the layer shell object"
+  (surface (:pointer (:struct hrt-layer-shell-surface))))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
   (backend (:struct wl-listener))
   (headless (:struct wl-listener))
-  (output-manager (:struct wl-listener)))
+  (output-manager (:struct wl-listener))
+  (layer-shell (:struct wl-listener)))
 
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
@@ -421,9 +479,12 @@ Returns the view that was in the node."
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |#)
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))
+  (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |#)
+  (new-layer-shell (:struct wl-listener))
   (destroy-listener (:struct hrt-server-destroy-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
+  (layer-shell-callbacks (:pointer (:struct hrt-layer-shell-callbacks)))
   (message-timer-source :pointer #| (:struct wl-event-source) |#)
   (message-buffer :pointer #| (:struct wlr-scene-buffer) |#))
 
@@ -433,6 +494,7 @@ Returns the view that was in the node."
   (output-callbacks (:pointer (:struct hrt-output-callbacks)))
   (seat-callbacks (:pointer (:struct hrt-seat-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
+  (layer-shell-callbacks (:pointer (:struct hrt-layer-shell-callbacks)))
   (log-level :int #| enum wlr-log-importance |#))
 
 (declaim (inline hrt-server-start))

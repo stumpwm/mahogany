@@ -16,6 +16,8 @@
   (:export #:hrt-output-callbacks
            #:hrt-seat-callbacks
            #:hrt-view-callbacks
+           #:hrt-layer-shell-callbacks
+           #:new-layer-surface
            #:new-view
            #:hrt-view
            #:view-mapped
@@ -95,4 +97,10 @@
            #:hrt-scene-fullscreen-node-destroy
            #:hrt-scene-fullscreen-configure
            #:scene-init-view
-           #:load-foreign-libraries))
+           #:load-foreign-libraries
+           ;; layer shell methods
+           #:layer-surface-output
+           #:hrt-layer-shell-surface-set-output
+           #:hrt-layer-shell-surface-abort
+           #:hrt-layer-shell-surface-place
+           #:hrt-layer-shell-finish-init))

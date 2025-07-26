@@ -65,6 +65,23 @@ void hrt_scene_output_destroy(struct hrt_scene_output *output) {
     free(output);
 }
 
+struct wlr_scene_tree *
+hrt_scene_output_get_layer(struct hrt_scene_output *output,
+                           enum zwlr_layer_shell_v1_layer layer_type) {
+    switch (layer_type) {
+        case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+            return output->background;
+        case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+            return output->bottom;
+        case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+            return output->bottom;
+        case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+            return output->overlay;
+        default:
+          return NULL;
+    }
+}
+
 struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
     struct hrt_scene_group *layers = calloc(1, sizeof(*layers));
     if (!layers) {

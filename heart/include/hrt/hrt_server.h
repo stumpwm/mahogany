@@ -3,6 +3,7 @@
 
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_output.h"
+#include "hrt/hrt_layer_shell.h"
 #include "wlr/backend/session.h"
 #include <stdbool.h>
 
@@ -45,24 +46,31 @@ struct hrt_server {
     struct wl_listener new_xdg_toplevel;
     struct wl_listener new_xdg_popup;
 
+    struct wlr_layer_shell_v1 *layer_shell;
+    struct wl_listener new_layer_shell;
+
     struct {
-          struct wl_listener backend;
-          struct wl_listener headless;
-          struct wl_listener output_manager;
+        struct wl_listener backend;
+        struct wl_listener headless;
+        struct wl_listener output_manager;
+        struct wl_listener layer_shell;
     } destroy_listener;
 
     const struct hrt_output_callbacks *output_callback;
     const struct hrt_view_callbacks *view_callbacks;
+    const struct hrt_layer_shell_callbacks *layer_shell_callbacks;
 
     struct wl_event_source *message_timer_source;
     struct wlr_scene_buffer *message_buffer;
 };
 
-bool hrt_server_init(struct hrt_server *server,
-                     const struct hrt_output_callbacks *output_callbacks,
-                     const struct hrt_seat_callbacks *seat_callbacks,
-                     const struct hrt_view_callbacks *view_callbacks,
-                     enum wlr_log_importance log_level);
+bool hrt_server_init(
+    struct hrt_server *server,
+    const struct hrt_output_callbacks *output_callbacks,
+    const struct hrt_seat_callbacks *seat_callbacks,
+    const struct hrt_view_callbacks *view_callbacks,
+    const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
+    enum wlr_log_importance log_level);
 
 bool hrt_server_start(struct hrt_server *server);
 

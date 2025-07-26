@@ -21,10 +21,12 @@
       default-group)))
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (mahogany-state-server state) server)
   (hrt:hrt-server-init server
                        output-callbacks seat-callbacks view-callbacks
+		       layer-shell-callbacks
                        debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (mahogany-current-group state) default-group)))
@@ -253,3 +255,26 @@
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   (let ((seat (hrt:hrt-server-seat (mahogany-state-server state))))
     (hrt:hrt-seat-set-keymap seat rules keymap-flags)))
+
+(defun %get-or-autoassign-output (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
+      (with-accessors ((outputs mahogany-state-outputs)) state
+        (the (or mahogany-output null) (%find-output hrt-output outputs)))
+    (let ((current-output (group-current-output (mahogany-current-group state))))
+      ;; TODO: try to use the fallback output:
+      (unless current-output
+	    (log-string :error "Could not auto-assign output to layer surface")
+	    (return-from %get-or-autoassign-output nil))
+      (hrt:hrt-layer-shell-surface-set-output hrt-layer-shell
+                                              (mahogany-output-hrt-output current-output))
+      (the mahogany-output current-output))))
+
+(defun mahogany-state-layer-shell-handle (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
+    (progn
+      (hrt:hrt-layer-shell-surface-place hrt-layer-shell (mahogany-output-hrt-output output))
+      (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
+    (progn
+      (hrt:hrt-layer-shell-surface-abort hrt-layer-shell))))
