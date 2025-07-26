@@ -22,10 +22,12 @@
       default-group)))
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (mahogany-state-server state) server)
   (hrt:hrt-server-init server
                        output-callbacks seat-callbacks view-callbacks
+		       layer-shell-callbacks
                        debug-level)
   (setf (mahogany-state-scene state) (hrt:hrt-scene-root-create (hrt:hrt-server-scene-tree server)))
   (let ((default-group (%add-group state *default-group-name* 1)))

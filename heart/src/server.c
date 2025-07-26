@@ -1,5 +1,6 @@
 #include "wlr/util/log.h"
 #include "xdg_impl.h"
+#include "layer_shell_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -43,6 +44,7 @@ bool hrt_server_init(struct hrt_server *server,
                      const struct hrt_output_callbacks *output_callbacks,
                      const struct hrt_seat_callbacks *seat_callbacks,
                      const struct hrt_view_callbacks *view_callbacks,
+                     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
                      enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
     server->wl_display = wl_display_create();
@@ -108,6 +110,14 @@ bool hrt_server_init(struct hrt_server *server,
     }
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
         return false;
+    }
+
+    // Check if this arg was provided so we don't need to specify this for
+    // test compositors.
+    if (layer_shell_callbacks) {
+        if (!hrt_layer_shell_init(server)) {
+            return false;
+        }
     }
 
     return true;
