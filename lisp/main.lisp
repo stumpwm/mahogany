@@ -54,6 +54,12 @@ further up. "
     (hrt:view-destroyed handle-view-destroyed-event)
     (hrt:request-fullscreen handle-request-fullscreen)))
 
+(defun init-layer-shell-callbacks (layer-shell-callbacks)
+  (init-callback-struct layer-shell-callbacks (:struct hrt:hrt-layer-shell-callbacks)
+    (hrt:new-layer-surface handle-layer-shell-recieved)
+    (hrt:layer-surface-mapped handle-layer-shell-mapped)
+    (hrt:layer-surface-unmapped handle-layer-shell-unmapped)))
+
 (defun run-server (args)
   (hrt:load-foreign-libraries)
   (init-frame-border-styles)
@@ -62,9 +68,10 @@ further up. "
     (log-string :info "Running with debugger enabled.")
     (enable-debugger))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
-                              (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
-                              (view-callbacks '(:struct hrt:hrt-view-callbacks))
-                              (server '(:struct hrt:hrt-server)))
+		              (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
+		              (view-callbacks '(:struct hrt:hrt-view-callbacks))
+		              (layer-shell-callbacks '(:struct hrt:hrt-layer-shell-callbacks))
+		              (server '(:struct hrt:hrt-server)))
     (init-callback-struct output-callbacks (:struct hrt:hrt-output-callbacks)
       (hrt:output-added handle-new-output)
       (hrt:output-removed handle-output-removed)
@@ -74,9 +81,13 @@ further up. "
       (hrt:wheel-event handle-mouse-wheel-event)
       (hrt:keyboard-keypress-event keyboard-callback))
     (init-view-callbacks view-callbacks)
+    (init-layer-shell-callbacks layer-shell-callbacks)
 
     (server-state-init *compositor-state* server
-                       output-callbacks seat-callbacks view-callbacks
+                       output-callbacks
+                       seat-callbacks
+                       view-callbacks
+                       layer-shell-callbacks
                        :debug-level 3)
     (log-string :debug "Initialized mahogany state")
     (if (gethash 'no-init-file args)

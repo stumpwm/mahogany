@@ -58,6 +58,7 @@
                                      (:file "border-box" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "server"
                                       :depends-on ("package" "hrt-bindings" "callback"))
+                                     (:file "layer-shell")
                                      (:file "transaction" :depends-on ("server"))))
                (:module keyboard
                         :depends-on ("util")
