@@ -20,18 +20,8 @@ static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
     }
 }
 
-static void remove_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
-    struct wlr_keyboard *kb =
-        wlr_keyboard_from_input_device(input->wlr_input_device);
-    wlr_keyboard_group_remove_keyboard(seat->keyboard_group, kb);
-}
-
 static void add_new_pointer(struct hrt_input *input, struct hrt_seat *seat) {
     wlr_cursor_attach_input_device(seat->cursor, input->wlr_input_device);
-}
-
-static void remove_pointer(struct hrt_input *input, struct hrt_seat *seat) {
-    wlr_cursor_detach_input_device(seat->cursor, input->wlr_input_device);
 }
 
 static uint32_t find_input_caps(struct hrt_seat *seat,
@@ -56,28 +46,15 @@ static uint32_t find_input_caps(struct hrt_seat *seat,
     return caps;
 }
 
+// TODO: do we really need this? Can it be removed?
 static void input_device_destroy(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "input device destroyed");
 
     struct hrt_input *input = wl_container_of(listener, input, destroy);
 
-    switch (input->wlr_input_device->type) {
-        case WLR_INPUT_DEVICE_KEYBOARD:
-            remove_keyboard(input, input->seat);
-            break;
-        case WLR_INPUT_DEVICE_POINTER:
-            remove_pointer(input, input->seat);
-            break;
-        default: break;
-    }
-
-    // Signals
+    /* // Signals */
     wl_list_remove(&input->destroy.link);
-
     wl_list_remove(&input->link);
-
-    uint32_t caps = find_input_caps(input->seat, input);
-    wlr_seat_set_capabilities(input->seat->seat, caps);
 
     free(input);
 }
@@ -148,7 +125,11 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 }
 
 void hrt_seat_destroy(struct hrt_seat *seat) {
-    wlr_seat_destroy(seat->seat);
     hrt_keyboard_destroy(seat);
     hrt_cursor_destroy(seat);
+
+    wl_list_remove(&seat->request_cursor.link);
+
+    wlr_seat_destroy(seat->seat);
+    wl_list_remove(&seat->new_input.link);
 }

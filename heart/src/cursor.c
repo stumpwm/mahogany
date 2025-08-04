@@ -1,4 +1,6 @@
 #include "hrt/hrt_view.h"
+#include "wlr/util/log.h"
+#include <wayland-util.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
@@ -118,6 +120,13 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
 }
 
 void hrt_cursor_destroy(struct hrt_seat *seat) {
+    wlr_log(WLR_DEBUG, "hrt_cursor destroyed");
+    wl_list_remove(&seat->frame.link);
+    wl_list_remove(&seat->axis.link);
+    wl_list_remove(&seat->button.link);
+    wl_list_remove(&seat->motion_absolute.link);
+    wl_list_remove(&seat->motion.link);
+
     wlr_xcursor_manager_destroy(seat->xcursor_manager);
     wlr_cursor_destroy(seat->cursor);
 }

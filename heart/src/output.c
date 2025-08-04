@@ -181,4 +181,6 @@ void hrt_output_destroy(struct hrt_server *server) {
     wl_list_remove(&server->output_layout_changed.link);
     // The output layout  gets destroyed when the display does:
     // wlr_output_layout_destroy(server->output_layout);
+
+    wl_list_remove(&server->new_output.link);
 }

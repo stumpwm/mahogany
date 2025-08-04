@@ -11,3 +11,4 @@ struct hrt_xdg_popup {
 };
 
 bool hrt_xdg_shell_init(struct hrt_server *server);
+void hrt_xdg_shell_destroy(struct hrt_server *server);

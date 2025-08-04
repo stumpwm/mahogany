@@ -20,6 +20,8 @@ static void handle_backend_destroyed(struct wl_listener *listener, void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, backend_destroy);
     wl_display_terminate(server->wl_display);
+
+    wl_list_remove(&listener->link);
 }
 
 bool hrt_server_init(struct hrt_server *server,
@@ -116,7 +118,12 @@ void hrt_server_stop(struct hrt_server *server) {
 
 void hrt_server_finish(struct hrt_server *server) {
     wl_display_destroy_clients(server->wl_display);
+    // Some of these "destroy" calls should probably be hooked up to listen to the destroy
+    // events of the wlr objects they attach listeners to instead of being cleaned
+    // up here...
+    hrt_seat_destroy(&server->seat);
     hrt_output_destroy(server);
+    hrt_xdg_shell_destroy(server);
 
     wlr_allocator_destroy(server->allocator);
     wlr_renderer_destroy(server->renderer);

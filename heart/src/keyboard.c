@@ -1,3 +1,4 @@
+#include <wayland-util.h>
 #include <wlr/util/log.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -118,5 +119,8 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
 }
 
 void hrt_keyboard_destroy(struct hrt_seat *seat) {
+    wl_list_remove(&seat->keyboard_key.link);
+    wl_list_remove(&seat->keyboard_modifiers.link);
+
     wlr_keyboard_group_destroy(seat->keyboard_group);
 }

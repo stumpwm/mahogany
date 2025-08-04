@@ -6,6 +6,7 @@
 #include <wlr/util/log.h>
 
 #include "hrt/hrt_input.h"
+#include "hrt/hrt_server.h"
 #include "xdg_impl.h"
 #include "hrt/hrt_view.h"
 #include "view_impl.h"
@@ -179,4 +180,9 @@ bool hrt_xdg_shell_init(struct hrt_server *server) {
     wl_signal_add(&server->xdg_shell->events.new_toplevel,
                   &server->new_xdg_toplevel);
     return true;
+}
+
+void hrt_xdg_shell_destroy(struct hrt_server *server) {
+    wl_list_remove(&server->new_xdg_toplevel.link);
+    wl_list_remove(&server->new_xdg_popup.link);
 }
