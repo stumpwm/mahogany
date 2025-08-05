@@ -1,7 +1,7 @@
 output: lisp/bindings/hrt-bindings.lisp
 package: hrt
 pkg-config:
-  - wlroots-0.18
+  - wlroots-0.19
 arguments:
   - "-DWLR_USE_UNSTABLE"
   - "-Iheart/include"

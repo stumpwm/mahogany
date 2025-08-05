@@ -4,7 +4,7 @@
   (:unix "libheart.so"))
 
 (cffi:define-foreign-library libwlroots
-  (:unix "libwlroots-0.18.so"))
+  (:unix "libwlroots-0.19.so"))
 
 (defun load-foreign-libraries ()
   (cffi:use-foreign-library libwlroots)
