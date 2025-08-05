@@ -2,20 +2,6 @@
 
 ;; next section imported from file heart/subprojects/wlroots/include/wlr/util/addon.h
 
-(cffi:defcstruct addon-set
-  (addons (:struct wl-list)))
-
-(cffi:defcstruct addon)
-
-(cffi:defcstruct addon-interface
-  (name (:pointer :char))
-  (destroy :pointer #| function ptr void (struct wlr_addon *) |#))
-
-(cffi:defcstruct addon
-  (impl :pointer #| (:struct addon-interface) |# )
-  (owner (:pointer :void))
-  (link (:struct wl-list)))
-
 (cffi:defcfun ("wlr_addon_set_init" addon-set-init) :void
   (set :pointer #| (:struct addon-set) |# ))
 
@@ -37,26 +23,6 @@
   (impl :pointer #| (:struct addon-interface) |# ))
 
 ;; next section imported from file heart/subprojects/wlroots/include/wlr/util/box.h
-
-(cffi:defcstruct box
-  "A box representing a rectangle region in a 2D space.
-
-The x and y coordinates are inclusive, and the width and height lengths are
-exclusive. In other words, the box starts from the coordinates (x, y), and
-goes up to but not including (x + width, y + height)."
-  (x :int)
-  (y :int)
-  (width :int)
-  (height :int))
-
-(cffi:defcstruct fbox
-  "A floating-point box representing a rectangle region in a 2D space.
-
-struct wlr_fbox has the same semantics as struct wlr_box."
-  (x :double)
-  (y :double)
-  (width :double)
-  (height :double))
 
 (cffi:defcfun ("wlr_box_closest_point" box-closest-point) :void
   "Finds the closest point within the box bounds.
@@ -86,6 +52,14 @@ For example:
   (box :pointer #| (:struct box) |# )
   (x :double)
   (y :double))
+
+(cffi:defcfun ("wlr_box_contains_box" box-contains-box) :bool
+  "Verifies that a box is fully contained within another box.
+
+Returns true if the \"smaller\" box is fully contained within the \"bigger\" box.
+If either of the boxes are empty, false is returned."
+  (bigger :pointer #| (:struct box) |# )
+  (smaller :pointer #| (:struct box) |# ))
 
 (cffi:defcfun ("wlr_box_empty" box-empty) :bool
   "Checks whether a box is empty or not.
@@ -126,150 +100,6 @@ A box is considered empty if its width and/or height is zero or negative."
   (b :pointer #| (:struct fbox) |# ))
 
 ;; next section imported from file heart/subprojects/wlroots/include/wlr/types/wlr_scene.h
-
-(cffi:defcstruct output)
-
-(cffi:defcstruct output-layout)
-
-(cffi:defcstruct output-layout-output)
-
-(cffi:defcstruct xdg-surface)
-
-(cffi:defcstruct layer-surface-v1)
-
-(cffi:defcstruct drag-icon)
-
-(cffi:defcstruct surface)
-
-(cffi:defcstruct scene-node
-  "A node is an object in the scene. */")
-
-(cffi:defcstruct scene-buffer
-  "A scene-graph node displaying a buffer */")
-
-(cffi:defcstruct scene-output-layout)
-
-(cffi:defcstruct presentation)
-
-(cffi:defcstruct linux-dmabuf-v1)
-
-(cffi:defcstruct output-state)
-
-(cffi:defctype scene-buffer-point-accepts-input-func-t :pointer #| function ptr _Bool (struct wlr_scene_buffer *, double *, double *) |#)
-
-(cffi:defctype scene-buffer-iterator-func-t :pointer #| function ptr void (struct wlr_scene_buffer *, int, int, void *) |#)
-
-(cffi:defcenum scene-node-type
-  (:wlr-scene-node-tree 0)
-  (:wlr-scene-node-rect 1)
-  (:wlr-scene-node-buffer 2))
-
-(cffi:defcstruct scene-node-events
-  (destroy (:struct wl-signal)))
-
-(cffi:defcstruct scene-node
-  ;; This entire thing is commented out because we don't have the pixman type available:
-  ;; "A node is an object in the scene. */"
-  ;; (type :int #| enum scene-node-type |#)
-  ;; (parent :pointer #| (:struct scene-tree) |# )
-  ;; (link (:struct wl-list))
-  ;; (enabled :bool)
-  ;; (x :int)
-  ;; (y :int)
-  ;; (events (:struct scene-node-events))
-  ;; (data (:pointer :void))
-  ;; (addons (:struct addon-set))
-  ;; (visible pixman-region32-t)
-  )
-
-(cffi:defcenum scene-debug-damage-option
-  (:wlr-scene-debug-damage-none 0)
-  (:wlr-scene-debug-damage-rerender 1)
-  (:wlr-scene-debug-damage-highlight 2))
-
-(cffi:defcstruct scene-tree
-  "A sub-tree in the scene-graph. */"
-  (node (:struct scene-node))
-  (children (:struct wl-list)))
-
-(cffi:defcstruct scene
-  "The root scene-graph node. */"
-  (tree (:struct scene-tree))
-  (outputs (:struct wl-list))
-  (linux-dmabuf-v1 :pointer #| (:struct linux-dmabuf-v1) |# )
-  (linux-dmabuf-v1-destroy (:struct wl-listener))
-  (debug-damage-option :int #| enum scene-debug-damage-option |#)
-  (direct-scanout :bool)
-  (calculate-visibility :bool)
-  (highlight-transparent-region :bool))
-
-(cffi:defcstruct scene-surface
-  "A scene-graph node displaying a single surface. */"
-  (buffer :pointer #| (:struct scene-buffer) |# )
-  (surface :pointer #| (:struct surface) |# )
-  (clip (:struct box))
-  (addon (:struct addon))
-  (outputs-update (:struct wl-listener))
-  (output-enter (:struct wl-listener))
-  (output-leave (:struct wl-listener))
-  (output-sample (:struct wl-listener))
-  (frame-done (:struct wl-listener))
-  (surface-destroy (:struct wl-listener))
-  (surface-commit (:struct wl-listener)))
-
-(cffi:defcstruct scene-rect
-  "A scene-graph node displaying a solid-colored rectangle */"
-  (node (:struct scene-node))
-  (width :int)
-  (height :int)
-  (color :float :count 4))
-
-(cffi:defcstruct scene-outputs-update-event
-  (active :pointer #| :pointer #| (:struct scene-output) |#  |# )
-  (size :size))
-
-(cffi:defcstruct scene-output-sample-event
-  (output :pointer #| (:struct scene-output) |# )
-  (direct-scanout :bool))
-
-(cffi:defcstruct scene-buffer
-  "A scene-graph node displaying a buffer */")
-
-(cffi:defcstruct scene-output-events
-  (destroy (:struct wl-signal)))
-
-(cffi:defcstruct scene-output
-  "A viewport for an output in the scene-graph */"
-  ;; (output :pointer #| (:struct output) |# )
-  ;; (link (:struct wl-list))
-  ;; (scene :pointer #| (:struct scene) |# )
-  ;; (addon (:struct addon))
-  ;; (damage-ring (:struct damage-ring))
-  ;; (x :int)
-  ;; (y :int)
-  ;; (events (:struct scene-output-events))
-  ;; (pending-commit-damage pixman-region32-t)
-  ;; (index :uint8)
-  ;; (prev-scanout :bool)
-  ;; (output-commit (:struct wl-listener))
-  ;; (output-damage (:struct wl-listener))
-  ;; (output-needs-frame (:struct wl-listener))
-  ;; (damage-highlight-regions (:struct wl-list))
-  ;; (render-list (:struct wl-array))
-  )
-
-(cffi:defcstruct scene-timer
-  (pre-render-duration :int64)
-  (render-timer :pointer #| (:struct render-timer) |# ))
-
-(cffi:defcstruct scene-layer-surface-v1
-  "A layer shell scene helper */"
-  (tree :pointer #| (:struct scene-tree) |# )
-  (layer-surface :pointer #| (:struct layer-surface-v1) |# )
-  (tree-destroy (:struct wl-listener))
-  (layer-surface-destroy (:struct wl-listener))
-  (layer-surface-map (:struct wl-listener))
-  (layer-surface-unmap (:struct wl-listener)))
 
 (cffi:defcfun ("wlr_scene_node_destroy" scene-node-destroy) :void
   "Immediately destroy the scene-graph node."
@@ -320,13 +150,13 @@ True is returned if the node and all of its ancestors are enabled."
   (lx (:pointer :int))
   (ly (:pointer :int)))
 
-(cffi:defcfun ("wlr_scene_node_for_each_buffer" scene-node-for-each-buffer) :void
-  "Call `iterator` on each buffer in the scene-graph, with the buffer's
-position in layout coordinates. The function is called from root to leaves
-(in rendering order)."
-  (node :pointer #| (:struct scene-node) |# )
-  (iterator scene-buffer-iterator-func-t)
-  (user-data (:pointer :void)))
+;; (cffi:defcfun ("wlr_scene_node_for_each_buffer" scene-node-for-each-buffer) :void
+;;   "Call `iterator` on each buffer in the scene-graph, with the buffer's
+;; position in layout coordinates. The function is called from root to leaves
+;; (in rendering order)."
+;;   (node :pointer #| (:struct scene-node) |# )
+;;   (iterator scene-buffer-iterator-func-t)
+;;   (user-data (:pointer :void)))
 
 (cffi:defcfun ("wlr_scene_node_at" scene-node-at) :pointer #| (:struct scene-node) |#
   "Find the topmost node in this scene-graph that contains the point at the
@@ -340,7 +170,10 @@ returned node, or NULL if no node is found at that location."
   (ny (:pointer :double)))
 
 (cffi:defcfun ("wlr_scene_create" scene-create) :pointer #| (:struct scene) |#
-  "Create a new scene-graph.")
+  "Create a new scene-graph.
+
+The graph is also a struct wlr_scene_node. Associated resources can be
+destroyed through wlr_scene_node_destroy().")
 
 (cffi:defcfun ("wlr_scene_set_linux_dmabuf_v1" scene-set-linux-dmabuf-v1) :void
   "Handles linux_dmabuf_v1 feedback for all surfaces in the scene.
@@ -349,6 +182,14 @@ Asserts that a struct wlr_linux_dmabuf_v1 hasn't already been set for the scene.
   (scene :pointer #| (:struct scene) |# )
   (linux-dmabuf-v1 :pointer #| (:struct linux-dmabuf-v1) |# ))
 
+(cffi:defcfun ("wlr_scene_set_gamma_control_manager_v1" scene-set-gamma-control-manager-v1) :void
+  "Handles gamma_control_v1 for all outputs in the scene.
+
+Asserts that a struct wlr_gamma_control_manager_v1 hasn't already been set
+for the scene."
+  (scene :pointer #| (:struct scene) |# )
+  (gamma-control :pointer #| (:struct gamma-control-manager-v1) |# ))
+
 (cffi:defcfun ("wlr_scene_tree_create" scene-tree-create) :pointer #| (:struct scene-tree) |#
   "Add a node displaying nothing but its children."
   (parent :pointer #| (:struct scene-tree) |# ))
@@ -356,11 +197,29 @@ Asserts that a struct wlr_linux_dmabuf_v1 hasn't already been set for the scene.
 (cffi:defcfun ("wlr_scene_surface_create" scene-surface-create) :pointer #| (:struct scene-surface) |#
   "Add a node displaying a single surface to the scene-graph.
 
-The child sub-surfaces are ignored.
+The child sub-surfaces are ignored. See wlr_scene_subsurface_tree_create()
 
-wlr_surface_send_enter() and wlr_surface_send_leave() will be called
-automatically based on the position of the surface and outputs in
-the scene."
+Note that this helper does multiple things on behalf of the compositor. Some
+of these include protocol implementations where compositors just need to enable
+the protocols:
+ - wp_viewporter
+ - wp_presentation_time
+ - wp_fractional_scale_v1
+ - wp_alpha_modifier_v1
+ - wp_linux_drm_syncobj_v1
+ - zwp_linux_dmabuf_v1 presentation feedback with wlr_scene_set_linux_dmabuf_v1()
+
+This helper will also transparently:
+ - Send preferred buffer scale¹
+ - Send preferred buffer transform¹
+ - Restack xwayland surfaces. See wlr_xwayland_surface_restack()²
+ - Send output enter/leave events.
+
+¹ Note that scale and transform sent to the surface will be based on the output
+which has the largest visible surface area. Intelligent visibility calculations
+influence this.
+² xwayland stacking order is undefined when the xwayland surfaces do not
+intersect."
   (parent :pointer #| (:struct scene-tree) |# )
   (surface :pointer #| (:struct surface) |# ))
 
@@ -385,7 +244,9 @@ returned. If not, NULL will be returned."
   (scene-buffer :pointer #| (:struct scene-buffer) |# ))
 
 (cffi:defcfun ("wlr_scene_rect_create" scene-rect-create) :pointer #| (:struct scene-rect) |#
-  "Add a node displaying a solid-colored rectangle to the scene-graph."
+  "Add a node displaying a solid-colored rectangle to the scene-graph.
+
+The color argument must be a premultiplied color value."
   (parent :pointer #| (:struct scene-tree) |# )
   (width :int)
   (height :int)
@@ -398,7 +259,9 @@ returned. If not, NULL will be returned."
   (height :int))
 
 (cffi:defcfun ("wlr_scene_rect_set_color" scene-rect-set-color) :void
-  "Change the color of an existing rectangle node."
+  "Change the color of an existing rectangle node.
+
+The color argument must be a premultiplied color value."
   (rect :pointer #| (:struct scene-rect) |# )
   (color :float :count 4))
 
@@ -424,6 +287,15 @@ the whole buffer node will be damaged."
   (scene-buffer :pointer #| (:struct scene-buffer) |# )
   (buffer :pointer #| (:struct buffer) |# )
   (region :pointer #| pixman-region32-t |# ))
+
+(cffi:defcfun ("wlr_scene_buffer_set_buffer_with_options" scene-buffer-set-buffer-with-options) :void
+  "Sets the buffer's backing buffer.
+
+If the buffer is NULL, the buffer node will not be displayed. If options is
+NULL, empty options are used."
+  (scene-buffer :pointer #| (:struct scene-buffer) |# )
+  (buffer :pointer #| (:struct buffer) |# )
+  (options :pointer #| (:struct scene-buffer-set-buffer-options) |# ))
 
 (cffi:defcfun ("wlr_scene_buffer_set_opaque_region" scene-buffer-set-opaque-region) :void
   "Sets the buffer's opaque region. This is an optimization hint used to
@@ -486,10 +358,10 @@ An output can only be added once to the scene-graph."
   (lx :int)
   (ly :int))
 
-(cffi:defcstruct scene-output-state-options
-  (timer :pointer #| (:struct scene-timer) |# )
-  (color-transform :pointer #| (:struct color-transform) |# )
-  (swapchain :pointer #| (:struct swapchain) |# ))
+(cffi:defcfun ("wlr_scene_output_needs_frame" scene-output-needs-frame) :bool
+  "Returns true if scene wants to render a new frame. False, if no new frame
+is needed and an output commit can be skipped for the current frame."
+  (scene-output :pointer #| (:struct scene-output) |# ))
 
 (cffi:defcfun ("wlr_scene_output_commit" scene-output-commit) :bool
   "Render and commit an output."
@@ -519,13 +391,13 @@ matches the given scene_output."
   (scene-output :pointer #| (:struct scene-output) |# )
   (now :pointer #| (:struct timespec) |# ))
 
-(cffi:defcfun ("wlr_scene_output_for_each_buffer" scene-output-for-each-buffer) :void
-  "Call `iterator` on each buffer in the scene-graph visible on the output,
-with the buffer's position in layout coordinates. The function is called
-from root to leaves (in rendering order)."
-  (scene-output :pointer #| (:struct scene-output) |# )
-  (iterator scene-buffer-iterator-func-t)
-  (user-data (:pointer :void)))
+;; (cffi:defcfun ("wlr_scene_output_for_each_buffer" scene-output-for-each-buffer) :void
+;;   "Call `iterator` on each buffer in the scene-graph visible on the output,
+;; with the buffer's position in layout coordinates. The function is called
+;; from root to leaves (in rendering order)."
+;;   (scene-output :pointer #| (:struct scene-output) |# )
+;;   (iterator scene-buffer-iterator-func-t)
+;;   (user-data (:pointer :void)))
 
 (cffi:defcfun ("wlr_scene_get_scene_output" scene-get-scene-output) :pointer #| (:struct scene-output) |#
   "Get a scene-graph output from a struct wlr_output.
