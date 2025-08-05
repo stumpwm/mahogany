@@ -88,14 +88,14 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     struct wlr_xdg_surface *xdg_surface = xdg_toplevel->base;
     // TODO: Maybe remove view->xdg_surface? We can get to it via the toplevel.
     view->xdg_surface = xdg_surface;
-    view->callbacks = callbacks;
+    view->callbacks   = callbacks;
 
     view->map.notify = handle_xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &view->map);
     view->unmap.notify = handle_xdg_toplevel_unmap;
     wl_signal_add(&xdg_surface->surface->events.unmap, &view->unmap);
     view->destroy.notify = handle_xdg_toplevel_destroy;
-    wl_signal_add(&xdg_surface->events.destroy, &view->destroy);
+    wl_signal_add(&xdg_toplevel->events.destroy, &view->destroy);
     view->commit.notify = handle_xdg_toplevel_commit;
     wl_signal_add(&xdg_toplevel->base->surface->events.commit, &view->commit);
 
