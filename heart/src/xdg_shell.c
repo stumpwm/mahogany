@@ -172,7 +172,11 @@ static void handle_new_xdg_toplevel(struct wl_listener *listener, void *data) {
 }
 
 bool hrt_xdg_shell_init(struct hrt_server *server) {
-    server->xdg_shell            = wlr_xdg_shell_create(server->wl_display, 3);
+    server->xdg_shell = wlr_xdg_shell_create(server->wl_display, 3);
+    if (!server->xdg_shell) {
+        wlr_log(WLR_ERROR, "Could not initialize wlr_xdg_shell");
+        return false;
+    }
     server->new_xdg_popup.notify = handle_new_xdg_popup;
     wl_signal_add(&server->xdg_shell->events.new_popup, &server->new_xdg_popup);
 
