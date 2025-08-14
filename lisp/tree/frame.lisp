@@ -196,7 +196,7 @@ Used to initially split all frames, regardless of type."
 					  :height old-height
 					  :x old-x
 					  :y old-y)
-		 (frame-width frame) (- old-width new-frame-width)
+		 (frame-width frame) new-frame-width
 		 (frame-x frame) (+ old-x new-frame-width)
 		 (tree-children new-parent) (list new-frame frame))
 	   (psetf (%frame-prev new-frame) (frame-prev frame)
@@ -253,7 +253,7 @@ Used to initially split all frames, regardless of type."
 					   :height (- old-height new-frame-height)
 					   :x old-x
 					   :y (+ old-y (- old-height new-frame-height))))
-	     (setf (frame-height frame) (- old-height new-frame-height))
+             (setf (frame-height frame) new-frame-height)
 	     (setf (tree-children new-parent) (list frame new-frame))
 	     (psetf (%frame-prev new-frame) frame
 		  (%frame-next new-frame) (frame-next frame)
