@@ -165,7 +165,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-width (* old-width ratio))
+    (let* ((new-frame-width (round (* old-width ratio)))
 	   (new-parent (make-instance parent-type
 				      :split-direction :horizontal
 				      :parent (frame-parent frame)
@@ -221,7 +221,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-height (* old-height ratio))
+    (let* ((new-frame-height (round (* old-height ratio)))
 	   (new-parent (make-instance parent-type
 				      :split-direction :vertical
 				      :parent (frame-parent frame)
