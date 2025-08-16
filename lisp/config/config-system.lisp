@@ -8,6 +8,7 @@
            config-info-value
            describe-all-config-info
            describe-config-info
+	   describe-config
            config-error
            config-not-found-error
            invalid-datum-error
@@ -54,7 +55,17 @@
           (config-info-default info)
           (config-info-value info))
   (alexandria:when-let ((type-specifier (config-info-type info)))
-    (format stream "Type designator: ~A~%" type-specifier)))
+    (format stream "Type designator: ~S~%" type-specifier)))
+
+(defun describe-config (config-name &optional (stream *standard-output*))
+  "Print information about the configuration CONFIG-NAME to the given stream"
+  (if-let ((config-info (config-system:get-config-info config-name)))
+    (progn
+      (config-system:describe-config-info config-info)
+      t)
+    (progn
+      (format stream "No config with symbol ~S" config-name)
+      nil)))
 
 (defun %make-match-readtable (str)
   "Try to make the given string have the correct case for a symbol"

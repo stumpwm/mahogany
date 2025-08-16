@@ -21,6 +21,14 @@ variables, and can be set as such. However, they are strongly typed,
 and it is recommended to use the various setter macros that are
 available to avoid causing problems with the system.
 
+*** =describe-config=
+This macro prints information about the configuration variable to the
+provided stream, which defaults to =*standard-output*=
+
+#+BEGIN_SRC lisp
+  (config-system:describe-config 'config-property)
+#+END_SRC
+
 *** =set-config=
 The macro =set-config= works the same as =setf=, and sets each
 property given to it sequentially:
