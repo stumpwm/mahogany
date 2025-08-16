@@ -1,6 +1,7 @@
 (fiasco:define-test-package #:mahogany-tests/tree
   (:local-nicknames (#:tree #:mahogany/tree))
-  (:use #:mahogany/wm-interface #:mahogany/wm-interface))
+  (:use #:mahogany/wm-interface
+	#:mahogany/test/util))
 
 (in-package #:mahogany-tests/tree)
 
@@ -299,3 +300,23 @@
   (let ((tree (make-tree-for-tests)))
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction :right)
       (is (equal new-frame (second (tree:tree-children new-parent)))))))
+
+(defun check-children-dimensions (children size-list accessor)
+  (loop for c in children
+	for size in size-list
+	do
+	(is (= size (funcall accessor c)))))
+
+(define-matrix binary-split-h-child-sizing ((direction :left :right))
+  (let ((tree (make-tree-for-tests :width 155 :height 255)))
+    (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction direction)
+      (declare (ignore new-frame))
+      (check-children-dimensions (tree:tree-children new-parent) (list 77 78)
+				 #'tree:frame-width))))
+
+(define-matrix binary-split-v-child-sizing ((direction :top :bottom))
+  (let ((tree (make-tree-for-tests :width 155 :height 255)))
+    (multiple-value-bind (new-frame new-parent) (tree:split-frame-v tree :direction direction)
+      (declare (ignore new-frame))
+      (check-children-dimensions (tree:tree-children new-parent) (list 128 127)
+				 #'tree:frame-height))))
