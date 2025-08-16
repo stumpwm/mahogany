@@ -165,7 +165,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-width (* old-width ratio))
+    (let* ((new-frame-width (round (* old-width ratio)))
 	   (new-parent (make-instance parent-type
 				      :split-direction :horizontal
 				      :parent (frame-parent frame)
@@ -196,7 +196,7 @@ Used to initially split all frames, regardless of type."
 					  :height old-height
 					  :x old-x
 					  :y old-y)
-		 (frame-width frame) (- old-width new-frame-width)
+		 (frame-width frame) new-frame-width
 		 (frame-x frame) (+ old-x new-frame-width)
 		 (tree-children new-parent) (list new-frame frame))
 	   (psetf (%frame-prev new-frame) (frame-prev frame)
@@ -221,7 +221,7 @@ Used to initially split all frames, regardless of type."
 		   (old-x frame-x)
 		   (old-y frame-y))
       frame
-    (let* ((new-frame-height (* old-height ratio))
+    (let* ((new-frame-height (round (* old-height ratio)))
 	   (new-parent (make-instance parent-type
 				      :split-direction :vertical
 				      :parent (frame-parent frame)
@@ -253,7 +253,7 @@ Used to initially split all frames, regardless of type."
 					   :height (- old-height new-frame-height)
 					   :x old-x
 					   :y (+ old-y (- old-height new-frame-height))))
-	     (setf (frame-height frame) (- old-height new-frame-height))
+	     (setf (frame-height frame) new-frame-height)
 	     (setf (tree-children new-parent) (list frame new-frame))
 	     (psetf (%frame-prev new-frame) frame
 		  (%frame-next new-frame) (frame-next frame)
