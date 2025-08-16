@@ -41,6 +41,8 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&output->request_state.link);
     wl_list_remove(&output->destroy.link);
 
+    output->wlr_output->data = NULL;
+
     // wlr_output_layout removes the output by itself.
 
     free(output);
@@ -110,6 +112,7 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
+    wlr_output->data = output;
     server->output_callback->output_added(output);
 }
 
