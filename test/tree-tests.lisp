@@ -312,6 +312,7 @@
     (declare (ignore new-frame))
     (dotimes (i (- times 1))
       (multiple-value-bind (new-frame new-parent) (funcall split-fn parent)
+	(declare (ignore new-frame))
 	(setf parent new-parent)))
     parent))
 

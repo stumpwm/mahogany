@@ -88,6 +88,7 @@
 	 (kmap2 (define-kmap key *test-kmap*))
 	 (state (make-key-state (list kmap1 kmap2))))
     (multiple-value-bind (matched result) (key-state-advance key state)
+      (declare (ignore matched))
       (is (eql result nil))
       (is (equalp (mahogany/keyboard::key-state-kmaps state) (list kmap-next *test-kmap*))))))
 
