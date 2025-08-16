@@ -7,8 +7,9 @@ This file is a part of mahogany.
   :depends-on (#:mahogany
 	       #:fiasco)
   :pathname "test/"
-  :components ((:file "ring-list")
-	       (:file "tree-tests")
+  :components ((:file "util")
+	       (:file "ring-list")
+	       (:file "tree-tests" :depends-on ("util"))
 	       (:file "keyboard-tests")
 	       (:file "config-system-tests")
 	       (:file "log-tests"))
