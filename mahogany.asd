@@ -33,7 +33,8 @@
 				     (:file "wlr-bindings")
 				     (:file "hrt-libs")
 				     (:file "hrt-bindings")
-				     (:file "wrappers")))
+				     (:file "wrappers")
+				     (:file "view")))
 	       (:module keyboard
 			:depends-on ("util")
 		        :components ((:file "package")
