@@ -287,8 +287,8 @@
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction :right)
       (is (equal new-frame (second (tree:tree-children new-parent)))))))
 
-(defun check-children-dimensions (children size-list accessor)
-  (loop for c in children
+(defun check-children-dimensions (parent size-list accessor)
+  (loop for c in (tree:tree-children parent)
 	for size in size-list
 	do
 	(is (= size (funcall accessor c)))))
@@ -297,12 +297,52 @@
   (let ((tree (make-tree-for-tests :width 155 :height 255)))
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction direction)
       (declare (ignore new-frame))
-      (check-children-dimensions (tree:tree-children new-parent) (list 77 78)
+      (check-children-dimensions new-parent (list 77 78)
 				 #'tree:frame-width))))
 
 (define-matrix binary-split-v-child-sizing ((direction :top :bottom))
   (let ((tree (make-tree-for-tests :width 155 :height 255)))
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-v tree :direction direction)
       (declare (ignore new-frame))
-      (check-children-dimensions (tree:tree-children new-parent) (list 128 127)
+      (check-children-dimensions new-parent (list 128 127)
 				 #'tree:frame-height))))
+
+(defun split-frame-times (frame times split-fn)
+  (multiple-value-bind (new-frame parent) (funcall split-fn frame)
+    (declare (ignore new-frame))
+    (dotimes (i (- times 1))
+      (multiple-value-bind (new-frame new-parent) (funcall split-fn parent)
+	(setf parent new-parent)))
+    parent))
+
+(fiasco:deftest poly-split-h-child-sizing-right ()
+  (let* ((tree:*new-split-type* :many)
+	 (parent (split-frame-times (make-tree-for-tests) 2
+				    (lambda (x)
+				      (mahogany/tree:split-frame-h x :direction :right)))))
+    (check-children-dimensions parent
+			       (list 33 33 34) #'tree:frame-width)))
+
+(fiasco:deftest poly-split-h-child-sizing-left ()
+  (let* ((tree:*new-split-type* :many)
+	 (parent (split-frame-times (make-tree-for-tests) 2
+				    (lambda (x)
+				      (mahogany/tree:split-frame-h x :direction :left)))))
+    (check-children-dimensions parent
+			       (list 34 33 33) #'tree:frame-width)))
+
+(fiasco:deftest poly-split-v-child-sizing-right ()
+  (let* ((tree:*new-split-type* :many)
+	 (parent (split-frame-times (make-tree-for-tests) 2
+				    (lambda (x)
+				      (mahogany/tree:split-frame-v x :direction :top)))))
+    (check-children-dimensions parent
+			       (list 33 33 34) #'tree:frame-height)))
+
+(fiasco:deftest poly-split-v-child-sizing-left ()
+  (let* ((tree:*new-split-type* :many)
+	 (parent (split-frame-times (make-tree-for-tests) 2
+				    (lambda (x)
+				      (mahogany/tree:split-frame-v x :direction :bottom)))))
+    (check-children-dimensions parent
+			       (list 34 33 33) #'tree:frame-height)))

@@ -279,12 +279,18 @@ Used to initially split all frames, regardless of type."
       frame
     (let* ((parent-children-len (length parent-children))
 	   (new-num-children (+ parent-children-len 1))
-	   (new-frame-width (if ratio
-				(* ratio parent-width)
-				(* parent-width (/ 1 new-num-children))))
-	   (other-children-width (/ (- parent-width new-frame-width)
-					      parent-children-len))
+	   (new-frame-width (round (if ratio
+				       (* ratio parent-width)
+				       (* parent-width (/ 1 new-num-children)))))
+	   (other-children-width)
 	   (new-frame) (x-adjust) (new-frame-list))
+      ;; To make the total dimensions of the child frames add up to
+      ;; the parent frame dimensions while still being integers, put any remainder
+      ;; into the new frame:
+      (multiple-value-bind (result remainder)
+	  (truncate (- parent-width new-frame-width) parent-children-len)
+	(setf other-children-width result
+	      new-frame-width (+ new-frame-width remainder)))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
 	(:right
@@ -331,12 +337,19 @@ Used to initially split all frames, regardless of type."
       frame
     (let* ((parent-children-len (length parent-children))
 	   (new-num-children (+ parent-children-len 1))
-	   (new-frame-height (if ratio
-				 (* ratio parent-height)
-				 (* parent-height (/ 1 new-num-children))))
-	   (other-children-height (/ (- parent-height new-frame-height)
-				    parent-children-len))
+	   (new-frame-height (round (if ratio
+					(* ratio parent-height)
+					(* parent-height (/ 1 new-num-children)))))
+	   (other-children-height)
 	   (new-frame) (y-adjust) (new-frame-list))
+      ;; To make the total dimensions of the child frames add up to
+      ;; the parent frame dimensions while still being integers, put any remainder
+      ;; into the new frame:
+      (multiple-value-bind (result remainder)
+	  (truncate (- parent-width new-frame-height)
+		    parent-children-len)
+	(setf other-children-height result
+	      new-frame-height (+ new-frame-height remainder)))
       ;; create the new frame and add it to a new frame-list:
       (ecase direction
 	(:top
