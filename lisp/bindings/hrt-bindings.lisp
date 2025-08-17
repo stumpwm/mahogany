@@ -87,13 +87,16 @@ names."
 
 (cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
+(cffi:defctype view-request-fullscreen :pointer #| function ptr _Bool (struct hrt_view *, struct hrt_output *, _Bool) |#)
+
 (cffi:defcstruct hrt-view-callbacks
   (new-view new-view-handler)
   (view-mapped view-mapped-handler)
   (view-unmapped view-mapped-handler)
   (request-minimize view-mapped-handler)
   (request-maximize view-mapped-handler)
-  (view-destroyed view-destroy-handler))
+  (view-destroyed view-destroy-handler)
+  (request-fullscreen view-request-fullscreen))
 
 (cffi:defcstruct hrt-view
   (width :int)

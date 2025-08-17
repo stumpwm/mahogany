@@ -91,13 +91,16 @@
       (loop for g across groups
             do (group-add-output g mh-output (server-seat state))))))
 
+(defun %find-output (hrt-output outputs)
+  (find hrt-output outputs
+      :key #'mahogany-output-hrt-output
+      :test #'cffi:pointer-eq))
+
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs mahogany-state-outputs)
                    (groups mahogany-state-groups))
       state
-    (let ((mh-output (find hrt-output outputs
-                           :key #'mahogany-output-hrt-output
-                           :test #'cffi:pointer-eq)))
+    (let ((mh-output (%find-output hrt-output outputs)))
       (log-string :debug "Output removed ~S" (mahogany-output-full-name mh-output))
       (loop for g across groups
             do (group-remove-output g mh-output (server-seat state)))
@@ -192,6 +195,14 @@
           (group-remove-view group view))
         (remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
+
+(defun mahogany-state-view-fullscreen (state view-ptr output-ptr set-fullscreen)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (let ((output (%find-output output-ptr (mahogany-state-outputs state))))
+    (%with-found-view state (view view-ptr)
+      (%with-found-group state (group view)
+	(group-set-fullscreen group view output set-fullscreen)))))
 
 (defun mahogany-state-view-map (state view-ptr)
   (declare (type mahogany-state state)

@@ -11,6 +11,7 @@
            #:view-unmapped
            #:request-minimize
            #:request-maximize
+           #:request-fullscreen
            #:view-destroyed
            #:view-mapped-p
            #:hrt-seat
