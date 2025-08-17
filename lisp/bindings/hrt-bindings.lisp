@@ -97,11 +97,14 @@ names."
 
 (cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
+(cffi:defctype view-request-fullscreen :pointer #| function ptr _Bool (struct hrt_view *, struct hrt_output *, _Bool) |#)
+
 (cffi:defcstruct hrt-view-callbacks
   (new-view new-view-handler)
   (view-mapped view-mapped-handler)
   (view-unmapped view-mapped-handler)
-  (view-destroyed view-destroy-handler))
+  (view-destroyed view-destroy-handler)
+  (request-fullscreen view-request-fullscreen))
 
 (cffi:defcstruct hrt-view
   (width :int)
@@ -261,3 +264,5 @@ set the width and height of views."
 
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
   (server (:pointer (:struct hrt-server))))
+
+(cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
