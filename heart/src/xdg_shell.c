@@ -47,7 +47,7 @@ static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
 static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener,
                                                    void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel request fullscreen");
-    struct hrt_view *view = wl_container_of(listener, view, request_maximize);
+    struct hrt_view *view = wl_container_of(listener, view, request_fullscreen);
     // The protocol specifies that after this request is made, we must
     // send a configure event. Since we don't support this,
     // send one that keeps the previous configuration:
@@ -99,14 +99,14 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     view->commit.notify = handle_xdg_toplevel_commit;
     wl_signal_add(&xdg_toplevel->base->surface->events.commit, &view->commit);
 
+    // Swaywm registers these when the toplevel is mapped, but I don't think  that should make
+    // a difference:
     view->request_fullscreen.notify = handle_xdg_toplevel_request_fullscreen;
     wl_signal_add(&xdg_toplevel->events.request_fullscreen,
                   &view->request_fullscreen);
     view->request_maximize.notify = &handle_xdg_toplevel_request_maximize;
     wl_signal_add(&xdg_toplevel->events.request_maximize,
                   &view->request_maximize);
-    // TODO: We need to listen to the commit event so we can send the configure
-    // message on first commit
 
     return view;
 }
