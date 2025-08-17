@@ -40,7 +40,8 @@ further up. "
     (hrt:request-minimize handle-view-minimize)
     (hrt:view-mapped handle-view-mapped)
     (hrt:view-unmapped handle-view-unmapped)
-    (hrt:view-destroyed handle-view-destroyed-event)))
+    (hrt:view-destroyed handle-view-destroyed-event)
+    (hrt:request-fullscreen handle-request-fullscreen)))
 
 (defun run-server (args)
   (disable-fpu-exceptions)

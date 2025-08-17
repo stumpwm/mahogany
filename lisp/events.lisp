@@ -30,6 +30,13 @@
   (log-string :trace "View maximize callback called!")
   (mahogany-state-view-maximize *compositor-state* view))
 
+(cffi:defcallback handle-request-fullscreen :bool
+    ((view (:pointer (:struct hrt:hrt-view)))
+     (output (:pointer (:struct hrt:hrt-output)))
+     (fullscreen :bool))
+  (log-string :trace "fullscreen requested: view ~S on output ~S" view output)
+  (mahogany-state-view-fullscreen *compositor-state* view output fullscreen))
+
 (cffi:defcallback handle-new-output :void ((output (:pointer (:struct hrt:hrt-output))))
   (mahogany-state-output-add *compositor-state* output))
 

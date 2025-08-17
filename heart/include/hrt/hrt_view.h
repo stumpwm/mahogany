@@ -1,16 +1,21 @@
 #ifndef HRT_VIEW
 #define HRT_VIEW
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <wayland-server-core.h>
 #include <hrt/hrt_server.h>
 #include "hrt_input.h"
+#include "hrt_output.h"
 
 struct hrt_view;
 
 typedef void (*view_destroy_handler)(struct hrt_view *view);
 typedef void (*new_view_handler)(struct hrt_view *view);
 typedef void (*view_mapped_handler)(struct hrt_view *view);
+typedef bool (*view_request_fullscreen)(struct hrt_view *view,
+                                        struct hrt_output *output,
+                                        bool fullscreen);
 
 struct hrt_view_callbacks {
     /**
@@ -23,6 +28,8 @@ struct hrt_view_callbacks {
     view_mapped_handler request_minimize;
     view_mapped_handler request_maximize;
     view_destroy_handler view_destroyed;
+
+    view_request_fullscreen request_fullscreen;
 };
 
 struct hrt_view {

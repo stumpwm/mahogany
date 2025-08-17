@@ -232,6 +232,11 @@ currently focused frame"
   (let ((current-frame (mahogany-group-current-frame group)))
     (%maximize-frame group current-frame)))
 
+(defun group-set-fullscreen (group view output set-fullscreen)
+  ;; TODO: implement me!
+  nil ; return nil to show no action was taken
+  )
+
 (defun group-next-hidden (group)
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group))
