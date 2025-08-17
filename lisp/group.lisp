@@ -211,6 +211,11 @@ currently focused frame"
 	       (%add-hidden (mahogany-group-hidden-views group) view))))
       (tree:replace-frame tree-root current-frame #'hide-and-disable))))
 
+(defun group-set-fullscreen (group view output set-fullscreen)
+  ;; TODO: implement me!
+  nil ; return nil to show no action was taken
+  )
+
 (defun group-next-hidden (group)
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group))

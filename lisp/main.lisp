@@ -35,7 +35,8 @@ further up. "
     (hrt:new-view handle-new-view-event)
     (hrt:view-mapped handle-view-mapped)
     (hrt:view-unmapped handle-view-unmapped)
-    (hrt:view-destroyed handle-view-destroyed-event)))
+    (hrt:view-destroyed handle-view-destroyed-event)
+    (hrt:request-fullscreen handle-request-fullscreen)))
 
 (defun run-server (args)
   (disable-fpu-exceptions)

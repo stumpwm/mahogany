@@ -6,7 +6,9 @@
 #include <wlr/util/log.h>
 
 #include "hrt/hrt_input.h"
+#include "hrt/hrt_output.h"
 #include "hrt/hrt_server.h"
+#include "xdg-shell-protocol.h"
 #include "xdg_impl.h"
 #include "hrt/hrt_view.h"
 #include "view_impl.h"
@@ -15,6 +17,7 @@
 
 static void send_dummy_configure(struct hrt_view *view) {
     if (view->xdg_toplevel->base->initialized) {
+        wlr_log(WLR_DEBUG, "Sending dummy configure");
         wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
     }
 }
@@ -46,12 +49,28 @@ static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
 
 static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener,
                                                    void *data) {
-    wlr_log(WLR_DEBUG, "XDG Toplevel request fullscreen");
     struct hrt_view *view = wl_container_of(listener, view, request_fullscreen);
+    struct wlr_xdg_toplevel *toplevel = view->xdg_toplevel;
+
+    if (!toplevel->base->surface->mapped) {
+        send_dummy_configure(view);
+        return;
+    }
+
+    struct hrt_output *requested_output = NULL;
+    struct wlr_xdg_toplevel_requested *req = &toplevel->requested;
+    if (req->fullscreen && req->fullscreen_output &&
+        req->fullscreen_output->data) {
+        requested_output = req->fullscreen_output->data;
+    }
+    bool changed = view->callbacks->request_fullscreen(view, requested_output,
+                                                       req->fullscreen);
+    wlr_log(WLR_DEBUG, "Fullscreen request fufilled: %d", changed);
     // The protocol specifies that after this request is made, we must
-    // send a configure event. Since we don't support this,
-    // send one that keeps the previous configuration:
-    send_dummy_configure(view);
+    // send a configure event. If we didn't do that, send it now:
+    if (!changed) {
+        send_dummy_configure(view);
+    }
 }
 
 static void handle_xdg_toplevel_destroy(struct wl_listener *listener,

@@ -4,13 +4,14 @@
   (:nicknames #:hrt)
   (:export #:hrt-output-callbacks
 	   #:hrt-seat-callbacks
+	   #:hrt-view
+	   ;; view callbacks:
 	   #:hrt-view-callbacks
 	   #:new-view
-	   #:hrt-view
 	   #:view-mapped
 	   #:view-unmapped
 	   #:view-destroyed
-	   #:view-mapped-p
+	   #:request-fullscreen
 	   #:hrt-seat
 	   #:hrt-seat-notify-button
 	   #:hrt-seat-notify-axis
@@ -38,6 +39,7 @@
 	   #:focus-view
 	   #:unfocus-view
 	   #:view-set-hidden
+	   #:view-mapped-p
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
