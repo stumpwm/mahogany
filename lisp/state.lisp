@@ -16,10 +16,12 @@
       default-group)))
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (mahogany-state-server state) server)
   (hrt:hrt-server-init server
                        output-callbacks seat-callbacks view-callbacks
+		       layer-shell-callbacks
                        debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (mahogany-current-group state) default-group)))

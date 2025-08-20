@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <string.h>
+#include <time.h>
 #include <wlr/util/log.h>
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
@@ -75,7 +76,10 @@ int main(int argc, char *argv[]) {
 
   struct hrt_server server;
 
-  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks, &view_callbacks, WLR_DEBUG)) {
+  if (!hrt_server_init(&server, &output_callbacks, &seat_callbacks,
+                       &view_callbacks,
+                       NULL,
+                       WLR_DEBUG)) {
     return 1;
   }
 
