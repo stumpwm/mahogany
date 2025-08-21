@@ -31,7 +31,6 @@
 	   #:output-position
 	   ;; view-methods
 	   #:view
-	   #:view-init
 	   #:view-reparent
 	   #:view-request-close
 	   #:view-hrt-view

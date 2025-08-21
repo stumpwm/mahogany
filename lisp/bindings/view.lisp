@@ -3,11 +3,6 @@
 (defstruct (view (:constructor %make-view (hrt-view)))
   (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
 
-;; (defun view-init (hrt-view scene-tree)
-;;   (let ((view (%make-view hrt-view)))
-;;     (hrt-view-init hrt-view scene-tree)
-;;     (the view view)))
-
 (declaim (inline focus-view))
 (defun focus-view (view seat)
   (declare (type view view))
