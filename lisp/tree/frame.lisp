@@ -543,20 +543,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	(push l populated)))
     populated))
 
-;; This is really awkward, as we don't want to
-;; declare an in-frame-p method for the tree-parent class,
-;; as we would overshadow the implementation for the `tree-frame`
-;; type, which needs to use the regular `frame` implementation:
-(defmethod in-frame-p ((parent output-node) x y)
-  ;; output nodes have exactly 1 child:
-  (let ((f (car (tree-children parent))))
-    (in-frame-p f x y)))
-
-(defmethod frame-at ((parent output-node) x y)
-  ;; output nodes have exactly 1 child:
-  (let ((f (car (tree-children parent))))
-    (frame-at f x y)))
-
 (defmethod in-frame-p ((frame frame) x y)
   (declare (type real x y))
   (let ((frame-x (frame-x frame))

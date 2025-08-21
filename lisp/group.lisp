@@ -85,10 +85,7 @@ to match."
 			      (hrt-output mahogany-output-hrt-output))
 		 mh-output
 	       (alexandria:when-let ((tree (gethash full-name output-map)))
-		 (multiple-value-bind (x y) (hrt:output-position hrt-output)
-		   (set-position tree x y))
-		 (multiple-value-bind (width height) (hrt:output-resolution hrt-output)
-		   (set-dimensions tree width height)))))))
+		 (tree:reconfigure-node tree hrt-output))))))
 
 (defun %first-hash-table-value (table)
   (declare (type hash-table table)
