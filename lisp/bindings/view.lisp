@@ -3,10 +3,10 @@
 (defstruct (view (:constructor %make-view (hrt-view)))
   (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
 
-(defun view-init (hrt-view scene-tree)
-  (let ((view (%make-view hrt-view)))
-    (hrt-view-init hrt-view scene-tree)
-    (the view view)))
+;; (defun view-init (hrt-view scene-tree)
+;;   (let ((view (%make-view hrt-view)))
+;;     (hrt-view-init hrt-view scene-tree)
+;;     (the view view)))
 
 (declaim (inline focus-view))
 (defun focus-view (view seat)
@@ -38,6 +38,11 @@
 (defun view-request-close (view)
   (declare (type view view))
   (hrt-view-request-close (view-hrt-view view)))
+
+(declaim (inline view-set-fullscreen))
+(defun view-set-fullscreen (view fullscreen)
+  (declare (type view view))
+  (hrt-view-set-fullscreen (view-hrt-view view) fullscreen))
 
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))

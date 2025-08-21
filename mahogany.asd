@@ -34,7 +34,8 @@
 				     (:file "hrt-libs")
 				     (:file "hrt-bindings")
 				     (:file "wrappers")
-				     (:file "view")))
+				     (:file "view")
+				     (:file "scene-group")))
 	       (:module keyboard
 			:depends-on ("util")
 		        :components ((:file "package")

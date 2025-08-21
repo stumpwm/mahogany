@@ -5,6 +5,7 @@ hrt_source_files += files(
   'output.c',
   'output_methods.c',
   'seat.c',
+  'scene.c',
   'server.c',
   'view.c',
   'xdg_shell.c',

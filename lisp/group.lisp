@@ -1,46 +1,48 @@
 (in-package #:mahogany)
 
 (defun make-mahogany-group (name number scene-tree)
-  (let ((scene-node (wlr:scene-tree-create scene-tree)))
-    (wlr:scene-node-set-enabled scene-node nil)
+  (let ((hrt-group (hrt:hrt-scene-group-create scene-tree)))
+    (hrt:hrt-scene-group-set-enabled hrt-group nil)
     (log-string :debug "Created group ~A" name)
-    (%make-mahogany-group name number scene-node)))
+    (%make-mahogany-group name number hrt-group)))
 
 (defun destroy-mahogany-group (group scene-tree)
   (alexandria:when-let ((views (mahogany-group-views group)))
     (log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
     (dolist (v views)
       (hrt:view-reparent v scene-tree)))
-  (wlr:scene-node-destroy (mahogany-group-scene-tree group))
+  (hrt:hrt-scene-group-destroy (mahogany-group-hrt-group group))
   (log-string :debug "Destroyed group ~A" (mahogany-group-name group)))
 
 (defun group-suspend (group seat)
   (declare (type mahogany-group group))
   (with-accessors ((focused-frame mahogany-group-current-frame)
-                   (scene-tree mahogany-group-scene-tree))
+                   (hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Suspending group ~A" (mahogany-group-name group))
     (when focused-frame
       (tree:unmark-frame-focused focused-frame seat))
-    (wlr:scene-node-set-enabled scene-tree nil)))
+    (hrt:hrt-scene-group-set-enabled hrt-group nil)))
 
 (defun group-wakeup (group seat)
   (declare (type mahogany-group group))
   (with-accessors ((focused-frame mahogany-group-current-frame)
-                   (scene-tree mahogany-group-scene-tree))
+                   (hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Waking up group ~A" (mahogany-group-name group))
     (when focused-frame
       (tree:mark-frame-focused focused-frame seat))
-    (wlr:scene-node-set-enabled scene-tree t)))
+    (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
 (defun group-transfer-views (group to-transfer)
-  "Transfer the views from to-transfer to group"
+  "Transfer the all views from to-transfer to group"
   (declare (type mahogany-group group to-transfer))
-  (let ((scene-tree (mahogany-group-scene-tree group))
+  (let ((hrt-group (mahogany-group-hrt-group group))
+	(to-transfer-group (mahogany-group-hrt-group to-transfer))
         (hidden-list (mahogany-group-hidden-views group)))
+    (hrt:hrt-scene-group-transfer to-transfer-group hrt-group)
     (dolist (other-view (mahogany-group-views to-transfer))
-      (group-remove-view to-transfer other-view scene-tree)
+      (group-remove-view to-transfer other-view)
       (push other-view (mahogany-group-views group))
       (when (hrt:view-mapped-p other-view)
 	(%add-hidden hidden-list other-view)))))
@@ -148,7 +150,8 @@ to match."
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)
            (type cffi:foreign-pointer view-ptr))
-  (let ((view (hrt:view-init view-ptr (mahogany-group-scene-tree group))))
+  (let* ((hrt-group (mahogany-group-hrt-group group))
+	 (view (hrt:scene-init-view hrt-group view-ptr)))
     (push view (mahogany-group-views group))
     ;; We need to send a configure event, so we might as well
     ;; guess the size of the window:
@@ -162,32 +165,36 @@ to match."
 (defun group-map-view (group view)
   (%group-add-view group view))
 
-(defun %group-remove-view (group view &optional new-scene-tree)
+(declaim (inline %find-view-frame))
+(defun %find-view-frame (group view fn)
+  (dolist (tree (tree:tree-children (mahogany-group-tree-container group)))
+    (dolist (f (mahogany/tree:get-populated-frames tree))
+      (when (equalp (tree:frame-view f) view)
+	(funcall fn f)))))
+
+(defun %group-remove-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
 		   (output-map mahogany-group-output-map)
 		   (hidden mahogany-group-hidden-views))
       group
-    (dolist (tree (tree:tree-children (mahogany-group-tree-container group)))
-      (dolist (f (mahogany/tree:get-populated-frames tree))
-	(when (equalp (tree:frame-view f) view)
-	  (setf (tree:frame-view f) nil)
-	  (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
-	    (setf (tree:frame-view f) new-view)))))
-    (when new-scene-tree
-      (hrt:view-reparent view new-scene-tree))
+    (flet ((remove-and-populate (f)
+	     (setf (tree:frame-view f) nil)
+	     (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
+	       (setf (tree:frame-view f) new-view))))
+      (%find-view-frame group view #'remove-and-populate))
     (ring-list:remove-item hidden view)))
 
 (defun group-unmap-view (group view)
   (%group-remove-view group view))
 
-(defun group-remove-view (group view &optional new-scene-tree)
+(defun group-remove-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
 		   (output-map mahogany-group-output-map)
 		   (hidden mahogany-group-hidden-views))
       group
-    (%group-remove-view group view new-scene-tree)
+    (%group-remove-view group view)
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))
