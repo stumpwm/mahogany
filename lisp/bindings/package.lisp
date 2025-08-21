@@ -31,7 +31,6 @@
 	   #:output-position
 	   ;; view-methods
 	   #:view
-	   #:view-init
 	   #:view-reparent
 	   #:view-request-close
 	   #:view-hrt-view
@@ -52,6 +51,19 @@
 	   #:modifiers
 	   #:keysyms-len
 	   #:wl-key-state
+	   ;; scene helpers:
+	   #:hrt-scene-group-create
+	   #:hrt-scene-group-destroy
+	   #:scene-group-add-view
+	   #:hrt-scene-group-set-enabled
+	   #:hrt-scene-group-transfer
+	   #:hrt-scene-group-set-dimensions
+	   #:hrt-scene-group-set-position
+	   ;; #:hrt-scene-group-normal
+	   #:scene-create-fullscreen-node
+	   #:hrt-scene-fullscreen-node-destroy
+	   #:hrt-scene-fullscreen-configure
+	   #:scene-init-view
 	   #:load-foreign-libraries))
 
 (defpackage #:wlr
