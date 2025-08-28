@@ -20,7 +20,7 @@
 
 ** Contributing / Hacking
 
-Mahogany is still in an early stage of development. See the 
+Mahogany is still in an early stage of development. See the
 [[https://github.com/stumpwm/mahogany/milestones][list of milestones]]
 for features or work that is ready to be started. You can also browse the
 issue list for labels marked with
@@ -46,7 +46,7 @@ Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]]
    git submodule update --init
    #+END_SRC
 
-To see a full example of this process, see the 
+To see a full example of this process, see the
 [[https://github.com/stumpwm/mahogany/blob/master/Dockerfile][CI's Dockerfile]]
 
 *** Backend Library Dependencies
@@ -70,7 +70,7 @@ install it.
 
 Once downloaded, install the dependencies:
 #+BEGIN_SRC lisp
-  (ql:quickload '("alexandria" "cl-ansi-text" "terminfo" "cl-argparse"
+  (ql:quickload '("alexandria" "cl-ansi-text" "terminfo" "adopt"
 		  "snakes" "iterate" "cffi" "cffi-grovel" "closer-mop"))
 #+END_SRC
 

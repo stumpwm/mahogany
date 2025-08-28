@@ -9,7 +9,7 @@
 	       #:alexandria
 	       #:cl-ansi-text
 	       #:terminfo
-		   #:cl-argparse
+	       #:adopt
 	       #:xkbcommon
 	       #:cl-wayland
 	       #:snakes

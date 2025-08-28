@@ -42,7 +42,7 @@ further up. "
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (enable-debugger)
-  (if (cl-argparse:get-value "skip-init" args)
+  (if (gethash 'no-init-file args)
       (log-string :info "Init file loading skipped")
       (load-config-file))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
@@ -70,18 +70,40 @@ further up. "
       (server-state-reset *compositor-state*)
       (log-string :debug "Shutdown reached."))))
 
+(defun %build-cmd-line-parser ()
+  (let ((help-option (adopt:make-option
+		     'help
+		     :long "help"
+		     :short #\h
+		     :help "Display help and exit."
+		     :reduce (constantly t)))
+       (no-init-option (adopt:make-option
+			'no-init-file
+			:long "no-init-file"
+			:short #\q
+			:help "Do not evaulate an init file on startup"
+			:reduce (constantly t))))
+    (adopt:make-interface
+	       :name "mahogany"
+	       :summary "Keyboard driven titling window manager for Wayland"
+	       :usage "[OPTIONS]"
+	       :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
+	       :contents (list
+			  help-option
+			  no-init-option))))
+
 (defun %parse-cmd-line-args (args)
-  (let ((parser (cl-argparse:create-main-parser (main-parser "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
-                                                             "mahogany")
-                  (cl-argparse:add-flag main-parser
-                                        :short "q" :long "no-init-file"
-                                        :help "Do not load an init file on startup"
-                                        :var "skip-init"))))
-    (cl-argparse:parse parser args)))
+  (let ((parser (%build-cmd-line-parser)))
+    (handler-case
+	(multiple-value-bind (unused found) (adopt:parse-options parser args)
+	  (declare (ignore unused))
+	  (when (gethash 'help found)
+	    (adopt:print-help-and-exit parser))
+	  found)
+      (adopt:unrecognized-option (e)
+	(adopt:print-help parser)
+	(adopt:print-error-and-exit e)))))
 
 (defun main ()
-  (handler-case
-      (let ((args (%parse-cmd-line-args (uiop:command-line-arguments))))
-        (run-server args))
-    (cl-argparse:cancel-parsing-error (e)
-      (format t "~a~%" e))))
+  (let* ((args (%parse-cmd-line-args (uiop:command-line-arguments))))
+    (run-server args)))
