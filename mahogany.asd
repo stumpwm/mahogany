@@ -12,7 +12,6 @@
 	       #:adopt
 	       #:xkbcommon
 	       #:cl-wayland
-	       #:snakes
 	       #:iterate
 	       #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
