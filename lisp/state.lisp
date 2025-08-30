@@ -3,9 +3,9 @@
 (defvar *default-group-name* "DEFAULT")
 
 (defun %add-group (state name index)
-  (declare (type state mahogany-state)
-           (type name string)
-           (type index fixnum))
+  (declare (type mahogany-state state)
+           (type string name)
+           (type fixnum index))
   (with-accessors ((groups mahogany-state-groups)
                    (current-group mahogany-current-group)
                    (server mahogany-state-server))
