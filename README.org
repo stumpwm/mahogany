@@ -71,7 +71,7 @@ install it.
 Once downloaded, install the dependencies:
 #+BEGIN_SRC lisp
   (ql:quickload '("alexandria" "cl-ansi-text" "terminfo" "adopt"
-		  "snakes" "iterate" "cffi" "cffi-grovel" "closer-mop"))
+		  "iterate" "cffi" "cffi-grovel" "closer-mop"))
 #+END_SRC
 
 *** Building And Running

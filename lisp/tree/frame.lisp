@@ -416,10 +416,8 @@ Used to initially split all frames, regardless of type."
 (defun release-frames (frame &optional (cleanup-func #'identity))
   "Remove the views stored in the frame. When a frame is removed,
 REMOVE-FUNC is called with one argument: the view that was removed."
-  (iter (for (frame) snakes:in-generator (leafs-in frame))
-	(funcall cleanup-func frame)
-	;; (setf (frame-view frame) nil)
-	))
+  (foreach-leaf (f frame)
+    (funcall cleanup-func f)))
 
 (defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
   (assert (equal (frame-parent frame) parent)))
@@ -523,9 +521,9 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 	      width height x y split-direction children))))
 
 (defmethod find-empty-frame ((root frame))
-  (iter (for (frame) snakes:in-generator (leafs-in root))
-	(unless (frame-view frame)
-	  (return-from find-empty-frame frame))))
+  (foreach-leaf (frame root)
+    (unless (frame-view frame)
+      (return-from find-empty-frame frame))))
 
 (defmethod find-empty-frame ((root tree-parent))
   (dolist (tree (tree-children root))
@@ -539,8 +537,11 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 
 (defun get-populated-frames (root)
   "Return a list of view-frames that contain views"
-  (remove-if (lambda (x) (not (frame-view x)))
-	     (snakes:generator->list (leafs-in root))))
+  (let ((populated nil))
+    (foreach-leaf (l root)
+      (when (frame-view l)
+	(push l populated)))
+    populated))
 
 ;; This is really awkward, as we don't want to
 ;; declare an in-frame-p method for the tree-parent class,
