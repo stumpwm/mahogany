@@ -14,6 +14,20 @@
 ;;
 ;;   guix shell -D -f guix.scm
 ;;
+;; A note from 2025. The instructions above are outdated.
+;; For now, to run an old mahogany commit (from 2023),
+;; you can use guix time-machine which will use an old
+;; guix commit (also from 2023).
+;;
+;;   guix time-machine \
+;;        --commit=e38d6a9c2fba815ac34e74baa843f15e33846813 \
+;;        --channels=/path/to/your/guix/channels.scm \
+;;        -- \
+;;        build --file=guix.scm
+;;
+;; Your channels.scm should contain only main guix channel.
+;; In my case it was https://codeberg.org/guix/guix .
+;;
 ;;; Code:
 
 (define-module (mahogany-package)
@@ -35,18 +49,21 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages wm))
 
-(define vcs-file?
-  ;; Return true if the given file is under version control.
-  (or (git-predicate (string-append (current-source-directory) "/../.."))
-      (const #t)))                                ;not in a Git checkout
-
 (define-public mahogany
   (package
     (name "mahogany")
-    (version (git-version "0.0.0" "0" "000000000000000000000000000000000000000000"))
-    (source (local-file "../.." "mahogany-checkout"
-                        #:recursive? #t
-                        #:select? vcs-file?))
+    (version "0.0.0")
+    (source
+     (origin
+      (method git-fetch)
+      (uri (git-reference
+            (url "https://github.com/stumpwm/mahogany")
+            ;; old mahogany commit (from 2023)
+            (commit "8328c9cbe90978826f28ef39d835e8b8b2511b06")
+            (recursive? #true)))
+      (file-name (git-file-name name version))
+      (sha256
+       (base32 "03yhxs6srpjj7awfqss8dkalh7brhyr69rh115wixkf3w5r4mrvv"))))
     (build-system asdf-build-system/sbcl)
     (native-inputs
      (list sbcl-fiasco
