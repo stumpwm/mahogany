@@ -36,6 +36,7 @@
 	   #:mark-frame-focused
 	   #:unmark-frame-focused
 	   #:replace-frame
+	   #:reconfigure-node
 	   ;; View-frame functions / objects
 	   #:view-frame
 	   #:frame-view
