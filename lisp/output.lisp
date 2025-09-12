@@ -11,12 +11,12 @@
 		 (or model "")
 		 (or serial ""))))
 
-(defun construct-mahogany-output (hrt-output)
+(defun make-mahogany-output (hrt-output)
   (let ((name (%get-output-full-name hrt-output)))
     (%make-mahogany-output hrt-output name)))
 
 (cffi:defcallback handle-new-output :void ((output (:pointer (:struct hrt:hrt-output))))
-  (let ((mh-output (construct-mahogany-output output)))
+  (let ((mh-output (make-mahogany-output output)))
     (mahogany-state-output-add *compositor-state* mh-output)))
 
 (cffi:defcallback handle-output-removed :void ((output (:pointer (:struct hrt:hrt-output))))
