@@ -97,14 +97,11 @@ names."
 
 (cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
-(cffi:defctype view-request-fullscreen :pointer #| function ptr _Bool (struct hrt_view *, struct hrt_output *, _Bool) |#)
-
 (cffi:defcstruct hrt-view-callbacks
   (new-view new-view-handler)
   (view-mapped view-mapped-handler)
   (view-unmapped view-mapped-handler)
-  (view-destroyed view-destroy-handler)
-  (request-fullscreen view-request-fullscreen))
+  (view-destroyed view-destroy-handler))
 
 (cffi:defcstruct hrt-view
   (width :int)
@@ -134,10 +131,6 @@ serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))
-
-(cffi:defcfun ("hrt_view_set_fullscreen" hrt-view-set-fullscreen) :uint32
-  (view (:pointer (:struct hrt-view)))
-  (fullscreen :bool))
 
 (cffi:defcfun ("hrt_view_mapped" hrt-view-mapped) :bool
   (view (:pointer (:struct hrt-view))))
@@ -286,6 +279,20 @@ set the width and height of views."
 
 ;; next section imported from file build/include/hrt/hrt_scene.h
 
+(cffi:defcstruct hrt-scene-root
+  (background :pointer #| (:struct wlr-scene-tree) |# )
+  (bottom :pointer #| (:struct wlr-scene-tree) |# )
+  (normal :pointer #| (:struct wlr-scene-tree) |# )
+  (fullscreen :pointer #| (:struct wlr-scene-tree) |# )
+  (top :pointer #| (:struct wlr-scene-tree) |# )
+  (overlay :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcstruct hrt-scene-output
+  (background :pointer #| (:struct wlr-scene-tree) |# )
+  (bottom :pointer #| (:struct wlr-scene-tree) |# )
+  (top :pointer #| (:struct wlr-scene-tree) |# )
+  (overlay :pointer #| (:struct wlr-scene-tree) |# ))
+
 (cffi:defcstruct hrt-scene-group
   (normal :pointer #| (:struct wlr-scene-tree) |# )
   (fullscreen :pointer #| (:struct wlr-scene-tree) |# ))
@@ -295,8 +302,20 @@ set the width and height of views."
   (background :pointer #| (:struct wlr-scene-rect) |# )
   (view (:pointer (:struct hrt-view))))
 
+(cffi:defcfun ("hrt_scene_root_create" hrt-scene-root-create) (:pointer (:struct hrt-scene-root))
+  (scene :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_scene_root_destroy" hrt-scene-root-destroy) :void
+  (scene-root (:pointer (:struct hrt-scene-root))))
+
+(cffi:defcfun ("hrt_scene_output_create" hrt-scene-output-create) (:pointer (:struct hrt-scene-output))
+  (scene (:pointer (:struct hrt-scene-root))))
+
+(cffi:defcfun ("hrt_scene_output_destroy" hrt-scene-output-destroy) :void
+  (output (:pointer (:struct hrt-scene-output))))
+
 (cffi:defcfun ("hrt_scene_group_create" hrt-scene-group-create) (:pointer (:struct hrt-scene-group))
-  (parent :pointer #| (:struct wlr-scene-tree) |# ))
+  (parent (:pointer (:struct hrt-scene-root))))
 
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void
   (group (:pointer (:struct hrt-scene-group))))
