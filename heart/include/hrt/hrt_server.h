@@ -1,7 +1,6 @@
 #ifndef HRT_HRT_SERVER_H
 #define HRT_HRT_SERVER_H
 
-#include "hrt/hrt_output.h"
 #include "hrt/hrt_layer_shell.h"
 #include "wlr/backend/session.h"
 #include <stdbool.h>
