@@ -200,6 +200,10 @@ well behaved ones should."
 (cffi:defcfun ("hrt_output_destroy" hrt-output-destroy) :void
   (server (:pointer (:struct hrt-server))))
 
+(cffi:defcfun ("hrt_output_create" hrt-output-create) (:pointer (:struct hrt-output))
+  (server (:pointer (:struct hrt-server)))
+  (wlr-output :pointer #| (:struct wlr-output) |# ))
+
 (cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void
   "Get the effective output resolution of the output that can be used to
 set the width and height of views."
@@ -230,6 +234,7 @@ set the width and height of views."
   (wl-display :pointer #| (:struct wl-display) |# )
   (backend :pointer #| (:struct wlr-backend) |# )
   (backend-destroy (:struct wl-listener))
+  (headless-backend :pointer #| (:struct wlr-backend) |# )
   (session :pointer #| (:struct wlr-session) |# )
   (renderer :pointer #| (:struct wlr-renderer) |# )
   (compositor :pointer #| (:struct wlr-compositor) |# )
@@ -244,6 +249,7 @@ set the width and height of views."
   (output-manager-test (:struct wl-listener))
   (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
+  (fallback-output (:pointer (:struct hrt-output)))
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))

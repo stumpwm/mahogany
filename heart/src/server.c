@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
+#include <wlr/backend/headless.h>
+#include <wlr/backend/multi.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -32,8 +34,9 @@ bool hrt_server_init(struct hrt_server *server,
                      enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
     server->wl_display = wl_display_create();
-    server->backend    = wlr_backend_autocreate(
-        wl_display_get_event_loop(server->wl_display), &server->session);
+    struct wl_event_loop *event_loop =
+        wl_display_get_event_loop(server->wl_display);
+    server->backend = wlr_backend_autocreate(event_loop, &server->session);
 
     server->backend_destroy.notify = &handle_backend_destroyed;
     wl_signal_add(&server->backend->events.destroy, &server->backend_destroy);
@@ -41,6 +44,17 @@ bool hrt_server_init(struct hrt_server *server,
     if (!server->backend) {
         return false;
     }
+
+    server->headless_backend = wlr_headless_backend_create(event_loop);
+    if (!server->headless_backend) {
+	return false;
+    } else {
+	wlr_multi_backend_add(server->backend, server->headless_backend);
+    }
+    struct wlr_output *fallback =
+	wlr_headless_add_output(server->headless_backend, 800, 800);
+    server->fallback_output = hrt_output_create(server, fallback);
+
 
     server->renderer = wlr_renderer_autocreate(server->backend);
     if (!server->renderer) {
@@ -130,6 +144,7 @@ void hrt_server_finish(struct hrt_server *server) {
     wlr_allocator_destroy(server->allocator);
     wlr_renderer_destroy(server->renderer);
     wlr_backend_destroy(server->backend);
+    // wlr_backend_destroy(server->headless_backend);
     wl_display_destroy(server->wl_display);
 }
 
@@ -142,5 +157,5 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 size_t hrt_server_struct_size() {
-  return sizeof(struct hrt_server);
+    return sizeof(struct hrt_server);
 }
