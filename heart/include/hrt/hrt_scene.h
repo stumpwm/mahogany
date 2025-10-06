@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_scene.h>
-#include "hrt/hrt_output.h"
 
 
 struct hrt_scene_group {
