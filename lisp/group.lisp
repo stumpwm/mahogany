@@ -1,7 +1,7 @@
 (in-package #:mahogany)
 
-(defun make-mahogany-group (name number scene-tree)
-  (let ((hrt-group (hrt:hrt-scene-group-create scene-tree)))
+(defun make-mahogany-group (name number hrt-scene)
+  (let ((hrt-group (hrt:hrt-scene-group-create hrt-scene)))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)
     (log-string :debug "Created group ~A" name)
     (%make-mahogany-group name number hrt-group)))

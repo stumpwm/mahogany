@@ -1,5 +1,6 @@
 #include "wlr/util/log.h"
 #include "xdg_impl.h"
+#include "layer_shell_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -29,6 +30,7 @@ bool hrt_server_init(struct hrt_server *server,
                      const struct hrt_output_callbacks *output_callbacks,
                      const struct hrt_seat_callbacks *seat_callbacks,
                      const struct hrt_view_callbacks *view_callbacks,
+                     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
                      enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
     server->wl_display = wl_display_create();
@@ -65,6 +67,7 @@ bool hrt_server_init(struct hrt_server *server,
     wlr_data_control_manager_v1_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
 
+    server->scene = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
 
     server->view_callbacks = view_callbacks;
@@ -78,6 +81,14 @@ bool hrt_server_init(struct hrt_server *server,
     }
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
         return false;
+    }
+
+    // Check if this arg was provided so we don't need to specify this for
+    // test compositors.
+    if (layer_shell_callbacks) {
+        if (!hrt_layer_shell_init(server)) {
+            return false;
+        }
     }
 
     return true;
@@ -123,14 +134,15 @@ void hrt_server_finish(struct hrt_server *server) {
     // Some of these "destroy" calls should probably be hooked up to listen to the destroy
     // events of the wlr objects they attach listeners to instead of being cleaned
     // up here...
-    hrt_seat_destroy(&server->seat);
-    hrt_output_destroy(server);
     hrt_xdg_shell_destroy(server);
+    hrt_seat_destroy(&server->seat);
 
+    hrt_output_destroy(server);
     wlr_allocator_destroy(server->allocator);
     wlr_renderer_destroy(server->renderer);
     wlr_backend_destroy(server->backend);
     wl_display_destroy(server->wl_display);
+    wlr_scene_node_destroy(&server->scene->tree.node);
 }
 
 struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server) {
@@ -142,5 +154,5 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 size_t hrt_server_struct_size() {
-  return sizeof(struct hrt_server);
+    return sizeof(struct hrt_server);
 }

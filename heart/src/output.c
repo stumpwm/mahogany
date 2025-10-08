@@ -150,7 +150,6 @@ bool hrt_output_init(struct hrt_server *server,
     wl_signal_add(&server->backend->events.new_output, &server->new_output);
 
     server->output_layout = wlr_output_layout_create(server->wl_display);
-    server->scene         = wlr_scene_create();
     server->scene_layout =
         wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
