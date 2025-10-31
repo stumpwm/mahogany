@@ -59,7 +59,8 @@
            sbcl-alexandria
            sbcl-cl-ansi-text
            sbcl-terminfo
-           sbcl-snakes
+	   sbcl-snakes
+           sbcl-adopt
            sbcl-iterate
            sbcl-cffi ;; Provides cffi-grovel
            wayland
@@ -80,15 +81,15 @@
                 (("libheart.so")
                  (search-input-file inputs
                                     "/lib/libheart.so"))
-                (("libwlroots.so")
+                (("libwlroots-0.19.so")
                  (search-input-file inputs
-                                    "/lib/libwlroots.so")))))
+                                    "/lib/libwlroots-0.19.so")))))
           (add-after 'create-asdf-configuration 'build-program
             (lambda* (#:key outputs #:allow-other-keys)
               (build-program
                (string-append (assoc-ref outputs "out") "/bin/mahogany")
                outputs
-               #:entry-program '((mahogany::run-server) 0))))
+               #:entry-program '((mahogany::main) 0))))
           (add-after 'build-program 'create-desktop-file
             (lambda* (#:key outputs #:allow-other-keys)
               (let* ((out (assoc-ref outputs "out"))
@@ -130,6 +131,8 @@ very comfortable with Mahogany.")
      (list pkg-config))
     (inputs
      (list wlroots
+           wayland
+           wayland-protocols
            libxkbcommon))
     (arguments
      (list
@@ -139,7 +142,12 @@ very comfortable with Mahogany.")
             (lambda _ (chdir "heart")))
           (add-after 'chdir 'delete-submodules
             (lambda* (#:key outputs #:allow-other-keys)
-              (delete-file-recursively "./subprojects"))))))
+              (delete-file-recursively "./subprojects")))
+          (add-before 'configure 'set-pkg-config-path
+            (lambda* (#:key inputs #:allow-other-keys)
+              (setenv "PKG_CONFIG_PATH"
+                      (string-append (getenv "PKG_CONFIG_PATH")
+                                   ":" (assoc-ref inputs "wlroots") "/lib/pkgconfig")))))))
     (synopsis "An alternative C backend to a Wayland compositor to use with Mahogany")
     (description
      "Mahogany-heart's task is to setup the initial state of the
