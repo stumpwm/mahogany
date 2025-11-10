@@ -97,14 +97,13 @@ names."
 
 (cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
-(cffi:defctype view-request-fullscreen :pointer #| function ptr _Bool (struct hrt_view *, struct hrt_output *, _Bool) |#)
-
 (cffi:defcstruct hrt-view-callbacks
   (new-view new-view-handler)
   (view-mapped view-mapped-handler)
   (view-unmapped view-mapped-handler)
-  (view-destroyed view-destroy-handler)
-  (request-fullscreen view-request-fullscreen))
+  (request-minimize view-mapped-handler)
+  (request-maximize view-mapped-handler)
+  (view-destroyed view-destroy-handler))
 
 (cffi:defcstruct hrt-view
   (width :int)
@@ -117,6 +116,7 @@ names."
   (commit (:struct wl-listener))
   (destroy (:struct wl-listener))
   (request-maximize (:struct wl-listener))
+  (request-minimize (:struct wl-listener))
   (request-fullscreen (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-view-callbacks))))
 
@@ -134,10 +134,6 @@ serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))
-
-(cffi:defcfun ("hrt_view_set_fullscreen" hrt-view-set-fullscreen) :uint32
-  (view (:pointer (:struct hrt-view)))
-  (fullscreen :bool))
 
 (cffi:defcfun ("hrt_view_mapped" hrt-view-mapped) :bool
   (view (:pointer (:struct hrt-view))))

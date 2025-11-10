@@ -9,6 +9,8 @@
 	   #:hrt-view
 	   #:view-mapped
 	   #:view-unmapped
+	   #:request-minimize
+	   #:request-maximize
 	   #:view-destroyed
 	   #:view-mapped-p
 	   #:hrt-seat

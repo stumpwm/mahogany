@@ -20,6 +20,8 @@ struct hrt_view_callbacks {
     new_view_handler new_view;
     view_mapped_handler view_mapped;
     view_mapped_handler view_unmapped;
+    view_mapped_handler request_minimize;
+    view_mapped_handler request_maximize;
     view_destroy_handler view_destroyed;
 };
 
@@ -40,6 +42,7 @@ struct hrt_view {
     struct wl_listener destroy;
 
     struct wl_listener request_maximize;
+    struct wl_listener request_minimize;
     struct wl_listener request_fullscreen;
 
     const struct hrt_view_callbacks *callbacks;
@@ -90,5 +93,10 @@ void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node);
  * well behaved ones should.
  **/
 void hrt_view_request_close(struct hrt_view *view);
+
+/**
+ * Send a configure event to the view
+ **/
+void hrt_view_send_configure(struct hrt_view *view);
 
 #endif
