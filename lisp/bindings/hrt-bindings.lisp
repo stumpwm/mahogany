@@ -63,6 +63,9 @@
 (cffi:defcfun ("hrt_keyboard_destroy" hrt-keyboard-destroy) :void
   (seat (:pointer (:struct hrt-seat))))
 
+(cffi:defcfun ("hrt_seat_reset_view_under" hrt-seat-reset-view-under) :void
+  (seat (:pointer (:struct hrt-seat))))
+
 (cffi:defcfun ("hrt_seat_set_cursor_img" hrt-seat-set-cursor-img) :void
   "Set the seat's default cursor image to the given cursor name.
 
