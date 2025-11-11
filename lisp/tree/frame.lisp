@@ -531,6 +531,12 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       (return-from find-empty-frame empty)))
   nil)
 
+(defmethod find-view-frame ((root frame) view)
+  (foreach-leaf (frame root)
+	(alexandria:if-let ((f (find-view-frame frame view)))
+	  (return-from find-view-frame f)))
+  nil)
+
 (defun find-first-leaf (tree)
   (let ((prev-frame (frame-prev tree)))
     (frame-next prev-frame)))

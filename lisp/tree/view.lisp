@@ -73,3 +73,14 @@ and position as the frame"
 (defmethod (setf frame-height) :before (new-height (frame view-frame))
   (when (frame-view frame)
     (set-dimensions (frame-view frame) (round (frame-width frame)) (round new-height))))
+
+(defmethod find-view-frame ((frame view-frame) view)
+  (when (equal (frame-view frame) view)
+	frame))
+
+;; (defmethod find-view-frame ((frame view-frame)
+;; 							(view sb-sys:system-area-pointer))
+;;   (let ((hrt-view (frame-view frame)))
+;; 	(when (and hrt-view
+;; 			   (equal (hrt:view-hrt-view (frame-view frame)) view))
+;; 	  frame)))
