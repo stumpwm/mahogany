@@ -60,9 +60,9 @@ While it is possible to use a prebuilt version of wlroots installed by
 other means, it is currently not supported by directly invoking =make=
 like these instructions suggest. (See [[https://github.com/stumpwm/mahogany/issues/80][#80]]). Instead, just remove the submodule, and meson should be able to find the version installed on your system:
 
-``` bash
+#+BEGIN_SRC bash
 rm -rf heart/subprojects/wlroots/
-```
+#+END_SRC
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
