@@ -171,6 +171,10 @@ It does not garentee that the application actually closes, but
 well behaved ones should."
   (view (:pointer (:struct hrt-view))))
 
+(cffi:defcfun ("hrt_view_send_configure" hrt-view-send-configure) :void
+  "Send a configure event to the view"
+  (view (:pointer (:struct hrt-view))))
+
 ;; next section imported from file build/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-output
@@ -259,7 +263,7 @@ set the width and height of views."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
@@ -300,7 +304,7 @@ set the width and height of views."
   (source (:pointer (:struct hrt-scene-group)))
   (destination (:pointer (:struct hrt-scene-group))))
 
-(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))

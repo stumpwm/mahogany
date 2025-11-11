@@ -2,6 +2,12 @@
 
 (defvar *default-group-name* "DEFAULT")
 
+;; If there turns out to be more choices than
+;; minimize and maximize, make this a bitmask or separate them out:
+(config-system:defconfig *follow-config-events* :all
+  (member :none :all :minimize :maximize)
+  "The client window management events that the compositor listends to.")
+
 (defun %add-group (state name index)
   (declare (type mahogany-state state)
            (type string name)
@@ -189,6 +195,24 @@
   (%with-found-view state (view view-ptr)
     (%with-found-group state (group view)
       (group-unmap-view group view))))
+
+(defun mahogany-state-view-maximize (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    (%with-found-group state (group view)
+	  (if (member *follow-config-events* '(:all :maximize))
+		  (group-maximize-view group view)
+		  (hrt:view-configure view)))))
+
+(defun mahogany-state-view-minimize (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    (%with-found-group state (group view)
+	  (if (member *follow-config-events* '(:all :minimize))
+		  (group-minimize-view group view)
+		  (hrt:view-configure view)))))
 
 (defun state-next-hidden-group (state)
   (declare (type mahogany-state state))

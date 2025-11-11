@@ -204,16 +204,20 @@ to match."
 		(return-from tree:find-empty-frame view-frame)
 		(go :top)))))))
 
+(defun %maximize-frame (group frame)
+  (declare (type mahogany-group group))
+  (let ((tree-root (mahogany/tree:find-root-frame frame)))
+    (flet ((hide-and-disable (view-frame)
+			 (alexandria:when-let ((view (tree:frame-view view-frame)))
+			   (%add-hidden (mahogany-group-hidden-views group) view))))
+      (tree:replace-frame tree-root frame #'hide-and-disable))))
+
 (defun group-maximize-current-frame (group)
   "Remove all of the splits in the current window tree and replae it with the
 currently focused frame"
   (declare (type mahogany-group group))
-  (let* ((current-frame (mahogany-group-current-frame group))
-	 (tree-root (mahogany/tree:find-root-frame current-frame)))
-    (flet ((hide-and-disable (view-frame)
-	     (alexandria:when-let ((view (tree:frame-view view-frame)))
-	       (%add-hidden (mahogany-group-hidden-views group) view))))
-      (tree:replace-frame tree-root current-frame #'hide-and-disable))))
+  (let ((current-frame (mahogany-group-current-frame group)))
+	(%maximize-frame group current-frame)))
 
 (defun group-next-hidden (group)
   (declare (type mahogany-group group))
@@ -229,12 +233,12 @@ currently focused frame"
 (defun group-previous-hidden (group)
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group))
-	(hidden-views (mahogany-group-hidden-views group))
-	(next-view))
+		(hidden-views (mahogany-group-hidden-views group))
+		(next-view))
     (when (> (ring-list:ring-list-size hidden-views) 0)
       (alexandria:if-let ((view (tree:frame-view current-frame)))
-	(setf next-view (%swap-prev-hidden hidden-views view))
-	(setf next-view (%pop-hidden-item hidden-views)))
+		(setf next-view (%swap-prev-hidden hidden-views view))
+		(setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view))))
 
 (defun group-next-frame (group seat)
@@ -248,3 +252,25 @@ currently focused frame"
   (let* ((current-frame (mahogany-group-current-frame group))
 	 (prev-frame (tree:frame-prev current-frame)))
     (group-focus-frame group prev-frame seat)))
+
+(defun group-maximize-view (group view)
+  ;; attempt to stop abuse by only listening when the
+  ;; view requesting this info is focused:
+  (alexandria:if-let ((frame (tree:find-view-frame
+								(mahogany-group-current-frame group)
+								view)))
+	(progn
+	  (log-string :trace "maximizing view ~S" view)
+	  (%maximize-frame group frame))
+	(hrt:view-configure view)))
+
+(defun group-minimize-view (group view)
+  ;; attempt to stop abuse by only doing something
+  ;; if the view is focused:
+  (let* ((cur-frame (mahogany-group-current-frame group))
+		 (cur-view (tree:frame-view cur-frame)))
+	(if (equal cur-view view)
+		(progn
+		  (log-string :trace "\"minimizing\" view ~S" view)
+		  (group-next-hidden group))
+		(hrt:view-configure view))))

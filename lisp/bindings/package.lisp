@@ -39,6 +39,7 @@
 	   #:focus-view
 	   #:unfocus-view
 	   #:view-set-hidden
+	   #:view-configure
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
