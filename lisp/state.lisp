@@ -54,7 +54,8 @@
     (when (slot-boundp state 'current-group)
       (group-suspend (mahogany-current-group state) (hrt:hrt-server-seat server)))
     (call-next-method)
-    (group-wakeup group (hrt:hrt-server-seat server))))
+    (group-wakeup group (hrt:hrt-server-seat server))
+	(dirty-view-transaction)))
 
 (declaim (inline server-seat))
 (defun server-seat (state)

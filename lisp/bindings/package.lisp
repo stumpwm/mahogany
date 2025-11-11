@@ -14,6 +14,7 @@
 	   #:view-destroyed
 	   #:view-mapped-p
 	   #:hrt-seat
+	   #:hrt-seat-reset-view-under
 	   #:hrt-seat-notify-button
 	   #:hrt-seat-notify-axis
 	   #:hrt-seat-cursor-lx

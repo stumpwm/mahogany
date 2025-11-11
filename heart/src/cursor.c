@@ -37,6 +37,23 @@ static struct hrt_view *find_view_at(struct hrt_server *server, double lx,
     return tree->node.data;
 }
 
+void hrt_seat_reset_view_under(struct hrt_seat *seat) {
+    double sx, sy;
+    struct wlr_surface *found_surface = NULL;
+    struct hrt_view *view =
+        find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
+                     &found_surface, &sx, &sy);
+	if (!view) {
+        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                               seat->cursor_image);
+    }
+    if (found_surface) {
+        wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
+    } else {
+        wlr_seat_pointer_clear_focus(seat->seat);
+    }
+}
+
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
     double sx, sy;
     struct wlr_surface *found_surface = NULL;
