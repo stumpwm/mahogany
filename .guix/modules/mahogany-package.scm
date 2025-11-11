@@ -59,7 +59,6 @@
            sbcl-alexandria
            sbcl-cl-ansi-text
            sbcl-terminfo
-	   sbcl-snakes
            sbcl-adopt
            sbcl-iterate
            sbcl-cffi ;; Provides cffi-grovel
