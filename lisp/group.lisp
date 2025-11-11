@@ -255,7 +255,7 @@ currently focused frame"
 
 (defun group-maximize-view (group view)
   ;; attempt to stop abuse by only listening when the
-  ;; view requesting this info is focused:
+  ;; frame requesting this info is focused:
   (alexandria:if-let ((frame (tree:find-view-frame
 								(mahogany-group-current-frame group)
 								view)))
