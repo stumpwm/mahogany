@@ -19,3 +19,13 @@
     ((view (:pointer (:struct hrt:hrt-view))))
   (log-string :trace "View destroyed callback called!")
   (mahogany-state-view-remove *compositor-state*  view))
+
+(cffi:defcallback handle-view-minimize :void
+	((view (:pointer (:struct hrt:hrt-view))))
+  (log-string :trace "View minimize callback called!")
+  (mahogany-state-view-minimize *compositor-state* view))
+
+(cffi:defcallback handle-view-maximize :void
+	((view (:pointer (:struct hrt:hrt-view))))
+  (log-string :trace "View maximize callback called!")
+  (mahogany-state-view-maximize *compositor-state* view))

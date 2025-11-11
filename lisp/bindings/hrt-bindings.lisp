@@ -97,14 +97,13 @@ names."
 
 (cffi:defctype view-mapped-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
-(cffi:defctype view-request-fullscreen :pointer #| function ptr _Bool (struct hrt_view *, struct hrt_output *, _Bool) |#)
-
 (cffi:defcstruct hrt-view-callbacks
   (new-view new-view-handler)
   (view-mapped view-mapped-handler)
   (view-unmapped view-mapped-handler)
-  (view-destroyed view-destroy-handler)
-  (request-fullscreen view-request-fullscreen))
+  (request-minimize view-mapped-handler)
+  (request-maximize view-mapped-handler)
+  (view-destroyed view-destroy-handler))
 
 (cffi:defcstruct hrt-view
   (width :int)
@@ -117,6 +116,7 @@ names."
   (commit (:struct wl-listener))
   (destroy (:struct wl-listener))
   (request-maximize (:struct wl-listener))
+  (request-minimize (:struct wl-listener))
   (request-fullscreen (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-view-callbacks))))
 
@@ -134,10 +134,6 @@ serial."
   (view (:pointer (:struct hrt-view)))
   (width :int)
   (height :int))
-
-(cffi:defcfun ("hrt_view_set_fullscreen" hrt-view-set-fullscreen) :uint32
-  (view (:pointer (:struct hrt-view)))
-  (fullscreen :bool))
 
 (cffi:defcfun ("hrt_view_mapped" hrt-view-mapped) :bool
   (view (:pointer (:struct hrt-view))))
@@ -173,6 +169,10 @@ it visible to the user."
 that is the same as clicking the close button on window decorations.
 It does not garentee that the application actually closes, but
 well behaved ones should."
+  (view (:pointer (:struct hrt-view))))
+
+(cffi:defcfun ("hrt_view_send_configure" hrt-view-send-configure) :void
+  "Send a configure event to the view"
   (view (:pointer (:struct hrt-view))))
 
 ;; next section imported from file build/include/hrt/hrt_output.h
@@ -263,7 +263,7 @@ set the width and height of views."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
@@ -304,7 +304,7 @@ set the width and height of views."
   (source (:pointer (:struct hrt-scene-group)))
   (destination (:pointer (:struct hrt-scene-group))))
 
-(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))

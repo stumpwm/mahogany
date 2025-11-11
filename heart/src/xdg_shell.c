@@ -13,18 +13,11 @@
 
 #include <wlr/types/wlr_xdg_shell.h>
 
-static void send_dummy_configure(struct hrt_view *view) {
-    if (view->xdg_toplevel->base->initialized) {
-        wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
-    }
-}
-
 static void handle_xdg_toplevel_map(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
     struct hrt_view *view = wl_container_of(listener, view, map);
+	// The callback should be sending a configure event:
     view->callbacks->view_mapped(view);
-    // The callback should be sending a configure event:
-    // send_dummy_configure(view);
 }
 
 static void handle_xdg_toplevel_unmap(struct wl_listener *listener,
@@ -39,9 +32,25 @@ static void handle_xdg_toplevel_request_maximize(struct wl_listener *listener,
     wlr_log(WLR_DEBUG, "XDG Toplevel request maximize");
     struct hrt_view *view = wl_container_of(listener, view, request_maximize);
     // The protocol specifies that after this request is made, we must
-    // send a configure event. Since we don't support this,
-    // send one that keeps the previous configuration:
-    send_dummy_configure(view);
+    // send a configure event.
+    if (view->callbacks->request_maximize) {
+        view->callbacks->request_maximize(view);
+    } else {
+        hrt_view_send_configure(view);
+    }
+}
+
+static void handle_xdg_toplevel_request_minimize(struct wl_listener *listener,
+                                                 void *data) {
+    wlr_log(WLR_DEBUG, "XDG Toplevel request maximize");
+    struct hrt_view *view = wl_container_of(listener, view, request_minimize);
+    // The protocol specifies that after this request is made, we must
+    // send a configure event.
+    if (view->callbacks->request_minimize) {
+        view->callbacks->request_minimize(view);
+    } else {
+        hrt_view_send_configure(view);
+    }
 }
 
 static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener,
@@ -51,7 +60,7 @@ static void handle_xdg_toplevel_request_fullscreen(struct wl_listener *listener,
     // The protocol specifies that after this request is made, we must
     // send a configure event. Since we don't support this,
     // send one that keeps the previous configuration:
-    send_dummy_configure(view);
+    hrt_view_send_configure(view);
 }
 
 static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
@@ -67,6 +76,7 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
     wl_list_remove(&view->commit.link);
     wl_list_remove(&view->request_fullscreen.link);
     wl_list_remove(&view->request_maximize.link);
+	wl_list_remove(&view->request_minimize.link);
 
     hrt_view_cleanup(view);
     free(view);
@@ -107,6 +117,9 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     view->request_maximize.notify = &handle_xdg_toplevel_request_maximize;
     wl_signal_add(&xdg_toplevel->events.request_maximize,
                   &view->request_maximize);
+    view->request_minimize.notify = &handle_xdg_toplevel_request_minimize;
+    wl_signal_add(&xdg_toplevel->events.request_minimize,
+                  &view->request_minimize);
 
     return view;
 }

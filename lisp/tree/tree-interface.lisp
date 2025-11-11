@@ -127,9 +127,13 @@ CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (:documentation "Replace ROOT with FRAME. Call CLEANUP-FUNC on every view-frame that is removed
 from the tree. "))
 
+;; Is this redundant with `find-frame` with a nil argument?
 (defgeneric find-empty-frame (root)
   (:documentation "Finds the first veiw-frame in the given tree that doesn't have
 a view assigned to it."))
+
+(defgeneric find-view-frame (root view)
+  (:documentation "Find the frame that contains the view. Returns nil if not found."))
 
 (defgeneric frame-at (root x y)
   (:documentation "Get the frame that occupies the specified coordinates."))

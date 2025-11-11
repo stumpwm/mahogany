@@ -39,6 +39,11 @@
   (declare (type view view))
   (hrt-view-set-fullscreen (view-hrt-view view) fullscreen))
 
+(declaim (inline view-configure))
+(defun view-configure (view)
+  (declare (type view view))
+  (hrt-view-send-configure (view-hrt-view view)))
+
 (defmethod mh/interface:set-dimensions ((view view) width height)
   (hrt-view-set-size (view-hrt-view view) width height))
 

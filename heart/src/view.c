@@ -97,3 +97,9 @@ void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node) {
 void hrt_view_request_close(struct hrt_view *view) {
     wlr_xdg_toplevel_send_close(view->xdg_toplevel);
 }
+
+void hrt_view_send_configure(struct hrt_view *view) {
+    if (view->xdg_toplevel->base->initialized) {
+        wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
+    }
+}

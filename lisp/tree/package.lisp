@@ -29,6 +29,7 @@
 	   #:remove-frame
 	   #:swap-positions
 	   #:find-empty-frame
+	   #:find-view-frame
 	   #:get-populated-frames
 	   #:root-frame-p
 	   #:find-root-frame

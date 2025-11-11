@@ -28,11 +28,16 @@ further up. "
   (let ((vars (mapcar #'car sets)))
 	`(cffi:with-foreign-slots (,vars ,variable ,type)
 	   (setf ,@(loop for pair in sets
-			 append (list (car pair) `(cffi:callback ,(cadr pair))))))))
+					 append (list (car pair)
+								  (if (cadr pair)
+									  `(cffi:callback ,(cadr pair))
+									  (cffi:null-pointer))))))))
 
 (defun init-view-callbacks (view-callbacks)
   (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
-    (hrt:new-view handle-new-view-event)
+	(hrt:new-view handle-new-view-event)
+	(hrt:request-maximize handle-view-maximize)
+	(hrt:request-minimize handle-view-minimize)
     (hrt:view-mapped handle-view-mapped)
     (hrt:view-unmapped handle-view-unmapped)
     (hrt:view-destroyed handle-view-destroyed-event)))

@@ -9,6 +9,8 @@
 	   #:hrt-view
 	   #:view-mapped
 	   #:view-unmapped
+	   #:request-minimize
+	   #:request-maximize
 	   #:view-destroyed
 	   #:view-mapped-p
 	   #:hrt-seat
@@ -37,6 +39,7 @@
 	   #:focus-view
 	   #:unfocus-view
 	   #:view-set-hidden
+	   #:view-configure
 	   ;; seat callbacks
 	   #:button-event #:wheel-event #:keyboard-keypress-event
 	   #:hrt-server
