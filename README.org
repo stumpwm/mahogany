@@ -14,10 +14,6 @@
   + Good support for floating windows.
   + A configuration system using Common Lisp.
 
-  This branch contains a version of Mahogany using a backend written
-  in C. The old version written entirely in Common Lisp can be found in
-  the [[https://github.com/stumpwm/mahogany/tree/full-cl-old][full-cl-old]] branch.
-
 ** Contributing / Hacking
 
 Mahogany is still in an early stage of development. See the
