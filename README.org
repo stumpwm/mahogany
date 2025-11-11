@@ -50,15 +50,19 @@ To see a full example of this process, see the
 [[https://github.com/stumpwm/mahogany/blob/master/Dockerfile][CI's Dockerfile]]
 
 *** Backend Library Dependencies
-The backend library requires wlroots 0.18.x. This
+The backend library requires wlroots 0.19.x. This
 version is included as a git submodule and is used by
 default. See the README in the submodule or consult
-the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/0.18.2?ref_type=tags][project's git repo]]
+the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/0.19.2?ref_type=tags][project's git repo]]
 on how to build it.
 
 While it is possible to use a prebuilt version of wlroots installed by
 other means, it is currently not supported by directly invoking =make=
-like these instructions suggest. (See [[https://github.com/stumpwm/mahogany/issues/80][#80]])
+like these instructions suggest. (See [[https://github.com/stumpwm/mahogany/issues/80][#80]]). Instead, just remove the submodule, and meson should be able to find the version installed on your system:
+
+``` bash
+rm -rf heart/subprojects/wlroots/
+```
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
