@@ -57,7 +57,7 @@ Example:
   "Find the command associated with the given key in the keymap"
   (declare (type key key)
 	   (type kmap keymap))
-  (let ((ret (find key (kmap-bindings keymap) :key 'binding-key :test 'equalp)))
+  (let ((ret (find key (kmap-bindings keymap) :key 'binding-key :test 'key-equal)))
     (when ret
       (binding-command ret))))
 

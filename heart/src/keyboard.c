@@ -59,26 +59,26 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
 
     xkb_keycode_t keycode = event->keycode + 8;
 
-    const xkb_keysym_t *translated_keysyms;
-    uint32_t translated_modifiers;
-    size_t translated_keysyms_len = seat_translate_keysyms(
-        seat, keycode, &translated_keysyms, &translated_modifiers);
-
     bool handled = false;
 
     if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        const xkb_keysym_t *translated_keysyms;
+        uint32_t translated_modifiers;
+        size_t translated_keysyms_len = seat_translate_keysyms(
+            seat, keycode, &translated_keysyms, &translated_modifiers);
+
         struct hrt_keypress_info key_info = {.keysyms = translated_keysyms,
                                              .keysyms_len =
                                                  translated_keysyms_len,
                                              .modifiers = translated_modifiers,
                                              .wl_key_state = event->state};
         handled = seat->callbacks->keyboard_keypress_event(seat, &key_info);
-    }
 
-    if (!handled && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        handled = execute_hardcoded_bindings(server, translated_keysyms,
-                                             translated_modifiers,
-                                             translated_keysyms_len);
+        if (!handled) {
+            handled = execute_hardcoded_bindings(server, translated_keysyms,
+                                                 translated_modifiers,
+                                                 translated_keysyms_len);
+        }
     }
 
     // TODO: I don't know if this condition is correct
