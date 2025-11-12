@@ -75,9 +75,14 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
     wl_list_insert(&seat->inputs, &input->link);
 
     switch (dev->type) {
-        case WLR_INPUT_DEVICE_KEYBOARD: add_new_keyboard(input, seat); break;
-        case WLR_INPUT_DEVICE_POINTER: add_new_pointer(input, seat); break;
-        default: break;
+        case WLR_INPUT_DEVICE_KEYBOARD:
+            add_new_keyboard(input, seat);
+            break;
+        case WLR_INPUT_DEVICE_POINTER:
+            add_new_pointer(input, seat);
+            break;
+        default:
+            break;
     }
 
     uint32_t caps = find_input_caps(seat, input);
