@@ -30,6 +30,13 @@
   (keysym 0 :read-only t :type (unsigned-byte 32))
   (modifier-mask 0 :read-only t :type (unsigned-byte 32)))
 
+(defun key-equal (a b)
+  (declare (type key a b))
+  (and (= (key-keysym a)
+		  (key-keysym b))
+	   (= (key-modifier-mask a)
+		  (key-modifier-mask b))))
+
 (declaim (type (unsigned-byte 32)
 	       +modifier-shift+
 	       +modifier-caps+
