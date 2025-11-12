@@ -42,6 +42,7 @@
 
 (defun %find-item (ring-list item test)
   (declare (type ring-list ring-list)
+	   (type (or (function (t t) t) symbol) test)
 	   (optimize (speed 3) (safety 0)))
   (with-slots (head) ring-list
     (when head
@@ -72,7 +73,8 @@
 (defun remove-item (ring-list item &key (test #'equalp))
   "Removes the given item from the list. Returns T if the item was
 found and removed"
-  (declare (type ring-list ring-list))
+  (declare (type ring-list ring-list)
+	   (type (or (function (t t) t) symbol) test))
   (alexandria:when-let ((item (%find-item ring-list item test)))
     (%remove-item ring-list item)))
 
@@ -85,6 +87,7 @@ found and removed"
       (ring-item-item head))))
 
 (defun pop-item-prev (ring-list)
+  "Remove the item before the head of the ist and return it"
   (declare (type ring-list ring-list))
   (let ((head (ring-item-prev (ring-list-head ring-list))))
     (when head
@@ -114,13 +117,15 @@ found and removed"
 (defun swap-next-find (ring-list item &key (test #'equalp))
   "Find the given item in the list and move it to the head of list.
 Then swap the found item for the given one like in swap-next"
-  (declare (type ring-list ring-list))
+  (declare (type ring-list ring-list)
+	   (type (or (function (t t) t) symbol) test))
   (%swap-find ring-list item test #'swap-next))
 
 (defun swap-previous-find (ring-list item &key (test #'equalp))
   "Find the given item in the list and move it to the head of list.
 Then swap the found item for the given one like in swap-previous"
-  (declare (type ring-list ring-list))
+  (declare (type ring-list ring-list)
+	   (type (or (function (t t) t) symbol) test))
   (%swap-find ring-list item test #'swap-previous))
 
 (defun swap-next (ring-list item)
