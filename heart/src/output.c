@@ -8,6 +8,7 @@
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
+#include <wlr/backend/headless.h>
 
 #include <hrt/hrt_output.h>
 
@@ -33,10 +34,13 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 }
 
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
-    wlr_log(WLR_DEBUG, "Output destroyed");
     struct hrt_output *output = wl_container_of(listener, output, destroy);
     struct hrt_server *server = output->server;
-    server->output_callback->output_removed(output);
+    wlr_log(WLR_DEBUG, "Output destroyed %s", output->wlr_output->name);
+
+    if (!wlr_output_is_headless(output->wlr_output)) {
+        server->output_callback->output_removed(output);
+    }
 
     hrt_scene_output_destroy(output->scene);
 
@@ -56,17 +60,12 @@ static float float_rand() {
     return (float)(rand() / (double)RAND_MAX); /* [0, 1.0] */
 }
 
-static struct hrt_output *hrt_output_create(struct hrt_server *server,
-                                            struct wlr_output *wlr_output) {
+struct hrt_output *hrt_output_create(struct hrt_server *server,
+                                     struct wlr_output *wlr_output) {
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
     output->scene = hrt_scene_output_create(server->scene_root);
-
-    output->frame.notify = handle_frame_notify;
-    wl_signal_add(&wlr_output->events.frame, &output->frame);
-    output->request_state.notify = handle_request_state;
-    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
 
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -77,6 +76,8 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
 
     printf("Output color: {%f, %f, %f, %f}\n", output->color[0],
            output->color[1], output->color[2], output->color[3]);
+
+    wlr_output->data = output;
 
     return output;
 }
@@ -145,15 +146,19 @@ static int compute_default_scale(struct wlr_output *output,
 }
 
 static void handle_new_output(struct wl_listener *listener, void *data) {
-    wlr_log(WLR_DEBUG, "New output detected");
     struct hrt_server *server = wl_container_of(listener, server, new_output);
 
     struct wlr_output *wlr_output = data;
 
-    // Initialize and set the data pointer so it's available in any events that
+    if (server->fallback_output->wlr_output == wlr_output) {
+        return;
+    }
+
+    // Initialize the hrt_output here so it's available in any events that
     // are triggered in the subsequent code:
     struct hrt_output *output = hrt_output_create(server, wlr_output);
-    wlr_output->data = output;
+
+    wlr_log(WLR_DEBUG, "New output detected: %s", wlr_output->name);
 
     wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
@@ -183,6 +188,12 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
                                        scene_output);
     output->wlr_scene = scene_output;
 
+    // Setup the events here so they don't get assigned to headless outputs:
+    output->frame.notify = handle_frame_notify;
+    wl_signal_add(&wlr_output->events.frame, &output->frame);
+    output->request_state.notify = handle_request_state;
+    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
+
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
@@ -194,11 +205,11 @@ static void handle_output_manager_destroy(struct wl_listener *listener,
     wlr_log(WLR_DEBUG, "Output Manager destroyed");
 
     struct hrt_server *server =
-        wl_container_of(listener, server, output_manager_destroy);
+        wl_container_of(listener, server, destroy_listener.output_manager);
 
     wl_list_remove(&server->output_manager_apply.link);
     wl_list_remove(&server->output_manager_test.link);
-    wl_list_remove(&server->output_manager_destroy.link);
+    wl_list_remove(&server->destroy_listener.output_manager.link);
 }
 
 static void handle_output_manager_apply(struct wl_listener *listener,
@@ -258,9 +269,9 @@ bool hrt_output_init(struct hrt_server *server,
     server->output_manager_test.notify = handle_output_manager_test;
     wl_signal_add(&server->output_manager->events.apply,
                   &server->output_manager_test);
-    server->output_manager_destroy.notify = handle_output_manager_destroy;
+    server->destroy_listener.output_manager.notify = handle_output_manager_destroy;
     wl_signal_add(&server->output_manager->events.destroy,
-                  &server->output_manager_destroy);
+                  &server->destroy_listener.output_manager);
 
     // temporary random seed:
     srand(time(0));

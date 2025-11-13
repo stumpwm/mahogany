@@ -2,6 +2,7 @@
 #define HRT_HRT_SERVER_H
 
 #include "hrt/hrt_scene.h"
+#include "hrt/hrt_output.h"
 #include "wlr/backend/session.h"
 #include <stdbool.h>
 
@@ -20,7 +21,8 @@
 struct hrt_server {
     struct wl_display *wl_display;
     struct wlr_backend *backend;
-    struct wl_listener backend_destroy;
+    struct wlr_backend *headless_backend;
+
     struct wlr_session *session;
     struct wlr_renderer *renderer;
     struct wlr_compositor *compositor;
@@ -34,14 +36,20 @@ struct hrt_server {
     struct wl_listener output_layout_changed;
     struct wl_listener output_manager_apply;
     struct wl_listener output_manager_test;
-    struct wl_listener output_manager_destroy;
 
     struct hrt_seat seat;
     struct hrt_scene_root *scene_root;
+    struct hrt_output *fallback_output;
 
     struct wlr_xdg_shell *xdg_shell;
     struct wl_listener new_xdg_toplevel;
     struct wl_listener new_xdg_popup;
+
+    struct {
+          struct wl_listener backend;
+          struct wl_listener headless;
+          struct wl_listener output_manager;
+    } destroy_listener;
 
     const struct hrt_output_callbacks *output_callback;
     const struct hrt_view_callbacks *view_callbacks;
