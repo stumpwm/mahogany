@@ -43,6 +43,7 @@ clean: FORCE
 	rm -rf $(BUILD_DIR)/lib64
 	rm -rf $(BUILD_DIR)/include
 	rm -rf $(BUILD_DIR)/install_output.txt
+	rm -rf $(BUILD_DIR)/asdf-cache/*
 
 test: $(BUILD_DIR)/heart/lib64/libheart.so
 	$(call $(LISP),run-tests.lisp)
