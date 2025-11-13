@@ -14,10 +14,10 @@
            (type fixnum index))
   (with-accessors ((groups mahogany-state-groups)
                    (current-group mahogany-current-group)
-                   (server mahogany-state-server))
+                   (server mahogany-state-server)
+		   (hrt-scene mahogany-state-scene))
       state
-    (let* ((scene-tree (hrt:hrt-server-scene-tree server))
-           (default-group (make-mahogany-group name index scene-tree)))
+    (let* ((default-group (make-mahogany-group name index hrt-scene)))
       (vector-push-extend default-group groups)
       default-group)))
 
@@ -27,18 +27,22 @@
   (hrt:hrt-server-init server
                        output-callbacks seat-callbacks view-callbacks
                        debug-level)
+  (setf (mahogany-state-scene state) (hrt:hrt-scene-root-create (hrt:hrt-server-scene-tree server)))
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (mahogany-current-group state) default-group)))
 
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
   (with-accessors ((groups mahogany-state-groups)
-                   (server mahogany-state-server))
+                   (server mahogany-state-server)
+		   (scene mahogany-state-scene))
       state
     (let ((scene-tree (hrt:hrt-server-scene-tree server)))
       (loop for g across groups
             :do (destroy-mahogany-group g scene-tree)))
     (hrt:hrt-server-finish server)
+    ;; The actual scene object is freed during hrt-server-finish:
+    (setf scene nil)
     (setf server nil)))
 
 (defun server-stop (state)
@@ -72,16 +76,18 @@
   (unless (key-state-active-p (mahogany-state-key-state state))
     (server-keystate-reset state)))
 
-(defun mahogany-state-output-add (state mh-output)
+(defun mahogany-state-output-add (state hrt-output)
   (declare (type mahogany-state state)
-           (type mahogany-output mh-output))
+           (type cffi:foreign-pointer hrt-output))
   (with-accessors ((outputs mahogany-state-outputs)
-                   (groups mahogany-state-groups))
+                   (groups mahogany-state-groups)
+		   (scene mahogany-state-scene))
       state
-    (log-string :debug "New output added ~S" (mahogany-output-full-name mh-output))
-    (vector-push-extend mh-output outputs)
-    (loop for g across groups
-          do (group-add-output g mh-output (server-seat state)))))
+    (let ((mh-output (make-mahogany-output hrt-output scene)))
+      (log-string :debug "New output added ~S" (mahogany-output-full-name mh-output))
+      (vector-push-extend mh-output outputs)
+      (loop for g across groups
+            do (group-add-output g mh-output (server-seat state))))))
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs mahogany-state-outputs)
@@ -94,7 +100,8 @@
       (loop for g across groups
             do (group-remove-output g mh-output (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
-      (setf outputs (delete mh-output outputs :test #'equalp)))))
+      (setf outputs (delete mh-output outputs :test #'equalp))
+      (destroy-mahogany-output mh-output))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (let ((index (length (mahogany-state-groups state))))

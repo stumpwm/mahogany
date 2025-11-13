@@ -65,6 +65,7 @@ bool hrt_server_init(struct hrt_server *server,
     wlr_data_control_manager_v1_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
 
+    server->scene = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
 
     server->view_callbacks = view_callbacks;
@@ -123,14 +124,15 @@ void hrt_server_finish(struct hrt_server *server) {
     // Some of these "destroy" calls should probably be hooked up to listen to the destroy
     // events of the wlr objects they attach listeners to instead of being cleaned
     // up here...
-    hrt_seat_destroy(&server->seat);
-    hrt_output_destroy(server);
     hrt_xdg_shell_destroy(server);
+    hrt_seat_destroy(&server->seat);
 
+    hrt_output_destroy(server);
     wlr_allocator_destroy(server->allocator);
     wlr_renderer_destroy(server->renderer);
     wlr_backend_destroy(server->backend);
     wl_display_destroy(server->wl_display);
+    wlr_scene_node_destroy(&server->scene->tree.node);
 }
 
 struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server) {

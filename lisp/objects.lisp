@@ -1,7 +1,9 @@
 (in-package #:mahogany)
 
-(defstruct (mahogany-output (:constructor %make-mahogany-output (hrt-output full-name)))
+(defstruct (mahogany-output (:constructor %make-mahogany-output
+					  (hrt-output hrt-scene full-name)))
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
+  (hrt-scene  cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
 (defstruct (mahogany-group (:constructor %make-mahogany-group (name number hrt-group)))
@@ -18,6 +20,8 @@
   ((hrt-server :type hrt-server
 	       :initarg server
 	       :accessor mahogany-state-server)
+   (hrt-scene :type hrt-scene
+	      :accessor mahogany-state-scene)
    (key-state :type key-state
 	      :initform (make-key-state nil)
 	      :accessor mahogany-state-key-state)
@@ -26,7 +30,7 @@
    (keybindings :type list
 		:initform nil
 		:reader mahogany-state-keybindings)
-   (outputs :type vector
+   (outputs :type (vector mahogany-output *)
 	    :initform (make-array 0
 				  :element-type 'mahogany-output
 				  :adjustable t

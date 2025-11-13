@@ -55,7 +55,7 @@
 		   (:file "globals" :depends-on ("objects" "system"))
 		   (:file "transaction" :depends-on ("globals"))
 	       (:file "output" :depends-on ("objects" "bindings" "state"))
-	       (:file "view" :depends-on ("globals" "state" "objects" "bindings"))
+	       (:file "events" :depends-on ("globals" "state" "objects" "bindings"))
 	       (:file "input" :depends-on ("state" "keyboard" "bindings"))
 	       (:file "key-bindings" :depends-on ("globals" "state" "keyboard" "tree" "input"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))

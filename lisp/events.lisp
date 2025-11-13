@@ -29,3 +29,12 @@
 	((view (:pointer (:struct hrt:hrt-view))))
   (log-string :trace "View maximize callback called!")
   (mahogany-state-view-maximize *compositor-state* view))
+
+(cffi:defcallback handle-new-output :void ((output (:pointer (:struct hrt:hrt-output))))
+  (mahogany-state-output-add *compositor-state* output))
+
+(cffi:defcallback handle-output-removed :void ((output (:pointer (:struct hrt:hrt-output))))
+  (mahogany-state-output-remove *compositor-state* output))
+
+(cffi:defcallback handle-output-layout-change :void ()
+  (mahogany-state-output-reconfigure *compositor-state*))

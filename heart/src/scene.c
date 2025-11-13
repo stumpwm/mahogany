@@ -3,30 +3,82 @@
 #include "hrt/hrt_server.h"
 #include "hrt/hrt_view.h"
 #include "wlr/util/log.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <wayland-server-core.h>
 #include <wayland-util.h>
 
-static struct wlr_scene_tree *create_place_above(struct wlr_scene_tree *parent,
-                                                 struct wlr_scene_tree *below) {
-    struct wlr_scene_tree *tree = wlr_scene_tree_create(parent);
-    wlr_scene_node_place_above(&tree->node, &below->node);
-    return tree;
+static void handle_scene_destroy(struct wl_listener *listener, void *data) {
+    struct hrt_scene_root *root =
+        wl_container_of(listener, root, listeners.scene_destroy);
+
+    wl_list_remove(&root->listeners.scene_destroy.link);
+
+    hrt_scene_root_destroy(root);
 }
 
-struct hrt_scene_group *hrt_scene_group_create(struct wlr_scene_tree *parent) {
+struct hrt_scene_root *
+hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
+    assert(scene_tree != NULL);
+    struct hrt_scene_root *scene_root = calloc(1, sizeof(*scene_root));
+    scene_root->background            = wlr_scene_tree_create(scene_tree);
+    scene_root->bottom                = wlr_scene_tree_create(scene_tree);
+    scene_root->normal                = wlr_scene_tree_create(scene_tree);
+    scene_root->fullscreen            = wlr_scene_tree_create(scene_tree);
+    scene_root->top                   = wlr_scene_tree_create(scene_tree);
+    scene_root->overlay               = wlr_scene_tree_create(scene_tree);
+
+    scene_root->listeners.scene_destroy.notify = handle_scene_destroy;
+    wl_signal_add(&scene_tree->node.events.destroy,
+                  &scene_root->listeners.scene_destroy);
+
+    return scene_root;
+}
+
+void hrt_scene_root_destroy(struct hrt_scene_root *scene_root) {
+    wlr_log(WLR_DEBUG, "Destroying scene root");
+    wlr_scene_node_destroy(&scene_root->overlay->node);
+    wlr_scene_node_destroy(&scene_root->top->node);
+    wlr_scene_node_destroy(&scene_root->fullscreen->node);
+    wlr_scene_node_destroy(&scene_root->normal->node);
+    wlr_scene_node_destroy(&scene_root->bottom->node);
+    wlr_scene_node_destroy(&scene_root->background->node);
+    free(scene_root);
+}
+
+struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene) {
+    struct hrt_scene_output *scene_output = calloc(1, sizeof(*scene_output));
+    scene_output->background = wlr_scene_tree_create(scene->background);
+    scene_output->bottom     = wlr_scene_tree_create(scene->bottom);
+    scene_output->top        = wlr_scene_tree_create(scene->top);
+    scene_output->overlay    = wlr_scene_tree_create(scene->overlay);
+    return scene_output;
+}
+
+void hrt_scene_output_destroy(struct hrt_scene_output *output) {
+    wlr_log(WLR_DEBUG, "Destroying scene output");
+    wlr_scene_node_destroy(&output->overlay->node);
+    wlr_scene_node_destroy(&output->top->node);
+    wlr_scene_node_destroy(&output->bottom->node);
+    wlr_scene_node_destroy(&output->background->node);
+    free(output);
+}
+
+struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
     struct hrt_scene_group *layers = calloc(1, sizeof(*layers));
     if (!layers) {
         wlr_log(WLR_ERROR, "Could not allocate hrt_scene_layers");
         return NULL;
     }
-    layers->normal     = wlr_scene_tree_create(parent);
-    layers->fullscreen = create_place_above(parent, layers->normal);
+    layers->normal     = wlr_scene_tree_create(parent->normal);
+    layers->fullscreen = wlr_scene_tree_create(parent->fullscreen);
 
     return layers;
 }
 
 void hrt_scene_group_destroy(struct hrt_scene_group *layers) {
+    wlr_log(WLR_DEBUG, "Destroying scene group");
     wlr_scene_node_destroy(&layers->fullscreen->node);
     wlr_scene_node_destroy(&layers->normal->node);
     free(layers);

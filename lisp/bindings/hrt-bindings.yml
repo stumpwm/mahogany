@@ -2,9 +2,9 @@ output: lisp/bindings/hrt-bindings.lisp
 package: hrt
 pkg-config:
   - wlroots-0.19
+  - heart
 arguments:
   - "-DWLR_USE_UNSTABLE"
-  - "-Iheart/include"
 files:
   - build/include/hrt/hrt_input.h
   - build/include/hrt/hrt_view.h
