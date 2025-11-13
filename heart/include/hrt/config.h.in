@@ -1,0 +1,9 @@
+#ifndef HRT_CONFIG_H
+#define HRT_CONFIG_H
+
+/**
+ * Whether xwayland support is included
+ **/
+#mesondefine HRT_HAS_XWAYLAND
+
+#endif

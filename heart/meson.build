@@ -49,8 +49,9 @@ endif
 
 have_xwayland = xcb.found() and wlroots_has_xwayland
 
-conf_data = configuration_data()
-conf_data.set10('HAVE_XWAYLAND', have_xwayland)
+features = {
+  'xwayland': have_xwayland,
+}
 
 hrt_source_files = []
 
@@ -68,6 +69,11 @@ hrt_deps = [
 hrt_inc = include_directories('include')
 proto_inc = include_directories('protocols')
 
+hrt_vars = {}
+foreach name, have : features
+  hrt_vars += { 'have_' + name.underscorify(): have.to_string() }
+endforeach
+
 lib_hrt = library(
   meson.project_name(), hrt_source_files,
   dependencies: hrt_deps,
@@ -82,12 +88,17 @@ heart = declare_dependency(
 )
 
 pkg = import('pkgconfig')
-pkg.generate(lib_hrt,
-             version: meson.project_version(),
-             filebase: meson.project_name(),
-             name: meson.project_name(),
-             description: 'Core package for mahogany wm')
+pkg.generate(
+  lib_hrt,
+  version: meson.project_version(),
+  filebase: meson.project_name(),
+  name: meson.project_name(),
+  description: 'Core package for mahogany wm',
+  variables: hrt_vars,
+)
 
 if get_option('example')
   subdir('example')
 endif
+
+summary(features, bool_yn: true)
