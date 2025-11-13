@@ -6,7 +6,8 @@
     (log-string :debug "Created group ~A" name)
     (%make-mahogany-group name number hrt-group)))
 
-(defun destroy-mahogany-group (group scene-tree)
+(defun destroy-mahogany-group (group scene-tree seat)
+  (group-suspend group seat)
   (alexandria:when-let ((views (mahogany-group-views group)))
     (log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
     (dolist (v views)

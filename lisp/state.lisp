@@ -37,9 +37,11 @@
                    (server mahogany-state-server)
 		   (scene mahogany-state-scene))
       state
-    (let ((scene-tree (hrt:hrt-server-scene-tree server)))
+    (let ((scene-tree (hrt:hrt-server-scene-tree server))
+	  (seat (hrt:hrt-server-seat server)))
       (loop for g across groups
-            :do (destroy-mahogany-group g scene-tree)))
+            :do (destroy-mahogany-group g scene-tree seat)))
+    (setf groups (adjust-array groups 0 :fill-pointer 0))
     (hrt:hrt-server-finish server)
     ;; The actual scene object is freed during hrt-server-finish:
     (setf scene nil)
@@ -142,8 +144,9 @@
                                :test #'equalp))
           (group-transfer-views current-group group)
           (let* ((server (mahogany-state-server state))
-                 (scene-tree (hrt:hrt-server-scene-tree server)))
-            (destroy-mahogany-group group scene-tree))
+                 (scene-tree (hrt:hrt-server-scene-tree server))
+		 (seat (hrt:hrt-server-seat server)))
+            (destroy-mahogany-group group scene-tree seat))
           (log-string :trace "Hidden groups: ~S" hidden-groups))
         (log-string :error "could not find group to delete"))))
 
