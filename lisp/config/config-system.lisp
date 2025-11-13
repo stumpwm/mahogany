@@ -133,7 +133,7 @@ type specifier, and documentation"
   (check-type documentation string)
   (check-type name symbol)
   (with-gensyms (default-value)
-    `(progn
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let* ((,default-value ,default))
          (if (typep ,default-value (quote ,type-specifier))
              (progn
