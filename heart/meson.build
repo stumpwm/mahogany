@@ -22,29 +22,36 @@ add_project_arguments(
 
 cc = meson.get_compiler('c')
 
+wlroots_version = ['>=0.19.0', '<0.20.0']
+
 wayland_server = dependency('wayland-server')
 wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
 xcb            = dependency('xcb', required: get_option('xwayland'))
-
-wlroots_version = ['>=0.19.0', '<0.20.0']
-wlroots_proj = subproject(
-	'wlroots',
-	default_options: ['examples=false'],
-	required: false,
-	version: wlroots_version,
+wlroots        = dependency(
+  ['wlroots-0.19', 'wlroots'],
+  version: wlroots_version,
+  required: false,
 )
-if wlroots_proj.found()
-	wlroots = wlroots_proj.get_variable('wlroots')
-	wlroots_conf = wlroots_proj.get_variable('conf_data')
-	wlroots_has_xwayland = wlroots_conf.get('WLR_HAS_XWAYLAND') == 1
+
+if not wlroots.found()
+  wlroots_proj = subproject(
+    'wlroots',
+    default_options: ['examples=false'],
+    required: true,
+    version: wlroots_version,
+  )
+  wlroots = wlroots_proj.get_variable('wlroots')
+  wlroots_conf = wlroots_proj.get_variable('conf_data')
+  wlroots_has_xwayland = wlroots_conf.get('WLR_HAS_XWAYLAND') == 1
 else
-	wlroots = dependency(['wlroots-0.19', 'wlroots'], version: wlroots_version)
-	wlroots_has_xwayland = cc.get_define('WLR_HAS_XWAYLAND', prefix: '#include <wlr/config.h>', dependencies: wlroots) == '1'
+  wlroots_has_xwayland = wlroots.get_pkgconfig_variable('have_xwayland') == 'false'
 endif
 
+
+
 if get_option('xwayland').enabled() and not wlroots_has_xwayland
-	error('Cannot enable Xwayland in heart: wlroots has been built without Xwayland support')
+  error('Cannot enable Xwayland in heart: wlroots has been built without Xwayland support')
 endif
 
 have_xwayland = xcb.found() and wlroots_has_xwayland
