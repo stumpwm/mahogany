@@ -77,6 +77,27 @@ static void new_view_callback(struct hrt_view *view) {
     puts("New view callback called!");
 }
 
+static void view_mapped(struct hrt_view *view) {
+  puts("View Mapped");
+}
+
+static void view_unmapped(struct hrt_view *view) {
+  puts("View unmapped");
+}
+
+static void view_size_changed(struct hrt_view *view) {
+    puts("View size changed");
+}
+
+static void view_callback(struct hrt_view *view) {
+    puts("Generic callback called");
+}
+
+static bool view_fullscreen_callback(struct hrt_view *view, struct hrt_output *output, bool set) {
+    puts("Generic callback called");
+    return false;
+}
+
 static void view_destroy_callback(struct hrt_view *view) {
     puts("View destroy callback called");
 }
@@ -154,12 +175,6 @@ static bool keyboard_callback(struct hrt_seat *seat,
     return false;
 }
 
-static void empty_callback(struct hrt_view *view) {}
-static bool request_fullscreen(struct hrt_view *view, struct hrt_output *output,
-                               bool fullscreen) {
-    return false;
-}
-
 static void layout_changed() {}
 
 static const struct hrt_output_callbacks output_callbacks = {
@@ -175,14 +190,14 @@ static const struct hrt_seat_callbacks seat_callbacks = {
 };
 
 static const struct hrt_view_callbacks view_callbacks = {
-    .new_view           = &new_view_callback,
-    .view_size_changed  = &empty_callback,
-    .view_destroyed     = &view_destroy_callback,
-    .view_mapped        = &empty_callback,
-    .view_unmapped      = &empty_callback,
-    .request_minimize   = &empty_callback,
-    .request_maximize   = &empty_callback,
-    .request_fullscreen = &request_fullscreen,
+    .new_view       = &new_view_callback,
+    .view_destroyed = &view_destroy_callback,
+    .view_size_changed = &view_size_changed,
+    .view_mapped = &view_mapped,
+    .view_unmapped = &view_unmapped,
+    .request_minimize = &view_callback,
+    .request_maximize = &view_callback,
+    .request_fullscreen = &view_fullscreen_callback,
 };
 
 int main(int argc, char *argv[]) {
