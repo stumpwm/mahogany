@@ -11,16 +11,10 @@
 		 (or model "")
 		 (or serial ""))))
 
-(defun make-mahogany-output (hrt-output)
-  (let ((name (%get-output-full-name hrt-output)))
-    (%make-mahogany-output hrt-output name)))
+(defun make-mahogany-output (hrt-output hrt-scene)
+  (let ((name (%get-output-full-name hrt-output))
+	(scene (hrt:hrt-scene-output-create hrt-scene)))
+    (%make-mahogany-output hrt-output scene name)))
 
-(cffi:defcallback handle-new-output :void ((output (:pointer (:struct hrt:hrt-output))))
-  (let ((mh-output (make-mahogany-output output)))
-    (mahogany-state-output-add *compositor-state* mh-output)))
-
-(cffi:defcallback handle-output-removed :void ((output (:pointer (:struct hrt:hrt-output))))
-  (mahogany-state-output-remove *compositor-state* output))
-
-(cffi:defcallback handle-output-layout-change :void ()
-  (mahogany-state-output-reconfigure *compositor-state*))
+(defun destroy-mahogany-output (mh-output)
+  (hrt:hrt-scene-output-destroy (mahogany-output-hrt-scene mh-output)))

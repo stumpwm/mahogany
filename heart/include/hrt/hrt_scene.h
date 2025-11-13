@@ -3,9 +3,31 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <hrt/hrt_output.h>
+#include <wayland-server-core.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_scene.h>
 
+struct hrt_scene_root {
+    struct wlr_scene_tree *background;
+    struct wlr_scene_tree *bottom;
+    struct wlr_scene_tree *normal;
+    struct wlr_scene_tree *fullscreen;
+    struct wlr_scene_tree *top;
+    struct wlr_scene_tree *overlay;
+    // Should we store the outputs and groups associated with this?
+    struct {
+      struct wl_listener scene_destroy;
+    } listeners;
+};
+
+struct hrt_scene_output {
+    struct wlr_scene_tree *background;
+    struct wlr_scene_tree *bottom;
+
+    struct wlr_scene_tree *top;
+    struct wlr_scene_tree *overlay;
+};
 
 struct hrt_scene_group {
     struct wlr_scene_tree *normal;
@@ -19,7 +41,15 @@ struct hrt_scene_fullscreen_node {
     struct hrt_view *view;
 };
 
-struct hrt_scene_group *hrt_scene_group_create(struct wlr_scene_tree *parent);
+struct hrt_scene_root *hrt_scene_root_create(struct wlr_scene_tree *scene);
+
+void hrt_scene_root_destroy(struct hrt_scene_root *scene_root);
+
+struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene);
+
+void hrt_scene_output_destroy(struct hrt_scene_output *output);
+
+struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent);
 
 void hrt_scene_group_destroy(struct hrt_scene_group *group);
 
@@ -58,8 +88,8 @@ hrt_scene_fullscreen_node_destroy(struct hrt_scene_fullscreen_node *node);
 uint32_t hrt_scene_node_set_dimensions(struct hrt_scene_fullscreen_node *node,
                                        int width, int height);
 
-void hrt_scene_node_set_position(struct hrt_scene_fullscreen_node *node,
-				 int x, int y);
+void hrt_scene_node_set_position(struct hrt_scene_fullscreen_node *node, int x,
+                                 int y);
 
 uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_node *group,
                                         struct hrt_output *output);

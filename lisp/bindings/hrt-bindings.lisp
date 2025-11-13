@@ -276,6 +276,20 @@ set the width and height of views."
 
 ;; next section imported from file build/include/hrt/hrt_scene.h
 
+(cffi:defcstruct hrt-scene-root
+  (background :pointer #| (:struct wlr-scene-tree) |# )
+  (bottom :pointer #| (:struct wlr-scene-tree) |# )
+  (normal :pointer #| (:struct wlr-scene-tree) |# )
+  (fullscreen :pointer #| (:struct wlr-scene-tree) |# )
+  (top :pointer #| (:struct wlr-scene-tree) |# )
+  (overlay :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcstruct hrt-scene-output
+  (background :pointer #| (:struct wlr-scene-tree) |# )
+  (bottom :pointer #| (:struct wlr-scene-tree) |# )
+  (top :pointer #| (:struct wlr-scene-tree) |# )
+  (overlay :pointer #| (:struct wlr-scene-tree) |# ))
+
 (cffi:defcstruct hrt-scene-group
   (normal :pointer #| (:struct wlr-scene-tree) |# )
   (fullscreen :pointer #| (:struct wlr-scene-tree) |# ))
@@ -285,8 +299,20 @@ set the width and height of views."
   (background :pointer #| (:struct wlr-scene-rect) |# )
   (view (:pointer (:struct hrt-view))))
 
+(cffi:defcfun ("hrt_scene_root_create" hrt-scene-root-create) (:pointer (:struct hrt-scene-root))
+  (scene :pointer #| (:struct wlr-scene-tree) |# ))
+
+(cffi:defcfun ("hrt_scene_root_destroy" hrt-scene-root-destroy) :void
+  (scene-root (:pointer (:struct hrt-scene-root))))
+
+(cffi:defcfun ("hrt_scene_output_create" hrt-scene-output-create) (:pointer (:struct hrt-scene-output))
+  (scene (:pointer (:struct hrt-scene-root))))
+
+(cffi:defcfun ("hrt_scene_output_destroy" hrt-scene-output-destroy) :void
+  (output (:pointer (:struct hrt-scene-output))))
+
 (cffi:defcfun ("hrt_scene_group_create" hrt-scene-group-create) (:pointer (:struct hrt-scene-group))
-  (parent :pointer #| (:struct wlr-scene-tree) |# ))
+  (parent (:pointer (:struct hrt-scene-root))))
 
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void
   (group (:pointer (:struct hrt-scene-group))))

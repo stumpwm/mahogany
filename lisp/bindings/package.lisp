@@ -56,8 +56,12 @@
 	   #:keysyms-len
 	   #:wl-key-state
 	   ;; scene helpers:
+	   #:hrt-scene-root-create
+	   #:hrt-scene-root-destroy
 	   #:hrt-scene-group-create
 	   #:hrt-scene-group-destroy
+	   #:hrt-scene-output-create
+	   #:hrt-scene-output-destroy
 	   #:scene-group-add-view
 	   #:hrt-scene-group-set-enabled
 	   #:hrt-scene-group-transfer
