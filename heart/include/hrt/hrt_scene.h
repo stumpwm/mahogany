@@ -7,6 +7,9 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_scene.h>
+#include "hrt/hrt_output.h"
+#include "hrt_output.h"
+#include <wlr/types/wlr_layer_shell_v1.h>
 
 struct hrt_scene_root {
     struct wlr_scene_tree *background;
@@ -17,7 +20,7 @@ struct hrt_scene_root {
     struct wlr_scene_tree *overlay;
     // Should we store the outputs and groups associated with this?
     struct {
-      struct wl_listener scene_destroy;
+        struct wl_listener scene_destroy;
     } listeners;
 };
 
@@ -27,6 +30,7 @@ struct hrt_scene_output {
 
     struct wlr_scene_tree *top;
     struct wlr_scene_tree *overlay;
+    struct hrt_output *output;
 };
 
 struct hrt_scene_group {
@@ -48,6 +52,10 @@ void hrt_scene_root_destroy(struct hrt_scene_root *scene_root);
 struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene);
 
 void hrt_scene_output_destroy(struct hrt_scene_output *output);
+
+struct wlr_scene_tree *hrt_scene_output_get_layer(
+    struct hrt_scene_output *output, enum zwlr_layer_shell_v1_layer layer_type);
+
 
 struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent);
 
