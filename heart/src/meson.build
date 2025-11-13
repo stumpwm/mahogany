@@ -10,3 +10,9 @@ hrt_source_files += files(
   'view.c',
   'xdg_shell.c',
   )
+
+if get_option('debug_utils')
+   hrt_source_files += files(
+      'debug/debug.c'
+   )
+endif

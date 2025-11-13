@@ -32,6 +32,7 @@
 				     (:file "wlr-bindings")
 				     (:file "hrt-libs")
 				     (:file "hrt-bindings")
+				     (:file "hrt-debug" :if-feature :hrt-debug)
 				     (:file "wrappers")
 				     (:file "view")
 				     (:file "scene-group")))

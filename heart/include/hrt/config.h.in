@@ -6,4 +6,9 @@
  **/
 #mesondefine HRT_HAS_XWAYLAND
 
+/**
+ * Whether the debug utilities are included
+ */
+#mesondefine HRT_HAS_DEBUG_UTILS
+
 #endif
