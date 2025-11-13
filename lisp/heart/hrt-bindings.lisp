@@ -116,6 +116,7 @@ names."
   (xdg-surface :pointer #| (:struct wlr-xdg-surface) |#)
   (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |#)
   (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
+  (xdg-scene :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
@@ -448,10 +449,15 @@ whenever the semaphore is non-zero."
 
 ;; next section imported from file build/include/hrt/hrt_server.h
 
+(cffi:defcstruct hrt-server-destroy-listener
+  (backend (:struct wl-listener))
+  (headless (:struct wl-listener))
+  (output-manager (:struct wl-listener)))
+
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
   (backend :pointer #| (:struct wlr-backend) |#)
-  (backend-destroy (:struct wl-listener))
+  (headless-backend :pointer #| (:struct wlr-backend) |#)
   (session :pointer #| (:struct wlr-session) |#)
   (renderer :pointer #| (:struct wlr-renderer) |#)
   (compositor :pointer #| (:struct wlr-compositor) |#)
@@ -464,11 +470,12 @@ whenever the semaphore is non-zero."
   (output-layout-changed (:struct wl-listener))
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
-  (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
   (scene-root (:pointer (:struct hrt-scene-root)))
+  (fallback-output (:pointer (:struct hrt-output)))
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |#)
   (new-xdg-toplevel (:struct wl-listener))
+  (destroy-listener (:struct hrt-server-destroy-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
   (message-timer-source :pointer #| (:struct wl-event-source) |#)
