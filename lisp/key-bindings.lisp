@@ -74,6 +74,16 @@
   (declare (ignore sequence seat))
   (state-next-hidden-group *compositor-state*))
 
+#+:hrt-debug
+(defun add-output (sequence seat)
+  (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
+      (log-string :info "Output not added")
+      (log-string :info "Output added")))
+
+#+:hrt-debug
+(defvar *debug-map* (define-kmap
+		      (kbd "a") #'add-output))
+
 
 (let* ((group-map (define-kmap
                     (kbd "c") #'gnew
@@ -92,6 +102,8 @@
                    (kbd "n") #'next-view
                    (kbd "p") #'previous-view
                    (kbd "+") #'open-kcalc
+		   #+:hrt-debug
+		   (kbd "d") *debug-map*
                    (kbd "g") group-map)))
   (setf (mahogany-state-keybindings *compositor-state*)
         (list (define-kmap

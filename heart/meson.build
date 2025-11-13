@@ -57,6 +57,7 @@ endif
 have_xwayland = xcb.found() and wlroots_has_xwayland
 
 features = {
+  'debug-utils': get_option('debug_utils'),
   'xwayland': have_xwayland,
 }
 
