@@ -213,6 +213,7 @@ set the width and height of views."
   (wl-display :pointer #| (:struct wl-display) |# )
   (backend :pointer #| (:struct wlr-backend) |# )
   (backend-destroy (:struct wl-listener))
+  (headless-backend :pointer #| (:struct wlr-backend) |# )
   (session :pointer #| (:struct wlr-session) |# )
   (renderer :pointer #| (:struct wlr-renderer) |# )
   (compositor :pointer #| (:struct wlr-compositor) |# )
@@ -227,6 +228,7 @@ set the width and height of views."
   (output-manager-test (:struct wl-listener))
   (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
+  (fallback-output (:pointer (:struct hrt-output)))
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))
@@ -249,7 +251,7 @@ set the width and height of views."
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
@@ -320,7 +322,7 @@ set the width and height of views."
   (source (:pointer (:struct hrt-scene-group)))
   (destination (:pointer (:struct hrt-scene-group))))
 
-(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
