@@ -43,7 +43,7 @@ Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]]
    #+END_SRC
 
 To see a full example of this process, see the
-[[https://github.com/stumpwm/mahogany/blob/master/Dockerfile][CI's Dockerfile]]
+[[https://github.com/stumpwm/mahogany/blob/master/.github/workflows/test.yml][CI workflow]].
 
 *** Backend Library Dependencies
 The backend library requires wlroots 0.19.x. If an appropriate
