@@ -1,8 +1,8 @@
 FROM fedora:latest
 
-ENV HOME /root/
+ENV HOME=/root/
 
-RUN dnf -y install dnf-plugins-core sbcl curl make redhat-rpm-config
+RUN dnf -y install dnf-plugins-core redhat-rpm-config sbcl curl make wlroots-devel
 RUN dnf -y builddep wlroots
 
 RUN curl -O https://beta.quicklisp.org/quicklisp.lisp \
