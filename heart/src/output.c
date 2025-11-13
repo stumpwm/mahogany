@@ -7,7 +7,6 @@
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
-#include <wlr/backend/headless.h>
 
 #include <hrt/hrt_output.h>
 
@@ -33,13 +32,10 @@ static void handle_frame_notify(struct wl_listener *listener, void *data) {
 }
 
 static void handle_output_destroy(struct wl_listener *listener, void *data) {
+    wlr_log(WLR_DEBUG, "Output destroyed");
     struct hrt_output *output = wl_container_of(listener, output, destroy);
     struct hrt_server *server = output->server;
-    wlr_log(WLR_DEBUG, "Output destroyed %s", output->wlr_output->name);
-
-    if (!wlr_output_is_headless(output->wlr_output)) {
-        server->output_callback->output_removed(output);
-    }
+    server->output_callback->output_removed(output);
 
     wl_list_remove(&output->frame.link);
     wl_list_remove(&output->request_state.link);
@@ -57,8 +53,8 @@ static float float_rand() {
     return (float)(rand() / (double)RAND_MAX); /* [0, 1.0] */
 }
 
-struct hrt_output *hrt_output_create(struct hrt_server *server,
-                                     struct wlr_output *wlr_output) {
+static struct hrt_output *hrt_output_create(struct hrt_server *server,
+                                            struct wlr_output *wlr_output) {
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
@@ -67,9 +63,6 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     wl_signal_add(&wlr_output->events.frame, &output->frame);
     output->request_state.notify = handle_request_state;
     wl_signal_add(&wlr_output->events.request_state, &output->request_state);
-
-    output->destroy.notify = handle_output_destroy;
-    wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -81,16 +74,14 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     printf("Output color: {%f, %f, %f, %f}\n", output->color[0],
            output->color[1], output->color[2], output->color[3]);
 
-    wlr_output->data = output;
-
     return output;
 }
 
 static void handle_new_output(struct wl_listener *listener, void *data) {
+    wlr_log(WLR_DEBUG, "New output detected");
     struct hrt_server *server = wl_container_of(listener, server, new_output);
 
     struct wlr_output *wlr_output = data;
-    wlr_log(WLR_DEBUG, "New output detected: %s", wlr_output->name);
 
     wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
@@ -118,11 +109,11 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
 
     struct hrt_output *output = hrt_output_create(server, wlr_output);
 
-    // I'm not sure how to handle headless outputs, but they certainly shouldn't
-    // go through mahogany's normal code paths:
-    if (!wlr_output_is_headless(wlr_output)) {
-        server->output_callback->output_added(output);
-    }
+    output->destroy.notify = handle_output_destroy;
+    wl_signal_add(&wlr_output->events.destroy, &output->destroy);
+
+    wlr_output->data = output;
+    server->output_callback->output_added(output);
 }
 
 static void handle_output_manager_destroy(struct wl_listener *listener,
