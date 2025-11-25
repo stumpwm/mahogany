@@ -76,6 +76,7 @@
 
 #+:hrt-debug
 (defun add-output (sequence seat)
+  (declare (ignore sequence seat))
   (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
       (log-string :info "Output not added")
       (log-string :info "Output added")))
