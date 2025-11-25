@@ -513,6 +513,12 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       (format stream ":w ~A :h ~A :x ~A :y ~A"
 	      (round width) (round height) (round x) (round y)))))
 
+(defmethod print-object ((object tree-parent) stream)
+  (print-unreadable-object (object stream :type t)
+    (with-slots (children)
+	object
+      (format stream ":children ~S" children))))
+
 (defmethod print-object ((object tree-frame) stream)
   (print-unreadable-object (object stream :type t)
     (with-slots (width height x y children split-direction)
