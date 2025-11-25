@@ -15,6 +15,28 @@
   (hrt:hrt-scene-group-destroy (mahogany-group-hrt-group group))
   (log-string :debug "Destroyed group ~A" (mahogany-group-name group)))
 
+(defun %add-hidden (hidden-list view)
+  (log-string :trace "Hiding view ~S" view)
+  (ring-list:add-item hidden-list view)
+  (hrt:view-set-hidden view t))
+
+(defun %swap-next-hidden (hidden-list view)
+  (let ((swapped (ring-list:swap-next hidden-list view)))
+    (hrt:view-set-hidden view t)
+    (hrt:view-set-hidden swapped nil)
+    swapped))
+
+(defun %swap-prev-hidden (hidden-list view)
+  (let ((swapped (ring-list:swap-previous hidden-list view)))
+    (hrt:view-set-hidden view t)
+    (hrt:view-set-hidden swapped nil)
+    swapped))
+
+(defun %pop-hidden-item (hidden-list)
+  (alexandria:when-let ((popped (ring-list:pop-item hidden-list)))
+    (hrt:view-set-hidden popped nil)
+    popped))
+
 (defun group-suspend (group seat)
   (declare (type mahogany-group group))
   (with-accessors ((focused-frame mahogany-group-current-frame)
@@ -66,7 +88,8 @@
 	   (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
 		   (tree-container mahogany-group-tree-container)
-		   (current-frame mahogany-group-current-frame))
+		   (current-frame mahogany-group-current-frame)
+		   (hidden-views mahogany-group-hidden-views))
       group
     (multiple-value-bind (x y) (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height) (hrt:output-resolution (mahogany-output-hrt-output output))
@@ -74,7 +97,10 @@
 					    :x x :y y :width width :height height)))
 	  (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
 	  (when (not current-frame)
-	    (group-focus-frame group (tree:find-first-leaf new-tree) seat)))))
+	    (let ((first-leaf (tree:find-first-leaf new-tree)))
+	      (group-focus-frame group first-leaf seat)
+	      (alexandria:when-let ((spare (%pop-hidden-item hidden-views)))
+		(setf (tree:frame-view first-leaf) spare)))))))
     (log-string :trace "Group map: ~S" output-map)))
 
 (defun group-reconfigure-outputs (group outputs)
@@ -99,7 +125,9 @@ to match."
 (defun group-remove-output (group output seat)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
-  (with-accessors ((output-map mahogany-group-output-map)) group
+  (with-accessors ((output-map mahogany-group-output-map)
+		   (hidden-views mahogany-group-hidden-views))
+      group
     (let* ((output-name (mahogany-output-full-name output))
 	   (tree (gethash output-name output-map)))
       (remhash output-name output-map)
@@ -109,29 +137,8 @@ to match."
 	  (group-focus-frame group (tree:find-first-leaf other-tree) seat)))
       (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
 	(group-unfocus-frame group (mahogany-group-current-frame group) seat))
-      (tree:remove-frame tree))))
-
-(defun %add-hidden (hidden-list view)
-  (log-string :trace "Hiding view ~S" view)
-  (ring-list:add-item hidden-list view)
-  (hrt:view-set-hidden view t))
-
-(defun %swap-next-hidden (hidden-list view)
-  (let ((swapped (ring-list:swap-next hidden-list view)))
-    (hrt:view-set-hidden view t)
-    (hrt:view-set-hidden swapped nil)
-    swapped))
-
-(defun %swap-prev-hidden (hidden-list view)
-  (let ((swapped (ring-list:swap-previous hidden-list view)))
-    (hrt:view-set-hidden view t)
-    (hrt:view-set-hidden swapped nil)
-    swapped))
-
-(defun %pop-hidden-item (hidden-list)
-  (alexandria:when-let ((popped (ring-list:pop-item hidden-list)))
-    (hrt:view-set-hidden popped nil)
-    popped))
+      (tree:remove-frame tree (lambda (x) (alexandria:when-let ((v (tree:frame-view x)))
+					    (%add-hidden hidden-views v)))))))
 
 (defun %group-add-view (group view)
   (declare (type mahogany-group group)
