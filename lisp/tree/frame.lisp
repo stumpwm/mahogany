@@ -422,7 +422,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 (defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
   (assert (equal (frame-parent frame) parent)))
 
-(defmethod remove-frame-from-parent :after ((parent tree-frame) frame cleanup-func)
+(defmethod remove-frame-from-parent :after ((parent tree-parent) frame cleanup-func)
   (declare (ignore parent))
   (release-frames frame cleanup-func))
 
