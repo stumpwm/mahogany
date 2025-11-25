@@ -85,27 +85,29 @@
 (defvar *debug-map* (define-kmap
 		      (kbd "a") #'add-output))
 
+(defvar *group-map* (define-kmap
+		      (kbd "c") #'gnew
+		      (kbd "k") #'gkill
+		      (kbd "n") #'gnext
+		      (kbd "p") #'gprev))
 
-(let* ((group-map (define-kmap
-                    (kbd "c") #'gnew
-                    (kbd "k") #'gkill
-                    (kbd "n") #'gnext
-                    (kbd "p") #'gprev))
-       (root-map (define-kmap
-                   (kbd "o") #'next-frame
-                   (kbd "O") #'prev-frame
-                   (kbd "q") #'handle-server-stop
-                   (kbd "k") #'close-current-view
-                   (kbd "c") #'open-terminal
-                   (kbd "s") #'split-frame-v
-                   (kbd "S") #'split-frame-h
-                   (kbd "Q") #'maximize-current-frame
-                   (kbd "n") #'next-view
-                   (kbd "p") #'previous-view
-                   (kbd "+") #'open-kcalc
-		   #+:hrt-debug
-		   (kbd "d") *debug-map*
-                   (kbd "g") group-map)))
-  (setf (mahogany-state-keybindings *compositor-state*)
-        (list (define-kmap
-                (kbd "C-t") root-map))))
+(defvar *root-map* (define-kmap
+                     (kbd "o") #'next-frame
+		     (kbd "O") #'prev-frame
+		     (kbd "q") #'handle-server-stop
+		     (kbd "k") #'close-current-view
+		     (kbd "c") #'open-terminal
+		     (kbd "s") #'split-frame-v
+		     (kbd "S") #'split-frame-h
+		     (kbd "Q") #'maximize-current-frame
+		     (kbd "n") #'next-view
+		     (kbd "p") #'previous-view
+		     (kbd "+") #'open-kcalc
+		     (kbd "g") *group-map*))
+#+:hrt-debug
+(progn
+  (define-key *root-map* (kbd "d") *debug-map*))
+
+(setf (mahogany-state-keybindings *compositor-state*)
+      (list (define-kmap
+              (kbd "C-t") *root-map*)))
