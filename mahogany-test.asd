@@ -7,6 +7,7 @@ This file is a part of mahogany.
   :depends-on (#:mahogany
 	       #:fiasco)
   :pathname "test/"
+  :serial nil
   :components ((:file "util")
 	       (:file "ring-list")
 	       (:file "tree-tests" :depends-on ("util"))

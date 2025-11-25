@@ -1,3 +1,7 @@
+(declaim (optimize (debug 3)))
+
+(cl:pushnew :hrt-debug *features*)
+
 (let* ((root (uiop/os:getcwd))
        (asdf-cache (make-pathname
 		    :directory (append
