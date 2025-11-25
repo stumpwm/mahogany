@@ -89,8 +89,9 @@ found and removed"
 (defun pop-item-prev (ring-list)
   "Remove the item before the head of the ist and return it"
   (declare (type ring-list ring-list))
-  (let ((head (ring-item-prev (ring-list-head ring-list))))
-    (when head
+  (alexandria:when-let* ((head (ring-list-head ring-list))
+			 (last (ring-item-prev head)))
+    (when last
       (let ((prev (ring-item-prev head)))
 	(%remove-item ring-list prev)
 	(ring-item-item prev)))))
