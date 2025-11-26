@@ -71,21 +71,11 @@ struct hrt_input {
     struct wl_listener destroy;
 };
 
-bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
-                   const struct hrt_seat_callbacks *callbacks);
-void hrt_seat_destroy(struct hrt_seat *seat);
-
 /**
  * Send the appropriate cursor event to the view under the
  * cursor.
  **/
 void hrt_seat_reset_view_under(struct hrt_seat *seat);
-
-bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server);
-void hrt_cursor_destroy(struct hrt_seat *seat);
-
-void hrt_keyboard_init(struct hrt_seat *seat);
-void hrt_keyboard_destroy(struct hrt_seat *seat);
 
 /**
  * Set the seat's default cursor image to the given cursor name.

@@ -2,7 +2,7 @@
 #include <wayland-util.h>
 #include <wlr/util/log.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include "seat_impl.h"
 
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>

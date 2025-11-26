@@ -1,5 +1,7 @@
 #include "wlr/util/log.h"
 #include "xdg_impl.h"
+#include "seat_impl.h"
+#include "output_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
