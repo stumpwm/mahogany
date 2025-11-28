@@ -1,14 +1,4 @@
-project(
-  'heart',
-  'c',
-  version: '0.1',
-  license: 'GPL',
-  default_options: [
-    'c_std=c11',
-    'warning_level=2',
-    'werror=true',
-  ],
-)
+heart_proj_name = 'heart'
 
 add_project_arguments(
   [
@@ -83,7 +73,7 @@ foreach name, have : features
 endforeach
 
 lib_hrt = library(
-  meson.project_name(), hrt_source_files,
+  heart_proj_name, hrt_source_files,
   dependencies: hrt_deps,
   include_directories: [hrt_inc, proto_inc],
   install: true
@@ -99,8 +89,8 @@ pkg = import('pkgconfig')
 pkg.generate(
   lib_hrt,
   version: meson.project_version(),
-  filebase: meson.project_name(),
-  name: meson.project_name(),
+  filebase: heart_proj_name,
+  name: heart_proj_name,
   description: 'Core package for mahogany wm',
   variables: hrt_vars,
 )
