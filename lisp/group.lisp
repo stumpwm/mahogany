@@ -93,7 +93,7 @@
       group
     (multiple-value-bind (x y) (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height) (hrt:output-resolution (mahogany-output-hrt-output output))
-	(let ((new-tree (tree:tree-container-add tree-container
+	(let ((new-tree (tree:tree-container-add tree-container output
 					    :x x :y y :width width :height height)))
 	  (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
 	  (when (not current-frame)
@@ -122,6 +122,10 @@ to match."
       (declare (ignore found key))
       value)))
 
+(defun group-current-output (group)
+  (let ((output-node (tree:frame-parent (tree:find-root-frame (mahogany-group-current-frame group)))))
+    (tree:output-node-output output-node)))
+
 (defun group-remove-output (group output seat)
   (declare (type mahogany-output output)
 	   (type mahogany-group group))
@@ -131,7 +135,7 @@ to match."
     (let* ((output-name (mahogany-output-full-name output))
 	   (tree (gethash output-name output-map)))
       (remhash output-name output-map)
-      (when (equalp tree (tree:find-root-frame (mahogany-group-current-frame group)))
+      (when (equalp output (group-current-output group))
 	(group-unfocus-frame group (mahogany-group-current-frame group) seat)
 	(alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
 	  (group-focus-frame group (tree:find-first-leaf other-tree) seat)))
