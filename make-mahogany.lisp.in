@@ -6,14 +6,17 @@
 
 (let* ((task (first (uiop:command-line-arguments)))
        (root (pathname "@SOURCE_ROOT@/"))
-       (build-dir (pathname  "@BUILD_ROOT@/"))
-       (asdf-cache (make-pathname
-		    :directory (append
-				(pathname-directory build-dir)
-				(list
-				 "lisp"
-				 (uiop:implementation-identifier))))))
-  (format t "~%Using config:~% source root: ~S~%  cache-dir:~S~2%" root asdf-cache)
+       (build-dir (pathname "@BUILD_ROOT@/"))
+       (asdf-cache (merge-pathnames
+		    (make-pathname
+		     :directory (append
+				 (pathname-directory build-dir)
+				 (list
+				  "mahogany.p"
+				  (uiop:implementation-identifier))))
+		    build-dir)))
+  (format t "~%Using config:~%  source root: ~S~%  cache-dir:~S~%" root asdf-cache)
+  (finish-output)
   ;; See https://asdf.common-lisp.dev/asdf.html#Configuration-DSL-1
   ;; for what this is doing.
   ;; Basically, we want our local copies of dependencies in the dependencies folder

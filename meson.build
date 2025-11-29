@@ -33,21 +33,24 @@ lisp = find_program(lisp_c)
 if lisp_c == 'sbcl'
   execute_lisp = [lisp, '--non-interactive', '--load', lisp_make_file]
 elif lisp_c == 'ccl'
-  sh = find_program('sh')
   execute_lisp = [lisp, '-b', '--load', lisp_make_file, '--']
+# Sadly, this won't even compile when using clasp:
+# elif lisp_c  == 'clasp'
+#   execute_lisp = [lisp, '--non-interactive', '--load', lisp_make_file, '--']
 else
   error('Don\'t know how to  build using lisp implementation ' + lisp_c)
 endif
 
 mahogany_target = custom_target(
   'mahogany',
-  command: execute_lisp + 'build',
-  build_always_stale: true,
+  command: execute_lisp + ['build'],
   build_by_default: true,
   install: true,
-  output: 'mahogany',
+  build_always_stale: true,
+  output: ['mahogany', 'mahogany.p'],
   input: lisp_inputs,
-  install_dir: get_option('bindir'),
+  install_dir: [get_option('bindir'), false],
+  console: true,
 )
 
 libhrt_path = lib_hrt.full_path()
@@ -58,12 +61,11 @@ mahogany_run_env = {
 
 run_target(
   'run',
-  command: mahogany_target,
+  command: mahogany_target[0],
   env: mahogany_run_env,
 )
 
 run_target(
   'mahogany-test',
-  command: execute_lisp + 'test',
-  depends: [lib_hrt],
+  command: execute_lisp + ['test']
 )
