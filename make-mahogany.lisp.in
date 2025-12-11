@@ -2,8 +2,6 @@
 
 (declaim (optimize (debug 3)))
 
-(cl:pushnew :hrt-debug *features*)
-
 (let* ((task (first (uiop:command-line-arguments)))
        (root (pathname "@SOURCE_ROOT@/"))
        (build-dir (pathname "@BUILD_ROOT@/"))
@@ -14,9 +12,12 @@
 				 (list
 				  "mahogany.p"
 				  (uiop:implementation-identifier))))
-		    build-dir)))
-  (format t "~%Using config:~%  source root: ~S~%  cache-dir:~S~%" root asdf-cache)
+		    build-dir))
+       (lisp-features (list@LISP_FEATURES@)))
+  (format t "~%Using config:~%  source root: ~S~%  cache-dir: ~S~%  features: ~S~%"
+	  root asdf-cache lisp-features)
   (finish-output)
+  (setf *features* (append lisp-features *features*))
   ;; See https://asdf.common-lisp.dev/asdf.html#Configuration-DSL-1
   ;; for what this is doing.
   ;; Basically, we want our local copies of dependencies in the dependencies folder

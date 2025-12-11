@@ -12,9 +12,22 @@ project(
 
 subdir('heart')
 
+lisp_features = []
+if get_option('debug_utils')
+  lisp_features += ':hrt-debug'
+endif
+if get_option('xwayland').enabled()
+  lisp_features += ':hrt-xwayland'
+endif
+feature_str = ''
+foreach f : lisp_features
+  feature_str += ' ' +  f
+endforeach
+
 lisp_conf_data = configuration_data()
 lisp_conf_data.set('SOURCE_ROOT', meson.source_root())
 lisp_conf_data.set('BUILD_ROOT', meson.build_root())
+lisp_conf_data.set('LISP_FEATURES', feature_str)
 
 lisp_make_file = configure_file(
   input: 'make-mahogany.lisp.in',
