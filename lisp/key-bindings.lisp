@@ -8,10 +8,6 @@
   (declare (ignore sequence seat))
   (sys:open-terminal))
 
-(defun open-kcalc (sequence seat)
-  (declare (ignore sequence seat))
-  (uiop:launch-program (sys:find-program "kcalc")))
-
 (defun split-frame-h (sequence seat)
   (declare (ignore sequence seat))
   (let ((frame (mahogany-current-frame *compositor-state*)))
@@ -102,7 +98,6 @@
 		     (kbd "Q") #'maximize-current-frame
 		     (kbd "n") #'next-view
 		     (kbd "p") #'previous-view
-		     (kbd "+") #'open-kcalc
 		     (kbd "g") *group-map*))
 #+:hrt-debug
 (progn
