@@ -17,14 +17,14 @@ If there is something that is included in StumpWM that has caused problems in th
   + Make switching between open tiled windows and floating windows better
   + Instead of the frame tree being binary, allow for some frames to have more than 2 children
 + Command system for implementing keybindings
-+ Keyboard driven window managment
++ Keyboard driven window management
 + Input focus
   - Can options for`*mouse-focus-policy*` be improved? Should all existing options be implemented?
     Should new options be added?
 
-## New Featuress
-+ Default to a more usuable/beginner friendly initial configuration
+## New Features
++ Default to a more usable/beginner friendly initial configuration
 
 ## Features that shouldn't be included
-+ User interaction features like menus, messages, and input boxes should be implemented as seperate applications,
++ User interaction features like menus, messages, and input boxes should be implemented as separate applications,
   or already existing applications should be used.
