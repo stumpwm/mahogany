@@ -1,0 +1,70 @@
+#+TITLE: Adding new protocol implementations to =mahogany-heart=
+
+Here's a basic overview of what adding a new protocol implementation
+to the heart backend looks like:
++ The appropriate objects from wlroots need to be created. These
+  objects register new clients and listen to their
+  events, and shoud be  added to the main =struct hrt_server= type.
++ A struct needs to be defined that holds the wlroots objects associated with the
+  protocol's clients and the event listeners for the client events.
+  + Various functions should be associated with this type to create,
+    update and destroy theses structs to minimize the amount of lisp
+    code that needs to deal directly with C objects. Ideally, lisp code
+    should only need to deal with foreign pointers and functions and
+    not access individual fields in a foreign struct.
++ The "public" C interface needs to be defined and have bindings
+  generated for it.
+  + For each protocol, there should be a struct definition holding
+    all of the callbacks for the events that protocol emits.
+
+Careful consideration needs to be made during the server shutdown
+sequence to make sure things are destroyed in the correct order.
+Lisp bindings then need to be generated; we use cl-bindgen to do this.
+
+** Adding the wlroots objects to the =hrt_server= struct
+These objects are defined in the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/master/include/wlr/types?ref_type=heads][wlr/types]] sub-directory and are named
+similarly to the protocol itself. Add this struct and the
+=wl_listener= objects needed to listen to the create and destroy
+events for this object.
+
+By convention, each protocol has its own init function that takes the
+=hrt_server= struct and any other initialization parameters
+needed. For an example, see [[https://github.com/stumpwm/mahogany/blob/ddade8a49ced47de4728893f367d6737c611ffd4/heart/src/xdg_shell.c#L187][hrt_xdg_shell_init]]. This function should
+return a =bool= to indicate if initialization was successful. A
+corresponding destroy function should also be created.
+
+Some of the header files defining these objects include the protocol
+definition header, which sometimes needs to be generated. See the
+[[https://github.com/stumpwm/mahogany/tree/f3ed03be52ef20f60c18fea047cc0c84428c0f1a/heart/protocols][heart/protocols]] directory for what this looks like.
+
+** Creating the object definitions that manage wlroots client objects
+
+See the definition of [[https://github.com/stumpwm/mahogany/blob/ddade8a49ced47de4728893f367d6737c611ffd4/heart/include/hrt/hrt_view.h#L28][hrt_view]] as an example. This struct should
+contain any C objects that should be related to this view, as well as
+the =wl_listener= objects that keep track of the events associated
+with the client.
+
+If properties from this object need to be accessed on the lisp side,
+create getter and setter functions; we are essentially creating an
+object-oriented interface that hides the  implementation from the Lisp
+side of the application.
+
+** Defining the callback struct
+
+A struct should be defined that contains all of the callbacks needed
+to send the events to the lisp side. See the [[https://github.com/stumpwm/mahogany/blob/ddade8a49ced47de4728893f367d6737c611ffd4/heart/include/hrt/hrt_view.h#L15][hrt_view_callbacks struct]].
+
+** Generating Lisp bindings
+
+[[https://github.com/sdilts/cl-bindgen][cl-bindgen]] is used to generate the lisp bindings. Add the public
+header file to the =files= list in [[https://github.com/stumpwm/mahogany/blob/ddade8a49ced47de4728893f367d6737c611ffd4/lisp/bindings/hrt-bindings.yml#L8][lisp/bindings/hrt-bindings.yml]],
+then run =make lisp/bindings/hrt-bindings.lisp= to regenerate the
+bindings. Check the output, and revert any non-related changes to the
+file; the tool doesn't generate bindings perfectly, particularly for
+functions that return strings.
+
+For more complicated objects or functions, define wrappers
+functions or even wrapper objects. As a rule, non-wrapped functions
+should not have a =hrt= prefix to separate them from wrappers defined
+in lisp. For example, =hrt-view-set-fullscreen= is the C function, and
+the function that wraps it is called =view-set-fullscreen=.
