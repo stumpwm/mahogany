@@ -94,13 +94,13 @@
     and sink selection.
 * Undecided
 ** Mode line
-   + see wlr-protocols and layer-shell
+   + see wlr-protocols and [[https://codeberg.org/dwl/dwl/src/branch/main/protocols/wlr-layer-shell-unstable-v1.xml#][layer-shell]]
 ** Menu windows
-   + see wlr-protocols and layer-shell
+   + see wlr-protocols and [[https://codeberg.org/dwl/dwl/src/branch/main/protocols/wlr-layer-shell-unstable-v1.xml#][layer-shell]]
    + Menu windows that the user interacts with could be implemented as
     a major mode that puts all input into the menu instead of
     re-directing it to the windows.
 ** Notification windows
    Dunst for wayland?
-   + see wlr-protocols and layer-shell
+   + see wlr-protocols and [[https://codeberg.org/dwl/dwl/src/branch/main/protocols/wlr-layer-shell-unstable-v1.xml#][layer-shell]] 
 ** IPC for modeline, testing
