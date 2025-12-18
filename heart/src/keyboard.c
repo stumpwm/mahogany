@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Temp: needed for exiting on escape key pressed:
 #include <wayland-server-core.h>
 #include <wayland-server-protocol.h>
 #include <xkbcommon/xkbcommon-keysyms.h>

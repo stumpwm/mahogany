@@ -85,5 +85,4 @@ make:
 #+END_SRC
 
 It is possible to run mahogany in an X11 or Wayland session, and is
-the recommended method of testing at this time. If you do choose to
-run the program in a TTY, press the =ESC= key to exit.
+the recommended method of testing at this time. 
