@@ -1,7 +1,7 @@
 (defpackage #:mahogany/system
   (:documentation "Package for functions interacting with the system that
 Mahogany is running under")
-  (:use :cl #:mahogany/util)
+  (:use :cl #:mahogany/util #:mahogany/log)
   (:local-nicknames (#:alex #:alexandria))
   (:nicknames #:sys)
   (:export #:find-program
