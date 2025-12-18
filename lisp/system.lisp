@@ -18,11 +18,12 @@ Mahogany is running under")
     (UIOP/RUN-PROGRAM:SUBPROCESS-ERROR nil)))
 
 (defun open-program (candidates)
-  ;; TODO add log messages here for the case where no provided names work.
   (loop :for name :in candidates
-		:do (alex:when-let ((program (find-program name)))
-              (uiop:launch-program program)
-              (return t)))
+		:do (alex:if-let ((program (find-program name)))
+              (progn
+                (uiop:launch-program program)
+                (return t))
+              (log-string :warn "Could not find program ~S in candidates ~S." name candidates)))
   (values nil))
 
 (defvar *default-terminals*
