@@ -26,11 +26,11 @@ Mahogany is running under")
               (log-string :warn "Could not find program ~S in candidates ~S." name candidates)))
   (values nil))
 
-(defvar *default-terminals*
-  `(,(uiop:getenv "TERMINAL")
-    "alacritty" "ghostty" "kitty" "xfce4-terminal"
-    "konsole" "gnome-terminal" "wezterm" "foot")
-  "A list of default terminal programs to use.")
+(config-system:defconfig *default-terminals*
+  (list "alacritty" "ghostty" "kitty" "xfce4-terminal"
+        "konsole" "gnome-terminal" "wezterm" "foot")
+  list
+  "A list of default terminal programs to use")
 
 (defun open-terminal ()
   (open-program *default-terminals*))
