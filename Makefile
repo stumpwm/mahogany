@@ -1,6 +1,6 @@
 ccl = cat $(1) | ccl -b
-
 sbcl = sbcl --non-interactive --load $(1)
+clasp = clasp --non-interactive --load $(1)
 
 LISP=sbcl
 
@@ -36,6 +36,9 @@ $(CACHE)/wlroots-configured:
 
 run: $(BUILD_DIR)/mahogany
 	LD_LIBRARY_PATH=build/lib/ ./build/mahogany
+
+runNoExec: $(BUILD_DIR)/heart/lib64/libheart.so
+	LD_LIBRARY_PATH=build/lib/ $(call $(LISP),run-main.lisp)
 
 clean: FORCE
 	ninja -C $(BUILD_DIR)/heart clean
