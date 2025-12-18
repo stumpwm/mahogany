@@ -5,6 +5,7 @@ pkg-config:
   - heart
 arguments:
   - "-DWLR_USE_UNSTABLE"
+  - "-Ibuild/heart/protocols"
 files:
   - build/include/hrt/hrt_input.h
   - build/include/hrt/hrt_view.h

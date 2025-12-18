@@ -39,10 +39,7 @@
   (let ((key-state (mahogany-state-key-state state)))
     (declare (type key-state key-state))
     (if (= event-state 1)
-	(or (check-and-run-keybinding key seat key-state)
-	    (when (eql 65307 (key-keysym key))
-	      (server-stop *compositor-state*)
-	      t))
+        (check-and-run-keybinding key seat key-state)
 	 (key-state-active-p key-state))))
 
 (defun %focus-frame-under-cursor (seat)

@@ -3,7 +3,7 @@
 There are two types of focus present in Mahogany: keyboard focus and
 cursor focus. When a surface is focused by an input device, it means
 that the device is sending events to the surface. Keyboard and cursor
-focus can be controlled seperately in Mahogany, and there are various
+focus can be controlled separately in Mahogany, and there are various
 settings that control how focus moves from one surface to another.
 
 * Keyboard focus
@@ -21,7 +21,7 @@ settings that control how focus moves from one surface to another.
     - =:sloppy= :: Set the keyboard focus to whatever surface the cursors is over.
 * Cursor focus (not yet implemented)
   Cursor focus has two different modes: following the keyboard, or
-  having its own seperate focus.
+  having its own separate focus.
   + =(set-mouse-focus-policy wm type)= :: Sets the way the keyboard
     focus is set. The value values are:
     - =:seperated= :: /Default/ The cursor focus is seperated from the keyboard
@@ -34,7 +34,7 @@ settings that control how focus moves from one surface to another.
                     clicks and scrolls are ignored if the keyboard isn't
                     focused on the surface that the cursor is over.
 * Stumpwm focus
-  Since Mahogany is decended from stumpwm, it is useful to note that
+  Since Mahogany is descended from stumpwm, it is useful to note that
   in order to get the equivalent behavior of stumpwm, set the cursor
   focus to =:stumpwm=, and the keyboard focus settings will match up
   nicely with the stumpwm options.

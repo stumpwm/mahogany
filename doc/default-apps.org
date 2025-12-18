@@ -6,13 +6,16 @@ is a guide on how to customize those applications.
 ** Terminal Emulator
 
 Mahogany has a function called =open-terminal= that opens a terminal
-emulator. It uses the following scheme to find the right one to open:
-1. Examines the =$TERMINAL= environment variable. If it has a value
-   and a corresponding executable on =$PATH=, it uses that
-   application.
-2. Goes through the following list of common terminal apps and tries
-   to open them in order:
-   1. konsole
-   2. gnome-terminal
-   3. wezterm
-   4. foot
+emulator. It goes through a list of common terminal apps and tries
+to open them in order:
+1. alacritty
+2. ghostty
+3. kitty
+4. xfce4-terminal
+5. konsole
+6. gnome-terminal
+7. wezterm
+8. foot
+
+You can customize this list by modifying the =*default-terminals*=
+variable.

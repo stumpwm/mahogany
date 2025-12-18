@@ -15,7 +15,7 @@
 ** Frame types
 *** Frames
 *** Floating Frames
-    + These frames have absoulte XY positioning. These are the type of
+    + These frames have absolute XY positioning. These are the type of
     frames present in ~frame-list~.
 *** Tree-frames
     + The tree-frame is a tree of frames. Tree-frames represent the
