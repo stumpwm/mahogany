@@ -6,7 +6,7 @@
 
 (defun open-terminal (sequence seat)
   (declare (ignore sequence seat))
-  (sys:open-terminal))
+  (mh-sys:open-terminal))
 
 (defun split-frame-h (sequence seat)
   (declare (ignore sequence seat))

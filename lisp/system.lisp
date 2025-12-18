@@ -3,7 +3,7 @@
 Mahogany is running under")
   (:use :cl #:mahogany/util #:mahogany/log)
   (:local-nicknames (#:alex #:alexandria))
-  (:nicknames #:sys)
+  (:nicknames #:mh-sys)
   (:export #:find-program
 	   #:open-terminal))
 
