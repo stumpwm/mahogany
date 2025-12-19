@@ -3,6 +3,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_seat.h>
+#include <xkbcommon/xkbcommon.h>
 
 void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name) {
     seat->cursor_image = img_name;
@@ -21,6 +22,14 @@ void hrt_seat_notify_axis(struct hrt_seat *seat,
     wlr_seat_pointer_notify_axis(
         seat->seat, event->time_msec, event->orientation, event->delta,
         event->delta_discrete, event->source, event->relative_direction);
+}
+
+void hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
+                         enum xkb_keymap_compile_flags flags) {
+    struct xkb_keymap *keymap =
+        xkb_keymap_new_from_names(seat->xkb_context, rules, flags);
+    wlr_keyboard_set_keymap(&seat->keyboard_group->keyboard, keymap);
+    xkb_keymap_unref(keymap);
 }
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat) {
