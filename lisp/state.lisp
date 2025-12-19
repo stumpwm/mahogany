@@ -242,3 +242,7 @@
 
 (defun mahogany-current-frame (state)
   (mahogany-group-current-frame (mahogany-current-group state)))
+
+(defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
+  (let ((seat (hrt:hrt-server-seat (mahogany-state-server state))))
+    (hrt:hrt-seat-set-keymap seat rules keymap-flags)))

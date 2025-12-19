@@ -19,6 +19,7 @@
 	   #:hrt-seat-notify-axis
 	   #:hrt-seat-cursor-lx
 	   #:hrt-seat-cursor-ly
+	   #:hrt-seat-set-keymap
 	   #:hrt-output
 	   #:hrt-output-name
 	   #:hrt-output-make

@@ -23,6 +23,8 @@ struct hrt_seat {
     struct wl_list inputs;
     struct wl_listener new_input;
 
+    struct xkb_context *xkb_context;
+
     // cursor events:
     struct wl_listener motion;
     struct wl_listener motion_absolute;
@@ -92,6 +94,9 @@ void hrt_seat_notify_button(struct hrt_seat *seat,
 
 void hrt_seat_notify_axis(struct hrt_seat *seat,
                           struct wlr_pointer_axis_event *event);
+
+void hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
+                         enum xkb_keymap_compile_flags flags);
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 
