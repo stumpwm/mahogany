@@ -47,9 +47,6 @@ further up. "
   (hrt:load-foreign-libraries)
   (log-init :level :trace)
   (enable-debugger)
-  (if (gethash 'no-init-file args)
-      (log-string :info "Init file loading skipped")
-      (load-config-file))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
 			      (view-callbacks '(:struct hrt:hrt-view-callbacks))
@@ -68,6 +65,9 @@ further up. "
                        output-callbacks seat-callbacks view-callbacks
                        :debug-level 3)
     (log-string :debug "Initialized mahogany state")
+    (if (gethash 'no-init-file args)
+	(log-string :info "Init file loading skipped")
+	(load-config-file))
     (unwind-protect
 	 (hrt:hrt-server-start server)
       (log-string :debug "Cleaning up...")
