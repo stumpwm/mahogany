@@ -32,6 +32,12 @@
   (let ((kmap (define-kmap)))
     (fiasco:is (kmap-p kmap))))
 
+(fiasco:deftest add-to-kmap-returns-kmap ()
+  (let* ((kmap (mahogany/keyboard::make-kmap))
+	 (ret (add-to-kmap kmap)))
+    (fiasco:is (kmap-p ret))
+    (fiasco:is (eq kmap ret))))
+
 (fiasco:deftest define-key-adds-binding ()
   (let ((map (define-kmap))
 	(key (kbd "C-s"))
