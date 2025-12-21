@@ -86,3 +86,29 @@ make:
 
 It is possible to run mahogany in an X11 or Wayland session, and is
 the recommended method of testing at this time. 
+
+** Getting Started
+
+Mahogany is currently in a pre-alpha state. Help is needed (see [[https://github.com/stumpwm/mahogany/milestones][list of
+milestones]]). In particular, touchscreen, menu, dialog, and systray do not
+work yet. But it has basic functionalities already.
+
+Check the =./lisp/key-bindings.lisp= for what you can do. For example, =C-t c=
+should fire up a terminal for you, and =C-t q= will kill mahogany. You can
+customize your keybindings by writing =~/.config/mahogany/init.lisp=. For
+example, the following code lets you to open emacs by holding =super= and
+tapping on =e=.
+#+begin_src elisp
+(in-package #:mahogany)
+(defun open-firefox (sequence seat)
+  (declare (ignore sequence seat))
+  (uiop:launch-program "firefox"))
+(defun open-emacs (sequence seat)
+  (declare (ignore sequence seat))
+  (uiop:launch-program "emacsclient -c || emacs"))
+(add-to-kmap *top-map*
+  (kbd "s-e" #'open-emacs))
+  (kbd "s-F" #'open-firefox)
+#+end_src
+
+To modify the keyboard layout with libxkb, see [[./doc/keyboard-layout.org][Doc: Keyboard Layout]].
