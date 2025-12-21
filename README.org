@@ -111,8 +111,4 @@ tapping on =e=.
   (kbd "s-F" #'open-firefox)
 #+end_src
 
-To modify the keyboard layout with libxkb, see [[./doc/keyboard-layout.org]].
-
-
-
-
+To modify the keyboard layout with libxkb, see [[./doc/keyboard-layout.org][Doc: Keyboard Layout]].
