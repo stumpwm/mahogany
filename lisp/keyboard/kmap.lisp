@@ -25,15 +25,9 @@ is nil, remove the binding for the given key."
     (vector-push-extend new-binding bindings 1))
   map)
 
-(defmacro define-kmap (&body body)
-  "Create a keymap and add the given bindings to it.
-
-Example:
-   (define-kmap
-     (kbd \"C-s\") 'foo
-     (kbd \"M-;\") 'bar)"
+(defun %build-define-list (map body)
   (let* ((map-var (gensym "kmap")))
-    `(let ((,map-var (make-kmap)))
+    `(let ((,map-var ,map))
        ,@(do* ((next body (cddr next))
 	       (key (car body) (car next))
 	       (binding (cadr body) (cadr next))
@@ -41,6 +35,24 @@ Example:
 	      ((null next) (nreverse forms))
 	   (push `(define-key ,map-var ,key ,binding) forms))
        ,map-var)))
+
+(defmacro define-kmap (&body body)
+  "Create a keymap and add the given bindings to it.
+
+Example:
+   (define-kmap
+     (kbd \"C-s\") 'foo
+     (kbd \"M-;\") 'bar)"
+  (%build-define-list '(make-kmap) body))
+
+(defmacro add-to-kmap (kmap &body bindings)
+  "Add bindings to a keymap.
+
+Example:
+  (add-to-kmap map
+    (kbd \"M-;\") #'foo
+    (kdb \"C-s\") #'bar)"
+  (%build-define-list kmap bindings))
 
 (declaim (inline %kmap-symbol-p))
 (defun %kmap-symbol-p (x)

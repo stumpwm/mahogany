@@ -14,6 +14,7 @@
   (seat :pointer #| (:struct wlr-seat) |# )
   (inputs (:struct wl-list))
   (new-input (:struct wl-listener))
+  (xkb-context :pointer #| (:struct xkb-context) |# )
   (motion (:struct wl-listener))
   (motion-absolute (:struct wl-listener))
   (button (:struct wl-listener))
@@ -64,6 +65,11 @@ names."
 (cffi:defcfun ("hrt_seat_notify_axis" hrt-seat-notify-axis) :void
   (seat (:pointer (:struct hrt-seat)))
   (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
+
+(cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (rules :pointer #| (:struct xkb-rule-names) |# )
+  (flags xkb:keymap-compile-flags #| enum xkb-keymap-compile-flags |#))
 
 (cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
   (seat (:pointer (:struct hrt-seat))))

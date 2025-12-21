@@ -103,12 +103,11 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
     struct wlr_keyboard *kb = &seat->keyboard_group->keyboard;
 
     struct xkb_rule_names rules = {0};
-    struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    struct xkb_keymap *keymap =
-        xkb_map_new_from_names(context, &rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    seat->xkb_context           = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    struct xkb_keymap *keymap   = xkb_map_new_from_names(
+        seat->xkb_context, &rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
     wlr_keyboard_set_keymap(kb, keymap);
     xkb_keymap_unref(keymap);
-    xkb_context_unref(context);
 
     seat->keyboard_key.notify = seat_handle_key;
     wl_signal_add(&kb->events.key, &seat->keyboard_key);
@@ -119,6 +118,7 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
 }
 
 void hrt_keyboard_destroy(struct hrt_seat *seat) {
+    xkb_context_unref(seat->xkb_context);
     wl_list_remove(&seat->keyboard_key.link);
     wl_list_remove(&seat->keyboard_modifiers.link);
 

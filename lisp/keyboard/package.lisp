@@ -13,6 +13,7 @@
 	   #:kbd
 	   #:kbd-parse-error
 	   #:define-kmap
+	   #:add-to-kmap
 	   #:define-key
 	   #:kmap-p
 	   #:kmap

@@ -99,10 +99,12 @@
 		     (kbd "n") #'next-view
 		     (kbd "p") #'previous-view
 		     (kbd "g") *group-map*))
+
+(defvar *top-map* (define-kmap
+		    (kbd "C-t") *root-map*))
 #+:hrt-debug
 (progn
   (define-key *root-map* (kbd "d") *debug-map*))
 
 (setf (mahogany-state-keybindings *compositor-state*)
-      (list (define-kmap
-              (kbd "C-t") *root-map*)))
+      (list *top-map*))

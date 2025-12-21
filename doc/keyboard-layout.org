@@ -1,0 +1,51 @@
+#+TITLE: Keyboard Layout
+
+It's possible to customize the keyboard layout mahogany uses via the
+=mahogany-set-keymap= function. Please consult the [[https://xkbcommon.org/doc/current/index.html][libxkbcommon]]
+documentation for more detailed information not found in this guide.
+
+Keyboard layouts are determined by a
+[[https://xkbcommon.org/doc/current/xkb-intro.html#RMLVO-intro][Rules, Model, Layout, Variant, Options (RMLVO)]]
+configuration. There are at least two ways to set these values in mahogany.
+
+** Lisp Configuration
+
+You can define an =xkb:rule-names= object with the
+=xkb:with-xkb-rule-names= macro, and use the =mahogany-set-keymap=
+function to apply it:
+
+#+BEGIN_SRC lisp
+  (xkb:with-xkb-rule-names (rules (:options "caps:escape"))
+    (mahogany::mahogany-set-keymap mahogany::*compositor-state*
+  				 :rules rules))
+#+END_SRC
+
+** =libxkbcommon= Configuration
+
+=libxkbcommon= reads the =XKB_DEFAULT_RULES=, =XKB_DEFAULT_MODEL=,
+=XKB_DEFAULT_LAYOUT=, =XKB_DEFAULT_VARIANT= and =XKB_DEFAULT_OPTIONS=
+environment variables upon startup. Set these variables in your
+environment before starting mahogany.
+
+** Common Options
+
+You can perform various customizations to your keyboard layout (such
+as swapping caps for escape) by setting the =options= paramter of the
+configuration. To set multiple options, separate
+each option with a comma (=,=). For example, to swap the caps lock and
+escape keys and make the menu key act as the windows key, the lisp code
+would be the following:
+
+#+BEGIN_SRC lisp
+  (xkb:with-xkb-rule-names (rules (:options "altwin:menu_win,caps:swapescape"))
+    (mahogany::mahogany-set-keymap mahogany::*compositor-state*
+    				 :rules rules))
+#+END_SRC
+
+The full list of options can be found in =/usr/share/X11/xkb/rules/=,
+but here are some common ones:
++ =caps:swapescape= :: Swap Esc and Caps Lock
++ =caps:ctrl_modifier= :: Make Caps Lock an additional Ctrl
++ =caps:backspace= :: Make Caps Lock an additional Backspace
++ =caps:escape_shifted_capslock= :: Make Caps Lock an additional Esc,
+  but Shift + Caps Lock is the regular Caps Lock
