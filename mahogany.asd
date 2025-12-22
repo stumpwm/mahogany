@@ -54,11 +54,12 @@
 	       (:file "group" :depends-on ("transaction" "objects" "bindings"))
 	       (:file "state" :depends-on ("objects" "transaction" "keyboard"))
 		   (:file "globals" :depends-on ("objects" "system"))
+		   (:file "kmap-modes" :depends-on ("objects" "globals" "keyboard"))
 		   (:file "transaction" :depends-on ("globals"))
 	       (:file "output" :depends-on ("objects" "bindings" "state"))
 	       (:file "events" :depends-on ("globals" "state" "objects" "bindings"))
 	       (:file "input" :depends-on ("state" "keyboard" "bindings"))
-	       (:file "key-bindings" :depends-on ("globals" "state" "keyboard" "tree" "input"))
+	       (:file "key-bindings" :depends-on ("kmap-modes" "state" "tree" "input"))
 	       (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable

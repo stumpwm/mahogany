@@ -1,0 +1,35 @@
+#+TITLE: Keymap modes
+
+It's possbile to bundle keymaps into =kmap-modes=, which allow those
+keymaps to be enabled or disabled by calling a function. To define a
+keymap mode, use the =define-kmap-mode= macro:
+
+#+BEGIN_SRC lisp
+  (define-kmap-mode example-mode
+    :documentation "An example keymap mode"
+    :top-binding (define-kmap
+  				 (kbd "s-e") #'do-foo)
+    :prefix-binding (define-kmap
+  					(kbd "e") #'do-bar))
+#+END_SRC
+
+The macro takes the name of the mode, as well as three optional
+keyword arguments:
++ =documentation= :: The documentatoin associated with this mode
++ =top-binding= :: The keymap the gets bound to the top level when
+  the mode is activated
++ =prefix-binding= :: The keymap that gets bound behind the prefix key
+  when the mode is activated
+
+This macro generates a function with the same name as the mode that
+allows you to activate or deactivate the mode:
+
+#+BEGIN_SRC lisp
+  ;; activate the mode
+  (example-mode)
+  ;; deactivate the mode
+  (example-mode nil)
+#+END_SRC
+
+If the argument to this function is a truthy value, the mode is
+activated; otherwise, the the mode is deactivated.
