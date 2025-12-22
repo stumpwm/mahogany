@@ -29,7 +29,14 @@
 		  :accessor mahogany-current-group)
    (keybindings :type list
 		:initform nil
-		:reader mahogany-state-keybindings)
+				:reader mahogany-state-keybindings)
+   (active-kmap-modes :type list
+					  :initform nil
+					  :accessor mahogany-active-kmap-modes)
+   (prefix-key :type key
+			   :initform (kbd "C-t")
+			   :reader mahogany-state-prefix-key
+			   :documentation "The prefix key used for prefix-bound kmaps.")
    (outputs :type (vector mahogany-output *)
 	    :initform (make-array 0
 				  :element-type 'mahogany-output

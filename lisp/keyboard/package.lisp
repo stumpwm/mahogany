@@ -17,6 +17,7 @@
 	   #:define-key
 	   #:kmap-p
 	   #:kmap
+	   #:make-kmap
 	   #:kmap-lookup
 	   #:key-state
 	   #:make-key-state

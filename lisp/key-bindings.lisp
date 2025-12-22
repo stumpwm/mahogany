@@ -100,11 +100,17 @@
 		     (kbd "p") #'previous-view
 		     (kbd "g") *group-map*))
 
-(defvar *top-map* (define-kmap
-		    (kbd "C-t") *root-map*))
+(defvar *top-map* (define-kmap))
+
 #+:hrt-debug
 (progn
   (define-key *root-map* (kbd "d") *debug-map*))
 
-(setf (mahogany-state-keybindings *compositor-state*)
-      (list *top-map*))
+;; Instead of using the macro, maybe we should define this manually
+;; so users can't deactivate it?
+(define-kmap-mode base-mode
+  :documentation "Base mode for mahogany that contains the default keybindings"
+  :top-binding *top-map*
+  :prefix-binding *root-map*)
+
+(base-mode t)
