@@ -1,28 +1,28 @@
 (in-package #:mahogany)
 
+(defvar *user-config-files*
+  (list (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))
+        (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
+
 (defun load-config-file (&optional (catch-errors nil))
   "Load the user's config file. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the config file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
 further up. "
-  (let* ((xdg-config
-           (probe-file (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))))
-	 (fallback-config
-	   (probe-file (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
-	 (config-file (or xdg-config fallback-config)))
+  (let ((config-file (find-if #'probe-file *user-config-files*)))
     (if config-file
-	(progn
-	  (log-string :info "Found config file at ~a" config-file)
+	    (progn
+	      (log-string :info "Found config file at ~a" config-file)
           (if catch-errors
-	      (handler-case (load config-file)
-		(error (c) (values nil (format nil "~a" c) config-file))
-		(:no-error (&rest args) (declare (ignore args)) (values t nil config-file)))
+	          (handler-case (load config-file)
+		        (error (c) (values nil (format nil "~a" c) config-file))
+		        (:no-error (&rest args) (declare (ignore args)) (values t nil config-file)))
               (progn
-		(load config-file)
-		(values t nil config-file))))
-	(progn
-	  (log-string :info "Did not find config file")
-	  (values t nil nil)))))
+		        (load config-file)
+		        (values t nil config-file))))
+	    (progn
+	      (log-string :info "Did not find config file")
+	      (values t nil nil)))))
 
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
