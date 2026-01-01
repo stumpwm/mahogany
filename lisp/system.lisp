@@ -5,7 +5,7 @@ Mahogany is running under")
   (:local-nicknames (#:alex #:alexandria))
   (:nicknames #:mh-sys)
   (:export #:find-program
-	   #:open-terminal))
+           #:open-terminal))
 
 (in-package #:mahogany/system)
 
@@ -13,13 +13,13 @@ Mahogany is running under")
   (declare (type string name))
   (handler-case
       (string-trim '(#\Newline #\Space)
-		   (with-output-to-string (stream)
-		     (uiop:run-program (list "which" name) :output stream)))
+                   (with-output-to-string (stream)
+                     (uiop:run-program (list "which" name) :output stream)))
     (UIOP/RUN-PROGRAM:SUBPROCESS-ERROR nil)))
 
 (defun open-program (candidates)
   (loop :for name :in candidates
-	:do (alex:if-let ((program (find-program name)))
+        :do (alex:if-let ((program (find-program name)))
               (progn
                 (uiop:launch-program program)
                 (return t))

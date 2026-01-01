@@ -21,7 +21,7 @@
 (declaim (inline view-set-hidden))
 (defun view-set-hidden (view hidden)
   (declare (type view view)
-	   (type boolean hidden))
+           (type boolean hidden))
   (hrt-view-set-hidden (view-hrt-view view) hidden))
 
 (declaim (inline view-reparent))

@@ -2,18 +2,18 @@
 
 (defclass view-frame (frame)
   ((view :initarg :view
-	 :accessor frame-view
-	 :initform nil
-	 :type (or hrt:view null)
-	 :documentation "The client of the frame")
+         :accessor frame-view
+         :initform nil
+         :type (or hrt:view null)
+         :documentation "The client of the frame")
    (next :initarg next-frame
-	 :initform nil
-	 :type (or view-frame null)
-	 :reader frame-next)
+         :initform nil
+         :type (or view-frame null)
+         :reader frame-next)
    (prev :initarg prev-frame
-	 :initform nil
-	 :type (or view-frame null)
-	 :reader frame-prev)
+         :initform nil
+         :type (or view-frame null)
+         :reader frame-prev)
    (seat :initform nil)))
 
 (defmethod (setf %frame-prev) (prev (frame view-frame))
@@ -46,9 +46,9 @@ and position as the frame"
 (defmethod print-object ((object view-frame) stream)
   (print-unreadable-object (object stream :type t)
     (with-slots (width height x y view)
-	object
+        object
       (format stream ":w ~A :h ~A :x ~A :y ~A view: ~S"
-	      (round width) (round height) (round x) (round y) view))))
+              (round width) (round height) (round x) (round y) view))))
 
 (defmethod (setf frame-x) :before (new-x (frame view-frame))
   (when (frame-view frame)
@@ -76,11 +76,11 @@ and position as the frame"
 
 (defmethod find-view-frame ((frame view-frame) view)
   (when (equal (frame-view frame) view)
-	frame))
+    frame))
 
 ;; (defmethod find-view-frame ((frame view-frame)
-;; 							(view sb-sys:system-area-pointer))
+;;        (view sb-sys:system-area-pointer))
 ;;   (let ((hrt-view (frame-view frame)))
-;; 	(when (and hrt-view
-;; 			   (equal (hrt:view-hrt-view (frame-view frame)) view))
-;; 	  frame)))
+;;  (when (and hrt-view
+;;       (equal (hrt:view-hrt-view (frame-view frame)) view))
+;;    frame)))

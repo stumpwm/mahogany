@@ -1,6 +1,6 @@
 (defpackage mahogany-test
   (:use :cl
-	:prove))
+        :prove))
 
 (in-package :mahogany-test)
 

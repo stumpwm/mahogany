@@ -1,7 +1,7 @@
 (in-package #:mahogany)
 
 (defstruct (kmap-mode (:constructor
-		       make-kmap-mode (name top-binding prefix-binding doc)))
+                       make-kmap-mode (name top-binding prefix-binding doc)))
   (name nil :type symbol :read-only t)
   (doc "" :type (or null string) :read-only t)
   (top-binding (make-kmap) :type kmap :read-only t)
@@ -12,12 +12,12 @@
   (declare (type kmap-mode kmap-mode)
            (mahogany-state state))
   (with-accessors ((active-bindings mahogany-state-keybindings)
-		   (active-modes mahogany-active-kmap-modes))
+                   (active-modes mahogany-active-kmap-modes))
       state
     (labels ((relevant-kmap-p (kmap)
-	       (declare (type kmap kmap))
-	       (or (eq (kmap-mode-top-kmap kmap-mode) kmap)
-		   (eq (kmap-mode-top-binding kmap-mode) kmap))))
+               (declare (type kmap kmap))
+               (or (eq (kmap-mode-top-kmap kmap-mode) kmap)
+                   (eq (kmap-mode-top-binding kmap-mode) kmap))))
       (setf active-bindings (delete-if #'relevant-kmap-p active-bindings)))
     (setf (kmap-mode-top-kmap kmap-mode) nil)
     (setf active-modes (delete kmap-mode active-modes))))
@@ -35,11 +35,11 @@
     (assert (not (null (kmap-mode-top-kmap kmap-mode))))
     (return-from kmap-mode-activate))
   (with-accessors ((keybindings mahogany-state-keybindings)
-		   (active-kmap-modes mahogany-active-kmap-modes)
-		   (prefix-key mahogany-state-prefix-key))
+                   (active-kmap-modes mahogany-active-kmap-modes)
+                   (prefix-key mahogany-state-prefix-key))
       state
     (let ((top-kmap (define-kmap
-		      prefix-key (kmap-mode-prefix-binding kmap-mode))))
+                      prefix-key (kmap-mode-prefix-binding kmap-mode))))
       (setf (kmap-mode-top-kmap kmap-mode) top-kmap)
       (push top-kmap keybindings)
       (push (kmap-mode-top-binding kmap-mode) keybindings)
@@ -51,7 +51,7 @@
 
 (defun %validate-mode-symbol (symbol)
   (let* ((name (symbol-name symbol))
-	 (len (length name)))
+         (len (length name)))
     (cond
       ((<= len 5)
        (error "Mode symbol cannot be named \"-mode\""))
@@ -61,20 +61,20 @@
 ;; TODO: Make it possible to redefine kmap-modes,
 ;;  get a list of available kmap modes
 (defmacro define-kmap-mode (name &key
-			           documentation
-			           (top-binding (make-kmap))
-			           (prefix-binding (make-kmap)))
+                                   documentation
+                                   (top-binding (make-kmap))
+                                   (prefix-binding (make-kmap)))
 
   (%validate-mode-symbol name)
   `(let ((kmap-mode (make-kmap-mode (quote ,name)
-		                    ,top-binding
-		                    ,prefix-binding
-		                    ,documentation)))
+                                    ,top-binding
+                                    ,prefix-binding
+                                    ,documentation)))
      (pushnew kmap-mode *kmap-modes* :key #'kmap-mode-name)
      (defun ,name (&optional (activate t))
        (if activate
-	   (kmap-mode-activate *compositor-state* kmap-mode)
-	   (kmap-mode-deactivate *compositor-state* kmap-mode)))))
+           (kmap-mode-activate *compositor-state* kmap-mode)
+           (kmap-mode-deactivate *compositor-state* kmap-mode)))))
 
 (defun (setf mahogany-state-prefix-key) (key state)
   (declare (type key key)
@@ -84,10 +84,10 @@
     (let ((new-bindings nil))
       ;; go backwards so pushing gets us the same order:
       (dolist (mode active-modes)
-	(let ((new-top-kmap (define-kmap
-			      key (kmap-mode-prefix-binding mode))))
-	  (setf (kmap-mode-top-kmap mode) new-top-kmap)
-	  (push new-top-kmap new-bindings)
-	  (push (kmap-mode-top-binding mode) new-bindings)))
+        (let ((new-top-kmap (define-kmap
+                              key (kmap-mode-prefix-binding mode))))
+          (setf (kmap-mode-top-kmap mode) new-top-kmap)
+          (push new-top-kmap new-bindings)
+          (push (kmap-mode-top-binding mode) new-bindings)))
       (setf (mahogany-state-keybindings state) new-bindings
-	    (slot-value state 'prefix-key) key))))
+            (slot-value state 'prefix-key) key))))

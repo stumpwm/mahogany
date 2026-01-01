@@ -8,7 +8,7 @@
            config-info-value
            describe-all-config-info
            describe-config-info
-	   describe-config
+           describe-config
            config-error
            config-not-found-error
            invalid-datum-error
@@ -118,9 +118,9 @@
    (lambda (c s)
      (with-slots (place-symbol alternatives) c
        (if alternatives
-        (format s  "Setting ~A not found. Did you mean one of these? ~A"
-                (%full-symbol-string place-symbol) alternatives)
-        (format s  "Setting ~A not found." (%full-symbol-string place-symbol)))))))
+           (format s  "Setting ~A not found. Did you mean one of these? ~A"
+                   (%full-symbol-string place-symbol) alternatives)
+           (format s  "Setting ~A not found." (%full-symbol-string place-symbol)))))))
 
 (defun %add-config-info (name default-value type-specifier documentation)
   (setf (gethash name *config-vars*)
@@ -140,7 +140,7 @@ type specifier, and documentation"
                (%add-config-info (quote ,name) ,default (quote ,type-specifier) ,documentation)
                (declaim (type ,type-specifier ,name))
                (defvar ,name ,default-value ,@(when documentation
-                                  (list documentation))))
+                                                (list documentation))))
              (error 'invalid-datum-error :place (quote ,name) :value ,default-value))))))
 
 (defun all-config-info (&key (name-matches ".*") (package-matches ".*"))
@@ -180,8 +180,8 @@ type specifier, and documentation"
              (setf ,setting-name ,actual-value)
              (error 'invalid-datum-error :place (quote ,setting-name) :value ,actual-value))
          (error 'config-not-found-error
-           :place (quote ,setting-name)
-           :alternatives (%find-possible-settings (quote ,setting-name) *config-vars*))))))
+                :place (quote ,setting-name)
+                :alternatives (%find-possible-settings (quote ,setting-name) *config-vars*))))))
 
 (defmacro set-config (&rest settings)
   "Set the given configuration variables to the given values. Used like setf"

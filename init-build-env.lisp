@@ -4,12 +4,12 @@
 
 (let* ((root (uiop/os:getcwd))
        (asdf-cache (make-pathname
-		    :directory (append
-				(pathname-directory root)
-				(list
-				 "build"
-				 "asdf-cache"
-				 (uiop:implementation-identifier))))))
+                    :directory (append
+                                (pathname-directory root)
+                                (list
+                                 "build"
+                                 "asdf-cache"
+                                 (uiop:implementation-identifier))))))
   ;; See https://asdf.common-lisp.dev/asdf.html#Configuration-DSL-1
   ;; for what this is doing.
   ;; Basically, we want our local copies of dependencies in the dependencies folder

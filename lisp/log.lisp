@@ -3,14 +3,14 @@
 (defpackage #:mahogany/log
   (:use :cl #:cl-ansi-text)
   (:export #:log-level
-	   #:log-colored-p
-	   #:log-string
-	   #:log-stream
-	   #:log-init
-	   #:with-log-level
-	   #:with-log-color-enabled
-	   #:with-logging-to-file
-	   #:*log-output-file*)
+           #:log-colored-p
+           #:log-string
+           #:log-stream
+           #:log-init
+           #:with-log-level
+           #:with-log-color-enabled
+           #:with-logging-to-file
+           #:*log-output-file*)
   (:local-nicknames (#:alex #:alexandria)))
 
 
@@ -55,19 +55,19 @@
 
 (defun %log-stream (lvl color stream-fn)
   (declare (optimize speed)
-	   (type fixnum lvl)
-	   (type (function (stream) (values &optional)) stream-fn))
+           (type fixnum lvl)
+           (type (function (stream) (values &optional)) stream-fn))
   (when (>= *log-level* lvl)
     (let ((output *log-output-file*))
       (with-color (color :effect :bright :stream output)
-	(funcall stream-fn output))
+        (funcall stream-fn output))
       (finish-output output))))
 
 (defun log-stream (log-lvl stream-fn)
   "Call the given function with *log-output-file* as its argument if the
  log level allows for logging"
   (declare (type debug-specifier log-lvl)
-	   (type (function (stream) (values &optional)) stream-fn))
+           (type (function (stream) (values &optional)) stream-fn))
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
       (%log-stream lvl color stream-fn))))
@@ -75,26 +75,26 @@
 (define-compiler-macro log-stream (&whole form log-lvl stream-fn)
   (if (constantp log-lvl)
       (unless (eql :ignore log-lvl)
-	(multiple-value-bind (lvl color) (get-log-level-data log-lvl)
-	  `(%log-stream ,lvl ,color ,stream-fn)))
+        (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
+          `(%log-stream ,lvl ,color ,stream-fn)))
       (progn
-	(alex:simple-style-warning
-	 "Missed optimization in log-stream: the log level is not specificed as a constant")
-	form)))
+        (alex:simple-style-warning
+         "Missed optimization in log-stream: the log level is not specificed as a constant")
+        form)))
 
 (defmacro log-string (log-lvl string &rest fmt)
   "Log the input to *log-output-file* based on the current value of *log-level*.
 The string argument as well as the format args will not be evaluated if the current log
 level is not high enough."
   `(log-stream ,log-lvl (lambda (s)
-			  (declare (type stream s))
-			  (format s ,string ,@fmt) (format s "~%")
-			  (values))))
+                          (declare (type stream s))
+                          (format s ,string ,@fmt) (format s "~%")
+                          (values))))
 
 (defun term-colorable-p ()
   (and (interactive-stream-p *standard-input*)
        (member :max-colors (terminfo:capabilities
-			    (terminfo:set-terminal (uiop:getenv "TERM"))))))
+                            (terminfo:set-terminal (uiop:getenv "TERM"))))))
 
 (defun check-valid-log-level (level)
   ;; TODO: make this something with a use-value restart?
@@ -136,11 +136,11 @@ If *log-output-file* is changed, it is a good idea to call this function again.
   (setf (log-level) level)
   ;; check if we can use pretty colors:
   (if (and (term-colorable-p)
-	   color)
+           color)
       (setf cl-ansi-text:*enabled* t)
       (setf cl-ansi-text:*enabled* nil))
   (log-string :debug "Mahogany Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
-	      cl-ansi-text:*enabled* *log-output-file* (log-level)))
+              cl-ansi-text:*enabled* *log-output-file* (log-level)))
 
 (defmacro with-log-level (log-level &body body)
   `(progn
@@ -156,6 +156,6 @@ If *log-output-file* is changed, it is a good idea to call this function again.
   (let ((file-var (gensym "LOG-FILE")))
     `(with-open-file (,file-var ,file-path ,@options)
        (let ((*log-output-file* ,file-var))
-	 (with-log-level ,log-level
-	   (with-log-color-enabled nil
-	     ,@body))))))
+         (with-log-level ,log-level
+           (with-log-color-enabled nil
+             ,@body))))))

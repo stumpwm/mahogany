@@ -2,7 +2,7 @@
 
 (defun reconfigure-node (node hrt-output)
   (declare (type output-node node)
-	   (type cffi:foreign-pointer hrt-output))
+           (type cffi:foreign-pointer hrt-output))
   (multiple-value-bind (x y) (hrt:output-position hrt-output)
     (set-position node x y))
   (multiple-value-bind (width height) (hrt:output-resolution hrt-output)

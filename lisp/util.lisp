@@ -2,9 +2,9 @@
 (defpackage #:mahogany/util
   (:use #:cl)
   (:export #:mahogany-error
-	   #:defglobal
-	   #:disable-fpu-exceptions
-	   #:enable-debugger))
+           #:defglobal
+           #:disable-fpu-exceptions
+           #:enable-debugger))
 
 (in-package #:mahogany/util)
 

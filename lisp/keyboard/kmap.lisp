@@ -7,21 +7,21 @@
 (defstruct kmap
   ;; TODO: Maybe this should just be a hash table instead?
   (bindings (make-array 0 :element-type 'binding :adjustable t :fill-pointer t)
-	    :type (vector binding)
-	    :read-only t))
+            :type (vector binding)
+            :read-only t))
 
 (defun define-key (map key cmd)
   "Add a binding from the given key to the given command in the keymap. If the command
 is nil, remove the binding for the given key."
   (declare (type kmap map)
-	   (type key key))
+           (type key key))
   (let ((bindings (kmap-bindings map))
-	(new-binding (make-binding key cmd)))
+        (new-binding (make-binding key cmd)))
     (dotimes (i (length bindings))
       (let ((val (binding-key (aref bindings i))))
-	(when (equalp val key)
-	  (setf (aref bindings i) new-binding)
-	  (return-from define-key new-binding))))
+        (when (equalp val key)
+          (setf (aref bindings i) new-binding)
+          (return-from define-key new-binding))))
     (vector-push-extend new-binding bindings 1))
   map)
 
@@ -29,11 +29,11 @@ is nil, remove the binding for the given key."
   (let* ((map-var (gensym "kmap")))
     `(let ((,map-var ,map))
        ,@(do* ((next body (cddr next))
-	       (key (car body) (car next))
-	       (binding (cadr body) (cadr next))
-	       (forms nil forms))
-	      ((null next) (nreverse forms))
-	   (push `(define-key ,map-var ,key ,binding) forms))
+               (key (car body) (car next))
+               (binding (cadr body) (cadr next))
+               (forms nil forms))
+              ((null next) (nreverse forms))
+           (push `(define-key ,map-var ,key ,binding) forms))
        ,map-var)))
 
 (defmacro define-kmap (&body body)
@@ -68,7 +68,7 @@ Example:
 (defun kmap-lookup (keymap key)
   "Find the command associated with the given key in the keymap"
   (declare (type key key)
-	   (type kmap keymap))
+           (type kmap keymap))
   (let ((ret (find key (kmap-bindings keymap) :key 'binding-key :test 'key-equal)))
     (when ret
       (binding-command ret))))
@@ -96,25 +96,25 @@ Returns:
    Second value: The value of the leaf node if one was found."
   (declare (type key-state bindings-state)
            (type key key)
-	   (optimize speed))
+           (optimize speed))
   (with-accessors ((kmaps key-state-kmaps)
                    (key-seq key-state-sequence))
       bindings-state
     (let* ((matching-values (mapcar (lambda (m)
-				      (kmap-lookup (if (%kmap-symbol-p m)
-						      (symbol-value m)
-						      m)
-						  key))
-				    kmaps))
-	   (match (find-if-not #'null matching-values)))
+                                      (kmap-lookup (if (%kmap-symbol-p m)
+                                                       (symbol-value m)
+                                                       m)
+                                                   key))
+                                    kmaps))
+           (match (find-if-not #'null matching-values)))
       (cond
-	((kmap-or-kmap-symbol-p match)
-	 (push key key-seq)
-	 (setf (key-state-kmaps bindings-state) (delete-if-not 'kmap-or-kmap-symbol-p matching-values))
-	 (values t nil))
-	(match
-	 (push key key-seq)
-	 (setf (key-state-kmaps bindings-state) nil)
-	 (values t match))
-	(t
-	 (values nil))))))
+        ((kmap-or-kmap-symbol-p match)
+         (push key key-seq)
+         (setf (key-state-kmaps bindings-state) (delete-if-not 'kmap-or-kmap-symbol-p matching-values))
+         (values t nil))
+        (match
+            (push key key-seq)
+          (setf (key-state-kmaps bindings-state) nil)
+          (values t match))
+        (t
+         (values nil))))))

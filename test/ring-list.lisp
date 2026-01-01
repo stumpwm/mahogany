@@ -14,7 +14,7 @@
 
 (fiasco:deftest pop-item-when-empty-works ()
   (let* ((ring (make-ring-list))
-	 (removed (pop-item ring)))
+         (removed (pop-item ring)))
     (is (= 0 (ring-list-size ring)))
     (is (null removed))))
 
@@ -29,7 +29,7 @@
 
 (fiasco:deftest pop-item-prev-when-empty-works ()
   (let* ((ring (make-ring-list))
-	 (removed  (pop-item-prev ring)))
+         (removed  (pop-item-prev ring)))
     (is (null removed))
     (is (= 0 (ring-list-size ring)))))
 

@@ -4,7 +4,7 @@
   `(cffi:with-foreign-objects ,variables
      ,@body
      (values ,@(loop for pair in variables
-		     collect `(cffi:mem-ref ,(first pair) ,(second pair))))))
+                     collect `(cffi:mem-ref ,(first pair) ,(second pair))))))
 
 (defun output-resolution (output)
   (declare (type cffi:foreign-pointer output))

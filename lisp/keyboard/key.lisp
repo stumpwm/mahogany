@@ -33,19 +33,19 @@
 (defun key-equal (a b)
   (declare (type key a b))
   (and (= (key-keysym a)
-		  (key-keysym b))
-	   (= (key-modifier-mask a)
-		  (key-modifier-mask b))))
+          (key-keysym b))
+       (= (key-modifier-mask a)
+          (key-modifier-mask b))))
 
 (declaim (type (unsigned-byte 32)
-	       +modifier-shift+
-	       +modifier-caps+
-	       +modifier-ctrl+
-	       +modifier-alt+
-	       +modifier-mod2+
-	       +modifier-mod3+
-	       +modifier-super+
-	       +modifier-mod5+))
+               +modifier-shift+
+               +modifier-caps+
+               +modifier-ctrl+
+               +modifier-alt+
+               +modifier-mod2+
+               +modifier-mod3+
+               +modifier-super+
+               +modifier-mod5+))
 (defconstant +modifier-shift+ (ash 1 0))
 (defconstant +modifier-caps+ (ash 1 1))
 (defconstant +modifier-ctrl+ (ash 1 2))
@@ -57,28 +57,28 @@
 
 (defun print-key (key &optional (stream *standard-output*))
   (declare (type key key) (type stream stream)
-	   (optimize (safety 1)))
+           (optimize (safety 1)))
   (let ((mod (key-modifier-mask key)))
     (format stream "(Keycode: ~A Modifiers: (" (key-keysym key))
     (when (not (= mod 0))
       (when (/= 0 (logand +modifier-shift+ mod))
-	(format stream "SHIFT"))
+        (format stream "SHIFT"))
       (when (/= 0 (logand +modifier-caps+ mod))
-	(format stream "CAPS"))
+        (format stream "CAPS"))
       (when (/= 0 (logand +modifier-ctrl+ mod))
-	(format stream "CONTROL"))
+        (format stream "CONTROL"))
       (when (/= 0 (logand +modifier-alt+ mod))
-	(format stream "ALT"))
+        (format stream "ALT"))
       ;; FIXME: one of these modifiers is probably the hyper key
       (when (/= 0 (logand +modifier-mod2+ mod))
-	(format stream "MOD2"))
+        (format stream "MOD2"))
       (when (/= 0 (logand +modifier-mod3+ mod))
-	(format stream "MOD3"))
+        (format stream "MOD3"))
       (when (/= 0 (logand +modifier-super+ mod))
-	(format stream "SUPER"))
+        (format stream "SUPER"))
       (when (/= 0 (logand +modifier-mod5+ mod))
-	(format stream "MOD5"))))
-    (format stream "))"))
+        (format stream "MOD5"))))
+  (format stream "))"))
 
 (defun %report-kbd-parse-error (c stream)
   (format stream "Failed to parse key string: ~s." (kbd-parse-error-string c))
@@ -87,9 +87,9 @@
 
 (define-condition kbd-parse-error (mahogany-error)
   ((string :initarg :string
-	   :reader kbd-parse-error-string)
+           :reader kbd-parse-error-string)
    (reason :initarg :reason :reader kbd-parse-error-reason
-	   :initform nil))
+           :initform nil))
   (:report %report-kbd-parse-error)
   (:documentation "Raised when a kbd string failed to parse."))
 
@@ -98,25 +98,25 @@
  the appropriate bits set for the given modifiers chars"
   (unless (evenp end)
     (error 'kbd-parse-error :string mods
-	   :reason "Did you forget to separate modifier characters with '-'?"))
+           :reason "Did you forget to separate modifier characters with '-'?"))
   (let ((mod-mask 0))
     (declare (type (unsigned-byte 32) mod-mask))
     (loop for i from 0 below end by 2
           when (char/= (char mods (1+ i)) #\-)
-            do (error 'kbd-parse-error :string mods)
+          do (error 'kbd-parse-error :string mods)
           do (setf mod-mask (logior mod-mask
-				    (case (char mods i)
-				      (#\M +modifier-alt+)
-				      (#\A +modifier-alt+)
-				      (#\C +modifier-ctrl+)
-				      (#\H (error 'kbd-parse-error
-						  :string mods
-						  :reason
-						  "Fixme: don't know which key is the Hyper modifier."))
-				      (#\s +modifier-super+)
-				      (#\S +modifier-shift+)
-				      (t (error 'kbd-parse-error :string mods
-						:reason (format nil "Unknown modifer character ~A" (char mods i))))))))
+                                    (case (char mods i)
+                                      (#\M +modifier-alt+)
+                                      (#\A +modifier-alt+)
+                                      (#\C +modifier-ctrl+)
+                                      (#\H (error 'kbd-parse-error
+                                                  :string mods
+                                                  :reason
+                                                  "Fixme: don't know which key is the Hyper modifier."))
+                                      (#\s +modifier-super+)
+                                      (#\S +modifier-shift+)
+                                      (t (error 'kbd-parse-error :string mods
+                                                :reason (format nil "Unknown modifer character ~A" (char mods i))))))))
     mod-mask))
 
 (defun key-modifier-key-p (key)
@@ -125,12 +125,12 @@
   ;; FIXME: don't hardcode these values.
   ;; Using a cleverer datastructure might be good too.
   (find (key-keysym key) #(65515 ; super
-			   65507 ; Control_L
-			   65508 ; Control_R
-			   65513 ; alt
-			   65505 ; Shift_L
-			   65506 ; Shilf_R
-			   )))
+                           65507 ; Control_L
+                           65508 ; Control_R
+                           65513 ; alt
+                           65505 ; Shift_L
+                           65506 ; Shilf_R
+                           )))
 
 
 (defun parse-key (string)
@@ -139,7 +139,7 @@ kbd-parse if the key failed to parse."
   (let* ((p (when (> (length string) 2)
               (position #\- string :from-end t :end (- (length string) 1))))
          (mod-mask  (if p (%parse-mods string (1+ p)) 0))
-	 (key-part (subseq string (if p (1+ p) 0)))
+         (key-part (subseq string (if p (1+ p) 0)))
          (keysym (stumpwm-name->keysym key-part)))
     (if keysym
         (make-key keysym mod-mask)

@@ -1,7 +1,7 @@
 (defpackage #:mahogany/wm-interface
   (:use :cl)
   (:export #:set-position
-	   #:set-dimensions))
+           #:set-dimensions))
 
 (in-package #:mahogany/wm-interface)
 
