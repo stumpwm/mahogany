@@ -21,6 +21,26 @@ example:
 + `Backend: rig up wayland protocol`
 + `frames: fix frame alignment`
 
+## Code formatting and indentation
+
+There is an [.editorconfig](https://editorconfig.org/) file in the
+root project directory that tells your editor basic formatting
+instructions. Most editors can use this file, but you may have to turn
+it on. There is a .dir-locals.el file for this project that enables
+emacs support.
+
+### C Code
+
+[clang-format](https://clang.llvm.org/docs/ClangFormat.html) is used
+to format C code. Run it on files before saving, and it will take care
+of all formatting issues.
+
+### Lisp Code
+
+Try to keep line length to 80 characters or less; sometimes long line
+lenghts makes code easier to read, so it is okay to have longer lines
+if needed.
+
 ## Submitting Pull Requests
 
 When submitting a pull request, try to do the following things:
