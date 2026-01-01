@@ -11,8 +11,8 @@ This file is a part of mahogany.
   :components ((:file "util")
 	       (:file "ring-list")
 	       (:file "tree-tests" :depends-on ("util"))
-		   (:file "keyboard-tests")
-		   (:file "kmap-modes")
+	       (:file "keyboard-tests")
+	       (:file "kmap-modes")
 	       (:file "config-system-tests")
 	       (:file "log-tests"))
   :description "Test System for mahogany."

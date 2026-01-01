@@ -28,8 +28,8 @@
 (defun close-current-view (sequence seat)
   (declare (ignore sequence seat))
   (let ((frame (mahogany-current-frame *compositor-state*)))
-	(alexandria:when-let ((view (mahogany/tree:frame-view frame)))
-	  (hrt:view-request-close view))))
+    (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
+      (hrt:view-request-close view))))
 
 (defun next-view (sequence seat)
   "Raise the next hidden view in the current group"
@@ -109,8 +109,8 @@
 ;; Instead of using the macro, maybe we should define this manually
 ;; so users can't deactivate it?
 (define-kmap-mode base-mode
-  :documentation "Base mode for mahogany that contains the default keybindings"
-  :top-binding *top-map*
-  :prefix-binding *root-map*)
+    :documentation "Base mode for mahogany that contains the default keybindings"
+    :top-binding *top-map*
+    :prefix-binding *root-map*)
 
 (base-mode t)

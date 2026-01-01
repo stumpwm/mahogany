@@ -91,10 +91,12 @@
 		   (current-frame mahogany-group-current-frame)
 		   (hidden-views mahogany-group-hidden-views))
       group
-    (multiple-value-bind (x y) (hrt:output-position (mahogany-output-hrt-output output))
-      (multiple-value-bind (width height) (hrt:output-resolution (mahogany-output-hrt-output output))
+    (multiple-value-bind (x y)
+	(hrt:output-position (mahogany-output-hrt-output output))
+      (multiple-value-bind (width height)
+	  (hrt:output-resolution (mahogany-output-hrt-output output))
 	(let ((new-tree (tree:tree-container-add tree-container
-					    :x x :y y :width width :height height)))
+						 :x x :y y :width width :height height)))
 	  (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
 	  (when (not current-frame)
 	    (let ((first-leaf (tree:find-first-leaf new-tree)))
@@ -142,7 +144,7 @@ to match."
 
 (defun %group-add-view (group view)
   (declare (type mahogany-group group)
-           (type hrt:view view))
+	   (type hrt:view view))
   (with-accessors ((views mahogany-group-views)
                    (outputs mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
@@ -155,7 +157,7 @@ to match."
 
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)
-           (type cffi:foreign-pointer view-ptr))
+	   (type cffi:foreign-pointer view-ptr))
   (let* ((hrt-group (mahogany-group-hrt-group group))
 	 (view (hrt:scene-init-view hrt-group view-ptr)))
     (push view (mahogany-group-views group))
@@ -218,8 +220,8 @@ to match."
   (declare (type mahogany-group group))
   (let ((tree-root (mahogany/tree:find-root-frame frame)))
     (flet ((hide-and-disable (view-frame)
-			 (alexandria:when-let ((view (tree:frame-view view-frame)))
-			   (%add-hidden (mahogany-group-hidden-views group) view))))
+	     (alexandria:when-let ((view (tree:frame-view view-frame)))
+	       (%add-hidden (mahogany-group-hidden-views group) view))))
       (tree:replace-frame tree-root frame #'hide-and-disable)))
   (dirty-view-transaction))
 
@@ -228,31 +230,31 @@ to match."
 currently focused frame"
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group)))
-	(%maximize-frame group current-frame)))
+    (%maximize-frame group current-frame)))
 
 (defun group-next-hidden (group)
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group))
-		(hidden-views (mahogany-group-hidden-views group))
-		(next-view))
+	(hidden-views (mahogany-group-hidden-views group))
+	(next-view))
     (when (> (ring-list:ring-list-size hidden-views) 0)
       (alexandria:if-let ((view (tree:frame-view current-frame)))
-		(setf next-view (%swap-next-hidden hidden-views view))
-		(setf next-view (%pop-hidden-item hidden-views)))
+	(setf next-view (%swap-next-hidden hidden-views view))
+	(setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view)
-	  (dirty-view-transaction))))
+      (dirty-view-transaction))))
 
 (defun group-previous-hidden (group)
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group))
-		(hidden-views (mahogany-group-hidden-views group))
-		(next-view))
+	(hidden-views (mahogany-group-hidden-views group))
+	(next-view))
     (when (> (ring-list:ring-list-size hidden-views) 0)
       (alexandria:if-let ((view (tree:frame-view current-frame)))
-		(setf next-view (%swap-prev-hidden hidden-views view))
-		(setf next-view (%pop-hidden-item hidden-views)))
+	(setf next-view (%swap-prev-hidden hidden-views view))
+	(setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view)
-	  (dirty-view-transaction))))
+      (dirty-view-transaction))))
 
 (defun group-next-frame (group seat)
   (declare (type mahogany-group group))
@@ -270,20 +272,20 @@ currently focused frame"
   ;; attempt to stop abuse by only listening when the
   ;; frame requesting this info is focused:
   (alexandria:if-let ((frame (tree:find-view-frame
-								(mahogany-group-current-frame group)
-								view)))
-	(progn
-	  (log-string :trace "maximizing view ~S" view)
-	  (%maximize-frame group frame))
-	(hrt:view-configure view)))
+			      (mahogany-group-current-frame group)
+			      view)))
+    (progn
+      (log-string :trace "maximizing view ~S" view)
+      (%maximize-frame group frame))
+    (hrt:view-configure view)))
 
 (defun group-minimize-view (group view)
   ;; attempt to stop abuse by only doing something
   ;; if the view is focused:
   (let* ((cur-frame (mahogany-group-current-frame group))
-		 (cur-view (tree:frame-view cur-frame)))
-	(if (equal cur-view view)
-		(progn
-		  (log-string :trace "\"minimizing\" view ~S" view)
-		  (group-next-hidden group))
-		(hrt:view-configure view))))
+	 (cur-view (tree:frame-view cur-frame)))
+    (if (equal cur-view view)
+	(progn
+	  (log-string :trace "\"minimizing\" view ~S" view)
+	  (group-next-hidden group))
+	(hrt:view-configure view))))

@@ -350,16 +350,16 @@
 
 (fiasco:deftest find-view-finds-empty ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 100 :height 100))
-		 (child-2 (make-instance 'tree:view-frame :x 100 :y 0 :width 100 :height 100))
-		 (parent (make-tree-frame (list child-1 child-2))))
-	(is (tree:find-view-frame parent nil))))
+	 (child-2 (make-instance 'tree:view-frame :x 100 :y 0 :width 100 :height 100))
+	 (parent (make-tree-frame (list child-1 child-2))))
+    (is (tree:find-view-frame parent nil))))
 
 (fiasco:deftest parent-frame-finds-view ()
   (let* ((view (hrt::%make-view (cffi:null-pointer)))
-		 (child-1 (make-instance 'tree:view-frame
-								 :x 0 :y 0 :width 100 :height 100))
-		 (child-2 (make-instance 'tree:view-frame
-								 :view view
-								 :x 100 :y 0 :width 100 :height 100))
-		 (parent (make-tree-frame (list child-1 child-2))))
-	(is (tree:find-view-frame parent nil))))
+	 (child-1 (make-instance 'tree:view-frame
+				 :x 0 :y 0 :width 100 :height 100))
+	 (child-2 (make-instance 'tree:view-frame
+				 :view view
+				 :x 100 :y 0 :width 100 :height 100))
+	 (parent (make-tree-frame (list child-1 child-2))))
+    (is (tree:find-view-frame parent nil))))

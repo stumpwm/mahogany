@@ -140,7 +140,7 @@ If *log-output-file* is changed, it is a good idea to call this function again.
       (setf cl-ansi-text:*enabled* t)
       (setf cl-ansi-text:*enabled* nil))
   (log-string :debug "Mahogany Log settings set to:~%~2TColor:~10T~:[FALSE~;TRUE~]~%~2TOutput:~10T~A~%~2TLevel:~10T~S"
-	  cl-ansi-text:*enabled* *log-output-file* (log-level)))
+	      cl-ansi-text:*enabled* *log-output-file* (log-level)))
 
 (defmacro with-log-level (log-level &body body)
   `(progn
@@ -150,7 +150,7 @@ If *log-output-file* is changed, it is a good idea to call this function again.
 
 (defmacro with-log-color-enabled (enabledp &body body)
   `(let ((cl-ansi-text:*enabled* ,enabledp))
-    ,@body))
+     ,@body))
 
 (defmacro with-logging-to-file ((file-path log-level &rest options) &body body)
   (let ((file-var (gensym "LOG-FILE")))

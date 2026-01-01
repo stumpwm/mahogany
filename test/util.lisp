@@ -8,7 +8,7 @@
   (dolist (v var-list)
     (setf fn-name-string (concatenate 'string fn-name-string "-" (format nil "~A" v))))
   `(fiasco:deftest ,(intern fn-name-string) ()
-      ,@body))
+     ,@body))
 
 (defun %build-var-list (variables value-list)
   (alexandria:if-let ((cur-var (first variables)))

@@ -1,5 +1,5 @@
 (fiasco:define-test-package #:config-system-tests
-	(:use #:config-system #:alexandria))
+  (:use #:config-system #:alexandria))
 
 (in-package #:config-system-tests)
 
@@ -9,23 +9,23 @@
             (table config-system::*config-vars*))
        ,@before
        (fiasco:deftest ,name ,lambda-list
-          ,@(when docstring
-              (list docstring))
-          ,@declarations
-          (let ((config-system::*config-vars* table))
-            ,@forms)))))
+         ,@(when docstring
+             (list docstring))
+         ,@declarations
+         (let ((config-system::*config-vars* table))
+           ,@forms)))))
 
 (defvar *foo* "test variable")
 (defvar *bar* "test variable")
 
 (defconfig-test defconfig-sets-default ()
-  ((let ((default 1))
-     (defconfig *defconfig-sets-default* default integer "an int")))
+    ((let ((default 1))
+       (defconfig *defconfig-sets-default* default integer "an int")))
   (is *defconfig-sets-default* 1))
 
 (defconfig-test defconfig-var-stores-info ()
-  ((let ((default "1"))
-     (defconfig *foo* default string "documentation")))
+    ((let ((default "1"))
+       (defconfig *foo* default string "documentation")))
   (let ((info (gethash '*foo* config-system::*config-vars*))
         (default "1")
         (validator 'string))
@@ -72,7 +72,7 @@
 (defconfig-test set-config-throws-on-not-found ()
     ((progn
        (defconfig *foo* "11" string "documentation")))
-	(signals config-not-found-error (set-config *bar* 11)))
+  (signals config-not-found-error (set-config *bar* 11)))
 
 (defconfig-test set-config-throws-on-invalid ()
     ((progn
@@ -93,7 +93,7 @@
     ((defconfig *foo* "11" string "documentation")
      (defconfig *bar* "22" string "documentation"))
   (set-config *foo* "asdf"
-                     *bar* "qwerty")
+              *bar* "qwerty")
   (reset-config *foo* *bar*)
   (is *foo* "11")
   (is *bar* "22"))
@@ -115,6 +115,6 @@
        (defconfig *bar* "asdf" string "documentation")))
   (ignore-errors
     (set-config-atomic *foo* "set"
-                              *bar* 11))
+                       *bar* 11))
   (is *foo* "qwerty")
   (is *bar* "asdf"))

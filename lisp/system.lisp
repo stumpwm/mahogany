@@ -19,7 +19,7 @@ Mahogany is running under")
 
 (defun open-program (candidates)
   (loop :for name :in candidates
-		:do (alex:if-let ((program (find-program name)))
+	:do (alex:if-let ((program (find-program name)))
               (progn
                 (uiop:launch-program program)
                 (return t))
@@ -27,8 +27,8 @@ Mahogany is running under")
   (values nil))
 
 (config-system:defconfig *default-terminals*
-  (list "alacritty" "ghostty" "kitty" "xfce4-terminal"
-        "konsole" "gnome-terminal" "wezterm" "foot")
+    (list "alacritty" "ghostty" "kitty" "xfce4-terminal"
+          "konsole" "gnome-terminal" "wezterm" "foot")
   list
   "A list of default terminal programs to use")
 

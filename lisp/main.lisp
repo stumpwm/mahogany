@@ -6,9 +6,9 @@ rc files exist), the error if it didn't, and the config file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
 further up. "
   (let* ((xdg-config
-           (probe-file (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))))
+          (probe-file (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))))
 	 (fallback-config
-	   (probe-file (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
+	  (probe-file (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
 	 (config-file (or xdg-config fallback-config)))
     (if config-file
 	(progn
@@ -26,18 +26,18 @@ further up. "
 
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
-	`(cffi:with-foreign-slots (,vars ,variable ,type)
-	   (setf ,@(loop for pair in sets
-					 append (list (car pair)
-								  (if (cadr pair)
-									  `(cffi:callback ,(cadr pair))
-									  (cffi:null-pointer))))))))
+    `(cffi:with-foreign-slots (,vars ,variable ,type)
+       (setf ,@(loop for pair in sets
+		     append (list (car pair)
+				  (if (cadr pair)
+				      `(cffi:callback ,(cadr pair))
+				      (cffi:null-pointer))))))))
 
 (defun init-view-callbacks (view-callbacks)
   (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
-	(hrt:new-view handle-new-view-event)
-	(hrt:request-maximize handle-view-maximize)
-	(hrt:request-minimize handle-view-minimize)
+    (hrt:new-view handle-new-view-event)
+    (hrt:request-maximize handle-view-maximize)
+    (hrt:request-minimize handle-view-minimize)
     (hrt:view-mapped handle-view-mapped)
     (hrt:view-unmapped handle-view-unmapped)
     (hrt:view-destroyed handle-view-destroyed-event)))
@@ -77,25 +77,25 @@ further up. "
 
 (defun %build-cmd-line-parser ()
   (let ((help-option (adopt:make-option
-		     'help
-		     :long "help"
-		     :short #\h
-		     :help "Display help and exit."
-		     :reduce (constantly t)))
-       (no-init-option (adopt:make-option
-			'no-init-file
-			:long "no-init-file"
-			:short #\q
-			:help "Do not evaulate an init file on startup"
-			:reduce (constantly t))))
+		      'help
+		      :long "help"
+		      :short #\h
+		      :help "Display help and exit."
+		      :reduce (constantly t)))
+	(no-init-option (adopt:make-option
+			 'no-init-file
+			 :long "no-init-file"
+			 :short #\q
+			 :help "Do not evaulate an init file on startup"
+			 :reduce (constantly t))))
     (adopt:make-interface
-	       :name "mahogany"
-	       :summary "Keyboard driven titling window manager for Wayland"
-	       :usage "[OPTIONS]"
-	       :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
-	       :contents (list
-			  help-option
-			  no-init-option))))
+     :name "mahogany"
+     :summary "Keyboard driven titling window manager for Wayland"
+     :usage "[OPTIONS]"
+     :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
+     :contents (list
+		help-option
+		no-init-option))))
 
 (defun %parse-cmd-line-args (args)
   (let ((parser (%build-cmd-line-parser)))
