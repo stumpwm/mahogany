@@ -20,5 +20,7 @@
  "(progn (require 'asdf) (load \"init-build-env.lisp\")
 (asdf:load-system \"mahogany\")
 (asdf:load-system \"mahogany-test\"))")
-(mahogany-format-files "**/*.lisp")
+(mahogany-format-files "lisp/**/*.lisp")
 (mahogany-format-files "*.asd")
+
+;; (directory-files-recursively "lisp" "*.lisp")
