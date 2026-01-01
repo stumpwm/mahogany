@@ -54,3 +54,13 @@ When submitting a pull request, try to do the following things:
 If you are changing the C back end's user interface, you will need
 [cl-bindgen](https://github.com/sdilts/cl-bindgen) to generate the
 lisp interface.
+
+## Improving git blame
+
+There are a few commits that have whitespace only changes and make it
+harder to use `git blame`. You can ignore these commits by adding the
+`.git-blame-ignore-revs` file to your git config:
+
+``` bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
