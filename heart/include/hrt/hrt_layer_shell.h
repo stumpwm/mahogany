@@ -12,6 +12,8 @@ struct hrt_output;
 struct hrt_layer_shell_surface {
     struct wlr_layer_surface_v1 *layer_surface;
     struct wlr_scene_layer_surface_v1 *scene_layer;
+    struct hrt_scene_output *output;
+    bool mapped;
     struct {
         struct wl_listener commit;
         struct wl_listener map;
