@@ -45,7 +45,7 @@ further up. "
 (defun run-server (args)
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
-  (log-init :level :trace)
+  (log-init :level (intern (gethash 'loglevel args) 'keyword))
   (enable-debugger)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
 			      (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
@@ -87,7 +87,14 @@ further up. "
 			:long "no-init-file"
 			:short #\q
 			:help "Do not evaulate an init file on startup"
-			:reduce (constantly t))))
+			:reduce (constantly t)))
+       (loglevel (adopt:make-option
+            'loglevel
+            :long "loglevel"
+            :parameter "TRACE|DEBUG|INFO|WARN|ERROR|FATAL|IGNORE"
+            :initial-value "TRACE"
+            :help "Specify loglevel"
+            :reduce (lambda (prev level) (declare (ignore prev)) (string-upcase level)))))
     (adopt:make-interface
 	       :name "mahogany"
 	       :summary "Keyboard driven titling window manager for Wayland"
@@ -95,7 +102,8 @@ further up. "
 	       :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
 	       :contents (list
 			  help-option
-			  no-init-option))))
+			  no-init-option
+              loglevel))))
 
 (defun %parse-cmd-line-args (args)
   (let ((parser (%build-cmd-line-parser)))
