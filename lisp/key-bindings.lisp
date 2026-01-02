@@ -28,8 +28,8 @@
 (defun close-current-view (sequence seat)
   (declare (ignore sequence seat))
   (let ((frame (mahogany-current-frame *compositor-state*)))
-	(alexandria:when-let ((view (mahogany/tree:frame-view frame)))
-	  (hrt:view-request-close view))))
+    (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
+      (hrt:view-request-close view))))
 
 (defun next-view (sequence seat)
   "Raise the next hidden view in the current group"
@@ -79,26 +79,26 @@
 
 #+:hrt-debug
 (defvar *debug-map* (define-kmap
-		      (kbd "a") #'add-output))
+                      (kbd "a") #'add-output))
 
 (defvar *group-map* (define-kmap
-		      (kbd "c") #'gnew
-		      (kbd "k") #'gkill
-		      (kbd "n") #'gnext
-		      (kbd "p") #'gprev))
+                      (kbd "c") #'gnew
+                      (kbd "k") #'gkill
+                      (kbd "n") #'gnext
+                      (kbd "p") #'gprev))
 
 (defvar *root-map* (define-kmap
                      (kbd "o") #'next-frame
-		     (kbd "O") #'prev-frame
-		     (kbd "q") #'handle-server-stop
-		     (kbd "k") #'close-current-view
-		     (kbd "c") #'open-terminal
-		     (kbd "s") #'split-frame-v
-		     (kbd "S") #'split-frame-h
-		     (kbd "Q") #'maximize-current-frame
-		     (kbd "n") #'next-view
-		     (kbd "p") #'previous-view
-		     (kbd "g") *group-map*))
+                     (kbd "O") #'prev-frame
+                     (kbd "q") #'handle-server-stop
+                     (kbd "k") #'close-current-view
+                     (kbd "c") #'open-terminal
+                     (kbd "s") #'split-frame-v
+                     (kbd "S") #'split-frame-h
+                     (kbd "Q") #'maximize-current-frame
+                     (kbd "n") #'next-view
+                     (kbd "p") #'previous-view
+                     (kbd "g") *group-map*))
 
 (defvar *top-map* (define-kmap))
 
@@ -109,8 +109,8 @@
 ;; Instead of using the macro, maybe we should define this manually
 ;; so users can't deactivate it?
 (define-kmap-mode base-mode
-  :documentation "Base mode for mahogany that contains the default keybindings"
-  :top-binding *top-map*
-  :prefix-binding *root-map*)
+    :documentation "Base mode for mahogany that contains the default keybindings"
+    :top-binding *top-map*
+    :prefix-binding *root-map*)
 
 (base-mode t)

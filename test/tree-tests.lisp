@@ -1,21 +1,21 @@
 (fiasco:define-test-package #:mahogany-tests/tree
   (:local-nicknames (#:tree #:mahogany/tree))
   (:use #:mahogany/wm-interface
-	#:mahogany/test/util))
+        #:mahogany/test/util))
 
 (in-package #:mahogany-tests/tree)
 
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree:tree-container)))
     (multiple-value-bind (output-node frame)
-	(tree:tree-container-add container :x x :y y :width width :height height)
+        (tree:tree-container-add container :x x :y y :width width :height height)
       (values frame output-node))))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))
   (let ((parent (make-instance  'tree:tree-frame
-				:x x :y y
-				:width width :height height
-				:split-direction split-direction)))
+                                :x x :y y
+                                :width width :height height
+                                :split-direction split-direction)))
     (dolist (c children)
       (setf (tree:frame-parent c) parent))
     (setf (tree:tree-children parent) children)
@@ -29,8 +29,8 @@
 
 (fiasco:deftest set-position-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
     (set-position parent 100 200)
     (is (= (tree:frame-x child-1) 100))
     (is (= (tree:frame-y child-1) 200))
@@ -49,8 +49,8 @@
 
 (fiasco:deftest setf-frame-y-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
     (setf (tree:frame-y parent) 100)
     (is (= (tree:frame-x parent) 0))
     (is (= (tree:frame-y parent) 100))
@@ -60,8 +60,8 @@
 
 (fiasco:deftest setf-frame-x-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 51 :y 0 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :split-direction :horizontal)))
     (setf (tree:frame-x parent) 100)
     (is (= (tree:frame-x parent) 100))
     (is (= (tree:frame-y parent) 0))
@@ -83,8 +83,8 @@
 
 (fiasco:deftest setf-frame-width-horizontal-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 25 :y 15 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 75 :y 15 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 75 :y 15 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :horizontal)))
     (setf (tree:frame-width parent) 50)
     (is (= (tree:frame-height parent) 100))
     (is (= (tree:frame-height child-1) 100))
@@ -99,8 +99,8 @@
 
 (fiasco:deftest setf-frame-width-vertical-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 25 :y 15 :width 100 :height 50))
-	 (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
-	 (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :vertical)))
+         (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
+         (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :vertical)))
     (setf (tree:frame-width parent) 50)
     (is (= (tree:frame-height parent) 100))
     (is (= (tree:frame-height child-1) 50))
@@ -115,8 +115,8 @@
 
 (fiasco:deftest setf-frame-height-vertical-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 25 :y 15 :width 100 :height 50))
-	 (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
-	 (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :vertical)))
+         (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
+         (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :vertical)))
     (setf (tree:frame-height parent) 50)
     (is (= (tree:frame-width parent) 100))
     (is (= (tree:frame-width child-1) 100))
@@ -131,8 +131,8 @@
 
 (fiasco:deftest setf-frame-height-horizontal-tree-frame ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 25 :y 15 :width 100 :height 50))
-	 (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
-	 (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 25 :y 65 :width 100 :height 50))
+         (parent (make-tree-frame (list child-1 child-2) :x 25 :y 15 :split-direction :horizontal)))
     (setf (tree:frame-height parent) 50)
     (is (= (tree:frame-width parent) 100))
     (is (= (tree:frame-width child-1) 100))
@@ -160,9 +160,9 @@
 
 (fiasco:deftest set-dimensions-tree-frame-width-change ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 50 :y 0 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
-				  :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 50 :y 0 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
+                                  :split-direction :horizontal)))
     (set-dimensions parent 200 400)
     (is (= (tree:frame-width parent) 200))
     (is (= (tree:frame-height parent) 400))
@@ -173,9 +173,9 @@
 
 (fiasco:deftest set-dimensions-tree-frame-height-change ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 100 :height 50))
-	 (child-2 (make-instance 'tree:view-frame :x 0 :y 50 :width 100 :height 50))
-	 (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
-				  :split-direction :vertical)))
+         (child-2 (make-instance 'tree:view-frame :x 0 :y 50 :width 100 :height 50))
+         (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
+                                  :split-direction :vertical)))
     (set-dimensions parent 200 400)
     (is (= (tree:frame-width parent) 200))
     (is (= (tree:frame-height parent) 400))
@@ -186,9 +186,9 @@
 
 (fiasco:deftest set-dimensions-tree-frame-chidren-move-x ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 50 :height 100))
-	 (child-2 (make-instance 'tree:view-frame :x 50 :y 0 :width 50 :height 100))
-	 (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
-				  :split-direction :horizontal)))
+         (child-2 (make-instance 'tree:view-frame :x 50 :y 0 :width 50 :height 100))
+         (parent (make-tree-frame (list child-1 child-2) :height 100 :width 100
+                                  :split-direction :horizontal)))
     (set-dimensions parent 200 400)
     (is (= (tree:frame-x parent) 0))
     (is (= (tree:frame-y parent) 0))
@@ -199,9 +199,9 @@
 
 (fiasco:deftest set-dimensions-tree-frame-chidren-move-y ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 20 :y 0 :width 100 :height 50))
-	 (child-2 (make-instance 'tree:view-frame :x 20 :y 50 :width 100 :height 50))
-	 (parent (make-tree-frame (list child-1 child-2) :x 20 :y 0 :height 100 :width 100
-				  :split-direction :vertical)))
+         (child-2 (make-instance 'tree:view-frame :x 20 :y 50 :width 100 :height 50))
+         (parent (make-tree-frame (list child-1 child-2) :x 20 :y 0 :height 100 :width 100
+                                  :split-direction :vertical)))
     (set-dimensions parent 200 400)
     (is (= (tree:frame-x parent) 20))
     (is (= (tree:frame-y parent) 0))
@@ -215,17 +215,17 @@
   (let ((sum 0))
     (dolist (item frames)
       (let ((value (funcall accessor item)))
-	(setf sum (+ sum value))))
+        (setf sum (+ sum value))))
     (is (= sum original-size) "Frame keeps original size of ~S (found ~S)" original-size sum)))
 
 (defun poly-split-dim-test (repeats tree split-function accessor)
   (dotimes (i repeats)
     (let ((original-size (funcall accessor tree)))
       (multiple-value-bind (frame parent) (funcall split-function tree)
-	(declare (ignore frame))
-	(check-size original-size
-		    (tree:tree-children parent) accessor)
-	(setf tree parent)))))
+        (declare (ignore frame))
+        (check-size original-size
+                    (tree:tree-children parent) accessor)
+        (setf tree parent)))))
 
 (fiasco:deftest poly-split-frame-vertical-retains-total-dimensions ()
   (let ((tree:*new-split-type* :many))
@@ -237,8 +237,8 @@
   (let ((tree:*new-split-type* :many))
     (multiple-value-bind (tree container) (make-tree-for-tests)
       (multiple-value-bind (frame parent) (tree:split-frame-v tree)
-	(declare (ignore frame))
-	(is (find parent (tree:tree-children container) :test #'equal))))))
+        (declare (ignore frame))
+        (is (find parent (tree:tree-children container) :test #'equal))))))
 
 (fiasco:deftest poly-split-frame-horizontal-retains-total-dimensions ()
   (let ((tree:*new-split-type* :many))
@@ -250,22 +250,22 @@
   (let ((tree:*new-split-type* :many))
     (multiple-value-bind (tree container) (make-tree-for-tests)
       (multiple-value-bind (frame parent) (tree:split-frame-h tree)
-	(declare (ignore frame))
-	(is (find parent (tree:tree-children container) :test #'equal))))))
+        (declare (ignore frame))
+        (is (find parent (tree:tree-children container) :test #'equal))))))
 
 (define-matrix binary-split-frame-vertical-retains-total-dimensions ((direction :bottom :top))
   (let ((tree:*new-split-type* :binary))
     (let ((tree (make-tree-for-tests :width 1020 :height 1023)))
       (multiple-value-bind (frame parent) (tree:split-frame-v tree :direction direction)
-	(declare (ignore frame))
-	(check-size 1023 (tree:tree-children parent) #'tree:frame-height)))))
+        (declare (ignore frame))
+        (check-size 1023 (tree:tree-children parent) #'tree:frame-height)))))
 
 (define-matrix binary-split-frame-horizontal-retains-total-dimensions ((direction :right :left))
   (let ((tree:*new-split-type* :binary))
     (let ((tree (make-tree-for-tests :width 1023 :height 1000)))
       (multiple-value-bind (frame parent) (tree:split-frame-h tree :direction direction)
-	(declare (ignore frame))
-	(check-size 1023 (tree:tree-children parent) #'tree:frame-width)))))
+        (declare (ignore frame))
+        (check-size 1023 (tree:tree-children parent) #'tree:frame-width)))))
 
 (fiasco:deftest binary-split-v-top-order ()
   (let ((tree (make-tree-for-tests)))
@@ -289,77 +289,77 @@
 
 (defun check-children-dimensions (parent size-list accessor)
   (loop for c in (tree:tree-children parent)
-	for size in size-list
-	do
-	(is (= size (funcall accessor c)))))
+        for size in size-list
+        do
+        (is (= size (funcall accessor c)))))
 
 (define-matrix binary-split-h-child-sizing ((direction :left :right))
   (let ((tree (make-tree-for-tests :width 155 :height 255)))
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction direction)
       (declare (ignore new-frame))
       (check-children-dimensions new-parent (list 77 78)
-				 #'tree:frame-width))))
+                                 #'tree:frame-width))))
 
 (define-matrix binary-split-v-child-sizing ((direction :top :bottom))
   (let ((tree (make-tree-for-tests :width 155 :height 255)))
     (multiple-value-bind (new-frame new-parent) (tree:split-frame-v tree :direction direction)
       (declare (ignore new-frame))
       (check-children-dimensions new-parent (list 128 127)
-				 #'tree:frame-height))))
+                                 #'tree:frame-height))))
 
 (defun split-frame-times (frame times split-fn)
   (multiple-value-bind (new-frame parent) (funcall split-fn frame)
     (declare (ignore new-frame))
     (dotimes (i (- times 1))
       (multiple-value-bind (new-frame new-parent) (funcall split-fn parent)
-	(declare (ignore new-frame))
-	(setf parent new-parent)))
+        (declare (ignore new-frame))
+        (setf parent new-parent)))
     parent))
 
 (fiasco:deftest poly-split-h-child-sizing-right ()
   (let* ((tree:*new-split-type* :many)
-	 (parent (split-frame-times (make-tree-for-tests) 2
-				    (lambda (x)
-				      (mahogany/tree:split-frame-h x :direction :right)))))
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-h x :direction :right)))))
     (check-children-dimensions parent
-			       (list 33 33 34) #'tree:frame-width)))
+                               (list 33 33 34) #'tree:frame-width)))
 
 (fiasco:deftest poly-split-h-child-sizing-left ()
   (let* ((tree:*new-split-type* :many)
-	 (parent (split-frame-times (make-tree-for-tests) 2
-				    (lambda (x)
-				      (mahogany/tree:split-frame-h x :direction :left)))))
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-h x :direction :left)))))
     (check-children-dimensions parent
-			       (list 34 33 33) #'tree:frame-width)))
+                               (list 34 33 33) #'tree:frame-width)))
 
 (fiasco:deftest poly-split-v-child-sizing-right ()
   (let* ((tree:*new-split-type* :many)
-	 (parent (split-frame-times (make-tree-for-tests) 2
-				    (lambda (x)
-				      (mahogany/tree:split-frame-v x :direction :top)))))
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-v x :direction :top)))))
     (check-children-dimensions parent
-			       (list 33 33 34) #'tree:frame-height)))
+                               (list 33 33 34) #'tree:frame-height)))
 
 (fiasco:deftest poly-split-v-child-sizing-left ()
   (let* ((tree:*new-split-type* :many)
-	 (parent (split-frame-times (make-tree-for-tests) 2
-				    (lambda (x)
-				      (mahogany/tree:split-frame-v x :direction :bottom)))))
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-v x :direction :bottom)))))
     (check-children-dimensions parent
-			       (list 34 33 33) #'tree:frame-height)))
+                               (list 34 33 33) #'tree:frame-height)))
 
 (fiasco:deftest find-view-finds-empty ()
   (let* ((child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 100 :height 100))
-		 (child-2 (make-instance 'tree:view-frame :x 100 :y 0 :width 100 :height 100))
-		 (parent (make-tree-frame (list child-1 child-2))))
-	(is (tree:find-view-frame parent nil))))
+         (child-2 (make-instance 'tree:view-frame :x 100 :y 0 :width 100 :height 100))
+         (parent (make-tree-frame (list child-1 child-2))))
+    (is (tree:find-view-frame parent nil))))
 
 (fiasco:deftest parent-frame-finds-view ()
   (let* ((view (hrt::%make-view (cffi:null-pointer)))
-		 (child-1 (make-instance 'tree:view-frame
-								 :x 0 :y 0 :width 100 :height 100))
-		 (child-2 (make-instance 'tree:view-frame
-								 :view view
-								 :x 100 :y 0 :width 100 :height 100))
-		 (parent (make-tree-frame (list child-1 child-2))))
-	(is (tree:find-view-frame parent nil))))
+         (child-1 (make-instance 'tree:view-frame
+                                 :x 0 :y 0 :width 100 :height 100))
+         (child-2 (make-instance 'tree:view-frame
+                                 :view view
+                                 :x 100 :y 0 :width 100 :height 100))
+         (parent (make-tree-frame (list child-1 child-2))))
+    (is (tree:find-view-frame parent nil))))

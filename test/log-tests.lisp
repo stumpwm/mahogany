@@ -20,14 +20,14 @@
     (declare (notinline non-constant-log))
     (flet ((fn () (setf thing (+ 1 thing))))
       (with-output-to-string (stream)
-	(non-constant-log :debug stream)
-	(fiasco:is (eql thing 0))))))
+        (non-constant-log :debug stream)
+        (fiasco:is (eql thing 0))))))
 
 (fiasco:deftest log-string-ignore-is-ignored ()
   (setf (log-level) :trace)
   (let ((output-result (with-output-to-string (output)
-			 (let ((*log-output-file* output))
-			   (log-string :ignore "Test")))))
+                         (let ((*log-output-file* output))
+                           (log-string :ignore "Test")))))
     (is (string-equal output-result ""))))
 
 (fiasco:deftest log-levels-translate ()

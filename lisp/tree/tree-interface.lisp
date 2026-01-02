@@ -27,18 +27,18 @@ of an already existing frame with the `set-split-frame-type` function")
       :accessor frame-y
       :type real)
    (width :initarg :width
-	  :accessor frame-width
-	  :type real)
+          :accessor frame-width
+          :type real)
    (height :initarg :height
-	   :accessor frame-height
-	   :type real)
+           :accessor frame-height
+           :type real)
    (parent :initarg :parent
-	   :type (or output-node frame)
-	   :accessor frame-parent)
+           :type (or output-node frame)
+           :accessor frame-parent)
    (focused :initarg :focused
-	    :reader frame-focused
-	    :initform nil
-	    :type boolean))
+            :reader frame-focused
+            :initform nil
+            :type boolean))
   (:documentation "A frame that is displayed on an output"))
 
 (defgeneric frame-prev (frame)
@@ -56,10 +56,10 @@ of an already existing frame with the `set-split-frame-type` function")
 
 (defclass tree-parent ()
   ((children :initarg :children
-	 :initform nil
-	 :accessor tree-children
-	 :type list
-	 :documentation "Holds the trees of this conatiner")))
+             :initform nil
+             :accessor tree-children
+             :type list
+             :documentation "Holds the trees of this conatiner")))
 
 (defclass tree-container (tree-parent)
   ()
@@ -67,23 +67,23 @@ of an already existing frame with the `set-split-frame-type` function")
 
 (defclass output-node (tree-parent)
   ((parent :initarg :parent
-	   :initform nil
-	   :type (or null tree-container)
-	   :accessor frame-parent)))
+           :initform nil
+           :type (or null tree-container)
+           :accessor frame-parent)))
 
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
 
 (defclass tree-frame (tree-parent frame)
   ((split-direction :initarg :split-direction
-		    :reader tree-split-direction
-		    :type split-frame-type))
+                    :reader tree-split-direction
+                    :type split-frame-type))
   (:documentation "An inner node of a frame-tree"))
 
 (defclass floating-frame (frame)
   ((top-frame :initarg :top-frame
-	      :accessor top-frame
-	      :type frame)))
+              :accessor top-frame
+              :type frame)))
 
 (defclass binary-tree-frame (tree-frame)
   ()
@@ -169,33 +169,33 @@ a view assigned to it."))
   (declare (type tree-container tree-container))
   (with-accessors ((container-children tree-children)) tree-container
     (let* ((new-output (make-instance 'output-node :parent tree-container))
-	   (new-tree (make-instance 'view-frame :x x :y y :width width :height height
-				   :parent new-output))
-	   (prev-output (first container-children)))
+           (new-tree (make-instance 'view-frame :x x :y y :width width :height height
+                                    :parent new-output))
+           (prev-output (first container-children)))
       ;; We'll need to place it somewhere in the middle of the list eventually:
       (push new-output container-children)
       (push new-tree (tree-children new-output))
       (if prev-output
-	  (let* ((prev-head (first (tree-children prev-output)))
-		 (prev-frame (frame-prev prev-head)))
-	    (setf (%frame-next prev-frame) new-tree
-		  (%frame-prev new-tree) prev-frame
-		  (%frame-prev prev-head) new-tree
-		  (%frame-next new-tree) prev-head))
-	  (setf (%frame-next new-tree) new-tree
-		(%frame-prev new-tree) new-tree))
+          (let* ((prev-head (first (tree-children prev-output)))
+                 (prev-frame (frame-prev prev-head)))
+            (setf (%frame-next prev-frame) new-tree
+                  (%frame-prev new-tree) prev-frame
+                  (%frame-prev prev-head) new-tree
+                  (%frame-next new-tree) prev-head))
+          (setf (%frame-next new-tree) new-tree
+                (%frame-prev new-tree) new-tree))
       (values new-output new-tree))))
 
 (defmacro foreach-leaf ((var frame) &body body)
   (let ((stack-var (gensym "stack"))
-	(frame-var (gensym "frame")))
+        (frame-var (gensym "frame")))
     `(let* ((,frame-var ,frame)
-	    (,stack-var (if (or (typep ,frame-var 'tree-frame)
-				(typep ,frame-var 'output-node))
-			    (tree-children ,frame-var)
-			    (list ,frame-var))))
+            (,stack-var (if (or (typep ,frame-var 'tree-frame)
+                                (typep ,frame-var 'output-node))
+                            (tree-children ,frame-var)
+                            (list ,frame-var))))
        (iter (for ,var = (pop ,stack-var))
-	     (while ,var)
-	     (if (typep ,var 'tree-frame)
-		 (appendf ,stack-var (tree-children ,var))
-		 (progn ,@body))))))
+             (while ,var)
+             (if (typep ,var 'tree-frame)
+                 (appendf ,stack-var (tree-children ,var))
+                 (progn ,@body))))))
