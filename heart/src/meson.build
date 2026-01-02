@@ -9,7 +9,8 @@ hrt_source_files += files(
   'server.c',
   'view.c',
   'xdg_shell.c',
-  )
+  'layer_shell.c',
+)
 
 if get_option('debug_utils')
    hrt_source_files += files(

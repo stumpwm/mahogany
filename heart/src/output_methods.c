@@ -4,6 +4,12 @@ void hrt_output_resolution(struct hrt_output *output, int *width, int *height) {
     wlr_output_effective_resolution(output->wlr_output, width, height);
 }
 
+void hrt_output_usable_area(struct hrt_output *output, int *width,
+                            int *height) {
+    *width = output->usable_area.width;
+    *height = output->usable_area.height;
+}
+
 void hrt_output_position(struct hrt_output *output, int *x, int *y) {
     struct wlr_output_layout_output *l_output = wlr_output_layout_get(
         output->server->output_layout, output->wlr_output);

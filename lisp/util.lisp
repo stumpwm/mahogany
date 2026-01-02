@@ -29,6 +29,8 @@
   `(defvar ,name ,value ,doc))
 
 (defun enable-debugger ()
+  #+clasp
+  (ext:enable-debugger)
   #+sbcl
   (sb-ext:enable-debugger))
 

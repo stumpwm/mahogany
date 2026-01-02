@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_OUTPUT_H
 #define HRT_HRT_OUTPUT_H
 
+#include "wlr/util/box.h"
 #include <wayland-server.h>
 
 #include <wlr/types/wlr_output.h>
@@ -10,6 +11,7 @@
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
+    struct wlr_box usable_area;
 
     struct wl_listener request_state;
     struct wl_listener frame;
@@ -30,6 +32,8 @@ struct hrt_output_callbacks {
  * set the width and height of views.
  **/
 void hrt_output_resolution(struct hrt_output *output, int *width, int *height);
+
+void hrt_output_usable_area(struct hrt_output *output, int *width, int *height);
 
 void hrt_output_position(struct hrt_output *output, int *x, int *y);
 
