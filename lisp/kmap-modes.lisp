@@ -27,6 +27,20 @@
            (type mahogany-state state))
   (member kmap-mode (mahogany-active-kmap-modes state) :test #'eq))
 
+(defun %build-kmaps-from-mode (prefix-key kmap-mode keybindings)
+  "Push the kmaps from the KMAP-MODE onto the list KEYBINDINGS using the
+given PREFIX-KEY. Return the list with the kmaps added; does not modify
+the KEYBINDINGS list."
+  (declare (type kmap-mode kmap-mode)
+           (type key prefix-key)
+           (type list keybindings))
+  (let ((top-kmap (define-kmap
+                    prefix-key (kmap-mode-prefix-binding kmap-mode))))
+    (setf (kmap-mode-top-kmap kmap-mode) top-kmap)
+    (push top-kmap keybindings)
+    (push (kmap-mode-top-binding kmap-mode) keybindings)
+    keybindings))
+
 (defun kmap-mode-activate (state kmap-mode)
   (declare (type kmap-mode kmap-mode)
            (type mahogany-state state))
@@ -38,12 +52,8 @@
                    (active-kmap-modes mahogany-active-kmap-modes)
                    (prefix-key mahogany-state-prefix-key))
       state
-    (let ((top-kmap (define-kmap
-                      prefix-key (kmap-mode-prefix-binding kmap-mode))))
-      (setf (kmap-mode-top-kmap kmap-mode) top-kmap)
-      (push top-kmap keybindings)
-      (push (kmap-mode-top-binding kmap-mode) keybindings)
-      (push kmap-mode active-kmap-modes)))
+    (setf keybindings (%build-kmaps-from-mode prefix-key kmap-mode keybindings))
+    (push kmap-mode active-kmap-modes))
   (values))
 
 (defparameter *kmap-modes* nil
@@ -79,15 +89,13 @@
 (defun (setf mahogany-state-prefix-key) (key state)
   (declare (type key key)
            (type mahogany-state state))
+  ;; to change the prefix key, we rebuild the keybinding list
+  ;; using the new prefix key.
   (with-accessors ((active-modes mahogany-active-kmap-modes))
       state
     (let ((new-bindings nil))
       ;; go backwards so pushing gets us the same order:
       (dolist (mode active-modes)
-        (let ((new-top-kmap (define-kmap
-                              key (kmap-mode-prefix-binding mode))))
-          (setf (kmap-mode-top-kmap mode) new-top-kmap)
-          (push new-top-kmap new-bindings)
-          (push (kmap-mode-top-binding mode) new-bindings)))
+        (setf new-bindings (%build-kmaps-from-mode key mode new-bindings)))
       (setf (mahogany-state-keybindings state) new-bindings
             (slot-value state 'prefix-key) key))))
