@@ -1,0 +1,31 @@
+#+TITLE: Public vs Private interfaces
+
+Mahogany is currently in a pre-alpha state, and the APIs it exposes may
+change significantly over the course of development. We will make sure
+to document these changes between releases, but these interfaces may
+change at any time. To separate interfaces that are declared stable
+and will not change from unstable or dangerouse APIs, stable
+interfaces are exported from the =mahogany= package.
+
+The recommended way to write init scripts is to switch to the
+`=mahogany-user= package, which imports all exported symbols from
+mahogany. To use non-stable symbols, use the double-colon syntax.
+
+#+BEGIN_SRC lisp
+  (in-package #:mahogany-user)
+
+  ; rest of config file goes here:
+#+END_SRC
+** Symbols and Packages in Common Lisp
+
+Objects in Common lisp are identified via /symbols/. Symbols can represent
+variables, functions, types and a few other entities, and are how
+things are identified within the language. Each symbol is found in a
+/package/, which controls which symbols are visible at any given
+time. Only symbols within the current package are directly available;
+symbols in other packages need to be prefixed by their package
+identifier in order to be referenced. For example, while in the
+default =CL-USER= package, exported symbols in the mahogany package can be
+referenced by appending =mahogany= to the to the symbol name:
+=mahogany:kbd=. Non-exported symbols can be referenced using two
+colons instead of of one: =mahogany::define-kmap-mode=.
