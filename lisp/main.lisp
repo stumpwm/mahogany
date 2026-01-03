@@ -106,16 +106,22 @@ further up. "
      :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
      :contents (list
                 help-option
-                no-init-option))))
+                no-init-option
+                loglevel))))
 
 (defun %parse-cmd-line-args (args)
   (let ((parser (%build-cmd-line-parser)))
     (handler-case
         (multiple-value-bind (unused found) (adopt:parse-options parser args)
           (declare (ignore unused))
-          (when (gethash 'help found)
-            (adopt:print-help-and-exit parser))
-          found)
+          (cond
+            ((gethash 'help found)
+             (adopt:print-help-and-exit parser))
+            ((not (member (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+ :test #'equalp))
+             (adopt:print-error-and-exit (format nil "invlid loglevel '~a'. it's must be one of ~{~A~^|~}" (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+)))
+            (t
+             found)
+            ))
       (adopt:unrecognized-option (e)
         (adopt:print-help parser)
         (adopt:print-error-and-exit e)))))
