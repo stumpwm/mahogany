@@ -1,0 +1,97 @@
+#+TITLE: Customizing Keybindings
+
+In Mahogany, keyboard shortcuts are implemented via /keybindings/,
+which are defined as a mapping between a /key/ and commands in a
+datastructure called a /keymap/.
+
+By default, there are two keymaps enabled on startup:
+
++ *root-map* :: To activate these keybindings, you must first press
+  the =prefix-key=, which is bound by default to =C-t=.
++ *top-map* :: Bindings made on this keymap are executed without the
+  prefix key, so that pressing those keys will execute the given
+  commands.
+
+Most of mahogany's default commands are bound to the =*root-map*=,
+which is why these commands are invoked by first pressing =C-t=.
+For example, the command to close the view in the currently focused
+frame is invoked by pressing =C-t k=.
+
+** Key syntax
+
+Keys are defined using the =kdb= function. Keys are defined as a
+series of zero or more modifier keys, plus a normal key. The available
+modifiers are:
++ =s=, for the super key, which is usually bound to the windows key.
++ =C=, for the Control key
++ =M= and =A=, for the Alt key
++ =S=, for the Shift key.
+
+Modifiers come first in a key spec, then regular keys. Modifiers are
+followed by a =-= character. Here are some examples:
++ =(kbd "C-s")= :: The key representing holding down the Control key while
+  pressing the =s= key
++ =(kbd "M-C-u")= :: The key representing holding down the Alt and
+  control keys key while pressing the =u= key
++ =(kbd "i")= :: The key representing pressing the =i= key.
+
+** Adding and removing bindings from a keymap
+
+To add a new binding to a kmap, you use the =add-to-kmap= macro:
+
+#+BEGIN_SRC lisp
+  ;; bind the key "C" to the open-terminal command:
+  (add-to-kmap *top-map*
+    (kbd "C") #"open-terminal))
+#+END_SRC
+
+Running this code maps the key =C= to the =open-terminal= function, so
+that whenever the =C= key is pressed, the =open-terminal= command is
+executed. You can also remove
+key mappings by setting the command value to =nil=:
+
+#+BEGIN_SRC lisp
+  ;; remove this binding to the C character:
+  (add-to-kmap *top-map*
+    (kbd "C") nil)
+#+END_SRC
+
+You can bind multiple commands at the same time:
+
+#+BEGIN_SRC lisp
+  (add-to-kmap *top-map*
+    (kbd "C") #'open-terminal
+    (kbd "s-l") #'open-terminal)
+#+END_SRC
+
+*** Nesting Keymaps
+
+Sometimes it desirable to need to press multiple keys in row to
+activate a keymap. For example, all of the group commands are accessed
+first by pressing the prefix key, then pressing =g=, then pressing one
+more key. This is done by nesting keymaps. Instead of binding a
+command to a key, you can bind another keymap:
+
+#+BEGIN_SRC lisp
+  (add-to-kmap *root-map*
+    (kbd "j") (define-kmap
+  			  (kbd "k") #'open-terminal))
+#+END_SRC
+
+This configuration will make the open-terminal command execute after
+the prefix key is pressed, then =j=, then =k=.
+
+** Changing the prefix key
+
+To change the prefix key, set the `mahogany-state-prefix-key`
+property:
+
+#+BEGIN_SRC lisp
+  ;; set the prefix key to Super-a
+  (setf (mahogany-state-prefix-key *compositor-state*) (kbd "s-a"))
+#+END_SRC
+
+Only keys that can be represented in a key can be valid prefix keys;
+Modifiers by themselves cannot be set to the prefix key. This stops
+keys like =Super= from being used as the prefix key. If this is a
+problem, create an issue and we may be able to find a workaround.
