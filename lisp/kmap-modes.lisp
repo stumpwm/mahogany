@@ -59,14 +59,17 @@ the KEYBINDINGS list."
 (defparameter *kmap-modes* nil
   "List of defined kmap modes")
 
-(defun %validate-mode-symbol (symbol)
+(defun %validate-kmap-mode-symbol (symbol)
   (let* ((name (symbol-name symbol))
-         (len (length name)))
+         (len (length name))
+         (must-end-msg "Mode symbol name must end in \"-mode\""))
     (cond
       ((<= len 5)
-       (error "Mode symbol cannot be named \"-mode\""))
+       (if (string-equal "-mode" name)
+           (error "Mode symbol cannot be named \"-mode\"")
+           (error must-end-msg)))
       ((not (string-equal "-mode" (subseq name (- len 5))))
-       (error "Mode symbol name must end in \"-mode\"")))))
+       (error must-end-msg)))))
 
 ;; TODO: Make it possible to redefine kmap-modes,
 ;;  get a list of available kmap modes
@@ -75,7 +78,7 @@ the KEYBINDINGS list."
                                    (top-binding (make-kmap))
                                    (prefix-binding (make-kmap)))
 
-  (%validate-mode-symbol name)
+  (%validate-kmap-mode-symbol name)
   `(let ((kmap-mode (make-kmap-mode (quote ,name)
                                     ,top-binding
                                     ,prefix-binding
