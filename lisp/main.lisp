@@ -76,6 +76,8 @@ further up. "
       (server-state-reset *compositor-state*)
       (log-string :debug "Shutdown reached."))))
 
+(alexandria:define-constant +LOGLEVEL-SELECTIONS+ '("TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "IGNORE") :test #'equal)
+
 (defun %build-cmd-line-parser ()
   (let ((help-option (adopt:make-option
                       'help
@@ -92,9 +94,10 @@ further up. "
         (loglevel (adopt:make-option
                    'loglevel
                    :long "loglevel"
-                   :parameter "TRACE|DEBUG|INFO|WARN|ERROR|FATAL|IGNORE"
-                   :initial-value "TRACE"
-                   :help "Specify loglevel"
+                   :short #\l
+                   :parameter "[loglevel]"
+                   :initial-value (first +LOGLEVEL-SELECTIONS+)
+                   :help (format nil "Specify loglevel ~{~A~^|~}" +LOGLEVEL-SELECTIONS+)
                    :reduce (lambda (prev level) (declare (ignore prev)) (string-upcase level)))))
     (adopt:make-interface
      :name "mahogany"
