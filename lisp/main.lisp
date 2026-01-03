@@ -46,7 +46,7 @@ further up. "
 (defun run-server (args)
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
-  (log-init :level :trace)
+  (log-init :level (intern (gethash 'loglevel args) 'keyword))
   (enable-debugger)
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
                               (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
@@ -76,6 +76,8 @@ further up. "
       (server-state-reset *compositor-state*)
       (log-string :debug "Shutdown reached."))))
 
+(alexandria:define-constant +LOGLEVEL-SELECTIONS+ '("TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "IGNORE") :test #'equal)
+
 (defun %build-cmd-line-parser ()
   (let ((help-option (adopt:make-option
                       'help
@@ -88,7 +90,15 @@ further up. "
                          :long "no-init-file"
                          :short #\q
                          :help "Do not evaulate an init file on startup"
-                         :reduce (constantly t))))
+                         :reduce (constantly t)))
+        (loglevel (adopt:make-option
+                   'loglevel
+                   :long "loglevel"
+                   :short #\l
+                   :parameter "[loglevel]"
+                   :initial-value (first +LOGLEVEL-SELECTIONS+)
+                   :help (format nil "Specify loglevel ~{~A~^|~}" +LOGLEVEL-SELECTIONS+)
+                   :reduce (lambda (prev level) (declare (ignore prev)) (string-upcase level)))))
     (adopt:make-interface
      :name "mahogany"
      :summary "Keyboard driven titling window manager for Wayland"
@@ -96,16 +106,22 @@ further up. "
      :help "Mahogany is a tiling window manager for Wayland modeled after StumpWM."
      :contents (list
                 help-option
-                no-init-option))))
+                no-init-option
+                loglevel))))
 
 (defun %parse-cmd-line-args (args)
   (let ((parser (%build-cmd-line-parser)))
     (handler-case
         (multiple-value-bind (unused found) (adopt:parse-options parser args)
           (declare (ignore unused))
-          (when (gethash 'help found)
-            (adopt:print-help-and-exit parser))
-          found)
+          (cond
+            ((gethash 'help found)
+             (adopt:print-help-and-exit parser))
+            ((not (member (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+ :test #'equalp))
+             (adopt:print-error-and-exit (format nil "invlid loglevel '~a'. it's must be one of ~{~A~^|~}" (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+)))
+            (t
+             found)
+            ))
       (adopt:unrecognized-option (e)
         (adopt:print-help parser)
         (adopt:print-error-and-exit e)))))
