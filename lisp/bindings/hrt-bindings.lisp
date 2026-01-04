@@ -43,11 +43,13 @@
   (link (:struct wl-list))
   (destroy (:struct wl-listener)))
 
+(declaim (inline hrt-seat-reset-view-under))
 (cffi:defcfun ("hrt_seat_reset_view_under" hrt-seat-reset-view-under) :void
   "Send the appropriate cursor event to the view under the
 cursor."
   (seat (:pointer (:struct hrt-seat))))
 
+(declaim (inline hrt-seat-set-cursor-img))
 (cffi:defcfun ("hrt_seat_set_cursor_img" hrt-seat-set-cursor-img) :void
   "Set the seat's default cursor image to the given cursor name.
 
@@ -58,22 +60,27 @@ names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
 
+(declaim (inline hrt-seat-notify-button))
 (cffi:defcfun ("hrt_seat_notify_button" hrt-seat-notify-button) :void
   (seat (:pointer (:struct hrt-seat)))
   (event :pointer #| (:struct wlr-pointer-button-event) |# ))
 
+(declaim (inline hrt-seat-notify-axis))
 (cffi:defcfun ("hrt_seat_notify_axis" hrt-seat-notify-axis) :void
   (seat (:pointer (:struct hrt-seat)))
   (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
 
+(declaim (inline hrt-seat-set-keymap))
 (cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :void
   (seat (:pointer (:struct hrt-seat)))
   (rules :pointer #| (:struct xkb-rule-names) |# )
   (flags xkb:keymap-compile-flags #| enum xkb-keymap-compile-flags |#))
 
+(declaim (inline hrt-seat-cursor-lx))
 (cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
   (seat (:pointer (:struct hrt-seat))))
 
+(declaim (inline hrt-seat-cursor-ly))
 (cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
   (seat (:pointer (:struct hrt-seat))))
 
@@ -113,14 +120,17 @@ names."
   (request-fullscreen (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-view-callbacks))))
 
+(declaim (inline hrt-view-init))
 (cffi:defcfun ("hrt_view_init" hrt-view-init) :void
   "Fully initialize the view and place it in the given scene tree."
   (view (:pointer (:struct hrt-view)))
   (tree :pointer #| (:struct wlr-scene-tree) |# ))
 
+(declaim (inline hrt-view-info))
 (cffi:defcfun ("hrt_view_info" hrt-view-info) :void
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-view-set-size))
 (cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
   "Request that this view be the given size. Returns the associated configure
 serial."
@@ -128,35 +138,42 @@ serial."
   (width :int)
   (height :int))
 
+(declaim (inline hrt-view-mapped))
 (cffi:defcfun ("hrt_view_mapped" hrt-view-mapped) :bool
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-view-set-relative))
 (cffi:defcfun ("hrt_view_set_relative" hrt-view-set-relative) :void
   "Sets the view to the given coordinates relative to its parent."
   (view (:pointer (:struct hrt-view)))
   (x :int)
   (y :int))
 
+(declaim (inline hrt-view-focus))
 (cffi:defcfun ("hrt_view_focus" hrt-view-focus) :void
   "Focus the given view and perform the needed tasks to make
 it visible to the user."
   (view (:pointer (:struct hrt-view)))
   (seat (:pointer (:struct hrt-seat))))
 
+(declaim (inline hrt-view-unfocus))
 (cffi:defcfun ("hrt_view_unfocus" hrt-view-unfocus) :void
   "Unfocus the given view."
   (view (:pointer (:struct hrt-view)))
   (seat (:pointer (:struct hrt-seat))))
 
+(declaim (inline hrt-view-set-hidden))
 (cffi:defcfun ("hrt_view_set_hidden" hrt-view-set-hidden) :void
   "Stop the given view from being displayed"
   (view (:pointer (:struct hrt-view)))
   (hidden :bool))
 
+(declaim (inline hrt-view-reparent))
 (cffi:defcfun ("hrt_view_reparent" hrt-view-reparent) :void
   (view (:pointer (:struct hrt-view)))
   (node :pointer #| (:struct wlr-scene-tree) |# ))
 
+(declaim (inline hrt-view-request-close))
 (cffi:defcfun ("hrt_view_request_close" hrt-view-request-close) :void
   "Request that the view be closed. This is the \"nice\" version
 that is the same as clicking the close button on window decorations.
@@ -164,6 +181,7 @@ It does not garentee that the application actually closes, but
 well behaved ones should."
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-view-send-configure))
 (cffi:defcfun ("hrt_view_send_configure" hrt-view-send-configure) :void
   "Send a configure event to the view"
   (view (:pointer (:struct hrt-view))))
@@ -183,6 +201,7 @@ well behaved ones should."
   (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
   (output-layout-changed :pointer #| function ptr void () |#))
 
+(declaim (inline hrt-output-resolution))
 (cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void
   "Get the effective output resolution of the output that can be used to
 set the width and height of views."
@@ -190,20 +209,25 @@ set the width and height of views."
   (width (:pointer :int))
   (height (:pointer :int)))
 
+(declaim (inline hrt-output-position))
 (cffi:defcfun ("hrt_output_position" hrt-output-position) :void
   (output (:pointer (:struct hrt-output)))
   (x (:pointer :int))
   (y (:pointer :int)))
 
+(declaim (inline hrt-output-name))
 (cffi:defcfun ("hrt_output_name" hrt-output-name) :string
   (output (:pointer (:struct hrt-output))))
 
+(declaim (inline hrt-output-make))
 (cffi:defcfun ("hrt_output_make" hrt-output-make) :string
   (output (:pointer (:struct hrt-output))))
 
+(declaim (inline hrt-output-model))
 (cffi:defcfun ("hrt_output_model" hrt-output-model) :string
   (output (:pointer (:struct hrt-output))))
 
+(declaim (inline hrt-output-serial))
 (cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string
   (output (:pointer (:struct hrt-output))))
 
@@ -233,6 +257,7 @@ set the width and height of views."
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks))))
 
+(declaim (inline hrt-server-init))
 (cffi:defcfun ("hrt_server_init" hrt-server-init) :bool
   (server (:pointer (:struct hrt-server)))
   (output-callbacks (:pointer (:struct hrt-output-callbacks)))
@@ -240,21 +265,27 @@ set the width and height of views."
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
   (log-level :int #| enum wlr-log-importance |#))
 
+(declaim (inline hrt-server-start))
 (cffi:defcfun ("hrt_server_start" hrt-server-start) :bool
   (server (:pointer (:struct hrt-server))))
 
+(declaim (inline hrt-server-stop))
 (cffi:defcfun ("hrt_server_stop" hrt-server-stop) :void
   (server (:pointer (:struct hrt-server))))
 
+(declaim (inline hrt-server-finish))
 (cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
   (server (:pointer (:struct hrt-server))))
 
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(declaim (inline hrt-server-scene-tree))
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
+(declaim (inline hrt-server-seat))
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
   (server (:pointer (:struct hrt-server))))
 
+(declaim (inline hrt-server-struct-size))
 (cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
 
 ;; next section imported from file build/include/hrt/hrt_scene.h
@@ -286,43 +317,55 @@ set the width and height of views."
   (background :pointer #| (:struct wlr-scene-rect) |# )
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-scene-root-create))
 (cffi:defcfun ("hrt_scene_root_create" hrt-scene-root-create) (:pointer (:struct hrt-scene-root))
   (scene :pointer #| (:struct wlr-scene-tree) |# ))
 
+(declaim (inline hrt-scene-root-destroy))
 (cffi:defcfun ("hrt_scene_root_destroy" hrt-scene-root-destroy) :void
   (scene-root (:pointer (:struct hrt-scene-root))))
 
+(declaim (inline hrt-scene-output-create))
 (cffi:defcfun ("hrt_scene_output_create" hrt-scene-output-create) (:pointer (:struct hrt-scene-output))
   (scene (:pointer (:struct hrt-scene-root))))
 
+(declaim (inline hrt-scene-output-destroy))
 (cffi:defcfun ("hrt_scene_output_destroy" hrt-scene-output-destroy) :void
   (output (:pointer (:struct hrt-scene-output))))
 
+(declaim (inline hrt-scene-group-create))
 (cffi:defcfun ("hrt_scene_group_create" hrt-scene-group-create) (:pointer (:struct hrt-scene-group))
   (parent (:pointer (:struct hrt-scene-root))))
 
+(declaim (inline hrt-scene-group-destroy))
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void
   (group (:pointer (:struct hrt-scene-group))))
 
+(declaim (inline hrt-scene-group-add-view))
 (cffi:defcfun ("hrt_scene_group_add_view" hrt-scene-group-add-view) :void
   (group (:pointer (:struct hrt-scene-group)))
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-scene-group-init-view))
 (cffi:defcfun ("hrt_scene_group_init_view" hrt-scene-group-init-view) :void
   (group (:pointer (:struct hrt-scene-group)))
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-scene-group-set-enabled))
 (cffi:defcfun ("hrt_scene_group_set_enabled" hrt-scene-group-set-enabled) :void
   (group (:pointer (:struct hrt-scene-group)))
   (enabled :bool))
 
+(declaim (inline hrt-scene-group-transfer))
 (cffi:defcfun ("hrt_scene_group_transfer" hrt-scene-group-transfer) :void
   (source (:pointer (:struct hrt-scene-group)))
   (destination (:pointer (:struct hrt-scene-group))))
 
-(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |# 
+(declaim (inline hrt-scene-group-normal))
+(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
+(declaim (inline hrt-scene-create-fullscreen-node))
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
   "Create a hrt_scene_fullscreen_node with a black bacground of the given size.
 Mode the hrt_view inside the node, removing it from where ever it was in the scene tree."
@@ -330,22 +373,26 @@ Mode the hrt_view inside the node, removing it from where ever it was in the sce
   (view (:pointer (:struct hrt-view)))
   (output (:pointer (:struct hrt-output))))
 
+(declaim (inline hrt-scene-fullscreen-node-destroy))
 (cffi:defcfun ("hrt_scene_fullscreen_node_destroy" hrt-scene-fullscreen-node-destroy) (:pointer (:struct hrt-view))
   "Destroy the given background node, moving the struct hrt_view to the
 normral layer.
 Returns the view that was in the node."
   (node (:pointer (:struct hrt-scene-fullscreen-node))))
 
+(declaim (inline hrt-scene-node-set-dimensions))
 (cffi:defcfun ("hrt_scene_node_set_dimensions" hrt-scene-node-set-dimensions) :uint32
   (node (:pointer (:struct hrt-scene-fullscreen-node)))
   (width :int)
   (height :int))
 
+(declaim (inline hrt-scene-node-set-position))
 (cffi:defcfun ("hrt_scene_node_set_position" hrt-scene-node-set-position) :void
   (node (:pointer (:struct hrt-scene-fullscreen-node)))
   (x :int)
   (y :int))
 
+(declaim (inline hrt-scene-fullscreen-configure))
 (cffi:defcfun ("hrt_scene_fullscreen_configure" hrt-scene-fullscreen-configure) :uint32
   (group (:pointer (:struct hrt-scene-fullscreen-node)))
   (output (:pointer (:struct hrt-output))))
