@@ -109,8 +109,8 @@
 ;; Instead of using the macro, maybe we should define this manually
 ;; so users can't deactivate it?
 (define-kmap-mode base-mode
-    :documentation "Base mode for mahogany that contains the default keybindings"
-    :top-binding *top-map*
-    :prefix-binding *root-map*)
+  :documentation "Base mode for mahogany that contains the default keybindings"
+  :top-binding *top-map*
+  :prefix-binding *root-map*)
 
 (base-mode t)
