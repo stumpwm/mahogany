@@ -1,78 +1,63 @@
 (in-package #:mahogany)
 
-(defun handle-server-stop (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand handle-server-stop ()
   (server-stop *compositor-state*))
 
-(defun open-terminal (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand open-terminal ()
   (mh-sys:open-terminal))
 
-(defun split-frame-h (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand split-frame-h ()
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
       (tree:split-frame-h frame :direction :right))))
 
-(defun split-frame-v (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand split-frame-v ()
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
       (tree:split-frame-v frame :direction :bottom))))
 
-(defun maximize-current-frame (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand maximize-current-frame ()
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-maximize-current-frame group)))
 
-(defun close-current-view (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand close-current-view ()
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
       (hrt:view-request-close view))))
 
-(defun next-view (sequence seat)
+(defcommand next-view ()
   "Raise the next hidden view in the current group"
-  (declare (ignore sequence seat))
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-next-hidden group)))
 
-(defun previous-view (sequence seat)
+(defcommand previous-view ()
   "Raise the next hidden view in the current group"
-  (declare (ignore sequence seat))
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-previous-hidden group)))
 
-(defun next-frame (sequence seat)
-  (declare (ignore sequence))
+(defcommand next-frame (:seat seat)
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-next-frame group seat)))
 
-(defun prev-frame (sequence seat)
-  (declare (ignore sequence))
+(defcommand prev-frame (:seat seat)
   (let ((group (mahogany-current-group *compositor-state*)))
     (group-prev-frame group seat)))
 
-(defun gnew (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand gnew ()
   (mahogany-state-group-add *compositor-state*))
 
-(defun gkill (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand gkill ()
   (let ((current-group (mahogany-current-group *compositor-state*)))
     (mahogany-state-group-remove *compositor-state* current-group)))
 
-(defun gnext (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand gnext ()
   (state-next-hidden-group *compositor-state*))
 
-(defun gprev (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand gprev ()
   (state-next-hidden-group *compositor-state*))
 
 #+:hrt-debug
-(defun add-output (sequence seat)
-  (declare (ignore sequence seat))
+(defcommand add-output ()
   (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
       (log-string :info "Output not added")
       (log-string :info "Output added")))
