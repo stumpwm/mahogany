@@ -101,4 +101,10 @@
   :top-binding *top-map*
   :prefix-binding *root-map*)
 
+(define-kmap-mode prefix-passthrough-mode
+  :documentation "Kmap mode that makes pressing the prefix key twice in a row
+send the prefix key to the focused client."
+  :prefix-binding *prefix-passthrough-kmap*)
+
 (base-mode t)
+(prefix-passthrough-mode t)
