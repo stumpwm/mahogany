@@ -15,23 +15,28 @@
       (flet ((reset-state ()
                (log-string :trace "Reseting keyboard state")
                (server-keystate-reset *compositor-state*)))
-        (prog1
-            (multiple-value-bind (matched result)
-                (key-state-advance key key-state)
-              (cond
-                (;; A known keybinding was pressed:
-                 matched
-                 (when result
-                   (execute-command result (key-state-sequence key-state) seat)
-                   (reset-state))
-                 t)
-                (;; No keybinding was pressed but we were expecting one.
-                 ;; Since this is canceling the keybinding, we still behave like we found somthing
-                 handling-keybinding
-                 (reset-state)
-                 t)
-                ;; No action was taken, return nil
-                (t  nil))))))))
+        (multiple-value-bind (matched result)
+            (key-state-advance key key-state)
+          (cond
+            (;; A known keybinding was pressed:
+             matched
+             (when result
+               (reset-state)
+               ;; Only consume the pressed key if the command doesn't
+               ;; return `:pass-through`
+               (not (eql (execute-command result
+                                          (key-state-sequence key-state) seat)
+                         :pass-through)))
+             ;; Consume the pressed key
+             t)
+            (;; No keybinding was pressed but we were expecting one.
+             handling-keybinding
+             (reset-state)
+             ;; Since we still took an action (canceling the keybinding),
+             ;; still consume the pressed key
+             t)
+            ;; No action was taken, don't comsume the pressed key:
+            (t  nil)))))))
 
 (defun handle-key-event (state key seat event-state)
   (declare (type key key)

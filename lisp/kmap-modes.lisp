@@ -71,17 +71,16 @@ the KEYBINDINGS list."
       ((not (string-equal "-mode" (subseq name (- len 5))))
        (error must-end-msg)))))
 
-;; TODO: Make it possible to redefine kmap-modes,
-;;  get a list of available kmap modes
+;; TODO: Make it possible to redefine kmap-modes
 (defmacro define-kmap-mode (name &key
                                    documentation
-                                   (top-binding (make-kmap))
-                                   (prefix-binding (make-kmap)))
+                                   top-binding
+                                   prefix-binding)
 
   (%validate-kmap-mode-symbol name)
   `(let ((kmap-mode (make-kmap-mode (quote ,name)
-                                    ,top-binding
-                                    ,prefix-binding
+                                    (or ,top-binding (make-kmap))
+                                    (or ,prefix-binding (make-kmap))
                                     ,documentation)))
      (pushnew kmap-mode *kmap-modes* :key #'kmap-mode-name)
      (defun ,name (&optional (activate t))
@@ -89,13 +88,25 @@ the KEYBINDINGS list."
            (kmap-mode-activate *compositor-state* kmap-mode)
            (kmap-mode-deactivate *compositor-state* kmap-mode)))))
 
+(defcommand passthrough-key-event ()
+  :pass-through)
+
+(defvar *prefix-passthrough-kmap*
+  (define-kmap
+    (mahogany-state-prefix-key *compositor-state*) #'passthrough-key-event))
+
 (defun (setf mahogany-state-prefix-key) (key state)
   (declare (type key key)
            (type mahogany-state state))
   ;; to change the prefix key, we rebuild the keybinding list
   ;; using the new prefix key.
-  (with-accessors ((active-modes mahogany-active-kmap-modes))
+  (with-accessors ((active-modes mahogany-active-kmap-modes)
+                   (prefix-key mahogany-state-prefix-key))
       state
+    ;; change the passthrough maps
+    (define-key *prefix-passthrough-kmap* prefix-key nil)
+    (define-key *prefix-passthrough-kmap* key #'passthrough-key-event)
+    ;; re-initialize the kmap list:
     (let ((new-bindings nil))
       ;; go backwards so pushing gets us the same order:
       (dolist (mode active-modes)
