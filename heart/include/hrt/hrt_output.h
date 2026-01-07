@@ -4,12 +4,15 @@
 #include <wayland-server.h>
 
 #include <wlr/types/wlr_output.h>
+#include <wlr/util/box.h>
 
 #include <hrt/hrt_server.h>
 
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
+
+    struct wlr_box usable_area;
 
     struct wl_listener request_state;
     struct wl_listener frame;

@@ -1,5 +1,15 @@
+(defpackage #:wlr
+  (:use :cl #:wayland-server-core)
+  (:export
+   ;; Symbols for wlr-box:
+   #:wlr-box
+   #:x
+   #:y
+   #:width
+   #:height))
+
 (defpackage #:mahogany/core
-  (:use :cl #:wayland-server-core #:xkb)
+  (:use :cl #:wayland-server-core #:xkb #:wlr)
   (:local-nicknames (#:mh/interface #:mahogany/wm-interface))
   (:nicknames #:hrt)
   (:export #:hrt-output-callbacks
@@ -21,6 +31,7 @@
            #:hrt-seat-cursor-lx
            #:hrt-seat-cursor-ly
            #:hrt-seat-set-keymap
+           ;; output symbols:
            #:hrt-output
            #:hrt-output-name
            #:hrt-output-make
@@ -34,6 +45,7 @@
            ;; output methods:
            #:output-resolution
            #:output-position
+           #:output-usable-area
            ;; view-methods
            #:view
            #:view-reparent
@@ -75,14 +87,3 @@
            #:hrt-scene-fullscreen-configure
            #:scene-init-view
            #:load-foreign-libraries))
-
-(defpackage #:wlr
-  (:use :cl #:wayland-server-core)
-  (:export
-   #:scene-tree-create
-   #:scene-node-destroy
-   #:scene-node-set-position
-   #:scene-node-reparent
-   #:scene-node-set-enabled
-   ;; scene node slot:
-   #:node))

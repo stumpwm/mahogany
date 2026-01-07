@@ -3,9 +3,8 @@
 (defun reconfigure-node (node hrt-output)
   (declare (type output-node node)
            (type cffi:foreign-pointer hrt-output))
-  (multiple-value-bind (x y) (hrt:output-position hrt-output)
-    (set-position node x y))
-  (multiple-value-bind (width height) (hrt:output-resolution hrt-output)
+  (multiple-value-bind (x y width height) (hrt:output-usable-area hrt-output)
+    (set-position node x y)
     (set-dimensions node width height)))
 
 (defmethod set-position ((frame output-node) new-x new-y)
