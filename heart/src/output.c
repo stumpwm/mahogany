@@ -83,6 +83,11 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
 
     struct wlr_output *wlr_output = data;
 
+    // Initialize and set the data pointer so it's available in any events that
+    // are triggered in the subsequent code:
+    struct hrt_output *output = hrt_output_create(server, wlr_output);
+    wlr_output->data = output;
+
     wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
     struct wlr_output_state state;
@@ -96,7 +101,7 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
 
     if (!wlr_output_commit_state(wlr_output, &state)) {
         // FIXME: Actually do some error handling instead of just logging:
-        wlr_log(WLR_ERROR, "Output state could not be commited");
+        wlr_log(WLR_ERROR, "Output state could not be committed");
     }
     wlr_output_state_finish(&state);
 
@@ -107,12 +112,9 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
                                        scene_output);
 
-    struct hrt_output *output = hrt_output_create(server, wlr_output);
-
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
-    wlr_output->data = output;
     server->output_callback->output_added(output);
 }
 
@@ -138,7 +140,24 @@ static void handle_output_layout_changed(struct wl_listener *listener,
                                          void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, output_layout_changed);
-    // struct wlr_output_layout *output_layout = data;
+    struct wlr_output_layout *layout = data;
+
+    // There's probably a way to deal with changes to outputs individually,
+    // which may be more efficient in certain situations (but not others)
+    struct wlr_output_layout_output *output;
+    wl_list_for_each(output, &layout->outputs, link) {
+        struct wlr_output *wlr_output = output->output;
+        struct hrt_output *hrt_output = wlr_output->data;
+
+        // This will eventually change to re-computing how the layer shell
+        // windows take up space, but for now, just use the resolution
+        // and position:
+        hrt_output->usable_area.x = output->x;
+        hrt_output->usable_area.y = output->y;
+        struct wlr_box *area      = &hrt_output->usable_area;
+        wlr_output_effective_resolution(wlr_output, &area->width,
+                                        &area->height);
+    }
 
     server->output_callback->output_layout_changed();
 }

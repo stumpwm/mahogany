@@ -191,6 +191,7 @@ well behaved ones should."
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
+  (usable-area (:struct wlr:wlr-box))
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
