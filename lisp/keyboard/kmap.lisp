@@ -73,6 +73,23 @@ Example:
     (when ret
       (binding-command ret))))
 
+(defun pprint-kmap (map &optional (stream *standard-output*))
+  "Pretty-print a `kmap' human-readably."
+  (declare (type kmap map) (type stream stream)
+           (optimize (safety 1)))
+  (pprint-logical-block (stream nil :prefix "(" :suffix ")")
+    (pprint-indent :current 2 stream)
+    (write (type-of map) :stream stream)
+    (loop :for binding :across (kmap-bindings map)
+          :for key := (binding-key binding)
+          :for command := (binding-command binding)
+          :do (pprint-newline :mandatory stream)
+              (pprint-key key stream)
+              (write-string " -> " stream)
+              (if (kmap-p command)
+                  (pprint-kmap command stream)
+                  (write command :stream stream)))))
+
 (defstruct (key-state (:constructor make-key-state (kmaps)))
   (sequence nil :type list)
   (kmaps nil :type list))
