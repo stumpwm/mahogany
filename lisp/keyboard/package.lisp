@@ -6,6 +6,7 @@
   (:export #:key
            #:make-key
            #:print-key
+           #:pprint-key
            #:key-keysym
            #:key-modifier-mask
            #:key-modifier-key-p
@@ -19,6 +20,7 @@
            #:kmap
            #:make-kmap
            #:kmap-lookup
+           #:pprint-kmap
            #:key-state
            #:make-key-state
            #:key-state-sequence
