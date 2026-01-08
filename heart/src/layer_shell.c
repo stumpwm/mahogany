@@ -1,6 +1,7 @@
 #include "hrt/hrt_layer_shell.h"
-#include "hrt/hrt_scene.h"
 #include "hrt/hrt_output.h"
+#include "hrt/hrt_scene.h"
+#include "wlr/util/box.h"
 #include "wlr/util/log.h"
 
 #include <assert.h>
@@ -27,7 +28,7 @@ void hrt_layer_shell_surface_abort(struct hrt_layer_shell_surface *surface) {
 }
 
 static void handle_new_layer_surface(struct wl_listener *listener, void *data) {
-  wlr_log(WLR_DEBUG, "New layer surface");
+    wlr_log(WLR_DEBUG, "New layer surface");
     struct wlr_layer_surface_v1 *layer_surface = data;
     struct hrt_server *server =
         wl_container_of(listener, server, new_layer_shell);
@@ -49,7 +50,9 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     wlr_log(WLR_DEBUG, "layer %d", layer_type);
     surface->scene_layer =
         wlr_scene_layer_surface_v1_create(output_layer, surface->layer_surface);
+    surface->scene_layer->tree->node.data = surface;
     wlr_log(WLR_DEBUG, "Surface created");
+    surface->output = output;
 }
 
 void hrt_layer_shell_surface_set_output(
@@ -82,10 +85,88 @@ bool hrt_layer_shell_init(struct hrt_server *server) {
     return true;
 }
 
+static void arrange_surface(const struct wlr_box *full_area,
+                            struct wlr_box *usable_area,
+                            struct wlr_scene_tree *tree, bool exclusive) {
+    struct wlr_scene_node *node;
+    wl_list_for_each(node, &tree->children, link) {
+        // this should work assuming that the only children of the given tree are
+        // from layer shell objects:
+        struct hrt_layer_shell_surface *surface = node->data;
+        // surface could be null during destruction
+        if (!surface) {
+            wlr_log(WLR_DEBUG, "No surface");
+            continue;
+        }
+
+        if (!surface->scene_layer->layer_surface->initialized) {
+            wlr_log(WLR_DEBUG, "Not initailzed");
+            continue;
+        }
+
+        if ((surface->scene_layer->layer_surface->current.exclusive_zone > 0) !=
+            exclusive) {
+            wlr_log(WLR_DEBUG, "exclusive");
+            continue;
+        }
+
+        wlr_log(WLR_DEBUG, "Sending configure");
+        wlr_scene_layer_surface_v1_configure(surface->scene_layer, full_area,
+                                             usable_area);
+    }
+}
+
+static void arrange_layers(struct hrt_output *output,
+                           struct hrt_scene_output *scene_output) {
+    struct wlr_box usable_area = {0};
+    hrt_output_position(output, &usable_area.x, &usable_area.y);
+    wlr_output_effective_resolution(output->wlr_output, &usable_area.width,
+                                    &usable_area.height);
+    const struct wlr_box full_area = usable_area;
+
+    arrange_surface(&full_area, &usable_area, scene_output->overlay, true);
+    arrange_surface(&full_area, &usable_area, scene_output->top, true);
+    arrange_surface(&full_area, &usable_area, scene_output->bottom, true);
+    arrange_surface(&full_area, &usable_area, scene_output->background, true);
+
+    arrange_surface(&full_area, &usable_area, scene_output->overlay, false);
+    arrange_surface(&full_area, &usable_area, scene_output->top, false);
+    arrange_surface(&full_area, &usable_area, scene_output->bottom, false);
+    arrange_surface(&full_area, &usable_area, scene_output->background, false);
+
+    if (!wlr_box_equal(&usable_area, &output->usable_area)) {
+        wlr_log(WLR_DEBUG, "Usable area changed, rearranging output");
+        output->usable_area = usable_area;
+        // TODO: this reconfigures all outputs, we can do way less work:
+        output->server->output_callback->output_layout_changed();
+    } else {
+        // arrange_popups(root->layers.popup);
+    }
+}
+
 static void handle_surface_commit(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.commit);
     wlr_log(WLR_DEBUG, "layer shell surface commit");
+    struct wlr_layer_surface_v1 *layer_surface = surface->layer_surface;
+    uint32_t committed = layer_surface->current.committed;
+    if (layer_surface->initialized &&
+        committed & WLR_LAYER_SURFACE_V1_STATE_LAYER) {
+        enum zwlr_layer_shell_v1_layer layer_type =
+            layer_surface->current.layer;
+        struct wlr_scene_tree *output_layer =
+            hrt_scene_output_get_layer(surface->output, layer_type);
+        wlr_scene_node_reparent(&surface->scene_layer->tree->node,
+                                output_layer);
+    }
+
+    if (layer_surface->initial_commit || committed ||
+        layer_surface->surface->mapped != surface->mapped) {
+        surface->mapped               = layer_surface->surface->mapped;
+        struct wlr_output *output     = surface->layer_surface->output;
+        struct hrt_output *hrt_output = output->data;
+        arrange_layers(hrt_output, surface->output);
+    }
 }
 
 static void handle_map(struct wl_listener *listener, void *data) {
@@ -107,9 +188,16 @@ static void handle_new_popup(struct wl_listener *listener, void *data) {
 }
 
 static void handle_node_destroy(struct wl_listener *listener, void *data) {
-  wlr_log(WLR_DEBUG, "layer shell surface node destroy");
+    wlr_log(WLR_DEBUG, "layer shell surface node destroy");
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.scene_destroy);
+
+    surface->scene_layer->tree->node.data = NULL;
+    if (surface->output) {
+      struct wlr_output *output     = surface->layer_surface->output;
+      struct hrt_output *hrt_output = output->data;
+      arrange_layers(hrt_output, surface->output);
+    }
 
     wl_list_remove(&surface->events.scene_destroy.link);
     wl_list_remove(&surface->events.new_popup.link);
