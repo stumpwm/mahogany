@@ -11,10 +11,11 @@
 struct example_server {
     struct hrt_server server;
     struct hrt_scene_root *scene_root;
-  struct hrt_scene_group *group;
+    struct hrt_scene_group *group;
+    struct hrt_output *current_output;
 };
 
-static struct example_server server;
+static struct example_server server = {0};
 
 static void cursor_button_callback(struct hrt_seat *seat,
                                    struct wlr_pointer_button_event *event) {
@@ -26,8 +27,15 @@ static void cursor_wheel_callback(struct hrt_seat *seat,
     puts("Cursor callback called");
 }
 
-static void output_callback(struct hrt_output *output) {
-    puts("Output callback called");
+static void output_added_callback(struct hrt_output *output) {
+    printf("Output added callback called, scale=%f\n", output->wlr_output->scale);
+    server.current_output = output;
+}
+
+static void output_removed_callback(struct hrt_output *output) {
+    puts("Output removed callback called");
+    if (server.current_output == output)
+        server.current_output = NULL;
 }
 
 static void new_view_callback(struct hrt_view *view) {
@@ -65,8 +73,8 @@ static bool keyboard_callback(struct hrt_seat *seat,
 static void layout_changed() {}
 
 static const struct hrt_output_callbacks output_callbacks = {
-    .output_added          = &output_callback,
-    .output_removed        = &output_callback,
+    .output_added          = &output_added_callback,
+    .output_removed        = &output_removed_callback,
     .output_layout_changed = &layout_changed,
 };
 
