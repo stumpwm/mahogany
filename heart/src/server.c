@@ -2,6 +2,7 @@
 #include "xdg_impl.h"
 #include "seat_impl.h"
 #include "output_impl.h"
+#include "message_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -83,6 +84,10 @@ bool hrt_server_init(struct hrt_server *server,
         return false;
     }
 
+    if (!hrt_message_init(server)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -123,6 +128,7 @@ void hrt_server_stop(struct hrt_server *server) {
 
 void hrt_server_finish(struct hrt_server *server) {
     wl_display_destroy_clients(server->wl_display);
+    hrt_message_destroy(server);
     // Some of these "destroy" calls should probably be hooked up to listen to the destroy
     // events of the wlr objects they attach listeners to instead of being cleaned
     // up here...
