@@ -1,3 +1,4 @@
+#include "hrt/hrt_scene.h"
 #include <stdio.h>
 
 #include <string.h>
@@ -7,79 +8,91 @@
 #include <hrt/hrt_input.h>
 #include <hrt/hrt_view.h>
 
-static void cursor_button_callback(struct hrt_seat *seat, struct wlr_pointer_button_event *event) {
-  puts("Cursor callback called");
+struct example_server {
+    struct hrt_server server;
+    struct hrt_scene_root *scene_root;
+  struct hrt_scene_group *group;
+};
+
+static struct example_server server;
+
+static void cursor_button_callback(struct hrt_seat *seat,
+                                   struct wlr_pointer_button_event *event) {
+    puts("Cursor callback called");
 }
 
-static void cursor_wheel_callback(struct hrt_seat *seat, struct wlr_pointer_axis_event *event) {
-  puts("Cursor callback called");
+static void cursor_wheel_callback(struct hrt_seat *seat,
+                                  struct wlr_pointer_axis_event *event) {
+    puts("Cursor callback called");
 }
 
 static void output_callback(struct hrt_output *output) {
-  puts("Output callback called");
+    puts("Output callback called");
 }
 
 static void new_view_callback(struct hrt_view *view) {
-  puts("New view callback called!");
+    puts("New view callback called!");
 }
 
 static void view_destroy_callback(struct hrt_view *view) {
-  puts("View destroy callback called");
+    puts("View destroy callback called");
 }
 
 static bool showNormalCursor = true;
-static bool keyboard_callback(struct hrt_seat *seat, struct hrt_keypress_info *info) {
-  puts("Keyboard callback called");
-  printf("Modifiers: %d\n", info->modifiers);
-  printf("Keys pressed:");
-  for(size_t i = 0; i < info->keysyms_len; ++i) {
-	  if (info->keysyms[i] == XKB_KEY_Escape) {
-		  puts("Exiting due to escape pressed");
-		  hrt_server_stop(seat->server);
-	  }
-	  char buffer[20];
-	  xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
-	  printf(" %s", buffer);
-    if(strcmp(buffer, "c") == 0) {
-      hrt_seat_set_cursor_img(seat, showNormalCursor ? "crossed_circle" : "left_ptr");
-      showNormalCursor = !showNormalCursor;
+static bool keyboard_callback(struct hrt_seat *seat,
+                              struct hrt_keypress_info *info) {
+    puts("Keyboard callback called");
+    printf("Modifiers: %d\n", info->modifiers);
+    printf("Keys pressed:");
+    for (size_t i = 0; i < info->keysyms_len; ++i) {
+        if (info->keysyms[i] == XKB_KEY_Escape) {
+            puts("Exiting due to escape pressed");
+            hrt_server_stop(seat->server);
+        }
+        char buffer[20];
+        xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
+        printf(" %s", buffer);
+        if (strcmp(buffer, "c") == 0) {
+            hrt_seat_set_cursor_img(
+                seat, showNormalCursor ? "crossed_circle" : "left_ptr");
+            showNormalCursor = !showNormalCursor;
+        }
     }
-  }
-  puts("\n\n");
-  return false;
+    puts("\n\n");
+    return false;
 }
 
-static void layout_changed() {
-
-}
+static void layout_changed() {}
 
 static const struct hrt_output_callbacks output_callbacks = {
-  .output_added = &output_callback,
-  .output_removed = &output_callback,
-  .output_layout_changed = &layout_changed,
+    .output_added          = &output_callback,
+    .output_removed        = &output_callback,
+    .output_layout_changed = &layout_changed,
 };
 
 static const struct hrt_seat_callbacks seat_callbacks = {
-  .button_event = &cursor_button_callback,
-    .wheel_event = &cursor_wheel_callback,
+    .button_event            = &cursor_button_callback,
+    .wheel_event             = &cursor_wheel_callback,
     .keyboard_keypress_event = &keyboard_callback,
 };
 
 static const struct hrt_view_callbacks view_callbacks = {
-	.new_view = &new_view_callback,
-	.view_destroyed = &view_destroy_callback,
+    .new_view       = &new_view_callback,
+    .view_destroyed = &view_destroy_callback,
 };
 
 int main(int argc, char *argv[]) {
-  wlr_log_init(WLR_DEBUG, NULL);
+    wlr_log_init(WLR_DEBUG, NULL);
 
-  struct hrt_server server;
+    if (!hrt_server_init(&server.server, &output_callbacks, &seat_callbacks,
+                         &view_callbacks, WLR_DEBUG)) {
+        return 1;
+    }
 
-  if(!hrt_server_init(&server, &output_callbacks, &seat_callbacks, &view_callbacks, WLR_DEBUG)) {
-    return 1;
-  }
+    server.scene_root = hrt_scene_root_create(&server.server.scene->tree);
+    server.group = hrt_scene_group_create(server.scene_root);
 
-  hrt_server_start(&server);
-  hrt_server_finish(&server);
-  return 0;
+    hrt_server_start(&server.server);
+    hrt_server_finish(&server.server);
+    return 0;
 }
