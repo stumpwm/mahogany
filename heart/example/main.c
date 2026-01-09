@@ -13,6 +13,7 @@ struct example_server {
     struct hrt_scene_root *scene_root;
     struct hrt_scene_group *group;
     struct hrt_output *current_output;
+    int message_counter;
 };
 
 static struct example_server server = {0};
@@ -64,6 +65,11 @@ static bool keyboard_callback(struct hrt_seat *seat,
             hrt_seat_set_cursor_img(
                 seat, showNormalCursor ? "crossed_circle" : "left_ptr");
             showNormalCursor = !showNormalCursor;
+        } else if(strcmp(buffer, "m") == 0 && server.current_output) {
+            char text[64];
+            snprintf(text, sizeof(text) - 1, "test message %u\nhello there.", server.message_counter);
+            if (hrt_toast_message(&server.server, server.scene_root, server.current_output, text, 5000))
+                server.message_counter++;
         }
     }
     puts("\n\n");
