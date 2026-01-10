@@ -43,4 +43,5 @@
            #:frame-view
            #:frame-next
            #:frame-prev
-           #:leafs-in))
+           #:leafs-in
+           #:output-node-output))
