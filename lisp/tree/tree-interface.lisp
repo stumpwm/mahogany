@@ -69,7 +69,10 @@ of an already existing frame with the `set-split-frame-type` function")
   ((parent :initarg :parent
            :initform nil
            :type (or null tree-container)
-           :accessor frame-parent)))
+           :accessor frame-parent)
+   (output :initarg :output
+           :type (not null)
+           :reader output-node-output)))
 
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
@@ -165,10 +168,10 @@ a view assigned to it."))
   (do ((cur-frame frame (frame-parent cur-frame)))
       ((root-frame-p cur-frame) cur-frame)))
 
-(defun tree-container-add (tree-container &key (x 0) (y 0) (width 100) (height 100))
+(defun tree-container-add (tree-container output &key (x 0) (y 0) (width 100) (height 100))
   (declare (type tree-container tree-container))
   (with-accessors ((container-children tree-children)) tree-container
-    (let* ((new-output (make-instance 'output-node :parent tree-container))
+    (let* ((new-output (make-instance 'output-node :parent tree-container :output output))
            (new-tree (make-instance 'view-frame :x x :y y :width width :height height
                                     :parent new-output))
            (prev-output (first container-children)))

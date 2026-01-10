@@ -95,8 +95,9 @@
         (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height)
           (hrt:output-resolution (mahogany-output-hrt-output output))
-        (let ((new-tree (tree:tree-container-add tree-container
-                                                 :x x :y y :width width :height height)))
+        (let ((new-tree (tree:tree-container-add tree-container output
+                                                 :x x :y y
+                                                 :width width :height height)))
           (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
           (when (not current-frame)
             (let ((first-leaf (tree:find-first-leaf new-tree)))
@@ -124,6 +125,12 @@ to match."
       (declare (ignore found key))
       value)))
 
+(defun group-current-output (group)
+  "Return the output that contains the group's currently focused frame"
+  (let* ((cur-frame (mahogany-group-current-frame group))
+         (output-node (tree:frame-parent (tree:find-root-frame))))
+    (tree:output-node-output output-node)))
+
 (defun group-remove-output (group output seat)
   (declare (type mahogany-output output)
            (type mahogany-group group))
@@ -133,7 +140,7 @@ to match."
     (let* ((output-name (mahogany-output-full-name output))
            (tree (gethash output-name output-map)))
       (remhash output-name output-map)
-      (when (equalp tree (tree:find-root-frame (mahogany-group-current-frame group)))
+      (when (equalp output (group-current-output group))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat)
         (alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
           (group-focus-frame group (tree:find-first-leaf other-tree) seat)))
