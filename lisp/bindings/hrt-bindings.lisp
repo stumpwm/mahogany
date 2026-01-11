@@ -232,63 +232,6 @@ set the width and height of views."
 (cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string
   (output (:pointer (:struct hrt-output))))
 
-;; next section imported from file build/include/hrt/hrt_server.h
-
-(cffi:defcstruct hrt-server
-  (wl-display :pointer #| (:struct wl-display) |# )
-  (backend :pointer #| (:struct wlr-backend) |# )
-  (backend-destroy (:struct wl-listener))
-  (session :pointer #| (:struct wlr-session) |# )
-  (renderer :pointer #| (:struct wlr-renderer) |# )
-  (compositor :pointer #| (:struct wlr-compositor) |# )
-  (allocator :pointer #| (:struct wlr-allocator) |# )
-  (scene :pointer #| (:struct wlr-scene) |# )
-  (scene-layout :pointer #| (:struct wlr-scene-output-layout) |# )
-  (new-output (:struct wl-listener))
-  (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
-  (output-layout :pointer #| (:struct wlr-output-layout) |# )
-  (output-layout-changed (:struct wl-listener))
-  (output-manager-apply (:struct wl-listener))
-  (output-manager-test (:struct wl-listener))
-  (output-manager-destroy (:struct wl-listener))
-  (seat (:struct hrt-seat))
-  (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
-  (new-xdg-toplevel (:struct wl-listener))
-  (new-xdg-popup (:struct wl-listener))
-  (output-callback (:pointer (:struct hrt-output-callbacks)))
-  (view-callbacks (:pointer (:struct hrt-view-callbacks))))
-
-(declaim (inline hrt-server-init))
-(cffi:defcfun ("hrt_server_init" hrt-server-init) :bool
-  (server (:pointer (:struct hrt-server)))
-  (output-callbacks (:pointer (:struct hrt-output-callbacks)))
-  (seat-callbacks (:pointer (:struct hrt-seat-callbacks)))
-  (view-callbacks (:pointer (:struct hrt-view-callbacks)))
-  (log-level :int #| enum wlr-log-importance |#))
-
-(declaim (inline hrt-server-start))
-(cffi:defcfun ("hrt_server_start" hrt-server-start) :bool
-  (server (:pointer (:struct hrt-server))))
-
-(declaim (inline hrt-server-stop))
-(cffi:defcfun ("hrt_server_stop" hrt-server-stop) :void
-  (server (:pointer (:struct hrt-server))))
-
-(declaim (inline hrt-server-finish))
-(cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
-  (server (:pointer (:struct hrt-server))))
-
-(declaim (inline hrt-server-scene-tree))
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
-  (server (:pointer (:struct hrt-server))))
-
-(declaim (inline hrt-server-seat))
-(cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
-  (server (:pointer (:struct hrt-server))))
-
-(declaim (inline hrt-server-struct-size))
-(cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
-
 ;; next section imported from file build/include/hrt/hrt_scene.h
 
 (cffi:defcstruct hrt-scene-root-listeners
@@ -397,3 +340,70 @@ Returns the view that was in the node."
 (cffi:defcfun ("hrt_scene_fullscreen_configure" hrt-scene-fullscreen-configure) :uint32
   (group (:pointer (:struct hrt-scene-fullscreen-node)))
   (output (:pointer (:struct hrt-output))))
+
+;; next section imported from file build/include/hrt/hrt_server.h
+
+(cffi:defcstruct hrt-server
+  (wl-display :pointer #| (:struct wl-display) |# )
+  (backend :pointer #| (:struct wlr-backend) |# )
+  (backend-destroy (:struct wl-listener))
+  (session :pointer #| (:struct wlr-session) |# )
+  (renderer :pointer #| (:struct wlr-renderer) |# )
+  (compositor :pointer #| (:struct wlr-compositor) |# )
+  (allocator :pointer #| (:struct wlr-allocator) |# )
+  (scene :pointer #| (:struct wlr-scene) |# )
+  (scene-layout :pointer #| (:struct wlr-scene-output-layout) |# )
+  (new-output (:struct wl-listener))
+  (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
+  (output-layout :pointer #| (:struct wlr-output-layout) |# )
+  (output-layout-changed (:struct wl-listener))
+  (output-manager-apply (:struct wl-listener))
+  (output-manager-test (:struct wl-listener))
+  (output-manager-destroy (:struct wl-listener))
+  (seat (:struct hrt-seat))
+  (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
+  (new-xdg-toplevel (:struct wl-listener))
+  (new-xdg-popup (:struct wl-listener))
+  (output-callback (:pointer (:struct hrt-output-callbacks)))
+  (view-callbacks (:pointer (:struct hrt-view-callbacks)))
+  (message-timer-source :pointer #| (:struct wl-event-source) |# )
+  (message-buffer :pointer #| (:struct wlr-scene-buffer) |# ))
+
+(declaim (inline hrt-server-init))
+(cffi:defcfun ("hrt_server_init" hrt-server-init) :bool
+  (server (:pointer (:struct hrt-server)))
+  (output-callbacks (:pointer (:struct hrt-output-callbacks)))
+  (seat-callbacks (:pointer (:struct hrt-seat-callbacks)))
+  (view-callbacks (:pointer (:struct hrt-view-callbacks)))
+  (log-level :int #| enum wlr-log-importance |#))
+
+(declaim (inline hrt-server-start))
+(cffi:defcfun ("hrt_server_start" hrt-server-start) :bool
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-stop))
+(cffi:defcfun ("hrt_server_stop" hrt-server-stop) :void
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-finish))
+(cffi:defcfun ("hrt_server_finish" hrt-server-finish) :void
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-scene-tree))
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-seat))
+(cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-struct-size))
+(cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
+
+(declaim (inline hrt-toast-message))
+(cffi:defcfun ("hrt_toast_message" hrt-toast-message) :bool
+  (server (:pointer (:struct hrt-server)))
+  (scene-root (:pointer (:struct hrt-scene-root)))
+  (output (:pointer (:struct hrt-output)))
+  (text (:pointer :char))
+  (ms-delay :int))
