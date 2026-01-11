@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     wlr_log_init(WLR_DEBUG, NULL);
 
     if (!hrt_server_init(&server.server, &output_callbacks, &seat_callbacks,
-                         &view_callbacks, WLR_DEBUG)) {
+                         &view_callbacks, NULL, WLR_DEBUG)) {
         return 1;
     }
 

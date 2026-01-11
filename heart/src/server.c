@@ -3,9 +3,12 @@
 #include "seat_impl.h"
 #include "output_impl.h"
 #include "message_impl.h"
+#include "layer_shell_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
+#include <wlr/backend/headless.h>
+#include <wlr/backend/multi.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -20,11 +23,23 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
-static void handle_backend_destroyed(struct wl_listener *listener, void *data) {
+static void handle_headless_backend_destroyed(struct wl_listener *listener,
+                                              void *data) {
     struct hrt_server *server =
-        wl_container_of(listener, server, backend_destroy);
-    wl_display_terminate(server->wl_display);
+        wl_container_of(listener, server, destroy_listener.headless);
+    wlr_log(WLR_DEBUG, "Headless Backend destroyed");
+    wl_list_remove(&listener->link);
 
+    // The fallback output needs to be freed at some point, but I'm
+    // not actually sure where it's safe. This seems like the obvious choice:
+    free(server->fallback_output);
+}
+
+static void handle_auto_backend_destroyed(struct wl_listener *listener,
+                                          void *data) {
+    struct hrt_server *server =
+        wl_container_of(listener, server, destroy_listener.backend);
+    wlr_log(WLR_DEBUG, "Backend destroyed");
     wl_list_remove(&listener->link);
 }
 
@@ -32,18 +47,36 @@ bool hrt_server_init(struct hrt_server *server,
                      const struct hrt_output_callbacks *output_callbacks,
                      const struct hrt_seat_callbacks *seat_callbacks,
                      const struct hrt_view_callbacks *view_callbacks,
+                     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
                      enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
     server->wl_display = wl_display_create();
-    server->backend    = wlr_backend_autocreate(
-        wl_display_get_event_loop(server->wl_display), &server->session);
+    struct wl_event_loop *event_loop =
+        wl_display_get_event_loop(server->wl_display);
+    server->backend = wlr_backend_autocreate(event_loop, &server->session);
 
-    server->backend_destroy.notify = &handle_backend_destroyed;
-    wl_signal_add(&server->backend->events.destroy, &server->backend_destroy);
+    server->destroy_listener.backend.notify = &handle_auto_backend_destroyed;
+    wl_signal_add(&server->backend->events.destroy,
+                  &server->destroy_listener.backend);
 
     if (!server->backend) {
         return false;
     }
+
+    server->headless_backend = wlr_headless_backend_create(event_loop);
+    server->destroy_listener.headless.notify =
+        &handle_headless_backend_destroyed;
+    wl_signal_add(&server->headless_backend->events.destroy,
+                  &server->destroy_listener.headless);
+
+    if (!server->headless_backend) {
+        return false;
+    } else {
+        wlr_multi_backend_add(server->backend, server->headless_backend);
+    }
+    struct wlr_output *fallback =
+        wlr_headless_add_output(server->headless_backend, 800, 800);
+    server->fallback_output = hrt_output_create(server, fallback);
 
     server->renderer = wlr_renderer_autocreate(server->backend);
     if (!server->renderer) {
@@ -68,7 +101,7 @@ bool hrt_server_init(struct hrt_server *server,
     wlr_data_control_manager_v1_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
 
-    server->scene = wlr_scene_create();
+    server->scene         = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
 
     server->view_callbacks = view_callbacks;
@@ -83,6 +116,15 @@ bool hrt_server_init(struct hrt_server *server,
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
         return false;
     }
+    // Check if this arg was provided so we don't need to specify this for
+    // test compositors.
+    if (layer_shell_callbacks) {
+        if (!hrt_layer_shell_init(server)) {
+            return false;
+        }
+        server->layer_shell_callbacks = layer_shell_callbacks;
+    }
+
 
     if (!hrt_message_init(server)) {
         return false;
@@ -152,5 +194,5 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 size_t hrt_server_struct_size() {
-  return sizeof(struct hrt_server);
+    return sizeof(struct hrt_server);
 }
