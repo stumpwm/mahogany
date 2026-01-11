@@ -5,6 +5,8 @@
 #include "wlr/interfaces/wlr_buffer.h"
 #include "wlr/util/log.h"
 
+#include <hrt/hrt_message.h>
+#include <hrt/hrt_output.h>
 #include <hrt/hrt_scene.h>
 #include <hrt/hrt_server.h>
 
@@ -164,10 +166,87 @@ out:
     return message;
 }
 
+static bool gravity_coords(enum window_gravity gravity,
+                           int width, int height,
+                           int min_x, int min_y,
+                           int max_x, int max_y,
+                           int *pos_x, int *pos_y) {
+    if (!pos_x || !pos_y ||
+        gravity < GRAVITY_TOP_RIGHT || gravity > GRAVITY_MAX ||
+        width < 0 || height < 0 || min_x > max_x || min_y > max_y)
+        return false;
+
+    int container_width = max_x - min_x;
+    int container_height = max_y - min_y;
+
+    if (width > container_width || height > container_height)
+        return false;
+
+    int x = 0;
+    int y = 0;
+
+    switch (gravity) {
+        case GRAVITY_TOP_LEFT:
+        case GRAVITY_BOTTOM_LEFT:
+        case GRAVITY_LEFT:
+            x = min_x;
+            break;
+
+        case GRAVITY_TOP_RIGHT:
+        case GRAVITY_BOTTOM_RIGHT:
+        case GRAVITY_RIGHT:
+            x = max_x - width;
+            break;
+
+        case GRAVITY_TOP:
+        case GRAVITY_BOTTOM:
+        case GRAVITY_CENTER:
+            x = min_x + (container_width - width) / 2;
+            break;
+
+        default:
+            return false;
+    };
+
+    switch (gravity) {
+        case GRAVITY_TOP_LEFT:
+        case GRAVITY_TOP_RIGHT:
+        case GRAVITY_TOP:
+            y = min_y;
+            break;
+
+        case GRAVITY_BOTTOM_LEFT:
+        case GRAVITY_BOTTOM_RIGHT:
+        case GRAVITY_BOTTOM:
+            y = max_y - height;
+            break;
+
+        case GRAVITY_LEFT:
+        case GRAVITY_RIGHT:
+        case GRAVITY_CENTER:
+            y = min_y + (container_height - height) / 2;
+            break;
+
+        default:
+            return false;
+    }
+
+    wlr_log(WLR_DEBUG, "%s: gravity=%u, size=(%d, %d), bounds=(%d, %d, %d, %d) -> (%d, %d)",
+            __func__, gravity, width, height, min_x, min_y, max_x, max_y, x, y);
+
+    *pos_x = x;
+    *pos_y = y;
+
+    return true;
+}
+
 bool hrt_toast_message(struct hrt_server *server,
                        struct hrt_scene_root *scene_root,
                        struct hrt_output *output,
                        const char *text,
+                       enum window_gravity gravity,
+                       int margin_x,
+                       int margin_y,
                        int ms_delay) {
     /* cancel any previously running timeout */
     wl_event_source_timer_update(server->message_timer_source, 0);
@@ -189,8 +268,22 @@ bool hrt_toast_message(struct hrt_server *server,
         return false;
     }
 
-    /* TODO: positioning api */
-    wlr_scene_node_set_position(&scene_buffer->node, 0, 0);
+    int x = 0;
+    int y = 0;
+
+    if (!gravity_coords(gravity,
+                        scene_buffer->buffer->width,
+                        scene_buffer->buffer->height,
+                        margin_x * 2, margin_y * 2,
+                        output->wlr_output->width - (margin_x * 2),
+                        output->wlr_output->height - (margin_y * 2),
+                        &x, &y)) {
+        wlr_scene_node_destroy(&server->message_buffer->node);
+        return false;
+    }
+
+
+    wlr_scene_node_set_position(&scene_buffer->node, x, y);
     wlr_scene_node_set_enabled(&scene_buffer->node, true);
 
     server->message_buffer = scene_buffer;
