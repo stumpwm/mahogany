@@ -16,6 +16,9 @@
 
 #include <hrt/hrt_input.h>
 
+struct hrt_output;
+struct hrt_scene_root;
+
 struct hrt_server {
     struct wl_display *wl_display;
     struct wlr_backend *backend;
@@ -43,6 +46,9 @@ struct hrt_server {
 
     const struct hrt_output_callbacks *output_callback;
     const struct hrt_view_callbacks *view_callbacks;
+
+    struct wl_event_source *message_timer_source;
+    struct wlr_scene_buffer *message_buffer;
 };
 
 bool hrt_server_init(struct hrt_server *server,
@@ -62,5 +68,11 @@ struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server);
 struct hrt_seat *hrt_server_seat(struct hrt_server *server);
 
 size_t hrt_server_struct_size();
+
+bool hrt_toast_message(struct hrt_server *server,
+                       struct hrt_scene_root *scene_root,
+                       struct hrt_output *output,
+                       const char *text,
+                       int ms_delay);
 
 #endif

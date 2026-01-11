@@ -24,6 +24,8 @@ cc = meson.get_compiler('c')
 
 wlroots_version = ['>=0.19.0', '<0.20.0']
 
+cairo          = dependency('cairo', required: true)
+pangocairo     = dependency('pangocairo', required: true)
 wayland_server = dependency('wayland-server')
 wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
@@ -68,6 +70,8 @@ subdir('protocols')
 subdir('src')
 
 hrt_deps = [
+  cairo,
+  pangocairo,
   server_protos,
   wayland_server,
   wlroots,
