@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Install System Packages
         run: |
-          dnf -y install git dnf-plugins-core redhat-rpm-config sbcl curl make wlroots-devel \
+          dnf -y install git dnf-plugins-core redhat-rpm-config sbcl \
+            curl make wlroots-devel cairo-devel pango-devel \
           && dnf -y builddep wlroots
       - uses: actions/checkout@v5
         with:

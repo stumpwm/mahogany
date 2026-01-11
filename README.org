@@ -49,7 +49,9 @@ To see a full example of this process, see the
 The backend library requires wlroots 0.19.x. If an appropriate
 version is not available, it will be built locally. See the README in
 the submodule or consult the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/0.19.2?ref_type=tags][project's git repo]] for information on how
-to build it.
+to build it. The following development dependencies are also needed:
++ cairo
++ Pango
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
