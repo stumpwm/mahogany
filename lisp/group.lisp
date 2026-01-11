@@ -128,7 +128,7 @@ to match."
 (defun group-current-output (group)
   "Return the output that contains the group's currently focused frame"
   (let* ((cur-frame (mahogany-group-current-frame group))
-         (output-node (tree:frame-parent (tree:find-root-frame))))
+         (output-node (tree:frame-parent (tree:find-root-frame cur-frame))))
     (tree:output-node-output output-node)))
 
 (defun group-remove-output (group output seat)
