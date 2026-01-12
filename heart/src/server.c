@@ -1,7 +1,9 @@
+#include "hrt/hrt_scene.h"
 #include "wlr/util/log.h"
 #include "xdg_impl.h"
 #include "seat_impl.h"
 #include "output_impl.h"
+#include "scene_impl.h"
 #include "message_impl.h"
 #include <stdlib.h>
 #include <wayland-server-core.h>
@@ -70,6 +72,7 @@ bool hrt_server_init(struct hrt_server *server,
 
     server->scene = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
+    server->scene_root = hrt_scene_root_create(&server->scene->tree);
 
     server->view_callbacks = view_callbacks;
 
@@ -149,6 +152,10 @@ struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server) {
 
 struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
     return &server->seat;
+}
+
+struct hrt_scene_group *hrt_server_group_create(struct hrt_server *server) {
+  return hrt_scene_group_create(server->scene_root);
 }
 
 size_t hrt_server_struct_size() {

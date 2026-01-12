@@ -1,9 +1,8 @@
 (in-package #:mahogany)
 
 (defstruct (mahogany-output (:constructor %make-mahogany-output
-                                          (hrt-output hrt-scene full-name)))
+                                          (hrt-output full-name)))
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
-  (hrt-scene  cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
 (defstruct (mahogany-group (:constructor %make-mahogany-group (name number hrt-group)))

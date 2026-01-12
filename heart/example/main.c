@@ -11,7 +11,6 @@
 
 struct example_server {
     struct hrt_server server;
-    struct hrt_scene_root *scene_root;
     struct hrt_scene_group *group;
     struct hrt_output *current_output;
     int message_counter;
@@ -85,7 +84,7 @@ static bool keyboard_callback(struct hrt_seat *seat,
             snprintf(text, sizeof(text) - 1, "test message %u\ngravity: %s",
                      server.message_counter, gravity_names[server.message_gravity]);
             if (hrt_toast_message(
-                 &server.server, server.scene_root, server.current_output,
+                 &server.server, server.current_output,
                  text, server.message_gravity, 15, 15, 5000)) {
                 server.message_counter++;
                 server.message_gravity++;
@@ -125,8 +124,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    server.scene_root = hrt_scene_root_create(&server.server.scene->tree);
-    server.group = hrt_scene_group_create(server.scene_root);
+    server.group = hrt_server_group_create(&server.server);
 
     hrt_server_start(&server.server);
     hrt_server_finish(&server.server);

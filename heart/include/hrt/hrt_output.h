@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_OUTPUT_H
 #define HRT_HRT_OUTPUT_H
 
+#include "hrt/hrt_scene.h"
 #include <wayland-server.h>
 
 #include <wlr/types/wlr_output.h>
@@ -11,6 +12,7 @@
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
+    struct hrt_scene_output *scene;
 
     struct wlr_box usable_area;
 

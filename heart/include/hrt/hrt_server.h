@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_SERVER_H
 #define HRT_HRT_SERVER_H
 
+#include "hrt/hrt_scene.h"
 #include "wlr/backend/session.h"
 #include <stdbool.h>
 
@@ -36,6 +37,7 @@ struct hrt_server {
     struct wl_listener output_manager_destroy;
 
     struct hrt_seat seat;
+    struct hrt_scene_root *scene_root;
 
     struct wlr_xdg_shell *xdg_shell;
     struct wl_listener new_xdg_toplevel;
@@ -63,6 +65,8 @@ void hrt_server_finish(struct hrt_server *server);
 struct wlr_scene_tree *hrt_server_scene_tree(struct hrt_server *server);
 
 struct hrt_seat *hrt_server_seat(struct hrt_server *server);
+
+struct hrt_scene_group *hrt_server_group_create(struct hrt_server *server);
 
 size_t hrt_server_struct_size();
 

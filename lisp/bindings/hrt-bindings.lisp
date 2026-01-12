@@ -191,7 +191,8 @@ well behaved ones should."
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
-  (usable-area (:struct wlr:wlr-box))
+  (scene :pointer #| (:struct hrt-scene-output) |#)
+  (usable-area (:struct wlr-box))
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
   (destroy (:struct wl-listener))
@@ -358,10 +359,9 @@ Returns the view that was in the node."
 (declaim (inline hrt-toast-message))
 (cffi:defcfun ("hrt_toast_message" hrt-toast-message) :int
   (server (:pointer (:struct hrt-server)))
-  (scene-root (:pointer (:struct hrt-scene-root)))
   (output (:pointer (:struct hrt-output)))
   (text (:pointer :char))
-  (gravity :int #| enum window-gravity |#)
+  (gravity window-gravity)
   (margin-x :int)
   (margin-y :int)
   (ms-delay :int))
@@ -386,6 +386,7 @@ Returns the view that was in the node."
   (output-manager-test (:struct wl-listener))
   (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
+  (scene-root (:pointer (:struct hrt-scene-root)))
   (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))
@@ -420,6 +421,10 @@ Returns the view that was in the node."
 
 (declaim (inline hrt-server-seat))
 (cffi:defcfun ("hrt_server_seat" hrt-server-seat) (:pointer (:struct hrt-seat))
+  (server (:pointer (:struct hrt-server))))
+
+(declaim (inline hrt-server-group-create))
+(cffi:defcfun ("hrt_server_group_create" hrt-server-group-create) (:pointer (:struct hrt-scene-group))
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-struct-size))

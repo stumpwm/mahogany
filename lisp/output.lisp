@@ -11,10 +11,9 @@
                  (or model "")
                  (or serial ""))))
 
-(defun make-mahogany-output (hrt-output hrt-scene)
-  (let ((name (%get-output-full-name hrt-output))
-        (scene (hrt:hrt-scene-output-create hrt-scene)))
-    (%make-mahogany-output hrt-output scene name)))
+(defun make-mahogany-output (hrt-output)
+  (let ((name (%get-output-full-name hrt-output)))
+    (%make-mahogany-output hrt-output name)))
 
 (defun destroy-mahogany-output (mh-output)
-  (hrt:hrt-scene-output-destroy (mahogany-output-hrt-scene mh-output)))
+  (declare (ignore mh-output)))
