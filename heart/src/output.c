@@ -1,3 +1,4 @@
+#include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
 #include "wlr/util/log.h"
 #include <time.h>
@@ -37,6 +38,8 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     struct hrt_server *server = output->server;
     server->output_callback->output_removed(output);
 
+    hrt_scene_output_destroy(output->scene);
+
     wl_list_remove(&output->frame.link);
     wl_list_remove(&output->request_state.link);
     wl_list_remove(&output->destroy.link);
@@ -58,6 +61,7 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
+    output->scene = hrt_scene_output_create(server->scene_root);
 
     output->frame.notify = handle_frame_notify;
     wl_signal_add(&wlr_output->events.frame, &output->frame);

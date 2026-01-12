@@ -8,6 +8,8 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_scene.h>
 
+struct hrt_output;
+
 struct hrt_scene_root {
     struct wlr_scene_tree *background;
     struct wlr_scene_tree *bottom;
@@ -41,15 +43,11 @@ struct hrt_scene_fullscreen_node {
     struct hrt_view *view;
 };
 
-struct hrt_scene_root *hrt_scene_root_create(struct wlr_scene_tree *scene);
-
 void hrt_scene_root_destroy(struct hrt_scene_root *scene_root);
 
 struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene);
 
 void hrt_scene_output_destroy(struct hrt_scene_output *output);
-
-struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent);
 
 void hrt_scene_group_destroy(struct hrt_scene_group *group);
 

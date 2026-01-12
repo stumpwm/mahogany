@@ -14,10 +14,9 @@
            (type fixnum index))
   (with-accessors ((groups mahogany-state-groups)
                    (current-group mahogany-current-group)
-                   (server mahogany-state-server)
-                   (hrt-scene mahogany-state-scene))
+                   (server mahogany-state-server))
       state
-    (let* ((default-group (make-mahogany-group name index hrt-scene)))
+    (let* ((default-group (make-mahogany-group name index server)))
       (vector-push-extend default-group groups)
       default-group)))
 
@@ -85,7 +84,7 @@
                    (groups mahogany-state-groups)
                    (scene mahogany-state-scene))
       state
-    (let ((mh-output (make-mahogany-output hrt-output scene)))
+    (let ((mh-output (make-mahogany-output hrt-output)))
       (log-string :debug "New output added ~S" (mahogany-output-full-name mh-output))
       (vector-push-extend mh-output outputs)
       (loop for g across groups

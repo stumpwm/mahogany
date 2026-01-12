@@ -19,7 +19,6 @@ enum window_gravity {
 };
 
 bool hrt_toast_message(struct hrt_server *server,
-                       struct hrt_scene_root *scene_root,
                        struct hrt_output *output,
                        const char *text,
                        enum window_gravity gravity,

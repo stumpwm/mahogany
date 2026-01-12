@@ -59,6 +59,7 @@
            #:button-event #:wheel-event #:keyboard-keypress-event
            #:hrt-server
            #:hrt-server-scene-tree
+           #:hrt-server-group-create
            #:hrt-server-seat
            #:hrt-server-init
            #:hrt-server-start
