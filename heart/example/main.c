@@ -7,6 +7,7 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 #include <hrt/hrt_view.h>
+#include <hrt/hrt_message.h>
 
 struct example_server {
     struct hrt_server server;
@@ -14,6 +15,7 @@ struct example_server {
     struct hrt_scene_group *group;
     struct hrt_output *current_output;
     int message_counter;
+    enum window_gravity message_gravity;
 };
 
 static struct example_server server = {0};
@@ -48,6 +50,19 @@ static void view_destroy_callback(struct hrt_view *view) {
 }
 
 static bool showNormalCursor = true;
+
+static const char *gravity_names[] = {
+    "top right",
+    "top left",
+    "bottom right",
+    "bottom left",
+    "right",
+    "left",
+    "top",
+    "bottom",
+    "center"
+};
+
 static bool keyboard_callback(struct hrt_seat *seat,
                               struct hrt_keypress_info *info) {
     puts("Keyboard callback called");
@@ -67,9 +82,16 @@ static bool keyboard_callback(struct hrt_seat *seat,
             showNormalCursor = !showNormalCursor;
         } else if(strcmp(buffer, "m") == 0 && server.current_output) {
             char text[64];
-            snprintf(text, sizeof(text) - 1, "test message %u\nhello there.", server.message_counter);
-            if (hrt_toast_message(&server.server, server.scene_root, server.current_output, text, 5000))
+            snprintf(text, sizeof(text) - 1, "test message %u\ngravity: %s",
+                     server.message_counter, gravity_names[server.message_gravity]);
+            if (hrt_toast_message(
+                 &server.server, server.scene_root, server.current_output,
+                 text, server.message_gravity, 15, 15, 5000)) {
                 server.message_counter++;
+                server.message_gravity++;
+                if (server.message_gravity > GRAVITY_MAX)
+                    server.message_gravity = 0;
+            }
         }
     }
     puts("\n\n");

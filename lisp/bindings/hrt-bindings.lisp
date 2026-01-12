@@ -341,6 +341,31 @@ Returns the view that was in the node."
   (group (:pointer (:struct hrt-scene-fullscreen-node)))
   (output (:pointer (:struct hrt-output))))
 
+;; next section imported from file build/include/hrt/hrt_message.h
+
+(cffi:defcenum window-gravity
+  (:gravity-top-right 0)
+  (:gravity-top-left 1)
+  (:gravity-bottom-right 2)
+  (:gravity-bottom-left 3)
+  (:gravity-right 4)
+  (:gravity-left 5)
+  (:gravity-top 6)
+  (:gravity-bottom 7)
+  (:gravity-center 8)
+  (:gravity-max 8))
+
+(declaim (inline hrt-toast-message))
+(cffi:defcfun ("hrt_toast_message" hrt-toast-message) :int
+  (server (:pointer (:struct hrt-server)))
+  (scene-root (:pointer (:struct hrt-scene-root)))
+  (output (:pointer (:struct hrt-output)))
+  (text (:pointer :char))
+  (gravity :int #| enum window-gravity |#)
+  (margin-x :int)
+  (margin-y :int)
+  (ms-delay :int))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server
@@ -390,7 +415,7 @@ Returns the view that was in the node."
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-scene-tree))
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-seat))
@@ -399,11 +424,3 @@ Returns the view that was in the node."
 
 (declaim (inline hrt-server-struct-size))
 (cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
-
-(declaim (inline hrt-toast-message))
-(cffi:defcfun ("hrt_toast_message" hrt-toast-message) :bool
-  (server (:pointer (:struct hrt-server)))
-  (scene-root (:pointer (:struct hrt-scene-root)))
-  (output (:pointer (:struct hrt-output)))
-  (text (:pointer :char))
-  (ms-delay :int))
