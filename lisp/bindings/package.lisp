@@ -10,7 +10,8 @@
 
 (defpackage #:mahogany/core
   (:use :cl #:wayland-server-core #:xkb #:wlr)
-  (:local-nicknames (#:mh/interface #:mahogany/wm-interface))
+  (:local-nicknames (#:mh/interface #:mahogany/wm-interface)
+                    (#:colors #:cl-colors2))
   (:nicknames #:hrt)
   (:export #:hrt-output-callbacks
            #:hrt-seat-callbacks
@@ -65,6 +66,8 @@
            #:hrt-server-start
            #:hrt-server-stop
            #:hrt-server-finish
+           #:toast-message
+           #:toast-message-gravity
            ;; keypress info slots:
            #:keysyms
            #:modifiers

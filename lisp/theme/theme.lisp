@@ -16,6 +16,14 @@
 
 (in-package #:mahogany/theme)
 
+;; INVESTIGATE: we could store these colors as single-float arrays,
+;;  and just use the colors package to derive the numbers.
+;;  this would have the advantage of removing some type conversion
+;;  when transforming this object into a C struct, and allow us
+;;  to specify the alpha channel, which the cl-colors2 package doesn't do.
+;;  the cl-colors-ng package *does* support alpha channels, so using
+;;  that instead might be a good start. It isn't in quicklisp
+;;  though...
 (defstruct theme
   (font "monospace 15" :type string)
   (font-color (colors:rgb 1.0 1.0 1.0) :type colors:rgb)

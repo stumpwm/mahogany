@@ -364,7 +364,7 @@ Returns the view that was in the node."
   (server (:pointer (:struct hrt-server)))
   (output (:pointer (:struct hrt-output)))
   (text (:pointer :char))
-  (gravity :int #| enum window-gravity |#)
+  (gravity window-gravity)
   (theme (:pointer (:struct hrt-message-theme)))
   (ms-delay :int))
 
@@ -418,7 +418,7 @@ Returns the view that was in the node."
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-scene-tree))
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-seat))
