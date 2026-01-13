@@ -49,14 +49,24 @@ static const struct wlr_buffer_impl message_impl = {
     .end_data_ptr_access = message_end_data_ptr_access
 };
 
-static PangoLayout *get_pango_layout(PangoContext *context, const char *font, const char *text) {
+static PangoLayout *get_pango_layout(PangoContext *context, const char *font, double scale, const char *text) {
     PangoLayout *layout = pango_layout_new(context);
     PangoFontDescription *desc = pango_font_description_from_string(font);
+    PangoAttrList *attrs;
+
+    /* scale for specific output
+     * it's better to scale at the font rendering level with proper font instead of letting
+     * the compositor scale the whole surface when rendering on a specific output,
+     * which results in blurry rendered text */
+    attrs = pango_attr_list_new();
+    pango_attr_list_insert(attrs, pango_attr_scale_new(scale));
 
     pango_layout_set_font_description(layout, desc);
     pango_layout_set_single_paragraph_mode(layout, false);
+    pango_layout_set_attributes(layout, attrs);
     pango_layout_set_text(layout, text, -1);
 
+    pango_attr_list_unref(attrs);
     pango_font_description_free(desc);
     return layout;
 }
@@ -87,7 +97,7 @@ static struct message *render_message(const char *text, double scale) {
     font_options = get_font_options();
     pango_cairo_context_set_font_options(pango_context, font_options);
 
-    pango_layout = get_pango_layout(pango_context, font, text);
+    pango_layout = get_pango_layout(pango_context, font, scale, text);
     if (!pango_layout) {
         wlr_log(WLR_ERROR, "%s: cannot get pango layout", __func__);
         goto out;
@@ -100,12 +110,6 @@ static struct message *render_message(const char *text, double scale) {
     int total_width = text_width + ((border_width + border_padding) * 2);
     int total_height = text_height + ((border_width + border_padding) * 2);
 
-    /* scale to specific output's dpi.
-     * it's probably better to scale at the source with proper font antialiasing instead of letting
-     * the compositor scale the whole surface when rendering on a specific output */
-    int scaled_width = (int)(total_width * scale);
-    int scaled_height = (int)(total_height * scale);
-
     message = calloc(1, sizeof(*message));
     if (!message) {
         wlr_log(WLR_ERROR, "%s: cannot allocate message: %s", __func__, strerror(errno));
@@ -113,7 +117,7 @@ static struct message *render_message(const char *text, double scale) {
     }
 
     /* render the text in a cairo surface */
-    message->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, scaled_width, scaled_height);
+    message->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_width, total_height);
     if (cairo_surface_status(message->surface) != CAIRO_STATUS_SUCCESS) {
         free(message);
         message = NULL;
@@ -130,7 +134,6 @@ static struct message *render_message(const char *text, double scale) {
 
     cairo_set_antialias(c, CAIRO_ANTIALIAS_BEST);
     cairo_set_font_options(c, font_options);
-    cairo_scale(c, scale, scale);
 
     /* clear background */
     cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
@@ -153,7 +156,7 @@ static struct message *render_message(const char *text, double scale) {
     cairo_destroy(c);
 
     /* wrap it in the wlr_buffer that will be passed to wlr_scene_buffer_create */
-    wlr_buffer_init(&message->base, &message_impl, scaled_width, scaled_height);
+    wlr_buffer_init(&message->base, &message_impl, total_width, total_height);
 
 out:
     if (pango_layout)
