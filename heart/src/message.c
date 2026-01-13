@@ -55,7 +55,7 @@ static PangoLayout *get_pango_layout(PangoContext *context, const char *font, do
     PangoAttrList *attrs;
 
     /* scale for specific output
-     * it's better to scale at the font rendering level with proper font instead of letting
+     * it's better to scale at the font rendering level with proper antialiasing instead of letting
      * the compositor scale the whole surface when rendering on a specific output,
      * which results in blurry rendered text */
     attrs = pango_attr_list_new();
@@ -169,74 +169,106 @@ out:
     return message;
 }
 
+static bool scaled_box(int width, int height, double scale, struct wlr_box *box) {
+    if (!box || scale <= 0)
+        return false;
+
+    *box = (struct wlr_box){0};
+    box->width = (int)((double)width / scale);
+    box->height = (int)((double)height / scale);
+    return true;
+}
+
+static bool margin_box(struct wlr_box *src,
+                       int margin_x,
+                       int margin_y,
+                       double scale,
+                       struct wlr_box *dst) {
+    if (!src || !dst)
+        return false;
+
+    /* src is assumed to be already scaled by wlr_output_layout_get_box
+     * but we need to manually scale the margins */
+    double fmargin_x = (double)margin_x / scale;
+    double fmargin_y = (double)margin_y / scale;
+
+    if ((int)fmargin_x > src->width || (int)fmargin_y > src->height)
+        return false;
+
+    dst->x = src->x + (int)fmargin_x;
+    dst->y = src->y + (int)fmargin_y;
+    dst->width = src->width - (int)(fmargin_x * 2);
+    dst->height = src->height - (int)(fmargin_y * 2);
+    return true;
+}
+
+/* completes message_box's x/y coordinates for gravity placement within output_box */
 static bool gravity_coords(enum window_gravity gravity,
-                           int width, int height,
-                           int x, int y,
-                           int min_x, int min_y,
-                           int max_x, int max_y,
-                           int *pos_x, int *pos_y) {
-    if (!pos_x || !pos_y ||
-        gravity < GRAVITY_TOP_RIGHT || gravity > GRAVITY_MAX ||
-        width < 0 || height < 0 || min_x > max_x || min_y > max_y)
+                           struct wlr_box *output_box,
+                           struct wlr_box *message_box) {
+    if (!message_box || !output_box ||
+        gravity < GRAVITY_TOP_RIGHT || gravity > GRAVITY_MAX) {
+        wlr_log(WLR_ERROR, "%s: invalid parameter", __func__);
         return false;
+    }
 
-    int container_width = max_x - min_x;
-    int container_height = max_y - min_y;
+    wlr_log(WLR_DEBUG, "gravity=%u, message_box=(x=%d, y=%d, w=%d, h=%d), output_box=(x=%d, y=%d, w=%d, h=%d)",
+            gravity,
+            message_box->x, message_box->y, message_box->width, message_box->height,
+            output_box->x, output_box->y, output_box->width, output_box ->height);
 
-    if (width > container_width || height > container_height)
+    if (!wlr_box_contains_box(output_box, message_box)) {
+        wlr_log(WLR_ERROR, "%s: message box out of bounds", __func__);
         return false;
+    }
 
     switch (gravity) {
         case GRAVITY_TOP_LEFT:
         case GRAVITY_BOTTOM_LEFT:
         case GRAVITY_LEFT:
-            x += min_x;
+            message_box->x = output_box->x;
             break;
 
         case GRAVITY_TOP_RIGHT:
         case GRAVITY_BOTTOM_RIGHT:
         case GRAVITY_RIGHT:
-            x += max_x - width;
+            message_box->x = output_box->x + (output_box->width - message_box->width);
             break;
 
         case GRAVITY_TOP:
         case GRAVITY_BOTTOM:
         case GRAVITY_CENTER:
-            x += min_x + (container_width - width) / 2;
+            message_box->x = output_box->x + (output_box->width - message_box->width) / 2;
             break;
 
         default:
-            return false;
+            break;
     };
 
     switch (gravity) {
         case GRAVITY_TOP_LEFT:
         case GRAVITY_TOP_RIGHT:
         case GRAVITY_TOP:
-            y += min_y;
+            message_box->y = output_box->y;
             break;
 
         case GRAVITY_BOTTOM_LEFT:
         case GRAVITY_BOTTOM_RIGHT:
         case GRAVITY_BOTTOM:
-            y += max_y - height;
+            message_box->y = output_box->y + (output_box->height - message_box->height);
             break;
 
         case GRAVITY_LEFT:
         case GRAVITY_RIGHT:
         case GRAVITY_CENTER:
-            y += min_y + (container_height - height) / 2;
+            message_box->y = output_box->y + (output_box->height - message_box->height) / 2;
             break;
 
         default:
-            return false;
+            break;
     }
 
-    wlr_log(WLR_DEBUG, "%s: gravity=%u, size=(%d, %d), bounds=(%d, %d, %d, %d) -> (%d, %d)",
-            __func__, gravity, width, height, min_x, min_y, max_x, max_y, x, y);
-
-    *pos_x = x;
-    *pos_y = y;
+    wlr_log(WLR_DEBUG, "-> coords=(x=%d, y=%d)", message_box->x, message_box->y);
 
     return true;
 }
@@ -257,10 +289,38 @@ bool hrt_toast_message(struct hrt_server *server,
         server->message_buffer = NULL;
     }
 
+    struct wlr_box output_box;
+    wlr_output_layout_get_box(server->output_layout, output->wlr_output, &output_box);
+    wlr_log(WLR_DEBUG, "output_box=(x=%d, y=%d, w=%d, h=%d)",
+            output_box.x, output_box.y, output_box.width, output_box.height);
+
     double scale = output->wlr_output->scale;
+    struct wlr_box framed_box;
+    if (!margin_box(&output_box, margin_x, margin_y, scale, &framed_box))
+        return false;
+
     struct message *message = render_message(text, scale);
     if (!message)
         return false;
+
+    struct wlr_box message_box;
+    if (!scaled_box(message->base.width, message->base.height, scale, &message_box)) {
+        wlr_buffer_drop(&message->base);
+        return false;
+    }
+
+    /* set message_box's initial position to the same as framed_box in order to use
+     * wlr_box_contains_box() for bounds checking.
+     * this is already scaled in framed_box so we don't need to adjust it */
+    message_box.x = framed_box.x;
+    message_box.y = framed_box.y;
+
+    if (!gravity_coords(gravity,
+                        &framed_box,
+                        &message_box)) {
+        wlr_buffer_drop(&message->base);
+        return false;
+    }
 
     struct wlr_scene_buffer *scene_buffer = wlr_scene_buffer_create(server->scene_root->overlay, &message->base);
     if (!scene_buffer) {
@@ -268,24 +328,8 @@ bool hrt_toast_message(struct hrt_server *server,
         return false;
     }
 
-    int x = 0;
-    int y = 0;
-
-    if (!gravity_coords(gravity,
-                        scene_buffer->buffer->width,
-                        scene_buffer->buffer->height,
-                        output->wlr_scene->x,
-                        output->wlr_scene->y,
-                        margin_x * 2, margin_y * 2,
-                        output->wlr_output->width - (margin_x * 2),
-                        output->wlr_output->height - (margin_y * 2),
-                        &x, &y)) {
-        wlr_scene_node_destroy(&server->message_buffer->node);
-        return false;
-    }
-
-
-    wlr_scene_node_set_position(&scene_buffer->node, x, y);
+    wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width, message_box.height);
+    wlr_scene_node_set_position(&scene_buffer->node, message_box.x, message_box.y);
     wlr_scene_node_set_enabled(&scene_buffer->node, true);
 
     server->message_buffer = scene_buffer;
