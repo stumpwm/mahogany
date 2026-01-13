@@ -192,6 +192,7 @@ well behaved ones should."
   (wlr-output :pointer #| (:struct wlr-output) |# )
   (server (:pointer (:struct hrt-server)))
   (scene :pointer #| (:struct hrt-scene-output) |#)
+  (wlr-scene :pointer #| (:struct wlr-scene-output) |# )
   (usable-area (:struct wlr-box))
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
@@ -262,10 +263,6 @@ set the width and height of views."
   (background :pointer #| (:struct wlr-scene-rect) |# )
   (view (:pointer (:struct hrt-view))))
 
-(declaim (inline hrt-scene-root-create))
-(cffi:defcfun ("hrt_scene_root_create" hrt-scene-root-create) (:pointer (:struct hrt-scene-root))
-  (scene :pointer #| (:struct wlr-scene-tree) |# ))
-
 (declaim (inline hrt-scene-root-destroy))
 (cffi:defcfun ("hrt_scene_root_destroy" hrt-scene-root-destroy) :void
   (scene-root (:pointer (:struct hrt-scene-root))))
@@ -277,10 +274,6 @@ set the width and height of views."
 (declaim (inline hrt-scene-output-destroy))
 (cffi:defcfun ("hrt_scene_output_destroy" hrt-scene-output-destroy) :void
   (output (:pointer (:struct hrt-scene-output))))
-
-(declaim (inline hrt-scene-group-create))
-(cffi:defcfun ("hrt_scene_group_create" hrt-scene-group-create) (:pointer (:struct hrt-scene-group))
-  (parent (:pointer (:struct hrt-scene-root))))
 
 (declaim (inline hrt-scene-group-destroy))
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void

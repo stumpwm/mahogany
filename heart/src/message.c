@@ -168,6 +168,7 @@ out:
 
 static bool gravity_coords(enum window_gravity gravity,
                            int width, int height,
+                           int x, int y,
                            int min_x, int min_y,
                            int max_x, int max_y,
                            int *pos_x, int *pos_y) {
@@ -182,26 +183,23 @@ static bool gravity_coords(enum window_gravity gravity,
     if (width > container_width || height > container_height)
         return false;
 
-    int x = 0;
-    int y = 0;
-
     switch (gravity) {
         case GRAVITY_TOP_LEFT:
         case GRAVITY_BOTTOM_LEFT:
         case GRAVITY_LEFT:
-            x = min_x;
+            x += min_x;
             break;
 
         case GRAVITY_TOP_RIGHT:
         case GRAVITY_BOTTOM_RIGHT:
         case GRAVITY_RIGHT:
-            x = max_x - width;
+            x += max_x - width;
             break;
 
         case GRAVITY_TOP:
         case GRAVITY_BOTTOM:
         case GRAVITY_CENTER:
-            x = min_x + (container_width - width) / 2;
+            x += min_x + (container_width - width) / 2;
             break;
 
         default:
@@ -212,19 +210,19 @@ static bool gravity_coords(enum window_gravity gravity,
         case GRAVITY_TOP_LEFT:
         case GRAVITY_TOP_RIGHT:
         case GRAVITY_TOP:
-            y = min_y;
+            y += min_y;
             break;
 
         case GRAVITY_BOTTOM_LEFT:
         case GRAVITY_BOTTOM_RIGHT:
         case GRAVITY_BOTTOM:
-            y = max_y - height;
+            y += max_y - height;
             break;
 
         case GRAVITY_LEFT:
         case GRAVITY_RIGHT:
         case GRAVITY_CENTER:
-            y = min_y + (container_height - height) / 2;
+            y += min_y + (container_height - height) / 2;
             break;
 
         default:
@@ -273,6 +271,8 @@ bool hrt_toast_message(struct hrt_server *server,
     if (!gravity_coords(gravity,
                         scene_buffer->buffer->width,
                         scene_buffer->buffer->height,
+                        output->wlr_scene->x,
+                        output->wlr_scene->y,
                         margin_x * 2, margin_y * 2,
                         output->wlr_output->width - (margin_x * 2),
                         output->wlr_output->height - (margin_y * 2),
