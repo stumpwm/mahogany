@@ -81,6 +81,69 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
     return output;
 }
 
+/* Some manufacturers hardcode the aspect-ratio of the output in the physical
+ * size field. */
+static bool phys_size_is_aspect_ratio(struct wlr_output *output) {
+    return (output->phys_width == 1600 && output->phys_height == 900) ||
+        (output->phys_width == 1600 && output->phys_height == 1000) ||
+        (output->phys_width == 160 && output->phys_height == 90) ||
+        (output->phys_width == 160 && output->phys_height == 100) ||
+        (output->phys_width == 16 && output->phys_height == 9) ||
+        (output->phys_width == 16 && output->phys_height == 10);
+}
+
+// The minimum DPI at which we turn on a scale of 2
+#define HIDPI_DPI_LIMIT (2 * 96)
+// The minimum screen height at which we turn on a scale of 2
+#define HIDPI_MIN_HEIGHT 1200
+// 1 inch = 25.4 mm
+#define MM_PER_INCH 25.4
+
+static int compute_default_scale(struct wlr_output *output,
+                                 struct wlr_output_state *pending) {
+    struct wlr_box box = {.width = output->width, .height = output->height};
+    if (pending->committed & WLR_OUTPUT_STATE_MODE) {
+        switch (pending->mode_type) {
+            case WLR_OUTPUT_STATE_MODE_FIXED:
+                box.width  = pending->mode->width;
+                box.height = pending->mode->height;
+                break;
+            case WLR_OUTPUT_STATE_MODE_CUSTOM:
+                box.width  = pending->custom_mode.width;
+                box.height = pending->custom_mode.height;
+                break;
+        }
+    }
+    enum wl_output_transform transform = output->transform;
+    if (pending->committed & WLR_OUTPUT_STATE_TRANSFORM) {
+        transform = pending->transform;
+    }
+    wlr_box_transform(&box, &box, transform, box.width, box.height);
+
+    int width  = box.width;
+    int height = box.height;
+
+    if (height < HIDPI_MIN_HEIGHT) {
+        return 1;
+    }
+
+    if (output->phys_width == 0 || output->phys_height == 0) {
+        return 1;
+    }
+
+    if (phys_size_is_aspect_ratio(output)) {
+        return 1;
+    }
+
+    double dpi_x = (double)width / (output->phys_width / MM_PER_INCH);
+    double dpi_y = (double)height / (output->phys_height / MM_PER_INCH);
+    if (dpi_x <= HIDPI_DPI_LIMIT || dpi_y <= HIDPI_DPI_LIMIT) {
+        return 1;
+    }
+
+    return 2;
+}
+
 static void handle_new_output(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "New output detected");
     struct hrt_server *server = wl_container_of(listener, server, new_output);
@@ -102,6 +165,9 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     if (mode != NULL) {
         wlr_output_state_set_mode(&state, mode);
     }
+
+    wlr_output_state_set_scale(&state,
+                               compute_default_scale(wlr_output, &state));
 
     if (!wlr_output_commit_state(wlr_output, &state)) {
         // FIXME: Actually do some error handling instead of just logging:
