@@ -115,6 +115,7 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
         wlr_scene_output_create(server->scene, wlr_output);
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
                                        scene_output);
+    output->wlr_scene = scene_output;
 
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);

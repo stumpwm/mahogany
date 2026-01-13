@@ -13,6 +13,7 @@ struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
     struct hrt_scene_output *scene;
+    struct wlr_scene_output *wlr_scene;
 
     struct wlr_box usable_area;
 
