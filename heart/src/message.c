@@ -10,7 +10,7 @@
 #include <hrt/hrt_scene.h>
 #include <hrt/hrt_server.h>
 
-#define DEFAULT_FONT            "monospace 20"
+#define DEFAULT_FONT            "monospace 15"
 #define DEFAULT_BORDER_PADDING  5
 #define DEFAULT_BORDER_WIDTH    1
 
