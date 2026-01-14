@@ -328,7 +328,18 @@ bool hrt_toast_message(struct hrt_server *server,
         return false;
     }
 
+    /* apply nearest scaling if output has an integer scale factor, linear otherwise */
+    enum wlr_scale_filter_mode scale_filter = (ceilf(scale) == scale) ?
+        WLR_SCALE_FILTER_NEAREST :
+        WLR_SCALE_FILTER_BILINEAR;
+    if (message_box.width < message->base.width &&
+        message_box.height < message->base.height)
+        /* if we are scaling down, we should always choose linear */
+        scale_filter = WLR_SCALE_FILTER_BILINEAR;
+
+    wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width, message_box.height);
+
     wlr_scene_node_set_position(&scene_buffer->node, message_box.x, message_box.y);
     wlr_scene_node_set_enabled(&scene_buffer->node, true);
 
