@@ -3,13 +3,14 @@
 (cl:pushnew :hrt-debug *features*)
 
 (let* ((root (uiop/os:getcwd))
-       (asdf-cache (make-pathname
-                    :directory (append
-                                (pathname-directory root)
-                                (list
+       (asdf-cache (merge-pathnames
+                    (make-pathname
+                     :directory (list
+                                 :relative
                                  "build"
                                  "asdf-cache"
-                                 (uiop:implementation-identifier))))))
+                                 (uiop:implementation-identifier)))
+                    root)))
   ;; See https://asdf.common-lisp.dev/asdf.html#Configuration-DSL-1
   ;; for what this is doing.
   ;; Basically, we want our local copies of dependencies in the dependencies folder
