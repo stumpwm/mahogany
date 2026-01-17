@@ -350,7 +350,7 @@ Returns the view that was in the node."
   (:gravity-max 8))
 
 (declaim (inline hrt-toast-message))
-(cffi:defcfun ("hrt_toast_message" hrt-toast-message) :int
+(cffi:defcfun ("hrt_toast_message" hrt-toast-message) :bool
   (server (:pointer (:struct hrt-server)))
   (output (:pointer (:struct hrt-output)))
   (text (:pointer :char))
