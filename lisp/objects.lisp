@@ -19,8 +19,6 @@
   ((hrt-server :type hrt-server
                :initarg server
                :accessor mahogany-state-server)
-   (hrt-scene :type hrt-scene
-              :accessor mahogany-state-scene)
    (key-state :type key-state
               :initform (make-key-state nil)
               :accessor mahogany-state-key-state)
