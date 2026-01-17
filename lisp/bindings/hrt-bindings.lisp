@@ -349,14 +349,23 @@ Returns the view that was in the node."
   (:gravity-center 8)
   (:gravity-max 8))
 
+(cffi:defcstruct hrt-message-theme
+  (font (:pointer :char))
+  (font-color :float :count 4)
+  (background-color :float :count 4)
+  (border-color :float :count 4)
+  (message-padding :int)
+  (message-border-width :int)
+  (margin-x :int)
+  (margin-y :int))
+
 (declaim (inline hrt-toast-message))
 (cffi:defcfun ("hrt_toast_message" hrt-toast-message) :bool
   (server (:pointer (:struct hrt-server)))
   (output (:pointer (:struct hrt-output)))
   (text (:pointer :char))
-  (gravity window-gravity)
-  (margin-x :int)
-  (margin-y :int)
+  (gravity :int #| enum window-gravity |#)
+  (theme (:pointer (:struct hrt-message-theme)))
   (ms-delay :int))
 
 ;; next section imported from file build/include/hrt/hrt_server.h
@@ -409,7 +418,7 @@ Returns the view that was in the node."
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-scene-tree))
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-seat))

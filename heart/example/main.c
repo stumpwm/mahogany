@@ -93,6 +93,33 @@ static const char *gravity_names[] = {
     "center"
 };
 
+static struct hrt_message_theme theme = {
+    .font             = "monospace 15",
+    .font_color       = {1, 1, 1, 1},
+    .background_color = {0, 0, 0, 1},
+    .border_color     = {1, 1, 1, 1},
+    .message_border_width = 1,
+    .message_padding      = 5,
+    .margin_x             = 15,
+    .margin_y             = 15,
+};
+
+static void show_message() {
+    char text[64];
+    snprintf(text, sizeof(text) - 1, "test message %u\ngravity: %s",
+             server.message_counter, gravity_names[server.message_gravity]);
+    bool shown =
+        hrt_toast_message(&server.server, server.current_output->output, text,
+                          server.message_gravity, &theme, 5000);
+    if (shown) {
+        server.message_counter++;
+        server.message_gravity++;
+        if (server.message_gravity > GRAVITY_MAX) {
+            server.message_gravity = 0;
+        }
+    }
+}
+
 static bool keyboard_callback(struct hrt_seat *seat,
                               struct hrt_keypress_info *info) {
     puts("Keyboard callback called");
@@ -111,17 +138,7 @@ static bool keyboard_callback(struct hrt_seat *seat,
                 seat, showNormalCursor ? "crossed_circle" : "left_ptr");
             showNormalCursor = !showNormalCursor;
         } else if (strcmp(buffer, "m") == 0 && server.current_output != NULL) {
-            char text[64];
-            snprintf(text, sizeof(text) - 1, "test message %u\ngravity: %s",
-                     server.message_counter,
-                     gravity_names[server.message_gravity]);
-            if (hrt_toast_message(&server.server, server.current_output->output,
-                                  text, server.message_gravity, 15, 15, 5000)) {
-                server.message_counter++;
-                server.message_gravity++;
-                if (server.message_gravity > GRAVITY_MAX)
-                    server.message_gravity = 0;
-            }
+            show_message();
         } else if (strcmp(buffer, "o") == 0 &&
                    wl_list_length(&server.outputs) > 1) {
             server.current_output =
