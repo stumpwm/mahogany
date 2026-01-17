@@ -26,15 +26,13 @@
   (hrt:hrt-server-init server
                        output-callbacks seat-callbacks view-callbacks
                        debug-level)
-  (setf (mahogany-state-scene state) (hrt:hrt-scene-root-create (hrt:hrt-server-scene-tree server)))
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (mahogany-current-group state) default-group)))
 
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
   (with-accessors ((groups mahogany-state-groups)
-                   (server mahogany-state-server)
-                   (scene mahogany-state-scene))
+                   (server mahogany-state-server))
       state
     (let ((scene-tree (hrt:hrt-server-scene-tree server))
           (seat (hrt:hrt-server-seat server)))

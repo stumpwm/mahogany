@@ -71,7 +71,6 @@
            #:keysyms-len
            #:wl-key-state
            ;; scene helpers:
-           #:hrt-scene-root-create
            #:hrt-scene-root-destroy
            #:hrt-scene-group-create
            #:hrt-scene-group-destroy
