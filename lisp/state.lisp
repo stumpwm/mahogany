@@ -41,7 +41,6 @@
     (setf groups (adjust-array groups 0 :fill-pointer 0))
     (hrt:hrt-server-finish server)
     ;; The actual scene object is freed during hrt-server-finish:
-    (setf scene nil)
     (setf server nil)))
 
 (defun server-stop (state)
