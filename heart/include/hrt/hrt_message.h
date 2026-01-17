@@ -1,6 +1,8 @@
 #ifndef HRT_HRT_MESSAGE_H
 #define HRT_HRT_MESSAGE_H
 
+#include <stdbool.h>
+
 struct hrt_scene_root;
 struct hrt_server;
 struct hrt_output;
