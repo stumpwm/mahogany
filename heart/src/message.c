@@ -137,7 +137,7 @@ static struct message *render_message(const char *text, double scale) {
 
     /* clear background */
     cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
-    cairo_set_source_rgba(c, 0, 0, 0,0);            /* TODO bg color */
+    cairo_set_source_rgba(c, 0, 0, 0,1);            /* TODO bg color */
     cairo_paint(c);
 
     /* draw border */
