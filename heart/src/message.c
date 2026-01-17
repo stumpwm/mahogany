@@ -10,10 +10,6 @@
 #include <hrt/hrt_scene.h>
 #include <hrt/hrt_server.h>
 
-#define DEFAULT_FONT            "monospace 15"
-#define DEFAULT_BORDER_PADDING  5
-#define DEFAULT_BORDER_WIDTH    1
-
 struct message {
     struct wlr_buffer base;
     cairo_surface_t *surface;
@@ -81,11 +77,12 @@ static cairo_font_options_t *get_font_options() {
     return font_options;
 }
 
-static struct message *render_message(const char *text, double scale) {
+static struct message *render_message(const char *text, double scale,
+                                      struct hrt_message_theme *theme) {
     /* TODO: configurable options: font (name/size), bg/fg color, border, per-output scale */
-    char *font = DEFAULT_FONT;
-    int border_padding = DEFAULT_BORDER_PADDING;
-    int border_width = DEFAULT_BORDER_WIDTH;
+    char *font         = theme->font;
+    int border_padding = theme->message_padding;
+    int border_width   = theme->message_border_width;
 
     struct message *message = NULL;
     PangoContext *pango_context = NULL;
@@ -137,20 +134,31 @@ static struct message *render_message(const char *text, double scale) {
 
     /* clear background */
     cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
-    cairo_set_source_rgba(c, 0, 0, 0,1);            /* TODO bg color */
+    cairo_set_source_rgba(c, theme->background_color[0],
+                          theme->background_color[1],
+                          theme->background_color[2],
+                          theme->background_color[3]);
     cairo_paint(c);
 
     /* draw border */
     cairo_set_operator(c, CAIRO_OPERATOR_OVER);
-    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 1.0);   /* TODO border color */
+    cairo_set_source_rgba(c, theme->font_color[0],
+                          theme->font_color[1],
+                          theme->font_color[2],
+                          theme->font_color[3]);
     cairo_set_line_width(c, border_width);
     double inset = border_width / 2.0;
-    cairo_rectangle(c, inset, inset, total_width - border_width, total_height - border_width);
+    cairo_rectangle(c, inset, inset, total_width - border_width,
+                    total_height - border_width);
     cairo_stroke(c);
 
     /* draw text */
-    cairo_set_source_rgba(c, 1.0, 1.0, 1.0, 1.0);   /* TODO fg color */
-    cairo_move_to(c, border_width + border_padding, border_width + border_padding);
+    cairo_set_source_rgba(c, theme->font_color[0],
+                          theme->font_color[1],
+                          theme->font_color[2],
+                          theme->font_color[3]);
+    cairo_move_to(c, border_width + border_padding,
+                  border_width + border_padding);
     pango_cairo_update_layout(c, pango_layout);
     pango_cairo_show_layout(c, pango_layout);
     cairo_destroy(c);
@@ -273,13 +281,9 @@ static bool gravity_coords(enum window_gravity gravity,
     return true;
 }
 
-bool hrt_toast_message(struct hrt_server *server,
-                       struct hrt_output *output,
-                       const char *text,
-                       enum window_gravity gravity,
-                       int margin_x,
-                       int margin_y,
-                       int ms_delay) {
+bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
+                       const char *text, enum window_gravity gravity,
+                       struct hrt_message_theme *theme, int ms_delay) {
     /* cancel any previously running timeout */
     wl_event_source_timer_update(server->message_timer_source, 0);
 
@@ -296,10 +300,10 @@ bool hrt_toast_message(struct hrt_server *server,
 
     double scale = output->wlr_output->scale;
     struct wlr_box framed_box;
-    if (!margin_box(&output_box, margin_x, margin_y, scale, &framed_box))
+    if (!margin_box(&output_box, theme->margin_x, theme->margin_y, scale, &framed_box))
         return false;
 
-    struct message *message = render_message(text, scale);
+    struct message *message = render_message(text, scale, theme);
     if (!message)
         return false;
 
