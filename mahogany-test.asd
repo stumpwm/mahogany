@@ -10,6 +10,7 @@ This file is a part of mahogany.
   :serial nil
   :components ((:file "util")
 	       (:file "ring-list")
+               (:file "theme/theme-tests")
 	       (:file "tree-tests" :depends-on ("util"))
 	       (:file "keyboard-tests")
 	       (:file "kmap-modes")

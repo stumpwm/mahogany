@@ -5,7 +5,9 @@
         #:mahogany/wm-interface
         #:mahogany/util
         #:mahogany/keyboard)
-  (:local-nicknames (#:tree #:mahogany/tree))
+  (:local-nicknames (#:tree #:mahogany/tree)
+                    (#:colors #:cl-colors2)
+                    (#:config #:config-system))
   (:export #:define-kmap
            #:kbd
            #:add-to-kmap
