@@ -142,10 +142,10 @@ static struct message *render_message(const char *text, double scale,
 
     /* draw border */
     cairo_set_operator(c, CAIRO_OPERATOR_OVER);
-    cairo_set_source_rgba(c, theme->font_color[0],
-                          theme->font_color[1],
-                          theme->font_color[2],
-                          theme->font_color[3]);
+    cairo_set_source_rgba(c, theme->border_color[0],
+                          theme->border_color[1],
+                          theme->border_color[2],
+                          theme->border_color[3]);
     cairo_set_line_width(c, border_width);
     double inset = border_width / 2.0;
     cairo_rectangle(c, inset, inset, total_width - border_width,
