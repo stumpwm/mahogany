@@ -8,6 +8,7 @@
   :depends-on (#:uiop
                #:alexandria
                #:cl-ansi-text
+               #:cl-colors2
                #:terminfo
                #:adopt
                #:xkbcommon
@@ -25,6 +26,8 @@
                         :components ((:file "ring-list")))
                (:module interfaces
                         :components ((:file "view-interface")))
+               (:module theme
+                        :components ((:file "theme")))
                (:module bindings
                         :serial t
                         :depends-on ("interfaces")
