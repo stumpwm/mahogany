@@ -8,6 +8,7 @@
   :depends-on (#:uiop
                #:alexandria
                #:cl-ansi-text
+               #:cl-colors2
                #:terminfo
                #:adopt
                #:xkbcommon
@@ -25,9 +26,11 @@
                         :components ((:file "ring-list")))
                (:module interfaces
                         :components ((:file "view-interface")))
+               (:module theme
+                        :components ((:file "theme")))
                (:module bindings
                         :serial t
-                        :depends-on ("interfaces")
+                        :depends-on ("interfaces" "theme")
                         :components ((:file "package")
                                      (:file "wlr-bindings")
                                      (:file "hrt-libs")
@@ -52,6 +55,7 @@
                (:file "package")
                (:file "command")
                (:file "objects" :depends-on ("package" "ring-list"))
+               (:file "message" :depends-on ("bindings"))
                (:file "group" :depends-on ("transaction" "objects" "bindings"))
                (:file "state" :depends-on ("objects" "transaction" "keyboard" "bindings"))
                (:file "globals" :depends-on ("objects" "system"))
@@ -60,7 +64,7 @@
                (:file "transaction" :depends-on ("globals"))
                (:file "output" :depends-on ("objects" "bindings" "state" "bindings"))
                (:file "events" :depends-on ("globals" "state" "objects" "bindings"))
-               (:file "input" :depends-on ("state" "keyboard" "bindings" "command" "bindings"))
+               (:file "input" :depends-on ("state" "keyboard" "bindings" "command" "message"))
                (:file "key-bindings"
                       :depends-on ("kmap-modes" "state" "tree" "input" "command"))
                (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))

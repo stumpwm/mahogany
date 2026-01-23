@@ -7,6 +7,18 @@
 (defun execute-command (function key-sequence seat)
   (funcall function key-sequence seat))
 
+(defun %unkown-keybinding-message (key-state last)
+  (declare (optimize (speed 3) (safety 0))
+           (type key-state key-state)
+           (type key last))
+  (with-output-to-string (s)
+    (format s "Keybinding \"")
+    (dolist (k (reverse (key-state-sequence key-state)))
+      (pprint-key k s)
+      (format s " "))
+    (pprint-key last s)
+    (format s "\"~%is undefined.")))
+
 (defun check-and-run-keybinding (key seat key-state)
   (declare (type key key) (optimize (speed 3)))
   (when (not (key-modifier-key-p key))
@@ -31,6 +43,7 @@
              t)
             (;; No keybinding was pressed but we were expecting one.
              handling-keybinding
+             (toast-message *compositor-state* (%unkown-keybinding-message key-state key))
              (reset-state)
              ;; Since we still took an action (canceling the keybinding),
              ;; still consume the pressed key
