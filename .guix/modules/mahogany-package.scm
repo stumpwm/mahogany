@@ -28,6 +28,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages build-tools)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages gtk)
   #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-xyz)
@@ -130,6 +131,8 @@ very comfortable with Mahogany.")
      (list pkg-config))
     (inputs
      (list wlroots
+           cairo
+           pango
            wayland
            wayland-protocols
            libxkbcommon))
@@ -146,7 +149,9 @@ very comfortable with Mahogany.")
             (lambda* (#:key inputs #:allow-other-keys)
               (setenv "PKG_CONFIG_PATH"
                       (string-append (getenv "PKG_CONFIG_PATH")
-                                   ":" (assoc-ref inputs "wlroots") "/lib/pkgconfig")))))))
+                                   ":" (assoc-ref inputs "wlroots") "/lib/pkgconfig"
+                                   ":" (assoc-ref inputs "cairo") "/lib/pkgconfig"
+                                   ":" (assoc-ref inputs "pango") "/lib/pkgconfig")))))))
     (synopsis "An alternative C backend to a Wayland compositor to use with Mahogany")
     (description
      "Mahogany-heart's task is to setup the initial state of the
