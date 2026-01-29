@@ -8,13 +8,13 @@
 
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
-  (cursor :pointer #| (:struct wlr-cursor) |# )
-  (keyboard-group :pointer #| (:struct wlr-keyboard-group) |# )
-  (xcursor-manager :pointer #| (:struct wlr-xcursor-manager) |# )
-  (seat :pointer #| (:struct wlr-seat) |# )
+  (cursor :pointer #| (:struct wlr-cursor) |#)
+  (keyboard-group :pointer #| (:struct wlr-keyboard-group) |#)
+  (xcursor-manager :pointer #| (:struct wlr-xcursor-manager) |#)
+  (seat :pointer #| (:struct wlr-seat) |#)
   (inputs (:struct wl-list))
   (new-input (:struct wl-listener))
-  (xkb-context :pointer #| (:struct xkb-context) |# )
+  (xkb-context :pointer #| (:struct xkb-context) |#)
   (motion (:struct wl-listener))
   (motion-absolute (:struct wl-listener))
   (button (:struct wl-listener))
@@ -27,7 +27,7 @@
   (cursor-image (:pointer :char)))
 
 (cffi:defcstruct hrt-keypress-info
-  (keysyms :pointer #| xkb-keysym-t |# )
+  (keysyms :pointer #| xkb-keysym-t |#)
   (modifiers :uint32)
   (keysyms-len :size)
   (wl-key-state :int #| enum wl-keyboard-key-state |#))
@@ -38,7 +38,7 @@
   (keyboard-keypress-event :pointer #| function ptr _Bool (struct hrt_seat *, struct hrt_keypress_info *) |#))
 
 (cffi:defcstruct hrt-input
-  (wlr-input-device :pointer #| (:struct wlr-input-device) |# )
+  (wlr-input-device :pointer #| (:struct wlr-input-device) |#)
   (seat (:pointer (:struct hrt-seat)))
   (link (:struct wl-list))
   (destroy (:struct wl-listener)))
@@ -63,18 +63,18 @@ names."
 (declaim (inline hrt-seat-notify-button))
 (cffi:defcfun ("hrt_seat_notify_button" hrt-seat-notify-button) :void
   (seat (:pointer (:struct hrt-seat)))
-  (event :pointer #| (:struct wlr-pointer-button-event) |# ))
+  (event :pointer #| (:struct wlr-pointer-button-event) |#))
 
 (declaim (inline hrt-seat-notify-axis))
 (cffi:defcfun ("hrt_seat_notify_axis" hrt-seat-notify-axis) :void
   (seat (:pointer (:struct hrt-seat)))
-  (event :pointer #| (:struct wlr-pointer-axis-event) |# ))
+  (event :pointer #| (:struct wlr-pointer-axis-event) |#))
 
 (declaim (inline hrt-seat-set-keymap))
 (cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :void
   (seat (:pointer (:struct hrt-seat)))
-  (rules :pointer #| (:struct xkb-rule-names) |# )
-  (flags xkb:keymap-compile-flags #| enum xkb-keymap-compile-flags |#))
+  (rules :pointer #| (:struct xkb-rule-names) |#)
+  (flags xkb:keymap-compile-flags))
 
 (declaim (inline hrt-seat-cursor-lx))
 (cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
@@ -108,9 +108,9 @@ names."
 (cffi:defcstruct hrt-view
   (width :int)
   (height :int)
-  (xdg-surface :pointer #| (:struct wlr-xdg-surface) |# )
-  (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |# )
-  (scene-tree :pointer #| (:struct wlr-scene-tree) |# )
+  (xdg-surface :pointer #| (:struct wlr-xdg-surface) |#)
+  (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |#)
+  (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
@@ -124,7 +124,7 @@ names."
 (cffi:defcfun ("hrt_view_init" hrt-view-init) :void
   "Fully initialize the view and place it in the given scene tree."
   (view (:pointer (:struct hrt-view)))
-  (tree :pointer #| (:struct wlr-scene-tree) |# ))
+  (tree :pointer #| (:struct wlr-scene-tree) |#))
 
 (declaim (inline hrt-view-info))
 (cffi:defcfun ("hrt_view_info" hrt-view-info) :void
@@ -171,7 +171,7 @@ it visible to the user."
 (declaim (inline hrt-view-reparent))
 (cffi:defcfun ("hrt_view_reparent" hrt-view-reparent) :void
   (view (:pointer (:struct hrt-view)))
-  (node :pointer #| (:struct wlr-scene-tree) |# ))
+  (node :pointer #| (:struct wlr-scene-tree) |#))
 
 (declaim (inline hrt-view-request-close))
 (cffi:defcfun ("hrt_view_request_close" hrt-view-request-close) :void
@@ -189,10 +189,10 @@ well behaved ones should."
 ;; next section imported from file build/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-output
-  (wlr-output :pointer #| (:struct wlr-output) |# )
+  (wlr-output :pointer #| (:struct wlr-output) |#)
   (server (:pointer (:struct hrt-server)))
   (scene :pointer #| (:struct hrt-scene-output) |#)
-  (wlr-scene :pointer #| (:struct wlr-scene-output) |# )
+  (wlr-scene :pointer #| (:struct wlr-scene-output) |#)
   (usable-area (:struct wlr-box))
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
@@ -240,27 +240,27 @@ set the width and height of views."
   (scene-destroy (:struct wl-listener)))
 
 (cffi:defcstruct hrt-scene-root
-  (background :pointer #| (:struct wlr-scene-tree) |# )
-  (bottom :pointer #| (:struct wlr-scene-tree) |# )
-  (normal :pointer #| (:struct wlr-scene-tree) |# )
-  (fullscreen :pointer #| (:struct wlr-scene-tree) |# )
-  (top :pointer #| (:struct wlr-scene-tree) |# )
-  (overlay :pointer #| (:struct wlr-scene-tree) |# )
+  (background :pointer #| (:struct wlr-scene-tree) |#)
+  (bottom :pointer #| (:struct wlr-scene-tree) |#)
+  (normal :pointer #| (:struct wlr-scene-tree) |#)
+  (fullscreen :pointer #| (:struct wlr-scene-tree) |#)
+  (top :pointer #| (:struct wlr-scene-tree) |#)
+  (overlay :pointer #| (:struct wlr-scene-tree) |#)
   (listeners (:struct hrt-scene-root-listeners)))
 
 (cffi:defcstruct hrt-scene-output
-  (background :pointer #| (:struct wlr-scene-tree) |# )
-  (bottom :pointer #| (:struct wlr-scene-tree) |# )
-  (top :pointer #| (:struct wlr-scene-tree) |# )
-  (overlay :pointer #| (:struct wlr-scene-tree) |# ))
+  (background :pointer #| (:struct wlr-scene-tree) |#)
+  (bottom :pointer #| (:struct wlr-scene-tree) |#)
+  (top :pointer #| (:struct wlr-scene-tree) |#)
+  (overlay :pointer #| (:struct wlr-scene-tree) |#))
 
 (cffi:defcstruct hrt-scene-group
-  (normal :pointer #| (:struct wlr-scene-tree) |# )
-  (fullscreen :pointer #| (:struct wlr-scene-tree) |# ))
+  (normal :pointer #| (:struct wlr-scene-tree) |#)
+  (fullscreen :pointer #| (:struct wlr-scene-tree) |#))
 
 (cffi:defcstruct hrt-scene-fullscreen-node
-  (tree :pointer #| (:struct wlr-scene-tree) |# )
-  (background :pointer #| (:struct wlr-scene-rect) |# )
+  (tree :pointer #| (:struct wlr-scene-tree) |#)
+  (background :pointer #| (:struct wlr-scene-rect) |#)
   (view (:pointer (:struct hrt-view))))
 
 (declaim (inline hrt-scene-root-destroy))
@@ -371,31 +371,31 @@ Returns the view that was in the node."
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server
-  (wl-display :pointer #| (:struct wl-display) |# )
-  (backend :pointer #| (:struct wlr-backend) |# )
+  (wl-display :pointer #| (:struct wl-display) |#)
+  (backend :pointer #| (:struct wlr-backend) |#)
   (backend-destroy (:struct wl-listener))
-  (session :pointer #| (:struct wlr-session) |# )
-  (renderer :pointer #| (:struct wlr-renderer) |# )
-  (compositor :pointer #| (:struct wlr-compositor) |# )
-  (allocator :pointer #| (:struct wlr-allocator) |# )
-  (scene :pointer #| (:struct wlr-scene) |# )
-  (scene-layout :pointer #| (:struct wlr-scene-output-layout) |# )
+  (session :pointer #| (:struct wlr-session) |#)
+  (renderer :pointer #| (:struct wlr-renderer) |#)
+  (compositor :pointer #| (:struct wlr-compositor) |#)
+  (allocator :pointer #| (:struct wlr-allocator) |#)
+  (scene :pointer #| (:struct wlr-scene) |#)
+  (scene-layout :pointer #| (:struct wlr-scene-output-layout) |#)
   (new-output (:struct wl-listener))
-  (output-manager :pointer #| (:struct wlr-output-manager-v1) |# )
-  (output-layout :pointer #| (:struct wlr-output-layout) |# )
+  (output-manager :pointer #| (:struct wlr-output-manager-v1) |#)
+  (output-layout :pointer #| (:struct wlr-output-layout) |#)
   (output-layout-changed (:struct wl-listener))
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
   (output-manager-destroy (:struct wl-listener))
   (seat (:struct hrt-seat))
   (scene-root (:pointer (:struct hrt-scene-root)))
-  (xdg-shell :pointer #| (:struct wlr-xdg-shell) |# )
+  (xdg-shell :pointer #| (:struct wlr-xdg-shell) |#)
   (new-xdg-toplevel (:struct wl-listener))
   (new-xdg-popup (:struct wl-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
-  (message-timer-source :pointer #| (:struct wl-event-source) |# )
-  (message-buffer :pointer #| (:struct wlr-scene-buffer) |# ))
+  (message-timer-source :pointer #| (:struct wl-event-source) |#)
+  (message-buffer :pointer #| (:struct wlr-scene-buffer) |#))
 
 (declaim (inline hrt-server-init))
 (cffi:defcfun ("hrt_server_init" hrt-server-init) :bool
@@ -418,7 +418,7 @@ Returns the view that was in the node."
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-scene-tree))
-(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |# 
+(cffi:defcfun ("hrt_server_scene_tree" hrt-server-scene-tree) :pointer #| (:struct wlr-scene-tree) |#
   (server (:pointer (:struct hrt-server))))
 
 (declaim (inline hrt-server-seat))
