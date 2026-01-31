@@ -19,3 +19,10 @@ pointer-expansion:
 make-inline:
   include:
     match: "hrt.*"
+string-return:
+  include:
+    names:
+      - "hrt_output_name"
+      - "hrt_output_make"
+      - "hrt_output_model"
+      - "hrt_output_serial"
