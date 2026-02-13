@@ -1,6 +1,7 @@
 #include "hrt/hrt_layer_shell.h"
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
+#include "scene_descriptor.h"
 #include "wlr/util/box.h"
 #include "wlr/util/log.h"
 
@@ -50,12 +51,19 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     wlr_log(WLR_DEBUG, "placing in layer %d", layer_type);
     surface->scene_surface =
         wlr_scene_layer_surface_v1_create(output_layer, surface->layer_surface);
+
     // Set this so we can reference it in the arrange_surface function
     // FIXME: This pointer is used for other things; it may be good to
     // try wlr_addons to store this data instead.
-    surface->scene_surface->tree->node.data = surface;
+    if (!scene_descriptor_assign(&surface->scene_surface->tree->node,
+                                 HRT_SCENE_DESC_LAYER_SHELL, surface)) {
+        wlr_log(WLR_ERROR, "Could not allocate scene descriptor");
+        wlr_layer_surface_v1_destroy(surface->layer_surface);
+        return;
+    }
     wlr_log(WLR_DEBUG, "Surface created");
     surface->output = output;
+    surface->tree = surface->scene_surface->tree;
 }
 
 void hrt_layer_shell_surface_set_output(
@@ -95,7 +103,8 @@ static void arrange_surface(const struct wlr_box *full_area,
     wl_list_for_each(node, &tree->children, link) {
         // this should work assuming that the only children of the given tree are
         // from layer shell objects:
-        struct hrt_layer_shell_surface *surface = node->data;
+      struct hrt_layer_shell_surface *surface = scene_descriptor_try_get(node,
+                               HRT_SCENE_DESC_LAYER_SHELL);
         // surface could be null during destruction
         if (!surface) {
             wlr_log(WLR_DEBUG, "No surface");
@@ -194,7 +203,7 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.scene_destroy);
 
-    surface->scene_surface->tree->node.data = NULL;
+    scene_descriptor_destroy(&surface->tree->node, HRT_SCENE_DESC_LAYER_SHELL);
     if (surface->output) {
         arrange_layers(surface->output, surface->output->scene);
     }
@@ -222,7 +231,7 @@ void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
     wl_signal_add(&layer_surface->events.new_popup, &surface->events.new_popup);
 
     surface->events.scene_destroy.notify = handle_node_destroy;
-    wl_signal_add(&surface->scene_surface->tree->node.events.destroy,
+    wl_signal_add(&surface->scene_surface->layer_surface->events.destroy,
                   &surface->events.scene_destroy);
 }
 

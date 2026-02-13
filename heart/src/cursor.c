@@ -34,7 +34,11 @@ static void *find_view_at(struct hrt_server *server, double lx,
     while (tree != NULL && tree->node.data == NULL) {
         tree = tree->node.parent;
     }
-    return tree->node.data;
+    if(tree) {
+        return tree->node.data;
+    } else {
+        return NULL;
+    }
 }
 
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {
