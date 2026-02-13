@@ -11,6 +11,7 @@
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_data_control_v1.h>
+#include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_data_device.h>
@@ -69,6 +70,7 @@ bool hrt_server_init(struct hrt_server *server,
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
+    wlr_primary_selection_v1_device_manager_create(server->wl_display);
 
     server->scene = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);

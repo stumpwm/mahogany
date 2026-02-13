@@ -23,6 +23,9 @@
   (request-cursor (:struct wl-listener))
   (keyboard-key (:struct wl-listener))
   (keyboard-modifiers (:struct wl-listener))
+  (request-selection (:struct wl-listener))
+  (request-primary-selection (:struct wl-listener))
+  (request-start-drag (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
   (cursor-image (:pointer :char)))
 

@@ -36,6 +36,13 @@ struct hrt_seat {
     struct wl_listener keyboard_key;
     struct wl_listener keyboard_modifiers;
 
+    // clipboard listeners
+    struct wl_listener request_selection;
+    struct wl_listener request_primary_selection;
+
+    // drag and drop
+    struct wl_listener request_start_drag;
+
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
 };

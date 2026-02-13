@@ -6,6 +6,8 @@
 
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_primary_selection.h>
 
 #include <hrt/hrt_input.h>
 #include <hrt/hrt_server.h>
@@ -101,6 +103,35 @@ static void handle_request_set_cursor(struct wl_listener *listener,
     }
 }
 
+static void handle_request_set_selection(struct wl_listener *listener,
+                                      void *data) {
+    struct hrt_seat *seat = wl_container_of(listener, seat, request_selection);
+
+    struct wlr_seat_request_set_selection_event *event = data;
+
+    wlr_seat_set_selection(seat->seat, event->source, event->serial);
+}
+
+static void handle_request_set_primary_selection(struct wl_listener *listener,
+                                      void *data) {
+    struct hrt_seat *seat = wl_container_of(listener, seat, request_primary_selection);
+
+	struct wlr_seat_request_set_primary_selection_event *event = data;
+	wlr_seat_set_primary_selection(seat->seat, event->source, event->serial);
+}
+
+static void handle_request_start_drag(struct wl_listener *listener,
+                                      void *data) {
+    struct hrt_seat *seat = wl_container_of(listener, seat, request_start_drag);
+    struct wlr_seat_request_start_drag_event *event = data;
+
+    if (wlr_seat_validate_pointer_grab_serial(seat->seat, event->origin,
+                                              event->serial))
+        wlr_seat_start_pointer_drag(seat->seat, event->drag, event->serial);
+    else
+        wlr_data_source_destroy(event->drag->source);
+}
+
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
                    const struct hrt_seat_callbacks *callbacks) {
     seat->callbacks        = callbacks;
@@ -124,6 +155,18 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
 
     hrt_keyboard_init(seat);
 
+    seat->request_selection.notify = handle_request_set_selection;
+    wl_signal_add(&seat->seat->events.request_set_selection,
+                  &seat->request_selection);
+
+    seat->request_primary_selection.notify = handle_request_set_primary_selection;
+    wl_signal_add(&seat->seat->events.request_set_primary_selection,
+                  &seat->request_primary_selection);
+
+    seat->request_start_drag.notify = handle_request_start_drag;
+    wl_signal_add(&seat->seat->events.request_start_drag,
+                  &seat->request_start_drag);
+
     seat->cursor_image = "left_ptr";
 
     return true;
@@ -134,6 +177,9 @@ void hrt_seat_destroy(struct hrt_seat *seat) {
     hrt_cursor_destroy(seat);
 
     wl_list_remove(&seat->request_cursor.link);
+    wl_list_remove(&seat->request_selection.link);
+    wl_list_remove(&seat->request_primary_selection.link);
+    wl_list_remove(&seat->request_start_drag.link);
 
     wlr_seat_destroy(seat->seat);
     wl_list_remove(&seat->new_input.link);
