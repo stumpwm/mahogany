@@ -4,6 +4,18 @@
   (member :click-and-wheel :click :ignore :sloppy)
   "How keyboard focus is controlled by the mouse")
 
+(config:defconfig *gimme-key-enable* t
+  boolean
+  "Should we show a popup with key hints?")
+
+(config:defconfig *gimme-key-theme*
+    (mh/theme:make-theme
+     :font "monospace 17"
+     :background-color (colors:rgb 0.1 0.1 0.1)
+     :border-color (colors:rgb 0.3 0.3 0.3))
+  mh/theme:theme
+  "Theme data for displaying gimme-key messages")
+
 (defun execute-command (function key-sequence seat)
   (funcall function key-sequence seat))
 
@@ -34,11 +46,20 @@
              matched
              (when result
                (reset-state)
+               (when *gimme-key-enable*
+                 ;; NOTE kills the toast, cause i don't know how to do this cleanly
+                 (toast-message *compositor-state* "" :ms-delay 1))
                ;; Only consume the pressed key if the command doesn't
                ;; return `:pass-through`
                (not (eql (execute-command result
                                           (key-state-sequence key-state) seat)
                          :pass-through)))
+             (when (and *gimme-key-enable* (not result))
+               (toast-message *compositor-state*
+                              (mahogany/keyboard:gimme-key-format key-state)
+                              :gravity :gravity-bottom
+                              :ms-delay 0
+                              :theme *gimme-key-theme*))
              ;; Consume the pressed key
              t)
             (;; No keybinding was pressed but we were expecting one.

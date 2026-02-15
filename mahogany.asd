@@ -44,7 +44,8 @@
                         :components ((:file "package")
                                      (:file "keytrans")
                                      (:file "key")
-                                     (:file "kmap")))
+                                     (:file "kmap")
+                                     (:file "gimme-key")))
                (:module tree
                         :depends-on ("log" "util" "interfaces" "bindings")
                         :components ((:file "package")
