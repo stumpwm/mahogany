@@ -75,7 +75,8 @@
                              ;; needs testing on 32 bit SBCL:
                              #+(and sbcl 64-bit)
                              (:file "key-hash")
-                             (:file "kmap")))
+                             (:file "kmap")
+                             (:file "gimme-key")))
                (:module tree
                 :depends-on ("log" "util" "interfaces" "heart")
                 :components ((:file "package")
