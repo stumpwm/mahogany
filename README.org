@@ -117,7 +117,7 @@ tapping on =e=.
 To modify the keyboard layout with libxkb, see [[./doc/keyboard-layout.org][Doc: Keyboard Layout]].
 
 
-* LICENSE
+** License
 
 Mahogany Window Manager
 Copyright (C) 2020 Stuart Dilts
