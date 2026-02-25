@@ -1,5 +1,6 @@
 hrt_source_files += files(
   'cursor.c',
+  'event_loop.c',
   'input.c',
   'keyboard.c',
   'message.c',

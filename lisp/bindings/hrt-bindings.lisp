@@ -371,6 +371,27 @@ Returns the view that was in the node."
   (theme (:pointer (:struct hrt-message-theme)))
   (ms-delay :int))
 
+;; next section imported from file build/include/hrt/hrt_event_loop.h
+
+(cl:defconstant +hrt-event-readable+ 1)
+(cl:defconstant +hrt-event-writable* 2)
+(cl:defconstant +hrt-event-hangup+ 4)
+(cl:defconstant +hrt-event-error+ 8)
+
+(cffi:defctype hrt-event-loop-fd-func-t :pointer)
+
+(declaim (inline hrt-event-loop-add-fd))
+(cffi:defcfun ("hrt_event_loop_add_fd" hrt-event-loop-add-fd) :pointer #| (:struct wl-event-source) |#
+  (server (:pointer (:struct hrt-server)))
+  (fd :int)
+  (mask :uint32)
+  (callback hrt-event-loop-fd-func-t)
+  (data (:pointer :void)))
+
+(declaim (inline hrt-event-loop-remove))
+(cffi:defcfun ("hrt_event_loop_remove" hrt-event-loop-remove) :void
+  (source :pointer #| (:struct wl-event-source) |#))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server
