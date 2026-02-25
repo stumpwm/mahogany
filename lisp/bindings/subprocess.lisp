@@ -8,25 +8,25 @@
   (process nil :type uiop/launch-program::process-info :read-only t)
   (pid 0 :type (unsigned-byte 64) :read-only t)
   (stdout-result nil :type string-stream :read-only t)
-  (stderr-result nil :type (or string-stream null))
-  (callback nil :type (function (collect-output-result) null)))
+  (stderr-result nil :type string-stream :read-only t)
+  (callback nil :type (function (collect-output-result) null) :read-only t))
 
-(defun collect-app-output-begin (args callback &optional (stderr nil))
-  (let* ((process (if stderr
-					  (uiop:launch-program args :output :stream
-												:error-output :stream)
-					  (uiop:launch-program args :output :stream)))
+(defun collect-app-output-begin (args callback)
+  (let* ((process (uiop:launch-program args :output :stream
+											:error-output :stream))
 		 (pid (uiop:process-info-pid process))
-		 (stdout-result (make-string-output-stream)))
+		 (stdout-result (make-string-output-stream))
+         (stderr-result (make-string-output-stream)))
 	(make-collect-output-process process pid stdout-result
-								 (when stderr
-								   (make-string-output-stream))
+                                 stderr-result
                                  callback)))
 
 (defconstant +buffer-size+ 4096)
 
 (defun %collect-app-output (output-stream result-stream)
   (let* ((buffer (make-array +buffer-size+ :element-type 'character)))
+    ;; FIXME: Should there be a limit of the number of bytes read at one time
+    ;; so a noisy client doesn't block the server?
 	(loop
 	  ;; Read bytes into the buffer
 	  :for bytes-read = (read-sequence buffer output-stream)
@@ -42,16 +42,17 @@
 				   (stdout-result collect-output-process-stdout-result)
 				   (stderr-result collect-output-process-stderr-result))
 	  info
+    ;; FIXME: Maybe we should only gather input from these separately
+    ;;  instead of always pulling the data, no matter which fd is writable?
 	(%collect-app-output (uiop:process-info-output process) stdout-result)
-	(when stderr-result
-	  (%collect-app-output (uiop:process-info-error-output process)
-						   stderr-result))))
+	(%collect-app-output (uiop:process-info-error-output process)
+						 stderr-result)))
 
 (defstruct collect-output-result
   (stdout nil :type string)
-  (stderr nil :type (or null string))
-  ;; Will be non-nil when we can get it. Because we are just
-  ;; looking at stdout, we stop looking when stdout is closed,
+  (stderr nil :type string)
+  ;; The exit code may not always be available:
+  ;; because we are just looking at stdout, we stop looking when stdout is closed,
   ;; not when the process finishes. If the process hasn't
   ;; finished by the time the cleanup code runs, we don't
   ;; get an exit code
@@ -64,8 +65,7 @@
 				   (process collect-output-process-process))
 	  info
 	(let ((stdout-result (get-output-stream-string stdout))
-		  (stderr-result (when stderr
-						   (get-output-stream-string stderr)))
+		  (stderr-result  (get-output-stream-string stderr))
 		  (exit-code nil))
 	  ;; If we wanted to follow the UIOP launch-program interface to the
 	  ;; letter, we would unconditionally call uiop:wait-process somewhere
@@ -91,29 +91,50 @@
 	  info
 	(uiop:close-streams process)
 	(close stdout)
-	(when stderr
-	  (close stderr))))
+	(close stderr)))
 
 (mahogany/util:defglobal *subprocesses* (make-hash-table))
 
 (cffi:defcstruct app-output-data
   ;; Note: PIDs are usually ints, but use a long to give us some headroom:
   (pid :long)
-  (event-source :pointer))
+  (stdout-source :pointer)
+  (stderr-source :pointer))
 
-(cffi:defcallback handle-app-output :int
+(cffi:defcallback handle-app-stderr :int
     ((fd :int)
      (mask :uint32)
      (data :pointer))
   (declare (ignore fd))
-  (cffi:with-foreign-slots ((pid event-source) data
+  (cffi:with-foreign-slots ((pid stderr-source) data
+                            (:struct app-output-data))
+    (alexandria:when-let ((info (gethash pid *subprocesses*)))
+      (when (plusp (logand mask +hrt-event-readable+))
+        (collect-app-output-slurp info)))
+    ;; Even if the info object isn't here anymore, we still need to
+    ;; do some cleanup:
+    (when (or (plusp (logand mask +hrt-event-hangup+))
+              (plusp (logand mask +hrt-event-error+)))
+      ;; let the stdout handler deal with cleanup, stderr
+      ;; being done shouldn't stop stdin from being read.
+      ;; Wait until that is done to do the cleanup for stderr too.
+      (hrt-event-loop-remove stderr-source)))
+  0)
+
+(cffi:defcallback handle-app-stdout :int
+    ((fd :int)
+     (mask :uint32)
+     (data :pointer))
+  (declare (ignore fd))
+  (cffi:with-foreign-slots ((pid stdout-source) data
                             (:struct app-output-data))
     (let ((info (gethash pid *subprocesses*)))
       (when (plusp (logand mask +hrt-event-readable+))
         (collect-app-output-slurp info))
       (when (or (plusp (logand mask +hrt-event-hangup+))
                 (plusp (logand mask +hrt-event-error+)))
-        (hrt-event-loop-remove event-source)
+        (hrt-event-loop-remove stdout-source)
+        (remhash pid *subprocesses*)
         (unwind-protect
              (let ((result (collect-app-output-end info)))
                (funcall (collect-output-process-callback info) result))
@@ -137,6 +158,13 @@
    (uiop:process-info-output
     (collect-output-process-process info))))
 
+(declaim (inline extract-stderr-fd))
+(defun extract-stderr-fd (info)
+  (declare (type collect-output-process info))
+  (extract-fd-from-stream
+   (uiop:process-info-error-output
+    (collect-output-process-process info))))
+
 (defun subprocess-collect (server args callback)
   "Start a subprocess with args ARGS and call CALLBACK with when it has finished
 writing to stdout.
@@ -148,17 +176,24 @@ CALLBACK: A function that takes a COLLECT-OUTPUT-RESULT object as an argument"
   (let ((info (collect-app-output-begin args callback))
         data)
     (handler-case
-        (let ((stdout-fd (extract-stdout-fd info)))
+        (let ((stdout-fd (extract-stdout-fd info))
+              (stderr-fd (extract-stderr-fd info)))
           (setf data (foreign-struct-create ((:struct app-output-data))
                                             (pid (collect-output-process-pid info))))
           (setf (gethash (collect-output-process-pid info) *subprocesses*)
                 info)
-          (cffi:with-foreign-slots ((event-source) data (:struct app-output-data))
-            (setf event-source (hrt-event-loop-add-fd
-                                server stdout-fd
-                                +hrt-event-readable+
-                                (cffi:callback handle-app-output)
-                                data))))
+          (cffi:with-foreign-slots ((stdout-source stderr-source) data (:struct app-output-data))
+            (setf stdout-source (hrt-event-loop-add-fd
+                                 server stdout-fd
+                                 +hrt-event-readable+
+                                 (cffi:callback handle-app-stdout)
+                                 data)
+                  stderr-source (hrt-event-loop-add-fd
+                                 server stderr-fd
+                                 +hrt-event-readable+
+                                 (cffi:callback handle-app-stderr)
+                                 data))))
+
       (t ()
         ;; I'm not entirely sure how to cleanup here. We certainly need to
         ;; free the data we allocated and close the streams, but do we really
