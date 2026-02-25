@@ -4,7 +4,7 @@ project(
   version: '0.1',
   license: 'GPL',
   default_options: [
-    'c_std=c11',
+    'c_std=c23',
     'warning_level=2',
     'werror=true',
   ],
