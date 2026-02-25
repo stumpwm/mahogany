@@ -73,6 +73,12 @@
            #:modifiers
            #:keysyms-len
            #:wl-key-state
+           ;; subprocesses:
+           #:subprocess-collect
+           #:collect-output-result
+           #:collect-output-result-stdout
+           #:collect-output-result-stderr
+           #:collect-output-result-exit-code
            ;; scene helpers:
            #:hrt-scene-root-destroy
            #:hrt-scene-group-create
