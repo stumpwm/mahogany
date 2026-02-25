@@ -8,6 +8,7 @@ hrt_source_files += files(
   'seat.c',
   'scene.c',
   'server.c',
+  'subprocess.c',
   'view.c',
   'xdg_shell.c',
   )

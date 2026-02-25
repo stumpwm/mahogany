@@ -89,4 +89,6 @@
            #:hrt-scene-fullscreen-node-destroy
            #:hrt-scene-fullscreen-configure
            #:scene-init-view
+           ;; Subprocess handling:
+           #:subprocess-collect
            #:load-foreign-libraries))

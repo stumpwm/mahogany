@@ -30,13 +30,14 @@
                         :components ((:file "theme")))
                (:module bindings
                         :serial t
-                        :depends-on ("interfaces" "theme")
+                        :depends-on ("interfaces" "theme" "util" "log")
                         :components ((:file "package")
                                      (:file "wlr-bindings")
                                      (:file "hrt-libs")
                                      (:file "hrt-bindings")
                                      (:file "hrt-debug" :if-feature :hrt-debug)
                                      (:file "wrappers")
+                                     (:file "subprocess")
                                      (:file "view")
                                      (:file "scene-group")))
                (:module keyboard

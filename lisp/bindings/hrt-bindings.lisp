@@ -371,6 +371,30 @@ Returns the view that was in the node."
   (theme (:pointer (:struct hrt-message-theme)))
   (ms-delay :int))
 
+;; next section imported from file build/include/hrt/hrt_subprocess.h
+
+(cffi:defcenum hrt-exec-result
+  (:hrt-exec-success 0)
+  (:hrt-exec-pipe-error 1)
+  (:hrt-exec-fork-error 2)
+  (:hrt-exec-exec-error 3)
+  (:hrt-exec-init-error 4))
+
+(cffi:defcenum hrt-collect-result
+  (:hrt-collect-result-sucess 0)
+  (:hrt-collect-result-error 1))
+
+(cffi:defctype hrt-exec-callback-fn :pointer #| function ptr void (char *, size_t, enum hrt_collect_result, pid_t, void *) |#)
+
+(declaim (inline hrt-output-from-subprocess))
+(cffi:defcfun ("hrt_output_from_subprocess" hrt-output-from-subprocess)
+    hrt-exec-result
+  (server (:pointer (:struct hrt-server)))
+  (argv (:pointer (:pointer :char) #| array |#))
+  (callback-fn hrt-exec-callback-fn)
+  (data (:pointer :void))
+  (pid :pointer #| pid-t |#))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server

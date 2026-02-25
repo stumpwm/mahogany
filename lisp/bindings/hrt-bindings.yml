@@ -12,6 +12,7 @@ files:
   - build/include/hrt/hrt_output.h
   - build/include/hrt/hrt_scene.h
   - build/include/hrt/hrt_message.h
+  - build/include/hrt/hrt_subprocess.h
   - build/include/hrt/hrt_server.h
 pointer-expansion:
   include:
