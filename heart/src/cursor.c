@@ -9,7 +9,7 @@
 #include <hrt/hrt_input.h>
 
 // This function is shamelessly ripped from the tinywl implementation:
-static struct hrt_view *find_view_at(struct hrt_server *server, double lx,
+static void *find_view_at(struct hrt_server *server, double lx,
                                      double ly, struct wlr_surface **surface,
                                      double *sx, double *sy) {
     /* This returns the topmost node in the scene at the given layout coords.
@@ -34,13 +34,17 @@ static struct hrt_view *find_view_at(struct hrt_server *server, double lx,
     while (tree != NULL && tree->node.data == NULL) {
         tree = tree->node.parent;
     }
-    return tree->node.data;
+    if(tree) {
+        return tree->node.data;
+    } else {
+        return NULL;
+    }
 }
 
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {
     double sx, sy;
     struct wlr_surface *found_surface = NULL;
-    struct hrt_view *view =
+    void *view =
         find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
                      &found_surface, &sx, &sy);
 	if (!view) {
@@ -57,7 +61,7 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat) {
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
     double sx, sy;
     struct wlr_surface *found_surface = NULL;
-    struct hrt_view *view =
+    void *view =
         find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
                      &found_surface, &sx, &sy);
     if (!view) {

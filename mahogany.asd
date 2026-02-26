@@ -39,6 +39,7 @@
                                      (:file "wrappers")
                                      (:file "subprocess")
                                      (:file "view")
+                                     (:file "layer-shell")
                                      (:file "scene-group")))
                (:module keyboard
                         :depends-on ("util")

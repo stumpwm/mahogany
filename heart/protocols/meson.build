@@ -19,6 +19,7 @@ endif
 protocols = [
   [wl_protocol_dir, 'stable/xdg-shell/xdg-shell.xml'],
   [wlr_protocol_dir, 'wlr-output-management-unstable-v1.xml'],
+  [wlr_protocol_dir, 'wlr-layer-shell-unstable-v1.xml'],
 ]
 
 wl_protos_src = []

@@ -147,7 +147,7 @@ to match."
       (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat))
       (tree:remove-frame tree (lambda (x) (alexandria:when-let ((v (tree:frame-view x)))
-                                            (%add-hidden hidden-views v)))))))
+				            (%add-hidden hidden-views v)))))))
 
 (defun %group-add-view (group view)
   (declare (type mahogany-group group)
