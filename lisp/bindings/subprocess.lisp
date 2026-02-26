@@ -11,12 +11,19 @@
   (stderr-result nil :type string-stream :read-only t)
   (callback nil :type (function (collect-output-result) null) :read-only t))
 
-(defun collect-app-output-begin (args callback)
-  (let* ((process (uiop:launch-program args :output :stream
-											:error-output :stream))
+(defun collect-app-output-begin (args callback stdin)
+  (let* ((process (uiop:launch-program args
+                                       :output :stream
+                                       :error-output :stream
+                                       :input (when stdin
+                                                  :stream)))
 		 (pid (uiop:process-info-pid process))
 		 (stdout-result (make-string-output-stream))
          (stderr-result (make-string-output-stream)))
+    (when stdin
+      (let ((stdin-stream (uiop:process-info-input process)))
+        (write-string stdin stdin-stream)
+        (close stdin-stream)))
 	(make-collect-output-process process pid stdout-result
                                  stderr-result
                                  callback)))
@@ -169,15 +176,17 @@
    (uiop:process-info-error-output
     (collect-output-process-process info))))
 
-(defun subprocess-collect (server args callback)
+(defun subprocess-collect (server args callback &optional stdin)
   "Start a subprocess with args ARGS and call CALLBACK with when it has finished
 writing to stdout.
 
 SERVER: a hrt-server object
 ARGS:   A list of program arguments or the name of program; \"ls\"
         or (list \"ls\" \"/\"
-CALLBACK: A function that takes a COLLECT-OUTPUT-RESULT object as an argument"
-  (let ((info (collect-app-output-begin args callback))
+CALLBACK: A function that takes a COLLECT-OUTPUT-RESULT object as an argument
+STDIN: A string to pass to the standard input of the command"
+  (declare (type (or null string) stdin))
+  (let ((info (collect-app-output-begin args callback stdin))
         data)
     (handler-case
         (let ((stdout-fd (extract-stdout-fd info))
