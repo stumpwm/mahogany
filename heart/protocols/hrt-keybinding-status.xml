@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="hrt_keybinding_status_unstable_v1">
+  <copywrite>
+    Copyright © 2019 Stuart Dilts
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+  </copywrite>
+
+  <description summary="protocol to announce keybinding bindings and status">
+    This protocol exposes interfaces to obtain the currently available
+    keybindings as well as if a keybinding is currently being entered.
+
+    Warning! The protocol described in this file is experimental and
+    backward incompatible changes may be made. Backward compatible changes
+    may be added together with the corresponding interface version bump.
+    Backward incompatible changes are done by bumping the version number in
+    the protocol and interface names and resetting the interface version.
+    Once the protocol is to be declared stable, the 'z' prefix and the
+    version number in the protocol and interface names are removed and the
+    interface version number is reset.
+  </description>
+
+  <interface name="zhrt_keybinding_state_v1" version="1">
+    <description summary="Announce the current keybinding
+                          status">
+      This interface announce when the state of the currently pressed
+      keybinding changes, as well as when the set of all available
+      bindings changes.
+    </description>
+
+    <event name="state">
+      <description summary="Announce the state of an in-progress
+                            keybinding">
+        Announce the state of the currently pressed keybinding. The
+        value is the pretty-printed state of the bindings, i.e. "C-t g".
+      </description>
+      <arg name="state" type="string"/>
+    </event>
+
+    <event name="bindings_changed">
+      <description summary="Announce that the set of available
+                            keybindings has been updated">
+        Announce the current set of available bindings.
+      </description>
+      <arg name="bindings" type="string"/>
+    </event>
+  </interface>
+</protocol>
