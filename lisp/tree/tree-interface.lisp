@@ -39,7 +39,7 @@ of an already existing frame with the `set-split-frame-type` function")
             :reader frame-focused
             :initform nil
             :type boolean))
-  (:documentation "A frame that is displayed on an output"))
+  (:documentation "A frame that is positioned on an output"))
 
 (defgeneric frame-prev (frame)
   (:documentation "Get the previous edge node in the tree from this node"))
@@ -59,7 +59,10 @@ of an already existing frame with the `set-split-frame-type` function")
              :initform nil
              :accessor tree-children
              :type list
-             :documentation "Holds the trees of this conatiner")))
+             :documentation "Holds the trees of this conatiner"))
+  (:documentation
+   "An object in the frame tree that has one or more child objects. This class
+should not be directly instantiated; inherit from it instead."))
 
 (defclass tree-container (tree-parent)
   ()
@@ -72,7 +75,10 @@ of an already existing frame with the `set-split-frame-type` function")
            :accessor frame-parent)
    (output :initarg :output
            :type (not null)
-           :reader output-node-output)))
+           :reader output-node-output))
+  (:documentation
+   "A node in the frame tree that contains the tiled frames tied to
+a specific output. This is a root of the frame tree."))
 
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
@@ -81,7 +87,7 @@ of an already existing frame with the `set-split-frame-type` function")
   ((split-direction :initarg :split-direction
                     :reader tree-split-direction
                     :type split-frame-type))
-  (:documentation "An inner node of a frame-tree"))
+  (:documentation "An inner node of a frame-tree that can be positioned."))
 
 (defclass floating-frame (frame)
   ((top-frame :initarg :top-frame
@@ -163,7 +169,7 @@ a view assigned to it."))
     (typep parent 'output-node)))
 
 (defun find-root-frame (frame)
-  "Find the output node for this frame"
+  "Find the root node for this frame tree"
   (declare (type frame frame))
   (do ((cur-frame frame (frame-parent cur-frame)))
       ((root-frame-p cur-frame) cur-frame)))
