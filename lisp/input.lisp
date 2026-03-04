@@ -64,7 +64,7 @@
 
 (defun %focus-frame-under-cursor (seat)
   (let* ((group (mahogany-current-group *compositor-state*))
-         (found (tree:frame-at (mahogany-group-tree-container group)
+         (found (tree:frame-at (mahogany-group-tiled-container group)
                                (hrt:hrt-seat-cursor-lx seat)
                                (hrt:hrt-seat-cursor-ly seat))))
     (group-focus-frame group found seat)))

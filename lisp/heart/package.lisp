@@ -95,13 +95,15 @@
            #:hrt-scene-group-destroy
            #:hrt-scene-output-create
            #:hrt-scene-output-destroy
-           #:scene-group-add-view
+           #:hrt-scene-layer-create
+           #:hrt-scene-layer-destroy
+           #:scene-layer-add-view
            #:hrt-scene-group-set-enabled
-           #:hrt-scene-group-transfer
+           #:hrt-scene-layer-transfer
            #:hrt-scene-group-set-dimensions
            #:hrt-scene-group-set-position
-           ;; #:hrt-scene-group-normal
+           ;; #:hrt-scene-group-layers
            #:scene-create-fullscreen-node
-           #:hrt-scene-fullscreen-node-destroy
+           #:hrt-scene-fullscreen-layer-destroy
            #:hrt-scene-fullscreen-configure
            #:load-foreign-libraries))
