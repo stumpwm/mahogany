@@ -6,9 +6,9 @@
 (in-package #:mahogany-tests/tree)
 
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
-  (let ((container (make-instance 'tree:tree-container)))
+  (let ((container (make-instance 'tree:layer-container)))
     (multiple-value-bind (output-node frame)
-        (tree:tree-container-add container t :x x :y y :width width :height height)
+        (tree:tree-output-add container t :x x :y y :width width :height height)
       (values frame output-node))))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))

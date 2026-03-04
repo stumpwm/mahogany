@@ -74,7 +74,7 @@ names."
   (event :pointer #| (:struct wlr-pointer-axis-event) |#))
 
 (declaim (inline hrt-seat-set-keymap))
-(cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :void
+(cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :bool
   (seat (:pointer (:struct hrt-seat)))
   (rules :pointer #| (:struct xkb-rule-names) |#)
   (flags xkb:keymap-compile-flags))
@@ -261,11 +261,14 @@ set the width and height of views."
   (overlay :pointer #| (:struct wlr-scene-tree) |#))
 
 (cffi:defcstruct hrt-scene-group
-  (normal :pointer #| (:struct wlr-scene-tree) |#)
-  (fullscreen :pointer #| (:struct wlr-scene-tree) |#))
+  (layers :pointer #| (:struct wlr-scene-tree) |#)
+  (fullscreens :pointer #| (:struct wlr-scene-tree) |#))
 
-(cffi:defcstruct hrt-scene-fullscreen-node
-  (tree :pointer #| (:struct wlr-scene-tree) |#)
+(cffi:defcstruct hrt-scene-layer
+  (tree :pointer #| (:struct wlr-scene-tree) |#))
+
+(cffi:defcstruct hrt-scene-fullscreen-layer
+  (layer (:struct hrt-scene-layer))
   (background :pointer #| (:struct wlr-scene-rect) |#)
   (view (:pointer (:struct hrt-view))))
 
@@ -285,60 +288,65 @@ set the width and height of views."
 (cffi:defcfun ("hrt_scene_group_destroy" hrt-scene-group-destroy) :void
   (group (:pointer (:struct hrt-scene-group))))
 
-(declaim (inline hrt-scene-group-add-view))
-(cffi:defcfun ("hrt_scene_group_add_view" hrt-scene-group-add-view) :void
-  (group (:pointer (:struct hrt-scene-group)))
-  (view (:pointer (:struct hrt-view))))
-
-(declaim (inline hrt-scene-group-init-view))
-(cffi:defcfun ("hrt_scene_group_init_view" hrt-scene-group-init-view) :void
-  (group (:pointer (:struct hrt-scene-group)))
-  (view (:pointer (:struct hrt-view))))
-
 (declaim (inline hrt-scene-group-set-enabled))
 (cffi:defcfun ("hrt_scene_group_set_enabled" hrt-scene-group-set-enabled) :void
   (group (:pointer (:struct hrt-scene-group)))
   (enabled :bool))
 
-(declaim (inline hrt-scene-group-transfer))
-(cffi:defcfun ("hrt_scene_group_transfer" hrt-scene-group-transfer) :void
-  (source (:pointer (:struct hrt-scene-group)))
-  (destination (:pointer (:struct hrt-scene-group))))
-
-(declaim (inline hrt-scene-group-normal))
-(cffi:defcfun ("hrt_scene_group_normal" hrt-scene-group-normal) :pointer #| (:struct wlr-scene-tree) |#
+(declaim (inline hrt-scene-layer-create))
+(cffi:defcfun ("hrt_scene_layer_create" hrt-scene-layer-create) (:pointer (:struct hrt-scene-layer))
   (group (:pointer (:struct hrt-scene-group))))
 
-(declaim (inline hrt-scene-create-fullscreen-node))
-(cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
-  "Create a hrt_scene_fullscreen_node with a black bacground of the given size.
+(declaim (inline hrt-scene-layer-destroy))
+(cffi:defcfun ("hrt_scene_layer_destroy" hrt-scene-layer-destroy) :void
+  (layer (:pointer (:struct hrt-scene-layer))))
+
+(declaim (inline hrt-scene-layer-add-view))
+(cffi:defcfun ("hrt_scene_layer_add_view" hrt-scene-layer-add-view) :void
+  (layer (:pointer (:struct hrt-scene-layer)))
+  (view (:pointer (:struct hrt-view))))
+
+(declaim (inline hrt-scene-layer-transfer))
+(cffi:defcfun ("hrt_scene_layer_transfer" hrt-scene-layer-transfer) :void
+  "Transfer all of the views in the source layer to the
+destination layer"
+  (source (:pointer (:struct hrt-scene-layer)))
+  (destination (:pointer (:struct hrt-scene-layer))))
+
+(declaim (inline hrt-scene-group-layers))
+(cffi:defcfun ("hrt_scene_group_layers" hrt-scene-group-layers) :pointer #| (:struct wlr-scene-tree) |#
+  (group (:pointer (:struct hrt-scene-group))))
+
+(declaim (inline hrt-scene-create-fullscreen-layer))
+(cffi:defcfun ("hrt_scene_create_fullscreen_layer" hrt-scene-create-fullscreen-layer) (:pointer (:struct hrt-scene-fullscreen-layer))
+  "Create a hrt_scene_fullscreen_layer with a black bacground of the given size.
 Mode the hrt_view inside the node, removing it from where ever it was in the scene tree."
   (group (:pointer (:struct hrt-scene-group)))
   (view (:pointer (:struct hrt-view)))
   (output (:pointer (:struct hrt-output))))
 
-(declaim (inline hrt-scene-fullscreen-node-destroy))
-(cffi:defcfun ("hrt_scene_fullscreen_node_destroy" hrt-scene-fullscreen-node-destroy) (:pointer (:struct hrt-view))
+(declaim (inline hrt-scene-fullscreen-layer-destroy))
+(cffi:defcfun ("hrt_scene_fullscreen_layer_destroy" hrt-scene-fullscreen-layer-destroy) (:pointer (:struct hrt-view))
   "Destroy the given background node, moving the struct hrt_view to the
 normral layer.
 Returns the view that was in the node."
-  (node (:pointer (:struct hrt-scene-fullscreen-node))))
+  (node (:pointer (:struct hrt-scene-fullscreen-layer))))
 
 (declaim (inline hrt-scene-node-set-dimensions))
 (cffi:defcfun ("hrt_scene_node_set_dimensions" hrt-scene-node-set-dimensions) :uint32
-  (node (:pointer (:struct hrt-scene-fullscreen-node)))
+  (node (:pointer (:struct hrt-scene-fullscreen-layer)))
   (width :int)
   (height :int))
 
 (declaim (inline hrt-scene-node-set-position))
 (cffi:defcfun ("hrt_scene_node_set_position" hrt-scene-node-set-position) :void
-  (node (:pointer (:struct hrt-scene-fullscreen-node)))
+  (node (:pointer (:struct hrt-scene-fullscreen-layer)))
   (x :int)
   (y :int))
 
 (declaim (inline hrt-scene-fullscreen-configure))
 (cffi:defcfun ("hrt_scene_fullscreen_configure" hrt-scene-fullscreen-configure) :uint32
-  (group (:pointer (:struct hrt-scene-fullscreen-node)))
+  (group (:pointer (:struct hrt-scene-fullscreen-layer)))
   (output (:pointer (:struct hrt-output))))
 
 ;; next section imported from file build/include/hrt/hrt_message.h
