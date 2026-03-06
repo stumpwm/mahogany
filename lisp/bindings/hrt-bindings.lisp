@@ -26,6 +26,7 @@
   (request-selection (:struct wl-listener))
   (request-primary-selection (:struct wl-listener))
   (request-start-drag (:struct wl-listener))
+  (start-drag (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
   (cursor-image (:pointer :char)))
 
