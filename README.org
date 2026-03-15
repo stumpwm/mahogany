@@ -110,7 +110,7 @@ tapping on =e=.
     (declare (ignore sequence seat))
     (uiop:launch-program "emacsclient -c || emacs"))
   (add-to-kmap *top-map*
-    (kbd "s-e") #'open-emacs))
+    (kbd "s-e") #'open-emacs
     (kbd "s-F") #'open-firefox)
 #+end_src
 
