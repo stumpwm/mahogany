@@ -7,6 +7,7 @@
 #include <wlr/types/wlr_keyboard_group.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_pointer.h>
+#include <wlr/types/wlr_scene.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -42,6 +43,7 @@ struct hrt_seat {
 
     // drag and drop
     struct wl_listener request_start_drag;
+    struct wl_listener start_drag;
 
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
@@ -77,6 +79,15 @@ struct hrt_input {
     struct hrt_seat *seat;
     struct wl_list link;
 
+    struct wl_listener destroy;
+};
+
+struct hrt_drag {
+    struct hrt_seat *seat;
+    struct wlr_drag *drag;
+    struct wlr_scene_tree *icon_tree;
+
+    struct wl_listener motion;
     struct wl_listener destroy;
 };
 

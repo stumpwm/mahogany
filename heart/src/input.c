@@ -132,6 +132,66 @@ static void handle_request_start_drag(struct wl_listener *listener,
         wlr_data_source_destroy(event->drag->source);
 }
 
+static void handle_destroy_drag_icon(struct wl_listener *listener,
+                                     void *data) {
+	struct hrt_drag *hrt_drag = wl_container_of(listener, hrt_drag, destroy);
+
+    if (hrt_drag->icon_tree)
+        wlr_scene_node_destroy(&hrt_drag->icon_tree->node);
+
+    wl_list_remove(&hrt_drag->motion.link);
+    wl_list_remove(&hrt_drag->destroy.link);
+
+    hrt_seat_reset_view_under(hrt_drag->seat);
+
+    free(hrt_drag);
+}
+
+static void handle_drag_motion(struct wl_listener *listener,
+                              void *data) {
+	struct hrt_drag *drag = wl_container_of(listener, drag, motion);
+
+    wlr_scene_node_set_position(&drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y);
+}
+
+static void handle_start_drag(struct wl_listener *listener,
+                              void *data) {
+	struct hrt_seat *seat = wl_container_of(listener, seat, start_drag);
+
+	struct wlr_drag *wlr_drag = data;
+
+    struct wlr_drag_icon *wlr_drag_icon = wlr_drag->icon;
+    if (!wlr_drag_icon)
+        return;
+
+    struct hrt_drag *drag = calloc (1, sizeof (struct hrt_drag));
+
+    if (drag == NULL) {
+        wlr_log(WLR_DEBUG, "hrt_drag allocation issue");
+        return;
+    }
+
+    drag->seat = seat;
+    drag->drag = wlr_drag;
+    wlr_drag->data = drag;
+
+    struct wlr_scene_tree *icon_tree = wlr_scene_drag_icon_create(seat->server->scene_root->overlay, wlr_drag_icon);
+
+    if (!icon_tree) {
+        wlr_log(WLR_DEBUG, "Failed to allocate ddrag icon scene tree");
+        return;
+    }
+
+    drag->icon_tree = icon_tree;
+
+    drag->motion.notify = handle_drag_motion;
+    wl_signal_add(&wlr_drag->events.motion, &drag->motion);
+    drag->destroy.notify = handle_destroy_drag_icon;
+    wl_signal_add(&wlr_drag->events.destroy, &drag->destroy);
+
+    wlr_scene_node_set_position(&drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y);
+}
+
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
                    const struct hrt_seat_callbacks *callbacks) {
     seat->callbacks        = callbacks;
@@ -167,6 +227,10 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     wl_signal_add(&seat->seat->events.request_start_drag,
                   &seat->request_start_drag);
 
+    seat->start_drag.notify = handle_start_drag;
+    wl_signal_add(&seat->seat->events.start_drag,
+                  &seat->start_drag);
+
     seat->cursor_image = "left_ptr";
 
     return true;
@@ -180,6 +244,7 @@ void hrt_seat_destroy(struct hrt_seat *seat) {
     wl_list_remove(&seat->request_selection.link);
     wl_list_remove(&seat->request_primary_selection.link);
     wl_list_remove(&seat->request_start_drag.link);
+    wl_list_remove(&seat->start_drag.link);
 
     wlr_seat_destroy(seat->seat);
     wl_list_remove(&seat->new_input.link);
