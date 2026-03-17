@@ -28,7 +28,7 @@
                         :components ((:file "view-interface")))
                (:module theme
                         :components ((:file "theme")))
-               (:module bindings
+               (:module heart
                         :serial t
                         :depends-on ("interfaces" "theme" "util")
                         :components ((:file "package")
@@ -47,7 +47,7 @@
                                      (:file "key")
                                      (:file "kmap")))
                (:module tree
-                        :depends-on ("log" "util" "interfaces" "bindings")
+                        :depends-on ("log" "util" "interfaces" "heart")
                         :components ((:file "package")
                                      (:file "tree-interface")
                                      (:file "output-node" :depends-on ("tree-interface"))
@@ -56,19 +56,19 @@
                (:file "package")
                (:file "command")
                (:file "objects" :depends-on ("package" "ring-list"))
-               (:file "message" :depends-on ("bindings"))
-               (:file "group" :depends-on ("transaction" "objects" "bindings"))
-               (:file "state" :depends-on ("objects" "transaction" "keyboard" "bindings"))
+               (:file "message" :depends-on ("heart"))
+               (:file "group" :depends-on ("transaction" "objects" "heart"))
+               (:file "state" :depends-on ("objects" "transaction" "keyboard" "heart"))
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
                       :depends-on ("objects" "globals" "keyboard" "input" "command"))
                (:file "transaction" :depends-on ("globals"))
-               (:file "output" :depends-on ("objects" "bindings" "state" "bindings"))
-               (:file "events" :depends-on ("globals" "state" "objects" "bindings"))
-               (:file "input" :depends-on ("state" "keyboard" "bindings" "command" "message"))
+               (:file "output" :depends-on ("objects" "heart" "state" "heart"))
+               (:file "events" :depends-on ("globals" "state" "objects" "heart"))
+               (:file "input" :depends-on ("state" "keyboard" "heart" "command" "message"))
                (:file "key-bindings"
                       :depends-on ("kmap-modes" "state" "tree" "input" "command"))
-               (:file "main" :depends-on ("bindings" "keyboard" "input" "package"))))
+               (:file "main" :depends-on ("heart" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable
   :build-operation program-op
