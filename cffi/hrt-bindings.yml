@@ -1,4 +1,4 @@
-output: lisp/bindings/hrt-bindings.lisp
+output: lisp/heart/hrt-bindings.lisp
 package: hrt
 pkg-config:
   - wlroots-0.19

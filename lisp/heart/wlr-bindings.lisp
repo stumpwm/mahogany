@@ -27,7 +27,7 @@ struct wlr_fbox has the same semantics as struct wlr_box."
   "Finds the closest point within the box bounds.
 
 Returns NAN if the box is empty."
-  (box :pointer #| (:struct wlr-box) |# )
+  (box :pointer #| (:struct wlr-box) |#)
   (x :double)
   (y :double)
   (dest-x (:pointer :double))
@@ -38,9 +38,9 @@ Returns NAN if the box is empty."
   "Gives the intersecting box between two struct wlr_box.
 
 Returns an empty box if the provided boxes don't intersect."
-  (dest :pointer #| (:struct wlr-box) |# )
-  (box-a :pointer #| (:struct wlr-box) |# )
-  (box-b :pointer #| (:struct wlr-box) |# ))
+  (dest :pointer #| (:struct wlr-box) |#)
+  (box-a :pointer #| (:struct wlr-box) |#)
+  (box-b :pointer #| (:struct wlr-box) |#))
 
 (declaim (inline wlr-box-contains-point))
 (cffi:defcfun ("wlr_box_contains_point" wlr-box-contains-point) :bool
@@ -50,7 +50,7 @@ For example:
 
 - A point at (100, 50) is not contained in the box (0, 0, 100, 50).
 - A point at (10, 10) is contained in the box (10, 0, 50, 50)."
-  (box :pointer #| (:struct wlr-box) |# )
+  (box :pointer #| (:struct wlr-box) |#)
   (x :double)
   (y :double))
 
@@ -60,21 +60,21 @@ For example:
 
 Returns true if the \"smaller\" box is fully contained within the \"bigger\" box.
 If either of the boxes are empty, false is returned."
-  (bigger :pointer #| (:struct wlr-box) |# )
-  (smaller :pointer #| (:struct wlr-box) |# ))
+  (bigger :pointer #| (:struct wlr-box) |#)
+  (smaller :pointer #| (:struct wlr-box) |#))
 
 (declaim (inline wlr-box-empty))
 (cffi:defcfun ("wlr_box_empty" wlr-box-empty) :bool
   "Checks whether a box is empty or not.
 
 A box is considered empty if its width and/or height is zero or negative."
-  (box :pointer #| (:struct wlr-box) |# ))
+  (box :pointer #| (:struct wlr-box) |#))
 
 (declaim (inline wlr-box-transform))
 (cffi:defcfun ("wlr_box_transform" wlr-box-transform) :void
   "Transforms a box inside a (0, 0, width, height) box."
-  (dest :pointer #| (:struct wlr-box) |# )
-  (box :pointer #| (:struct wlr-box) |# )
+  (dest :pointer #| (:struct wlr-box) |#)
+  (box :pointer #| (:struct wlr-box) |#)
   (transform :int #| enum wl-output-transform |#)
   (width :int)
   (height :int))
@@ -84,13 +84,13 @@ A box is considered empty if its width and/or height is zero or negative."
   "Checks whether a box is empty or not.
 
 A box is considered empty if its width and/or height is zero or negative."
-  (box :pointer #| (:struct wlr-fbox) |# ))
+  (box :pointer #| (:struct wlr-fbox) |#))
 
 (declaim (inline wlr-fbox-transform))
 (cffi:defcfun ("wlr_fbox_transform" wlr-fbox-transform) :void
   "Transforms a floating-point box inside a (0, 0, width, height) box."
-  (dest :pointer #| (:struct wlr-fbox) |# )
-  (box :pointer #| (:struct wlr-fbox) |# )
+  (dest :pointer #| (:struct wlr-fbox) |#)
+  (box :pointer #| (:struct wlr-fbox) |#)
   (transform :int #| enum wl-output-transform |#)
   (width :double)
   (height :double))
@@ -98,11 +98,11 @@ A box is considered empty if its width and/or height is zero or negative."
 (declaim (inline wlr-box-equal))
 (cffi:defcfun ("wlr_box_equal" wlr-box-equal) :bool
   "Returns true if the two boxes are equal, false otherwise."
-  (a :pointer #| (:struct wlr-box) |# )
-  (b :pointer #| (:struct wlr-box) |# ))
+  (a :pointer #| (:struct wlr-box) |#)
+  (b :pointer #| (:struct wlr-box) |#))
 
 (declaim (inline wlr-fbox-equal))
 (cffi:defcfun ("wlr_fbox_equal" wlr-fbox-equal) :bool
   "Returns true if the two boxes are equal, false otherwise."
-  (a :pointer #| (:struct wlr-fbox) |# )
-  (b :pointer #| (:struct wlr-fbox) |# ))
+  (a :pointer #| (:struct wlr-fbox) |#)
+  (b :pointer #| (:struct wlr-fbox) |#))

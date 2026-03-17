@@ -1,4 +1,4 @@
-output: lisp/bindings/wlr-bindings.lisp
+output: lisp/heart/wlr-bindings.lisp
 package: wlr
 pkg-config:
   - wlroots-0.19

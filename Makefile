@@ -18,10 +18,10 @@ HRT_INCLUDES = $(shell find $(ROOT)/heart/include/hrt/ -type f)
 $(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
 
-lisp/bindings/hrt-bindings.lisp: $(ROOT)/cffi/hrt-bindings.yml $(HRT_INCLUDES) $(BUILD_DIR)/heart/lib64/libheart.so
+lisp/heart/hrt-bindings.lisp: $(ROOT)/cffi/hrt-bindings.yml $(HRT_INCLUDES) $(BUILD_DIR)/heart/lib64/libheart.so
 	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b cffi/hrt-bindings.yml
 
-lisp/bindings/wlr-bindings.lisp: $(ROOT)/cffi/wlr-bindings.yml $(BUILD_DIR)/heart/lib64/libheart.so
+lisp/heart/wlr-bindings.lisp: $(ROOT)/cffi/wlr-bindings.yml $(BUILD_DIR)/heart/lib64/libheart.so
 	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b cffi/wlr-bindings.yml
 
 $(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
