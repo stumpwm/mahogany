@@ -92,8 +92,8 @@
 	  (when (not (uiop:process-alive-p process))
 		(setf exit-code (uiop:wait-process process)))
 	  (make-collect-output-result :stdout stdout-result
-								  :stderr stderr-result
-								  :exit-code exit-code))))
+				      :stderr stderr-result
+				      :exit-code exit-code))))
 
 (defun collect-app-output-cleanup (info)
   (with-accessors ((stdout collect-output-process-stdout-result)
