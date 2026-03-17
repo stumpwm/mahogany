@@ -58,6 +58,12 @@ endif
 
 have_xwayland = xcb.found() and wlroots_has_xwayland
 
+# We use eventfd as a semaphore. It's not available everywhere, but is present on
+# Linux, FreeBSD, and NetBSD. Wlroots only supports Linux and FreeBSD, so we are good.
+if not cc.has_function('eventfd', prefix: '#include <sys/eventfd.h>')
+  error('System missing required function \'eventfd\'')
+endif
+
 features = {
   'debug-utils': get_option('debug_utils'),
   'xwayland': have_xwayland,
