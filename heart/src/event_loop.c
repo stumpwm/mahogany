@@ -25,7 +25,7 @@ void hrt_event_loop_remove(struct wl_event_source *source) {
 struct hrt_fd_semaphore *
 hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
                              hrt_event_loop_fd_func_t callback) {
-    struct hrt_fd_semaphore *semaphore = calloc(1, sizeof(&semaphore));
+    struct hrt_fd_semaphore *semaphore = calloc(1, sizeof(*semaphore));
     if (!semaphore) {
         return nullptr;
     }
@@ -67,7 +67,7 @@ bool hrt_event_loop_semaphore_decrement(struct hrt_fd_semaphore *fd) {
         if (errno == EAGAIN) {
             wlr_log(WLR_ERROR, "Semaphore is zero when reading");
         } else {
-            wlr_log(WLR_ERROR, "Cannot read semahore");
+            wlr_log(WLR_ERROR, "Cannot read semaphore");
         }
         return false;
     }

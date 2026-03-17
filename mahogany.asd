@@ -1,5 +1,8 @@
 ;;;; mahogany.asd
 
+#+sbcl
+(require 'sb-posix)
+
 (asdf:defsystem #:mahogany
   :description "Mahogany is a tiling window manager for wayland a la stumpwm"
   :author "Stuart Dilts"
@@ -14,6 +17,8 @@
                #:xkbcommon
                #:cl-wayland
                #:iterate
+               #:cl-freelock
+               #:bordeaux-threads
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"
@@ -41,7 +46,8 @@
                                      (:file "output" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "subprocess" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))))
+                                     (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "server" :depends-on ("package" "hrt-bindings"))))
                (:module keyboard
                         :depends-on ("util")
                         :components ((:file "package")

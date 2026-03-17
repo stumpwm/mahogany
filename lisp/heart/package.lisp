@@ -58,14 +58,17 @@
            #:view-configure
            ;; seat callbacks
            #:button-event #:wheel-event #:keyboard-keypress-event
+           ;; Server-related symbols
            #:hrt-server
+           #:server-init
+           #:server-finish
            #:hrt-server-scene-tree
            #:hrt-server-group-create
            #:hrt-server-seat
-           #:hrt-server-init
            #:hrt-server-start
            #:hrt-server-stop
-           #:hrt-server-finish
+           #:run-in-main-thread
+           ;; Toast messages:
            #:toast-message
            #:toast-message-gravity
            ;; keypress info slots:

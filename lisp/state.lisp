@@ -23,9 +23,9 @@
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
                           &key (debug-level 3))
   (setf (mahogany-state-server state) server)
-  (hrt:hrt-server-init server
-                       output-callbacks seat-callbacks view-callbacks
-                       debug-level)
+  (hrt:server-init server
+                   output-callbacks seat-callbacks view-callbacks
+                   debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (mahogany-current-group state) default-group)))
 
@@ -39,7 +39,7 @@
       (loop for g across groups
             :do (destroy-mahogany-group g scene-tree seat)))
     (setf groups (adjust-array groups 0 :fill-pointer 0))
-    (hrt:hrt-server-finish server)
+    (hrt:server-finish server)
     ;; The actual scene object is freed during hrt-server-finish:
     (setf server nil)))
 
