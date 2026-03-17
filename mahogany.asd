@@ -29,17 +29,19 @@
                (:module theme
                         :components ((:file "theme")))
                (:module heart
-                        :serial t
                         :depends-on ("interfaces" "theme" "util")
                         :components ((:file "package")
-                                     (:file "wlr-bindings")
-                                     (:file "hrt-libs")
-                                     (:file "hrt-bindings")
-                                     (:file "hrt-debug" :if-feature :hrt-debug)
-                                     (:file "wrappers")
-                                     (:file "subprocess")
-                                     (:file "view")
-                                     (:file "scene-group")))
+                                     (:file "wlr-bindings" :depends-on ("package"))
+                                     (:file "hrt-libs" :depends-on ("package"))
+                                     (:file "hrt-bindings" :depends-on ("wlr-bindings"))
+                                     (:file "cffi-util" :depends-on ("package"))
+                                     (:file "hrt-debug" :depends-on ("hrt-bindings")
+                                            :if-feature :hrt-debug)
+                                     (:file "message" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "output" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "subprocess" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))))
                (:module keyboard
                         :depends-on ("util")
                         :components ((:file "package")
