@@ -191,10 +191,12 @@ well behaved ones should."
 
 ;; next section imported from file build/include/hrt/hrt_output.h
 
+(cffi:defcstruct hrt-scene-output)
+
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |#)
   (server (:pointer (:struct hrt-server)))
-  (scene :pointer #| (:struct hrt-scene-output) |#)
+  (scene (:pointer (:struct hrt-scene-output)))
   (wlr-scene :pointer #| (:struct wlr-scene-output) |#)
   (usable-area (:struct wlr-box))
   (request-state (:struct wl-listener))

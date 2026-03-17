@@ -9,6 +9,8 @@
 
 #include <hrt/hrt_server.h>
 
+struct hrt_scene_output;
+
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
