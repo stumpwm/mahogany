@@ -163,9 +163,11 @@
 (defun extract-fd-from-stream (stream)
   #+sbcl
   (sb-posix:file-descriptor stream)
+  #+clasp
+  (ext:file-stream-file-descriptor  stream)
   #+ccl
   (ccl:stream-device stream :output)
-  #-(or sbcl ccl)
+  #-(or sbcl ccl clasp)
   (error "Not Implemented"))
 
 (declaim (inline extract-stdout-fd))
