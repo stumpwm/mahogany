@@ -7,3 +7,6 @@
 [submodule "dependencies/cl-xkbcommon"]
 	path = dependencies/cl-xkbcommon
 	url = https://github.com/sdilts/cl-xkbcommon.git
+[submodule "dependencies/cl-freelock"]
+	path = dependencies/cl-freelock
+	url = https://github.com/ItsMeForLua/cl-freelock.git

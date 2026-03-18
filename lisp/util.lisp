@@ -2,6 +2,7 @@
 (defpackage #:mahogany/util
   (:use #:cl)
   (:export #:mahogany-error
+           #:mahogany-panic
            #:defglobal
            #:disable-fpu-exceptions
            #:enable-debugger))
@@ -12,13 +13,8 @@
   ()
   (:documentation "Generic error condition for mahogany"))
 
-(define-condition initialization-error (mahogany-error)
-  ((text :initarg text :reader text))
-  (:documentation "Used when initializaion goes wrong"))
-
-(define-condition invalid-operation (mahogany-error)
-  ((text :initarg text :reader text))
-  (:documentation "Used when an invalid operation is attempted"))
+(define-condition mahogany-panic (mahogany-error)
+  ((text :initarg text :reader text)))
 
 (defmacro defglobal (name value &optional doc)
   #+sbcl

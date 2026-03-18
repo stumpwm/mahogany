@@ -394,6 +394,34 @@ Returns the view that was in the node."
 (cffi:defcfun ("hrt_event_loop_remove" hrt-event-loop-remove) :void
   (source :pointer #| (:struct wl-event-source) |#))
 
+(cffi:defcstruct hrt-fd-semaphore
+  (fd :int)
+  (event-source :pointer #| (:struct wl-event-source) |#))
+
+(declaim (inline hrt-event-loop-semaphore-add))
+(cffi:defcfun ("hrt_event_loop_semaphore_add" hrt-event-loop-semaphore-add) (:pointer (:struct hrt-fd-semaphore))
+  "Create a semaphore fd (via eventfd(2)), and call the provided function
+whenever the semaphore is non-zero."
+  (server (:pointer (:struct hrt-server)))
+  (initval :int)
+  (callback hrt-event-loop-fd-func-t))
+
+(declaim (inline hrt-event-loop-semaphore-increment))
+(cffi:defcfun ("hrt_event_loop_semaphore_increment" hrt-event-loop-semaphore-increment) :bool
+  "Increment the given semaphore by the given value."
+  (fd (:pointer (:struct hrt-fd-semaphore)))
+  (increment :uint64))
+
+(declaim (inline hrt-event-loop-semaphore-decrement))
+(cffi:defcfun ("hrt_event_loop_semaphore_decrement" hrt-event-loop-semaphore-decrement) :bool
+  "Decrement the semaphore by 1"
+  (fd (:pointer (:struct hrt-fd-semaphore))))
+
+(declaim (inline hrt-event-loop-semaphore-close))
+(cffi:defcfun ("hrt_event_loop_semaphore_close" hrt-event-loop-semaphore-close) :void
+  "Close the semaphore fd and remove it from the event loop."
+  (fd (:pointer (:struct hrt-fd-semaphore))))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server
