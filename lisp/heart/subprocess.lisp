@@ -104,10 +104,14 @@
 	(close stdout)
 	(close stderr)))
 
-(mahogany/util:defglobal *subprocesses* (make-hash-table))
+(mahogany/util:defglobal *subprocesses* (make-hash-table)
+  "Hash table for storing active subprocesses")
 
 (cffi:defcstruct app-output-data
-  ;; Note: PIDs are usually ints, but use a long to give us some headroom:
+  ;; Note: PIDs are usually ints, and since we get the value from
+  ;; lisp (and not C), this datatype doesn't matter as long as its
+  ;; big enough.
+  ;; FIXME: grovel pid_t instead?
   (pid :long)
   (stdout-source :pointer)
   (stderr-source :pointer))
@@ -119,6 +123,8 @@
   (declare (ignore fd))
   (cffi:with-foreign-slots ((pid stderr-source) data
                             (:struct app-output-data))
+    ;; The info object may have been removed when stdout  is closed or
+    ;; has an error:
     (alexandria:when-let ((info (gethash pid *subprocesses*)))
       (when (plusp (logand mask +hrt-event-readable+))
         (collect-app-slurp-stderr info)))
@@ -211,7 +217,7 @@ STDIN: A string to pass to the standard input of the command"
         ;; I'm not entirely sure how to cleanup here. We certainly need to
         ;; free the data we allocated and close the streams, but do we really
         ;; need to terminate the process?
-        ;; This gets handled in normal exectuion by handle-app-output:
+        ;; This gets handled in normal exectution by handle-app-output:
         (uiop:terminate-process (collect-output-process-process info))
         (when data
           (cffi:foreign-free data))
