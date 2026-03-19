@@ -40,15 +40,18 @@
                                      (:file "wlr-bindings" :depends-on ("package"))
                                      (:file "hrt-libs" :depends-on ("package"))
                                      (:file "hrt-bindings" :depends-on ("wlr-bindings"))
+                                     (:file "callback" :depends-on ("package"))
                                      (:file "cffi-util" :depends-on ("package"))
                                      (:file "hrt-debug" :depends-on ("hrt-bindings")
                                             :if-feature :hrt-debug)
                                      (:file "message" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "output" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "subprocess" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "subprocess"
+                                            :depends-on ("cffi-util" "hrt-bindings" "callback"))
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "server" :depends-on ("package" "hrt-bindings"))))
+                                     (:file "server"
+                                            :depends-on ("package" "hrt-bindings" "callback"))))
                (:module keyboard
                         :depends-on ("util")
                         :components ((:file "package")

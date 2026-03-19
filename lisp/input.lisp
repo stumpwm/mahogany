@@ -68,24 +68,27 @@
                                (hrt:hrt-seat-cursor-ly seat))))
     (group-focus-frame group found seat)))
 
-(cffi:defcallback handle-mouse-wheel-event :void
+(hrt:define-hrt-callback handle-mouse-wheel-event :void
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
+    ()
   (when (eq *keyboard-focus-type* :click-and-wheel)
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
 
-(cffi:defcallback handle-mouse-button-event :void
+(hrt:define-hrt-callback handle-mouse-button-event :void
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
+    ()
   (when (or (eq *keyboard-focus-type* :click)
             (eq *keyboard-focus-type* :click-and-wheel))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
 
-(cffi:defcallback keyboard-callback :bool
+(hrt:define-hrt-callback keyboard-callback :bool
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (info (:pointer (:struct hrt:hrt-keypress-info))))
+    ()
   (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
                             info (:struct hrt:hrt-keypress-info))
     ;; I'm not sure why this is an array, but it's what tinywl does:
