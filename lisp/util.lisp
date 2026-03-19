@@ -14,7 +14,9 @@
   (:documentation "Generic error condition for mahogany"))
 
 (define-condition mahogany-panic (mahogany-error)
-  ((text :initarg text :reader text)))
+  ((text :initarg text :reader text))
+  (:documentation "Fatal error that cannot be recovered from.
+When this error is signaled, the only appropriate thing to do is exit."))
 
 (defmacro defglobal (name value &optional doc)
   #+sbcl
