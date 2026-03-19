@@ -116,10 +116,11 @@
   (stdout-source :pointer)
   (stderr-source :pointer))
 
-(cffi:defcallback handle-app-stderr :int
+(define-hrt-callback handle-app-stderr :int
     ((fd :int)
      (mask :uint32)
      (data :pointer))
+    ()
   (declare (ignore fd))
   (cffi:with-foreign-slots ((pid stderr-source) data
                             (:struct app-output-data))
@@ -138,10 +139,11 @@
       (hrt-event-loop-remove stderr-source)))
   0)
 
-(cffi:defcallback handle-app-stdout :int
+(define-hrt-callback handle-app-stdout :int
     ((fd :int)
      (mask :uint32)
      (data :pointer))
+    ()
   (declare (ignore fd))
   (cffi:with-foreign-slots ((pid stdout-source) data
                             (:struct app-output-data))

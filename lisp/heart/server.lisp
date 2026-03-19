@@ -29,10 +29,11 @@
                               (lambda (q)
                                 (fset:with-first q ,var))))))
 
-(cffi:defcallback work-queue-callback :int
+(define-hrt-callback work-queue-callback :int
     ((fd :int)
      (mask :uint32)
      (data :pointer))
+    ()
   (declare (ignore fd data))
   (flet ((run-with-restarts (func)
            (restart-case (funcall func)
@@ -47,8 +48,6 @@
       ;; FIXME: Things are hoplessly borked if we get an error here. I haven't been able to
       ;;  find a way to recover from this or even why we would get an error. Since
       ;;  this is vital to how the compositor works, initiate termination via a signal.
-      ;;  Signaling is dangrous here, as it causes the C stack to unwind, but
-      ;;  it's the best we have right now.
       (error 'mahogany/util:mahogany-panic :text "Fatal error when reading work-queue semaphore"))
     (hrt-event-loop-semaphore-decrement *workqueue-semaphore*)
     ;; Purposefully only execute one callback at a time to not hog resources:

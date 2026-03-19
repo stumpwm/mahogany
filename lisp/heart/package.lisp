@@ -13,7 +13,8 @@
   (:local-nicknames (#:mh/interface #:mahogany/wm-interface)
                     (#:colors #:cl-colors2))
   (:nicknames #:hrt)
-  (:export #:hrt-output-callbacks
+  (:export #:define-hrt-callback
+           #:hrt-output-callbacks
            #:hrt-seat-callbacks
            #:hrt-view-callbacks
            #:new-view
