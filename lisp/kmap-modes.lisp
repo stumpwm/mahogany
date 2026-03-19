@@ -90,7 +90,8 @@ the KEYBINDINGS list."
            (kmap-mode-deactivate *compositor-state* kmap-mode)))))
 
 (defcommand passthrough-key-event ()
-  :pass-through)
+  (:method ()
+    :pass-through))
 
 (defvar *prefix-passthrough-kmap*
   (define-kmap
