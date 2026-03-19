@@ -48,13 +48,39 @@ Values:
                ((= *keyboard-focus-bits* 0)
                 :ignore)))))
 
+(defmacro with-gathered-args (arg-spec name &body body)
+  `(let ((,name (list ,@(mapcar (lambda (x)
+                                  `(cons (quote ,(car x))
+                                         ,(cadr x)))
+                                arg-spec))))
+     ,@body))
+
 (defun execute-command (function key-sequence seat)
-  (hrt:with-view-transaction ()
-    (handler-case
-        (funcall function key-sequence seat)
-      (invalid-operation (condition)
-        (toast-message *compositor-state* (condition-text condition)
-                       :theme *message-error-theme*)))))
+  ;; If there are no interactive arguments,
+  ;; we could just execute the command directly, but
+  ;; doing it in another thread allows for interactive
+  ;; error handling and keeps the behavior consistent between
+  ;; commands with and without interactive arguments.
+  (bt2:make-thread
+   (lambda ()
+     (with-gathered-args ((sequence key-sequence)
+                          (seat seat))
+         gathered
+       (multiple-value-bind (func arg-list)
+           (cl-interactive:gather-args-interactively
+            function
+            :already-gathered gathered)
+         (when func
+           (hrt:run-in-main-thread
+            (lambda ()
+              (log-string :debug "Calling command ~S with args: ~S"
+                          func arg-list)
+              (hrt:with-view-transaction ()
+                (handler-case
+                    (cl-interactive:call-command-with-argument-list func arg-list)
+                  (invalid-operation (condition)
+                    (toast-message *compositor-state* (condition-text condition)
+                                   :theme *message-error-theme*))))))))))))
 
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))
