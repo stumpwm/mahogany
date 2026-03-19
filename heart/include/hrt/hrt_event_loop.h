@@ -38,7 +38,8 @@ hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
 /**
  * Increment the given semaphore by the given value.
  **/
-bool hrt_event_loop_semaphore_increment(struct hrt_fd_semaphore *fd, uint64_t increment);
+bool hrt_event_loop_semaphore_increment(struct hrt_fd_semaphore *fd,
+                                        uint64_t increment);
 
 /**
  * Decrement the semaphore by 1

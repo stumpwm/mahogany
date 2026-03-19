@@ -1,11 +1,33 @@
 (in-package #:hrt)
 
-(declaim (type cl-freelock:queue *work-queue*))
-(mahogany/util::defglobal *work-queue* (cl-freelock:make-queue)
+(declaim (type fset:seq *work-queue*))
+(mahogany/util::defglobal *work-queue* (fset:seq)
   "Queue holding the functions to be executed on the main thread")
 
 (declaim (type (or null cffi:foreign-pointer) *workqueue-semaphore*))
-(defparameter *workqueue-semaphore** nil)
+(defparameter *workqueue-semaphore* nil)
+
+#-ATOMICS-CAS-SPECIAL-VAR
+(error "Lisp implementation does not have support for required CAS operation")
+
+(defmacro cas-deque (seq)
+  (let ((old (gensym "OLD"))
+        (b (gensym "CAS-DEQUE")))
+    `(block ,b
+       (tagbody
+        loop
+          (let ((,old ,seq))
+            (multiple-value-bind (val success) (fset:first ,seq)
+              (unless (atomics:cas ,seq ,old (fset:less-first ,old))
+                (go loop))
+              (return-from ,b (values val success))))))))
+
+(defmacro cas-enque (seq val)
+  (let ((var (gensym "VAL")))
+    `(let ((,var ,val))
+       (atomics:atomic-update ,seq
+                              (lambda (q)
+                                (fset:with-first q ,var))))))
 
 (cffi:defcallback work-queue-callback :int
     ((fd :int)
@@ -23,26 +45,31 @@
                                (logand mask +hrt-event-hangup+)
                                (logand mask +hrt-event-error+))
       ;; FIXME: Things are hoplessly borked if we get an error here. I haven't been able to
-      ;;  find a way to recover from this or even why we would get an error. As I see it,
-      ;;  there's two options; either remove the callback from the event loop, or terminate
-      ;;  the compositor because vital functionality won't be available.
-      ;;  Termination is way easier to implement, so do that.
-      (error 'mahogany/util:mahogany-panic :text "Fatal error when reading work-queue semaphore")
-      (return-from work-queue-callback 0))
+      ;;  find a way to recover from this or even why we would get an error. Since
+      ;;  this is vital to how the compositor works, initiate termination via a signal.
+      ;;  Signaling is dangrous here, as it causes the C stack to unwind, but
+      ;;  it's the best we have right now.
+      (error 'mahogany/util:mahogany-panic :text "Fatal error when reading work-queue semaphore"))
     (hrt-event-loop-semaphore-decrement *workqueue-semaphore*)
     ;; Purposefully only execute one callback at a time to not hog resources:
-    (alexandria:when-let ((func (cl-freelock:queue-pop *work-queue*)))
-      (mahogany/log:log-string :trace "Running ~S on main thread" func)
-      (run-with-restarts func))
+    (alexandria:if-let ((func (cas-deque *work-queue*)))
+      ;; func is non-null, don't need to check success val:
+      (progn
+        (mahogany/log:log-string :trace "Running ~S on main thread" func)
+        (run-with-restarts func))
+      (warn "work queue callback called with no value in the queue"))
     0))
 
 (defun run-in-main-thread (func)
   "Run the given function in the main thread. The function must have no arguments.
 
-This allows actions originating in external threads to manipulate compositor data safely."
+This allows actions originating in external threads to manipulate compositor data safely.
+The order of execution is not guaranteed if multiple lambdas are added at the same time."
   (declare (type function func))
   (check-type func function)
-  (cl-freelock:queue-push *work-queue* func)
+  ;; Increment the semaphore after enqueing to ensure the event loop doesn't
+  ;; get woken up too early:
+  (cas-enque *work-queue* func)
   (hrt-event-loop-semaphore-increment *workqueue-semaphore* 1))
 
 (defun server-init (server output-callbacks seat-callbacks view-callbacks

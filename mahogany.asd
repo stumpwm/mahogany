@@ -17,7 +17,8 @@
                #:xkbcommon
                #:cl-wayland
                #:iterate
-               #:cl-freelock
+               #:atomics
+               #:fset
                #:bordeaux-threads
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
