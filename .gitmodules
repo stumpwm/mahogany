@@ -7,3 +7,6 @@
 [submodule "dependencies/cl-xkbcommon"]
 	path = dependencies/cl-xkbcommon
 	url = https://github.com/sdilts/cl-xkbcommon.git
+[submodule "dependencies/cl-interactive"]
+	path = dependencies/cl-interactive
+	url = https://github.com/sdilts/cl-interactive.git
