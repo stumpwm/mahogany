@@ -57,7 +57,7 @@
       (group-suspend (mahogany-current-group state) (hrt:hrt-server-seat server)))
     (call-next-method)
     (group-wakeup group (hrt:hrt-server-seat server))
-    (dirty-view-transaction)))
+    (hrt:dirty-view-transaction)))
 
 (declaim (inline server-seat))
 (defun server-seat (state)
@@ -151,9 +151,10 @@
 
 (defun mahogany-state-output-reconfigure (state)
   (log-string :trace "Output layout changed!")
-  (with-accessors ((groups mahogany-state-groups)) state
-    (loop for g across groups
-          do (group-reconfigure-outputs g (mahogany-state-outputs state)))))
+  (hrt:with-view-transaction ()
+    (with-accessors ((groups mahogany-state-groups)) state
+      (loop for g across groups
+            do (group-reconfigure-outputs g (mahogany-state-outputs state))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)

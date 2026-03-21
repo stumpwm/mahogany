@@ -22,7 +22,8 @@
 (defun view-set-hidden (view hidden)
   (declare (type view view)
            (type boolean hidden))
-  (hrt-view-set-hidden (view-hrt-view view) hidden))
+  (hrt-view-set-hidden (view-hrt-view view) hidden)
+  (dirty-view-transaction))
 
 (declaim (inline view-reparent))
 (defun view-reparent (view new-parent)
@@ -45,7 +46,12 @@
   (hrt-view-send-configure (view-hrt-view view)))
 
 (defmethod mh/interface:set-dimensions ((view view) width height)
+  "Request that the given view change its size."
+  ;; We don't need to dirty the view transaction here,
+  ;; as this is *requesting* that the view change size,
+  ;; not actually changing the size.
   (hrt-view-set-size (view-hrt-view view) width height))
 
 (defmethod mh/interface:set-position ((view view) x y)
-  (hrt-view-set-relative (view-hrt-view view) x y))
+  (hrt-view-set-relative (view-hrt-view view) x y)
+  (dirty-view-transaction))

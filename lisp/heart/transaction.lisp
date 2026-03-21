@@ -1,4 +1,4 @@
-(in-package #:mahogany)
+(in-package #:hrt)
 
 (defstruct view-transaction-state
   (dirty nil :type boolean))
@@ -8,10 +8,9 @@
   "State of the current view mainpulation transaction")
 
 (defun %commit-view-transaction ()
-  (log-string :trace "Commiting view transaction")
+  (mahogany/log:log-string :trace "Commiting view transaction")
   (hrt:hrt-seat-reset-view-under
-   (hrt:hrt-server-seat
-    (mahogany-state-server *compositor-state*))))
+   (hrt:hrt-server-seat (%hrt-server))))
 
 (defun dirty-view-transaction ()
   (if *view-manipulation-state*
@@ -25,5 +24,6 @@
        (if (not *view-manipulation-state*)
            (let ((*view-manipulation-state* (make-view-transaction-state)))
              (,body-fn-name)
-             (%commit-view-transaction))
+             (when (view-transaction-state-dirty *view-manipulation-state*)
+               (%commit-view-transaction)))
            (,body-fn-name)))))

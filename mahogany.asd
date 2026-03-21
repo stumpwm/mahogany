@@ -35,7 +35,7 @@
                (:module theme
                         :components ((:file "theme")))
                (:module heart
-                        :depends-on ("interfaces" "theme" "util")
+                        :depends-on ("interfaces" "theme" "util" "log")
                         :components ((:file "package")
                                      (:file "wlr-bindings" :depends-on ("package"))
                                      (:file "hrt-libs" :depends-on ("package"))
@@ -51,7 +51,8 @@
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "server"
-                                            :depends-on ("package" "hrt-bindings" "callback"))))
+                                      :depends-on ("package" "hrt-bindings" "callback"))
+                                     (:file "transaction" :depends-on ("server"))))
                (:module keyboard
                         :depends-on ("util")
                         :components ((:file "package")
@@ -69,12 +70,11 @@
                (:file "command")
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "message" :depends-on ("heart"))
-               (:file "group" :depends-on ("transaction" "objects" "heart"))
-               (:file "state" :depends-on ("objects" "transaction" "keyboard" "heart"))
+               (:file "group" :depends-on ("objects" "heart"))
+               (:file "state" :depends-on ("objects" "keyboard" "heart"))
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
                       :depends-on ("objects" "globals" "keyboard" "input" "command"))
-               (:file "transaction" :depends-on ("globals"))
                (:file "output" :depends-on ("objects" "heart" "state" "heart"))
                (:file "events" :depends-on ("globals" "state" "objects" "heart"))
                (:file "input" :depends-on ("state" "keyboard" "heart" "command" "message"))

@@ -57,6 +57,9 @@
            #:unfocus-view
            #:view-set-hidden
            #:view-configure
+           ;; view transactions:
+           #:dirty-view-transaction
+           #:with-view-transaction
            ;; seat callbacks
            #:button-event #:wheel-event #:keyboard-keypress-event
            ;; Server-related symbols

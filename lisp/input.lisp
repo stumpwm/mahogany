@@ -5,7 +5,8 @@
   "How keyboard focus is controlled by the mouse")
 
 (defun execute-command (function key-sequence seat)
-  (funcall function key-sequence seat))
+  (hrt:with-view-transaction ()
+    (funcall function key-sequence seat)))
 
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))
