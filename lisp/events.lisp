@@ -6,6 +6,12 @@
   (log-string :trace "New view callback called!")
   (mahogany-state-view-add *compositor-state* view))
 
+(hrt:define-hrt-callback handle-view-size-changed :void
+    ((view (:pointer (:struct hrt:hrt-view))))
+    ()
+  (log-string :trace "View size changed")
+  (mahogany-state-view-size-changed *compositor-state* view))
+
 (hrt:define-hrt-callback handle-view-mapped :void
     ((view (:pointer (:struct hrt:hrt-view))))
     ()

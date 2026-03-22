@@ -16,10 +16,3 @@
     (if (not (cffi:null-pointer-p node))
         node
         (error "Could not allocate fullscreen node."))))
-
-
-(declaim (inline scene-init-view))
-(defun scene-init-view (hrt-group hrt-view)
-  (declare (type cffi:foreign-pointer hrt-group hrt-view))
-  (hrt-scene-group-init-view hrt-group hrt-view)
-  (%make-view hrt-view))

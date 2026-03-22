@@ -11,7 +11,7 @@
 struct hrt_view;
 
 typedef void (*view_destroy_handler)(struct hrt_view *view);
-typedef void (*new_view_handler)(struct hrt_view *view);
+typedef void (*view_commit_handler)(struct hrt_view *view);
 typedef void (*view_mapped_handler)(struct hrt_view *view);
 typedef bool (*view_request_fullscreen)(struct hrt_view *view,
                                         struct hrt_output *output,
@@ -22,7 +22,11 @@ struct hrt_view_callbacks {
      * A new view has been created. Must call `hrt_view_init` for the
      * view to be displayed.
      **/
-    new_view_handler new_view;
+    view_commit_handler new_view;
+    // This and the new_view_handler callback could be combined into one, as they are just
+    // specializations of the view commit event, but this seems a bit cleaner and more abstract:
+    //! Called whenever a mapped view's size changes
+    view_commit_handler view_size_changed;
     view_mapped_handler view_mapped;
     view_mapped_handler view_unmapped;
     view_mapped_handler request_minimize;

@@ -159,14 +159,15 @@ to match."
     (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
       (alexandria:when-let ((view (tree:frame-view current-frame)))
         (%add-hidden hidden view))
-      (setf (tree:frame-view current-frame) view)
-      (dirty-view-transaction))))
+      ;; Adding a view to a frame dirties the view transaction:
+      (setf (tree:frame-view current-frame) view))))
 
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)
            (type cffi:foreign-pointer view-ptr))
   (let* ((hrt-group (mahogany-group-hrt-group group))
-         (view (hrt:scene-init-view hrt-group view-ptr)))
+         (view (hrt:view-init view-ptr)))
+    (hrt:scene-group-add-view hrt-group view)
     (push view (mahogany-group-views group))
     ;; We need to send a configure event, so we might as well
     ;; guess the size of the window:
@@ -193,13 +194,14 @@ to match."
                    (output-map mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
       group
-    (flet ((remove-and-populate (f)
-             (setf (tree:frame-view f) nil)
-             (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
-               (setf (tree:frame-view f) new-view))))
-      (%find-view-frame group view #'remove-and-populate))
-    (ring-list:remove-item hidden view)
-    (dirty-view-transaction)))
+    (hrt:with-view-transaction ()
+      (flet ((remove-and-populate (f)
+               (setf (tree:frame-view f) nil)
+               (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
+                 (setf (tree:frame-view f) new-view))))
+        (%find-view-frame group view #'remove-and-populate))
+      (ring-list:remove-item hidden view)
+      (hrt:dirty-view-transaction))))
 
 (defun group-unmap-view (group view)
   (%group-remove-view group view))
@@ -210,7 +212,6 @@ to match."
                    (output-map mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
       group
-    (%group-remove-view group view)
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))
@@ -230,7 +231,7 @@ to match."
              (alexandria:when-let ((view (tree:frame-view view-frame)))
                (%add-hidden (mahogany-group-hidden-views group) view))))
       (tree:replace-frame tree-root frame #'hide-and-disable)))
-  (dirty-view-transaction))
+  (hrt:dirty-view-transaction))
 
 (defun group-maximize-current-frame (group)
   "Remove all of the splits in the current window tree and replae it with the
@@ -254,7 +255,7 @@ currently focused frame"
         (setf next-view (%swap-next-hidden hidden-views view))
         (setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view)
-      (dirty-view-transaction))))
+      (hrt:dirty-view-transaction))))
 
 (defun group-previous-hidden (group)
   (declare (type mahogany-group group))
@@ -266,7 +267,7 @@ currently focused frame"
         (setf next-view (%swap-prev-hidden hidden-views view))
         (setf next-view (%pop-hidden-item hidden-views)))
       (setf (tree:frame-view current-frame) next-view)
-      (dirty-view-transaction))))
+      (hrt:dirty-view-transaction))))
 
 (defun group-next-frame (group seat)
   (declare (type mahogany-group group))

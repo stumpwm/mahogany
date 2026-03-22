@@ -26,10 +26,11 @@
   "Place the view in the frame and make it have the same dimensions
 and position as the frame"
   (when view
-    (set-position view (round (frame-x frame)) (round (frame-y frame)))
-    (set-dimensions view (round (frame-width frame)) (round (frame-height frame)))
-    (when (frame-focused frame)
-      (hrt:focus-view view (slot-value frame 'seat)))))
+    (hrt:with-view-transaction ()
+      (set-position view (round (frame-x frame)) (round (frame-y frame)))
+      (set-dimensions view (round (frame-width frame)) (round (frame-height frame)))
+      (when (frame-focused frame)
+        (hrt:focus-view view (slot-value frame 'seat))))))
 
 (defmethod mark-frame-focused :after ((frame view-frame) seat)
   (setf (slot-value frame 'seat) seat)

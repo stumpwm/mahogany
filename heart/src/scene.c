@@ -89,11 +89,6 @@ void hrt_scene_group_add_view(struct hrt_scene_group *group,
     hrt_view_reparent(view, group->normal);
 }
 
-void hrt_scene_group_init_view(struct hrt_scene_group *group,
-                               struct hrt_view *view) {
-    hrt_view_init(view, group->normal);
-}
-
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
     wlr_scene_node_set_enabled(&group->fullscreen->node, enabled);
     wlr_scene_node_set_enabled(&group->normal->node, enabled);

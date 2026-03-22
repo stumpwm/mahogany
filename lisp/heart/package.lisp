@@ -16,8 +16,10 @@
   (:export #:define-hrt-callback
            #:hrt-output-callbacks
            #:hrt-seat-callbacks
+           ;; view callbacks:
            #:hrt-view-callbacks
            #:new-view
+           #:view-size-changed
            #:hrt-view
            #:view-mapped
            #:view-unmapped
@@ -50,6 +52,7 @@
            #:output-usable-area
            ;; view-methods
            #:view
+           #:view-init
            #:view-reparent
            #:view-request-close
            #:view-hrt-view
@@ -57,6 +60,9 @@
            #:unfocus-view
            #:view-set-hidden
            #:view-configure
+           ;; view transactions:
+           #:dirty-view-transaction
+           #:with-view-transaction
            ;; seat callbacks
            #:button-event #:wheel-event #:keyboard-keypress-event
            ;; Server-related symbols
@@ -98,5 +104,4 @@
            #:scene-create-fullscreen-node
            #:hrt-scene-fullscreen-node-destroy
            #:hrt-scene-fullscreen-configure
-           #:scene-init-view
            #:load-foreign-libraries))

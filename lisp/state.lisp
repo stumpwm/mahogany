@@ -57,7 +57,7 @@
       (group-suspend (mahogany-current-group state) (hrt:hrt-server-seat server)))
     (call-next-method)
     (group-wakeup group (hrt:hrt-server-seat server))
-    (dirty-view-transaction)))
+    (hrt:dirty-view-transaction)))
 
 (declaim (inline server-seat))
 (defun server-seat (state)
@@ -151,9 +151,10 @@
 
 (defun mahogany-state-output-reconfigure (state)
   (log-string :trace "Output layout changed!")
-  (with-accessors ((groups mahogany-state-groups)) state
-    (loop for g across groups
-          do (group-reconfigure-outputs g (mahogany-state-outputs state)))))
+  (hrt:with-view-transaction ()
+    (with-accessors ((groups mahogany-state-groups)) state
+      (loop for g across groups
+            do (group-reconfigure-outputs g (mahogany-state-outputs state))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
@@ -213,6 +214,16 @@
   (%with-found-view state (view view-ptr)
     (%with-found-group state (group view)
       (group-unmap-view group view))))
+
+(defun mahogany-state-view-size-changed (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    ;; For now, just check to see if the view is now under the cursor:
+    (hrt:dirty-view-transaction)
+    ;; TODO: Center the view in its frame if the dimensions do not match. May
+    ;;  also need to do something if it's now bigger than the frame:
+    ))
 
 (defun mahogany-state-view-maximize (state view-ptr)
   (declare (type mahogany-state state)
