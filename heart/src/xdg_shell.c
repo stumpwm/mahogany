@@ -104,6 +104,8 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
     struct hrt_view *view = wl_container_of(listener, view, commit);
     if (view->xdg_toplevel->base->initial_commit) {
         view->callbacks->new_view(view);
+    } else if (view->xdg_surface->surface->mapped) {
+        view->callbacks->view_size_changed(view);
     }
 }
 

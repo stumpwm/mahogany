@@ -215,6 +215,16 @@
     (%with-found-group state (group view)
       (group-unmap-view group view))))
 
+(defun mahogany-state-view-size-changed (state view-ptr)
+  (declare (type mahogany-state state)
+	   (type cffi:foreign-pointer view-ptr))
+  (%with-found-view state (view view-ptr)
+    ;; For now, just check to see if the view is now under the cursor:
+    (hrt:dirty-view-transaction)
+    ;; TODO: Center the view in its frame if the dimensions do not match. May
+    ;;  also need to do something if it's now bigger than the frame:
+    ))
+
 (defun mahogany-state-view-maximize (state view-ptr)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer view-ptr))

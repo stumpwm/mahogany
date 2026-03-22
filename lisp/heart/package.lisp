@@ -16,8 +16,10 @@
   (:export #:define-hrt-callback
            #:hrt-output-callbacks
            #:hrt-seat-callbacks
+           ;; view callbacks:
            #:hrt-view-callbacks
            #:new-view
+           #:view-size-changed
            #:hrt-view
            #:view-mapped
            #:view-unmapped

@@ -36,6 +36,7 @@ further up. "
 (defun init-view-callbacks (view-callbacks)
   (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
     (hrt:new-view handle-new-view-event)
+    (hrt:view-size-changed handle-view-size-changed)
     (hrt:request-maximize handle-view-maximize)
     (hrt:request-minimize handle-view-minimize)
     (hrt:view-mapped handle-view-mapped)
