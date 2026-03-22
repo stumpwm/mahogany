@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/util/log.h>
@@ -132,8 +133,15 @@ static void handle_request_start_drag(struct wl_listener *listener,
         wlr_data_source_destroy(event->drag->source);
 }
 
+static void check_callbacks(const struct hrt_seat_callbacks *callbacks) {
+    assert(callbacks->button_event != nullptr);
+    assert(callbacks->wheel_event != nullptr);
+    assert(callbacks->keyboard_keypress_event != nullptr);
+}
+
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
                    const struct hrt_seat_callbacks *callbacks) {
+    check_callbacks(callbacks);
     seat->callbacks        = callbacks;
     seat->server           = server;
     seat->new_input.notify = new_input_notify;

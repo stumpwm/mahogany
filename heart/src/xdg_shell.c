@@ -210,7 +210,19 @@ static void handle_new_xdg_toplevel(struct wl_listener *listener, void *data) {
     create_view_from_xdg_surface(toplevel, server);
 }
 
+static void check_callbacks(const struct hrt_view_callbacks *callbacks) {
+    assert(callbacks->new_view != nullptr);
+    assert(callbacks->view_size_changed != nullptr);
+    assert(callbacks->view_mapped != nullptr);
+    assert(callbacks->view_unmapped != nullptr);
+    assert(callbacks->request_minimize != nullptr);
+    assert(callbacks->request_maximize != nullptr);
+    assert(callbacks->view_destroyed != nullptr);
+    assert(callbacks->request_fullscreen != nullptr);
+}
+
 bool hrt_xdg_shell_init(struct hrt_server *server) {
+    check_callbacks(server->view_callbacks);
     server->xdg_shell = wlr_xdg_shell_create(server->wl_display, 3);
     if (!server->xdg_shell) {
         wlr_log(WLR_ERROR, "Could not initialize wlr_xdg_shell");

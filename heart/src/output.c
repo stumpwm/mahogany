@@ -1,6 +1,7 @@
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
 #include "wlr/util/log.h"
+#include <assert.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,8 +234,15 @@ static void handle_output_layout_changed(struct wl_listener *listener,
     server->output_callback->output_layout_changed();
 }
 
+static void check_callbacks(const struct hrt_output_callbacks *callbacks) {
+    assert(callbacks->output_added != nullptr);
+    assert(callbacks->output_removed != nullptr);
+    assert(callbacks->output_layout_changed != nullptr);
+}
+
 bool hrt_output_init(struct hrt_server *server,
                      const struct hrt_output_callbacks *callbacks) {
+    check_callbacks(callbacks);
     server->output_callback   = callbacks;
     server->new_output.notify = handle_new_output;
     wl_signal_add(&server->backend->events.new_output, &server->new_output);
