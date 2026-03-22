@@ -9,8 +9,8 @@
 
 (defun %commit-view-transaction ()
   (mahogany/log:log-string :trace "Commiting view transaction")
-  (hrt:hrt-seat-reset-view-under
-   (hrt:hrt-server-seat (%hrt-server))))
+  (hrt-seat-reset-view-under
+   (hrt-server-seat (%hrt-server))))
 
 (defun dirty-view-transaction ()
   (if *view-manipulation-state*

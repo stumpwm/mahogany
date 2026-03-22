@@ -52,6 +52,7 @@
            #:output-usable-area
            ;; view-methods
            #:view
+           #:view-init
            #:view-reparent
            #:view-request-close
            #:view-hrt-view
@@ -103,5 +104,4 @@
            #:scene-create-fullscreen-node
            #:hrt-scene-fullscreen-node-destroy
            #:hrt-scene-fullscreen-configure
-           #:scene-init-view
            #:load-foreign-libraries))

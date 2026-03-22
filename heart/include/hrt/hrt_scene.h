@@ -54,9 +54,6 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group);
 void hrt_scene_group_add_view(struct hrt_scene_group *group,
                               struct hrt_view *view);
 
-void hrt_scene_group_init_view(struct hrt_scene_group *group,
-                               struct hrt_view *view);
-
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled);
 
 void hrt_scene_group_transfer(struct hrt_scene_group *source,

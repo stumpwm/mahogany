@@ -166,7 +166,8 @@ to match."
   (declare (type mahogany-group group)
            (type cffi:foreign-pointer view-ptr))
   (let* ((hrt-group (mahogany-group-hrt-group group))
-         (view (hrt:scene-init-view hrt-group view-ptr)))
+         (view (hrt:view-init view-ptr)))
+    (hrt:scene-group-add-view hrt-group view)
     (push view (mahogany-group-views group))
     ;; We need to send a configure event, so we might as well
     ;; guess the size of the window:
@@ -211,7 +212,6 @@ to match."
                    (output-map mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
       group
-    (%group-remove-view group view)
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))

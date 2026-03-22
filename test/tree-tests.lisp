@@ -348,8 +348,12 @@
     (check-children-dimensions parent
                                (list 34 33 33) #'tree:frame-height)))
 
+
+(defstruct (mock-view (:include hrt::view)
+                      (:constructor make-mock-view (hrt-view))))
+
 (fiasco:deftest find-view-finds-empty ()
-  (let* ((view (hrt::%make-view (cffi:null-pointer)))
+  (let* ((view (make-mock-view (cffi:null-pointer)))
          (child-1 (make-instance 'tree:view-frame :x 0 :y 0 :width 100 :height 100
                                  :view view))
          (child-2 (make-instance 'tree:view-frame :x 100 :y 0 :width 100 :height 100))
@@ -357,7 +361,7 @@
     (is (eq (tree:find-view-frame parent nil) child-2))))
 
 (fiasco:deftest parent-frame-finds-view ()
-  (let* ((view (hrt::%make-view (cffi:null-pointer)))
+  (let* ((view (make-mock-view (cffi:null-pointer)))
          (child-1 (make-instance 'tree:view-frame
                                  :x 0 :y 0 :width 100 :height 100))
          (child-2 (make-instance 'tree:view-frame

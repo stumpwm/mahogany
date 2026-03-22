@@ -3,6 +3,11 @@
 (defstruct (view (:constructor %make-view (hrt-view)))
   (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
 
+(declaim (inline init-view))
+(defun view-init (view-ptr)
+  (declare (type cffi:foreign-pointer view-ptr))
+  (%make-view view-ptr))
+
 (declaim (inline focus-view))
 (defun focus-view (view seat)
   (declare (type view view))

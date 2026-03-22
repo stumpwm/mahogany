@@ -111,13 +111,20 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
 
 static struct hrt_view *
 create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
-                             const struct hrt_view_callbacks *callbacks) {
+                             struct hrt_server *server) {
     struct hrt_view *view               = calloc(1, sizeof(struct hrt_view));
     view->xdg_toplevel                  = xdg_toplevel;
     struct wlr_xdg_surface *xdg_surface = xdg_toplevel->base;
     // TODO: Maybe remove view->xdg_surface? We can get to it via the toplevel.
     view->xdg_surface = xdg_surface;
-    view->callbacks   = callbacks;
+    view->callbacks   = server->view_callbacks;
+
+    // Using the scene root here is not as efficient as it could be,
+    // as we then need to reparent the node in the initial commit.
+    // Depending on how many nodes are in the tree,
+    // it could be costly. It may also cause flickering, but I haven't
+    // observed that.
+    hrt_view_init(view, server->scene_root->normal);
 
     view->map.notify = handle_xdg_toplevel_map;
     wl_signal_add(&xdg_surface->surface->events.map, &view->map);
@@ -200,7 +207,7 @@ static void handle_new_xdg_toplevel(struct wl_listener *listener, void *data) {
     // Initialization occurs in two steps so the consumer can place the view
     // where it needs to go; in order to create a scene tree node, it must have
     // a parent. We don't have it until the callback.
-    create_view_from_xdg_surface(toplevel, server->view_callbacks);
+    create_view_from_xdg_surface(toplevel, server);
 }
 
 bool hrt_xdg_shell_init(struct hrt_server *server) {
