@@ -87,10 +87,13 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   *hrt-server*)
 
 (defun server-init (server output-callbacks seat-callbacks view-callbacks
+                    layer-shell-callbacks
                     debug-level)
-  (let ((initialized (hrt-server-init server
-                       output-callbacks seat-callbacks view-callbacks
-                       debug-level)))
+  (let ((initialized (hrt-server-init
+                      server
+                      output-callbacks seat-callbacks view-callbacks
+                      layer-shell-callbacks
+                      debug-level)))
     (when initialized
       (setf *hrt-server* server)
       (setf *workqueue-semaphore*
