@@ -44,3 +44,6 @@
   ;; output nodes have exactly 1 child:
   (let ((f (car (tree-children parent))))
     (frame-at f x y)))
+
+(defmethod root-frame-p ((frame output-node))
+  t)

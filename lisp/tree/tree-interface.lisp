@@ -163,10 +163,10 @@ a view assigned to it."))
 
 ;; helper functions:
 
-(defun root-frame-p (frame)
-  ;; the root frame's parent will be a tree-container:
-  (let ((parent (frame-parent frame)))
-    (typep parent 'output-node)))
+(defgeneric root-frame-p (frame)
+  (:documentation "Return if the frame can be considered a root of a tree")
+  (:method ((frame frame))
+    nil))
 
 (defun find-root-frame (frame)
   "Find the root node for this frame tree"
