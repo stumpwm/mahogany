@@ -12,10 +12,10 @@ In short:
   wide
 + The second line should be blank.
 + The message should complete the sentence "Applying this commit will ..."
-+ Explain why the change is needed, not how it works, athough that
++ Explain why the change is needed, not how it works, although that
   can be helpful too.
 
-A useful trick to writing more consise messages is to include a prefix
+A useful trick to writing more concise messages is to include a prefix
 that indicates what part of the application you are working on. For
 example:
 + `Backend: rig up wayland protocol`
@@ -41,11 +41,11 @@ Try to keep line length to 80 characters or less; sometimes long line
 lengths makes code easier to read, so it is okay to have longer lines
 if needed.
 
-## Running the Project Interatively
+## Running the Project Interactively
 
 To replicate the build environment as executed by the Makefile,
-execute the init-build-env.lisp while `*default-directory*` is set to
-where ever the project is cloned:
+execute the `init-build-env.lisp` file while `*default-directory*` is
+set to wherever the project is cloned:
 
 ``` lisp
 (let ((clone-dir #p"path/to/dir"))
@@ -63,7 +63,7 @@ When submitting a pull request, try to do the following things:
 + Reference an issue if there is a relevant one.
 + For significant changes, create an issue first to discuss the
   implementation and how it fits in with the rest of the project.
-+ Ensure your branch is rebased upon the lastest commit.
++ Ensure your branch is rebased upon the latest commit.
 
 ## Additional Tools
 
@@ -73,7 +73,7 @@ lisp interface.
 
 ## Improving git blame
 
-There are a few commits that have whitespace only changes and make it
+There are a few commits that have white space only changes and make it
 harder to use `git blame`. You can ignore these commits by adding the
 `.git-blame-ignore-revs` file to your git config:
 
