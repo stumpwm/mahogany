@@ -95,3 +95,22 @@ Only keys that can be represented in a key can be valid prefix keys;
 Modifiers by themselves cannot be set to the prefix key. This stops
 keys like =Super= from being used as the prefix key. If this is a
 problem, create an issue and we may be able to find a workaround.
+
+** Passing Through key events
+
+Some applications may accept a keyboard shortcut that is shadowed by
+Mahogany. For example, =C-t= will open a new tab in most browsers, but
+since that combination is the start of the default key sequence, it is
+impossible to use. To get around this, a binding can "pass through" to
+the underlying application. Instead of assigning a function to the
+kmap, specify `:pass-through` instead:
+
+#+BEGIN_SRC lisp
+  (add-to-kmap *top-map*
+    (kbd "C") :pass-through)
+#+END_SRC
+
+By default, Mahogany activates the =prefix-passthrough-mode=
+[[kmap-modes.org][kmap mode]], which has a binding so that passing the prefix binding
+twice will cause the second one to be passed through to the underlying
+application.

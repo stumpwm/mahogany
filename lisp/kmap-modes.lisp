@@ -89,13 +89,9 @@ the KEYBINDINGS list."
            (kmap-mode-activate *compositor-state* kmap-mode)
            (kmap-mode-deactivate *compositor-state* kmap-mode)))))
 
-(defcommand passthrough-key-event ()
-  (:method ()
-    :pass-through))
-
 (defvar *prefix-passthrough-kmap*
   (define-kmap
-    (state-prefix-key *compositor-state*) #'passthrough-key-event))
+    (state-prefix-key *compositor-state*) :pass-through))
 
 (defun (setf state-prefix-key) (key state)
   (declare (type key key)
