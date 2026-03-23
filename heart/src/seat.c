@@ -24,18 +24,23 @@ void hrt_seat_notify_axis(struct hrt_seat *seat,
         event->delta_discrete, event->source, event->relative_direction);
 }
 
-void hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
+bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
                          enum xkb_keymap_compile_flags flags) {
     struct xkb_keymap *keymap =
         xkb_keymap_new_from_names(seat->xkb_context, rules, flags);
-    wlr_keyboard_set_keymap(&seat->keyboard_group->keyboard, keymap);
-    xkb_keymap_unref(keymap);
+    if (keymap) {
+        wlr_keyboard_set_keymap(&seat->keyboard_group->keyboard, keymap);
+        xkb_keymap_unref(keymap);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat) {
-  return seat->cursor->x;
+    return seat->cursor->x;
 }
 
 double hrt_seat_cursor_ly(struct hrt_seat *seat) {
-  return seat->cursor->y;
+    return seat->cursor->y;
 }

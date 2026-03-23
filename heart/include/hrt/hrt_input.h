@@ -102,7 +102,7 @@ void hrt_seat_notify_button(struct hrt_seat *seat,
 void hrt_seat_notify_axis(struct hrt_seat *seat,
                           struct wlr_pointer_axis_event *event);
 
-void hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
+bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
                          enum xkb_keymap_compile_flags flags);
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat);

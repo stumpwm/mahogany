@@ -262,5 +262,12 @@
   (mahogany-group-current-frame (mahogany-current-group state)))
 
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
-  (let ((seat (hrt:hrt-server-seat (mahogany-state-server state))))
-    (hrt:hrt-seat-set-keymap seat rules keymap-flags)))
+  "Set the xkb keymap using the provided rules and flags. Signals a
+KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
+  (let* ((seat (hrt:hrt-server-seat (mahogany-state-server state)))
+	 (success (hrt:hrt-seat-set-keymap seat rules keymap-flags)))
+    (unless success
+      ;; TODO: register with xkb's logging handling to get
+      ;; some sort of usable error message?
+      ;; Either that, or just turn this into a warning or return a boolean?
+      (error 'keymap-creation-error))))
