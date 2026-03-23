@@ -38,8 +38,24 @@ of all formatting issues.
 ### Lisp Code
 
 Try to keep line length to 80 characters or less; sometimes long line
-lenghts makes code easier to read, so it is okay to have longer lines
+lengths makes code easier to read, so it is okay to have longer lines
 if needed.
+
+## Running the Project Interatively
+
+To replicate the build environment as executed by the Makefile,
+execute the init-build-env.lisp while `*default-directory*` is set to
+where ever the project is cloned:
+
+``` lisp
+(let ((clone-dir #p"path/to/dir"))
+  #+swank
+  (swank:set-default-directory clone-dir)
+  #-swank
+  (setf *default-directory* clone-dir)
+  (load "init-build-env.lisp")
+  (asdf:load-system "mahogany"))
+```
 
 ## Submitting Pull Requests
 
