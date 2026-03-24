@@ -78,7 +78,7 @@ should not be directly instantiated; inherit from it instead."))
            :reader output-node-output))
   (:documentation
    "A node in the frame tree that contains the tiled frames tied to
-a specific output. This is a root of the frame tree."))
+a specific output."))
 
 (deftype split-frame-type ()
   '(member :vertical :horizontal))
@@ -163,10 +163,15 @@ a view assigned to it."))
 
 ;; helper functions:
 
-(defgeneric root-frame-p (frame)
+(defgeneric frame-anchor-p (frame)
   (:documentation "Return if the frame can be considered a root of a tree")
   (:method ((frame frame))
     nil))
+
+(defun root-frame-p (frame)
+  "Return T if FRAME is the topmost frame in a frame tree"
+  (let ((parent (frame-parent frame)))
+    (frame-anchor-p parent)))
 
 (defun find-root-frame (frame)
   "Find the root node for this frame tree"
