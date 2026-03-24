@@ -45,5 +45,5 @@
   (let ((f (car (tree-children parent))))
     (frame-at f x y)))
 
-(defmethod root-frame-p ((frame output-node))
+(defmethod frame-anchor-p ((frame output-node))
   t)
