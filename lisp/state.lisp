@@ -270,4 +270,4 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       ;; TODO: register with xkb's logging handling to get
       ;; some sort of usable error message?
       ;; Either that, or just turn this into a warning or return a boolean?
-      (error 'keymap-creation-error))))
+      (error 'xkb:keymap-creation-error))))
