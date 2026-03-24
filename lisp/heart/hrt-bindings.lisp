@@ -74,7 +74,7 @@ names."
   (event :pointer #| (:struct wlr-pointer-axis-event) |#))
 
 (declaim (inline hrt-seat-set-keymap))
-(cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :void
+(cffi:defcfun ("hrt_seat_set_keymap" hrt-seat-set-keymap) :bool
   (seat (:pointer (:struct hrt-seat)))
   (rules :pointer #| (:struct xkb-rule-names) |#)
   (flags xkb:keymap-compile-flags))
@@ -287,11 +287,6 @@ set the width and height of views."
 
 (declaim (inline hrt-scene-group-add-view))
 (cffi:defcfun ("hrt_scene_group_add_view" hrt-scene-group-add-view) :void
-  (group (:pointer (:struct hrt-scene-group)))
-  (view (:pointer (:struct hrt-view))))
-
-(declaim (inline hrt-scene-group-init-view))
-(cffi:defcfun ("hrt_scene_group_init_view" hrt-scene-group-init-view) :void
   (group (:pointer (:struct hrt-scene-group)))
   (view (:pointer (:struct hrt-view))))
 
