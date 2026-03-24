@@ -64,14 +64,28 @@ of an already existing frame with the `set-split-frame-type` function")
    "An object in the frame tree that has one or more child objects. This class
 should not be directly instantiated; inherit from it instead."))
 
-(defclass tree-container (tree-parent)
-  ()
-  (:documentation "A class that contains a frame-tree"))
+(defclass layer-container (tree-parent)
+  ((hrt-layer :initarg :hrt-layer
+              :reader layer-container-layer))
+  (:documentation "A class that contains a frame-tree layer"))
+
+(defun make-layer-container (hrt-group)
+  (let ((hrt-tiled-layer (hrt:hrt-scene-layer-create hrt-group)))
+    (make-instance 'layer-container
+	           :hrt-layer hrt-tiled-layer)))
+
+(defun destroy-layer-container (layer-container)
+  (hrt:hrt-scene-layer-destroy (layer-container-layer layer-container)))
+
+(defun layer-container-transfer (source destination)
+  (let ((source-layer (layer-container-layer source))
+        (dest-layer (layer-container-layer destination)))
+    (hrt:hrt-scene-layer-transfer source-layer dest-layer)))
 
 (defclass output-node (tree-parent)
   ((parent :initarg :parent
            :initform nil
-           :type (or null tree-container)
+           :type (or null tree-parent)
            :accessor frame-parent)
    (output :initarg :output
            :type (not null)
@@ -179,10 +193,17 @@ a view assigned to it."))
   (do ((cur-frame frame (frame-parent cur-frame)))
       ((root-frame-p cur-frame) cur-frame)))
 
-(defun tree-container-add (tree-container output &key (x 0) (y 0) (width 100) (height 100))
-  (declare (type tree-container tree-container))
-  (with-accessors ((container-children tree-children)) tree-container
-    (let* ((new-output (make-instance 'output-node :parent tree-container :output output))
+(defun frame-find-layer (frame)
+  (declare (type frame frame))
+  (do ((cur-frame frame (frame-parent cur-frame)))
+    ((typep cur-frame 'layer-container) cur-frame)))
+
+(defun tree-output-add (layer-container output &key (x 0) (y 0) (width 100) (height 100))
+  (declare (type layer-container layer-container))
+  (with-accessors ((container-children tree-children)) layer-container
+    (let* ((new-output (make-instance 'output-node
+                                      :parent layer-container
+                                      :output output))
            (new-tree (make-instance 'view-frame :x x :y y :width width :height height
                                     :parent new-output))
            (prev-output (first container-children)))

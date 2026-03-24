@@ -5,11 +5,12 @@
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
-(defstruct (mahogany-group (:constructor %make-mahogany-group (name number hrt-group)))
+(defstruct (mahogany-group (:constructor %make-mahogany-group
+                               (name number hrt-group tiled-container)))
   (name "" :type string)
   (number 1 :type fixnum :read-only t)
   (hrt-group (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
-  (tree-container (make-instance 'tree:tree-container) :type tree:tree-container :read-only t)
+  (tiled-container nil :type tree:layer-container :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
   (current-frame nil :type (or tree:frame null))
   (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)

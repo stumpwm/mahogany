@@ -1,19 +1,26 @@
 (in-package #:mahogany)
 
 (defun make-mahogany-group (name number hrt-server)
-  (let ((hrt-group (hrt:hrt-server-group-create hrt-server)))
+  (let* ((hrt-group (hrt:hrt-server-group-create hrt-server))
+        (tiled-layer (tree:make-layer-container hrt-group)))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)
     (log-string :debug "Created group ~A" name)
-    (%make-mahogany-group name number hrt-group)))
+    (%make-mahogany-group name number hrt-group tiled-layer)))
 
 (defun destroy-mahogany-group (group scene-tree seat)
   (group-suspend group seat)
-  (alexandria:when-let ((views (mahogany-group-views group)))
-    (log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
-    (dolist (v views)
-      (hrt:view-reparent v scene-tree)))
-  (hrt:hrt-scene-group-destroy (mahogany-group-hrt-group group))
-  (log-string :debug "Destroyed group ~A" (mahogany-group-name group)))
+  (with-accessors ((views mahogany-group-views)
+                   (hrt-group mahogany-group-hrt-group)
+                   (tiled-layer mahogany-group-tiled-container)
+                   (group-name mahogany-group-name))
+      group
+    (when views
+      (log-string :error "The following views are associated with a group that is being deleted. They will be orphaned:~%~4T ~S" views)
+      (dolist (v views)
+        (hrt:view-reparent v scene-tree)))
+    (tree:destroy-layer-container tiled-layer)
+    (hrt:hrt-scene-group-destroy hrt-group)
+    (log-string :debug "Destroyed group ~A" group-name)))
 
 (defun %add-hidden (hidden-list view)
   (log-string :trace "Hiding view ~S" view)
@@ -60,10 +67,10 @@
 (defun group-transfer-views (group to-transfer)
   "Transfer the all views from to-transfer to group"
   (declare (type mahogany-group group to-transfer))
-  (let ((hrt-group (mahogany-group-hrt-group group))
-        (to-transfer-group (mahogany-group-hrt-group to-transfer))
+  (let ((group-tile-layer (mahogany-group-tiled-container group))
+        (to-transfer-layer (mahogany-group-tiled-container to-transfer))
         (hidden-list (mahogany-group-hidden-views group)))
-    (hrt:hrt-scene-group-transfer to-transfer-group hrt-group)
+    (tree:layer-container-transfer to-transfer-layer group-tile-layer)
     (dolist (other-view (mahogany-group-views to-transfer))
       (group-remove-view to-transfer other-view)
       (push other-view (mahogany-group-views group))
@@ -87,7 +94,7 @@
   (declare (type mahogany-output output)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
-                   (tree-container mahogany-group-tree-container)
+                   (tiled-container mahogany-group-tiled-container)
                    (current-frame mahogany-group-current-frame)
                    (hidden-views mahogany-group-hidden-views))
       group
@@ -95,9 +102,9 @@
         (hrt:output-position (mahogany-output-hrt-output output))
       (multiple-value-bind (width height)
           (hrt:output-resolution (mahogany-output-hrt-output output))
-        (let ((new-tree (tree:tree-container-add tree-container output
-                                                 :x x :y y
-                                                 :width width :height height)))
+        (let ((new-tree (tree:tree-output-add tiled-container output
+                                              :x x :y y
+                                              :width width :height height)))
           (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
           (when (not current-frame)
             (let ((first-leaf (tree:find-first-leaf new-tree)))
@@ -149,25 +156,13 @@ to match."
       (tree:remove-frame tree (lambda (x) (alexandria:when-let ((v (tree:frame-view x)))
                                             (%add-hidden hidden-views v)))))))
 
-(defun %group-add-view (group view)
-  (declare (type mahogany-group group)
-           (type hrt:view view))
-  (with-accessors ((views mahogany-group-views)
-                   (outputs mahogany-group-output-map)
-                   (hidden mahogany-group-hidden-views))
-      group
-    (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
-      (alexandria:when-let ((view (tree:frame-view current-frame)))
-        (%add-hidden hidden view))
-      ;; Adding a view to a frame dirties the view transaction:
-      (setf (tree:frame-view current-frame) view))))
-
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)
            (type cffi:foreign-pointer view-ptr))
-  (let* ((hrt-group (mahogany-group-hrt-group group))
+  (let* ((tiled-layer (mahogany-group-tiled-container group))
+         (hrt-tiled-layer (tree:layer-container-layer tiled-layer))
          (view (hrt:view-init view-ptr)))
-    (hrt:scene-group-add-view hrt-group view)
+    (hrt:scene-layer-add-view hrt-tiled-layer view)
     (push view (mahogany-group-views group))
     ;; We need to send a configure event, so we might as well
     ;; guess the size of the window:
@@ -179,11 +174,28 @@ to match."
     view))
 
 (defun group-map-view (group view)
-  (%group-add-view group view))
+  (declare (type mahogany-group group)
+	   (type hrt:view view))
+  (with-accessors ((views mahogany-group-views)
+		   (outputs mahogany-group-output-map)
+		   (hidden mahogany-group-hidden-views))
+      group
+    (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
+      (alexandria:when-let ((view (tree:frame-view current-frame)))
+        (%add-hidden hidden view))
+      ;; we should be on the right layer already, but if we add frame rules
+      ;; or floating frames, we need to make sure the view goes in the right layer.
+      ;; I don't want to put this in the frame code until we had the layer shell code,
+      ;; as I don't think it will actually work there.
+      (let* ((layer (tree:frame-find-layer current-frame))
+             (hrt-layer (tree:layer-container-layer layer)))
+        (hrt:scene-layer-add-view hrt-layer view))
+      ;; Adding a view to a frame dirties the view transaction:
+      (setf (tree:frame-view current-frame) view))))
 
 (declaim (inline %find-view-frame))
 (defun %find-view-frame (group view fn)
-  (dolist (tree (tree:tree-children (mahogany-group-tree-container group)))
+  (dolist (tree (tree:tree-children (mahogany-group-tiled-container group)))
     (dolist (f (mahogany/tree:get-populated-frames tree))
       (when (equalp (tree:frame-view f) view)
         (funcall fn f)))))

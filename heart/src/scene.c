@@ -66,32 +66,27 @@ void hrt_scene_output_destroy(struct hrt_scene_output *output) {
 }
 
 struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
-    struct hrt_scene_group *layers = calloc(1, sizeof(*layers));
-    if (!layers) {
+    struct hrt_scene_group *group = calloc(1, sizeof(*group));
+    if (!group) {
         wlr_log(WLR_ERROR, "Could not allocate hrt_scene_layers");
         return NULL;
     }
-    layers->normal     = wlr_scene_tree_create(parent->normal);
-    layers->fullscreen = wlr_scene_tree_create(parent->fullscreen);
+    group->layers      = wlr_scene_tree_create(parent->normal);
+    group->fullscreens = wlr_scene_tree_create(parent->fullscreen);
 
-    return layers;
+    return group;
 }
 
-void hrt_scene_group_destroy(struct hrt_scene_group *layers) {
+void hrt_scene_group_destroy(struct hrt_scene_group *group) {
     wlr_log(WLR_DEBUG, "Destroying scene group");
-    wlr_scene_node_destroy(&layers->fullscreen->node);
-    wlr_scene_node_destroy(&layers->normal->node);
-    free(layers);
-}
-
-void hrt_scene_group_add_view(struct hrt_scene_group *group,
-                              struct hrt_view *view) {
-    hrt_view_reparent(view, group->normal);
+    wlr_scene_node_destroy(&group->layers->node);
+    wlr_scene_node_destroy(&group->fullscreens->node);
+    free(group);
 }
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
-    wlr_scene_node_set_enabled(&group->fullscreen->node, enabled);
-    wlr_scene_node_set_enabled(&group->normal->node, enabled);
+    wlr_scene_node_set_enabled(&group->fullscreens->node, enabled);
+    wlr_scene_node_set_enabled(&group->layers->node, enabled);
 }
 
 static void reparent_children(struct wlr_scene_tree *source,
@@ -102,28 +97,43 @@ static void reparent_children(struct wlr_scene_tree *source,
     }
 }
 
-void hrt_scene_group_transfer(struct hrt_scene_group *source,
-                              struct hrt_scene_group *destination) {
-    reparent_children(source->fullscreen, destination->fullscreen);
-    reparent_children(source->normal, destination->normal);
+void hrt_scene_layer_transfer(struct hrt_scene_layer *source,
+                              struct hrt_scene_layer *destination) {
+    reparent_children(source->tree, destination->tree);
 }
 
-struct wlr_scene_tree *hrt_scene_group_normal(struct hrt_scene_group *group) {
-    return group->normal;
+struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group) {
+    return group->layers;
 }
 
-struct hrt_scene_fullscreen_node *
-hrt_scene_create_fullscreen_node(struct hrt_scene_group *layers,
+struct hrt_scene_layer *hrt_scene_layer_create(struct hrt_scene_group *group) {
+    struct hrt_scene_layer *layer = calloc(1, sizeof(*layer));
+    layer->tree                   = wlr_scene_tree_create(group->layers);
+    return layer;
+}
+
+void hrt_scene_layer_destroy(struct hrt_scene_layer *layer) {
+    wlr_scene_node_destroy(&layer->tree->node);
+    free(layer);
+}
+
+void hrt_scene_layer_add_view(struct hrt_scene_layer *layer,
+                              struct hrt_view *view) {
+    wlr_scene_node_reparent(&view->scene_tree->node, layer->tree);
+}
+
+struct hrt_scene_fullscreen_layer *
+hrt_scene_create_fullscreen_node(struct hrt_scene_group *group,
                                  struct hrt_view *view,
                                  struct hrt_output *output) {
-    struct hrt_scene_fullscreen_node *new_node = calloc(1, sizeof(*new_node));
+    struct hrt_scene_fullscreen_layer *new_node = calloc(1, sizeof(*new_node));
 
     if (!new_node) {
         wlr_log(WLR_ERROR, "Failed to allocate hrt_scene_fullscreen_node");
         return NULL;
     }
 
-    struct wlr_scene_tree *root = wlr_scene_tree_create(layers->fullscreen);
+    struct wlr_scene_tree *root = wlr_scene_tree_create(group->layers);
     if (!root) {
         wlr_log(WLR_ERROR, "Failed to allocate wlr_scene_tree");
         return NULL;
@@ -147,7 +157,7 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_group *layers,
         return NULL;
     }
 
-    new_node->tree       = root;
+    new_node->layer.tree = root;
     new_node->background = rect;
     new_node->view       = view;
     root->node.data      = new_node;
@@ -159,33 +169,33 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_group *layers,
 }
 
 struct hrt_view *
-hrt_scene_fullscreen_node_destroy(struct hrt_scene_fullscreen_node *node) {
+hrt_scene_fullscreen_layer_destroy(struct hrt_scene_fullscreen_layer *node) {
     struct hrt_view *view = node->view;
     hrt_view_reparent(view, node->background->node.parent->node.parent);
     // We don't need to free the background, as it's destroyed by
     // destroying its parent:
-    wlr_scene_node_destroy(&node->tree->node);
+    wlr_scene_node_destroy(&node->layer.tree->node);
     free(node);
 
     return view;
 }
 
-uint32_t hrt_scene_node_set_dimensions(struct hrt_scene_fullscreen_node *node,
+uint32_t hrt_scene_node_set_dimensions(struct hrt_scene_fullscreen_layer *node,
                                        int width, int height) {
     wlr_scene_rect_set_size(node->background, width, height);
     return hrt_view_set_size(node->view, width, height);
 }
 
-void hrt_scene_node_set_position(struct hrt_scene_fullscreen_node *node, int x,
+void hrt_scene_node_set_position(struct hrt_scene_fullscreen_layer *node, int x,
                                  int y) {
-    wlr_scene_node_set_position(&node->tree->node, x, y);
+    wlr_scene_node_set_position(&node->layer.tree->node, x, y);
 }
 
-uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_node *node,
+uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_layer *node,
                                         struct hrt_output *output) {
     int x, y;
     hrt_output_position(output, &x, &y);
-    wlr_scene_node_set_position(&node->tree->node, x, y);
+    wlr_scene_node_set_position(&node->layer.tree->node, x, y);
 
     int width, height;
     hrt_output_resolution(output, &width, &height);

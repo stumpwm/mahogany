@@ -16,8 +16,12 @@
            #:frame-width
            #:frame-height
            #:frame-parent
-           #:tree-container
-           #:tree-container-add
+           #:layer-container
+           #:make-layer-container
+           #:destroy-layer-container
+           #:layer-container-transfer
+           #:layer-container-layer
+           #:tree-output-add
            #:root-tree
            #:tree-frame
            #:tree-children
@@ -43,5 +47,6 @@
            #:frame-view
            #:frame-next
            #:frame-prev
+           #:frame-find-layer
            #:leafs-in
            #:output-node-output))
