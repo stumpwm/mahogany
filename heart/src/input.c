@@ -178,7 +178,8 @@ static void handle_start_drag(struct wl_listener *listener,
     struct wlr_scene_tree *icon_tree = wlr_scene_drag_icon_create(seat->server->scene_root->overlay, wlr_drag_icon);
 
     if (!icon_tree) {
-        wlr_log(WLR_DEBUG, "Failed to allocate ddrag icon scene tree");
+        wlr_log(WLR_DEBUG, "Failed to allocate drag icon scene tree");
+        free(drag);
         return;
     }
 
