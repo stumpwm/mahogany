@@ -7,7 +7,6 @@
 #include <wlr/types/wlr_keyboard_group.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_pointer.h>
-#include <wlr/types/wlr_scene.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -79,15 +78,6 @@ struct hrt_input {
     struct hrt_seat *seat;
     struct wl_list link;
 
-    struct wl_listener destroy;
-};
-
-struct hrt_drag {
-    struct hrt_seat *seat;
-    struct wlr_drag *drag;
-    struct wlr_scene_tree *icon_tree;
-
-    struct wl_listener motion;
     struct wl_listener destroy;
 };
 
