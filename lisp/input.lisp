@@ -4,9 +4,27 @@
   (member :click-and-wheel :click :ignore :sloppy)
   "How keyboard focus is controlled by the mouse")
 
+;; TODO: Remove these, there's  got to be a better way:
+(defparameter *current-key-sequence* nil)
+(defparameter *current-seat* nil)
+
 (defun execute-command (function key-sequence seat)
-  (hrt:with-view-transaction ()
-    (funcall function key-sequence seat)))
+  ;; If there are interactive args, gather them in a different thread. If not,
+  ;; just execute the command:
+  (flet ((call-command (args)
+           (let ((*current-key-sequence* key-sequence)
+                 (*current-seat* seat))
+             (hrt:with-view-transaction ()
+               (cl-interactive:call-command-with-argument-list function args)))))
+    (if (emptyp (cl-interactive/command::interactive-components function))
+        (call-command (list))
+        (bt2:make-thread
+         (lambda ()
+           (multiple-value-bind (func arg-list) (cl-interactive:gather-args-interactively function)
+             (when func
+               (hrt:run-in-main-thread
+                (lambda ()
+                  (call-command arg-list))))))))))
 
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))

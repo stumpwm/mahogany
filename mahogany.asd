@@ -20,6 +20,7 @@
                #:atomics
                #:fset
                #:bordeaux-threads
+               #:cl-interactive
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"
@@ -66,8 +67,11 @@
                                      (:file "output-node" :depends-on ("tree-interface"))
                                      (:file "frame" :depends-on ("tree-interface"))
                                      (:file "view" :depends-on ("tree-interface"))))
+               ;; It would be cool to load these files dynamically, as they might not be
+               ;; used by everyone:
                (:file "package")
-               (:file "command")
+               (:file "input-methods/foot-input-method")
+               (:file "command" :depends-on ("input-methods/foot-input-method"))
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "message" :depends-on ("heart"))
                (:file "group" :depends-on ("objects" "heart"))

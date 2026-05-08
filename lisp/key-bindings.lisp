@@ -1,66 +1,86 @@
 (in-package #:mahogany)
 
-(defcommand handle-server-stop ()
-  (server-stop *compositor-state*))
+(cl-interactive:define-command run-shell-command
+    ((shell-command (:function interactively-read-string "Exec: ")))
+  (:method ((exec string))
+    (uiop:launch-program exec)))
 
-(defcommand open-terminal ()
-  (mh-sys:open-terminal))
+(cl-interactive:define-command handle-server-stop ()
+  (:method ()
+    (server-stop *compositor-state*)))
 
-(defcommand split-frame-h ()
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (when frame
-      (tree:split-frame-h frame :direction :right))))
+(cl-interactive:define-command open-terminal ()
+  (:method ()
+    (mh-sys:open-terminal)))
 
-(defcommand split-frame-v ()
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (when frame
-      (tree:split-frame-v frame :direction :bottom))))
+(cl-interactive:define-command split-frame-h ()
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (when frame
+        (tree:split-frame-h frame :direction :right)))))
 
-(defcommand maximize-current-frame ()
-  (let ((group (mahogany-current-group *compositor-state*)))
-    (group-maximize-current-frame group)))
+(cl-interactive:define-command split-frame-v ()
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (when frame
+        (tree:split-frame-v frame :direction :bottom)))))
 
-(defcommand close-current-view ()
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
-      (hrt:view-request-close view))))
+(cl-interactive:define-command maximize-current-frame ()
+  (:method ()
+    (let ((group (mahogany-current-group *compositor-state*)))
+      (group-maximize-current-frame group))))
 
-(defcommand next-view ()
-  "Raise the next hidden view in the current group"
-  (let ((group (mahogany-current-group *compositor-state*)))
-    (group-next-hidden group)))
+(cl-interactive:define-command close-current-view ()
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
+        (hrt:view-request-close view)))))
 
-(defcommand previous-view ()
-  "Raise the next hidden view in the current group"
-  (let ((group (mahogany-current-group *compositor-state*)))
-    (group-previous-hidden group)))
+(cl-interactive:define-command next-view ()
+  (:method ()
+    (let ((group (mahogany-current-group *compositor-state*)))
+      (group-next-hidden group)))
+  (:documentation "Raise the next hidden view in the current group"))
 
-(defcommand next-frame (:seat seat)
-  (let ((group (mahogany-current-group *compositor-state*)))
-    (group-next-frame group seat)))
+(cl-interactive:define-command previous-view ()
+  (:method ()
+    (let ((group (mahogany-current-group *compositor-state*)))
+      (group-previous-hidden group)))
+  (:documentation "Raise the next hidden view in the current group"))
 
-(defcommand prev-frame (:seat seat)
-  (let ((group (mahogany-current-group *compositor-state*)))
-    (group-prev-frame group seat)))
+(cl-interactive:define-command next-frame ()
+  (:method ()
+    (let ((group (mahogany-current-group *compositor-state*)))
+      (group-next-frame group *current-seat*))))
 
-(defcommand gnew ()
-  (mahogany-state-group-add *compositor-state*))
+(cl-interactive:define-command prev-frame ()
+  (:method ()
+    (let ((group (mahogany-current-group *compositor-state*)))
+      (group-prev-frame group *current-seat*))))
 
-(defcommand gkill ()
-  (let ((current-group (mahogany-current-group *compositor-state*)))
-    (mahogany-state-group-remove *compositor-state* current-group)))
+(cl-interactive:define-command gnew ()
+  (:method ()
+    (mahogany-state-group-add *compositor-state*)))
 
-(defcommand gnext ()
-  (state-next-hidden-group *compositor-state*))
+(cl-interactive:define-command gkill ()
+  (:method ()
+    (let ((current-group (mahogany-current-group *compositor-state*)))
+      (mahogany-state-group-remove *compositor-state* current-group))))
 
-(defcommand gprev ()
-  (state-next-hidden-group *compositor-state*))
+(cl-interactive:define-command gnext ()
+  (:method ()
+    (state-next-hidden-group *compositor-state*)))
+
+(cl-interactive:define-command gprev ()
+  (:method ()
+    (state-next-hidden-group *compositor-state*)))
 
 #+:hrt-debug
-(defcommand add-output ()
-  (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
-      (log-string :info "Output not added")
-      (log-string :info "Output added")))
+(cl-interactive:define-command add-output ()
+  (:method ()
+    (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
+        (log-string :info "Output not added")
+        (log-string :info "Output added"))))
 
 #+:hrt-debug
 (defvar *debug-map*
@@ -76,6 +96,7 @@
 
 (defvar *root-map*
   (define-kmap
+    (kbd "!") #'run-shell-command
     (kbd "o") #'next-frame
     (kbd "O") #'prev-frame
     (kbd "q") #'handle-server-stop
