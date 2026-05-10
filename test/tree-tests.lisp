@@ -348,6 +348,25 @@
     (check-children-dimensions parent
                                (list 34 33 33) #'tree:frame-height)))
 
+(fiasco:deftest remove-frame-output-node-frame-next ()
+  "Check that the frame-next pointer is updated correctly when an output node is removed."
+  (multiple-value-bind (frame output-node)
+      (make-tree-for-tests)
+    (declare (ignore frame))
+    (let* ((container (tree:frame-parent output-node))
+           (output-node-2 (tree:tree-container-add container t)))
+      (tree:remove-frame output-node-2)
+      (is (eq (tree:frame-next output-node) (first (tree:tree-children output-node)))))))
+
+(fiasco:deftest remove-frame-output-node-frame-prev ()
+  "Check that the frame-prev pointer is updated correctly when an output node is removed."
+  (multiple-value-bind (frame output-node)
+      (make-tree-for-tests)
+    (declare (ignore frame))
+    (let* ((container (tree:frame-parent output-node))
+	   (output-node-2 (tree:tree-container-add container t)))
+      (tree:remove-frame output-node-2)
+      (is (eq (tree:frame-prev output-node) (first (tree:tree-children output-node)))))))
 
 (defstruct (mock-view (:include hrt::view)
                       (:constructor make-mock-view (hrt-view))))

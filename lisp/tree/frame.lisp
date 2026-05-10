@@ -461,11 +461,10 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   ;; TODO: test me!
   (with-accessors ((tree-children tree-children)) root
     (setf (tree-children root) (remove frame (tree-children root) :test #'equal))
-    (when (cdr tree-children)
-      (let ((frame-prev (frame-prev frame))
-            (frame-next (frame-next frame)))
-        (setf (%frame-next frame-prev) frame-next
-              (%frame-prev frame-next) frame-prev)))))
+    (let ((frame-prev (frame-prev frame))
+          (frame-next (frame-next frame)))
+      (setf (%frame-next frame-prev) frame-next
+            (%frame-prev frame-next) frame-prev))))
 
 (defmethod replace-frame ((root frame) frame &optional (cleanup-func #'identity))
   (unless (eql root frame)
