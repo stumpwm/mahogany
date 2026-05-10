@@ -128,7 +128,7 @@ The parent tree is modified appropriately.
 (defun remove-frame (frame &optional (cleanup-func #'identity))
   "Remove the frame from the tree. The remaining children grow to equally take up the available space.
 e.g. If there are three frames of width (20, 40, 40), and the 20 width one is removed, the new widths
-will be (40, 40). If a tree only has one child left, it is replaced with its child.
+will be (50, 50). If a tree only has one child left, it is replaced with its child.
 CLEANUP-FUNC is called on the removed frame(s) after they are removed."
   (remove-frame-from-parent (frame-parent frame) frame cleanup-func))
 
@@ -180,6 +180,7 @@ a view assigned to it."))
       ((root-frame-p cur-frame) cur-frame)))
 
 (defun tree-container-add (tree-container output &key (x 0) (y 0) (width 100) (height 100))
+  "Add a new output node to the tree container. Returns (output-node new-view-frame)"
   (declare (type tree-container tree-container))
   (with-accessors ((container-children tree-children)) tree-container
     (let* ((new-output (make-instance 'output-node :parent tree-container :output output))
