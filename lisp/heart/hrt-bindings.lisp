@@ -135,6 +135,15 @@ names."
 (cffi:defcfun ("hrt_view_info" hrt-view-info) :void
   (view (:pointer (:struct hrt-view))))
 
+(declaim (inline hrt-view-fullscreen))
+(cffi:defcfun ("hrt_view_fullscreen" hrt-view-fullscreen) :uint32
+  (view (:pointer (:struct hrt-view)))
+  (fullscreen :bool))
+
+(declaim (inline hrt-view-fullscreened))
+(cffi:defcfun ("hrt_view_fullscreened" hrt-view-fullscreened) :bool
+  (view (:pointer (:struct hrt-view))))
+
 (declaim (inline hrt-view-set-size))
 (cffi:defcfun ("hrt_view_set_size" hrt-view-set-size) :uint32
   "Request that this view be the given size. Returns the associated configure
@@ -262,8 +271,7 @@ set the width and height of views."
   (overlay :pointer #| (:struct wlr-scene-tree) |#))
 
 (cffi:defcstruct hrt-scene-group
-  (layers :pointer #| (:struct wlr-scene-tree) |#)
-  (fullscreens :pointer #| (:struct wlr-scene-tree) |#))
+  (layers :pointer #| (:struct wlr-scene-tree) |#))
 
 (cffi:defcstruct hrt-scene-layer
   (tree :pointer #| (:struct wlr-scene-tree) |#))
@@ -318,16 +326,21 @@ destination layer"
 (cffi:defcfun ("hrt_scene_group_layers" hrt-scene-group-layers) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
-(declaim (inline hrt-scene-create-fullscreen-layer))
-(cffi:defcfun ("hrt_scene_create_fullscreen_layer" hrt-scene-create-fullscreen-layer) (:pointer (:struct hrt-scene-fullscreen-node))
+(declaim (inline hrt-scene-create-fullscreen-node))
+(cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
   "Create a hrt_scene_fullscreen_layer with a black bacground of the given size.
 Mode the hrt_view inside the node, removing it from where ever it was in the scene tree."
-  (group (:pointer (:struct hrt-scene-group)))
+  (layer (:pointer (:struct hrt-scene-layer)))
   (view (:pointer (:struct hrt-view)))
   (output (:pointer (:struct hrt-output))))
 
-(declaim (inline hrt-scene-fullscreen-layer-destroy))
-(cffi:defcfun ("hrt_scene_fullscreen_layer_destroy" hrt-scene-fullscreen-layer-destroy) (:pointer (:struct hrt-view))
+(declaim (inline hrt-scene-fullscreen-swap))
+(cffi:defcfun ("hrt_scene_fullscreen_swap" hrt-scene-fullscreen-swap) (:pointer (:struct hrt-view))
+  (node (:pointer (:struct hrt-scene-fullscreen-node)))
+  (view (:pointer (:struct hrt-view))))
+
+(declaim (inline hrt-scene-fullscreen-node-destroy))
+(cffi:defcfun ("hrt_scene_fullscreen_node_destroy" hrt-scene-fullscreen-node-destroy) (:pointer (:struct hrt-view))
   "Destroy the given background node, moving the struct hrt_view to the
 normral layer.
 Returns the view that was in the node."

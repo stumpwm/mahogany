@@ -82,6 +82,10 @@ should not be directly instantiated; inherit from it instead."))
         (dest-layer (layer-container-layer destination)))
     (hrt:hrt-scene-layer-transfer source-layer dest-layer)))
 
+(defstruct (%fullscreen-data (:constructor %make-fullscreen-data (view node)))
+  (view nil :type hrt:view)
+  (node nil :type cffi:foreign-pointer))
+
 (defclass output-node (tree-parent)
   ((parent :initarg :parent
            :initform nil
@@ -89,7 +93,14 @@ should not be directly instantiated; inherit from it instead."))
            :accessor frame-parent)
    (output :initarg :output
            :type (not null)
-           :reader output-node-output))
+           :reader output-node-output)
+   (fullscreen :initform nil
+               :type (or null %fullscreen-data)
+               :accessor output-node-fullscreen)
+   (focused :initarg :focused
+         :reader frame-focused
+         :initform nil
+         :type boolean))
   (:documentation
    "A node in the frame tree that contains the tiled frames tied to
 a specific output."))
@@ -116,6 +127,9 @@ a specific output."))
   ()
   (:documentation "An inner node of a frame-tree that can have more than two children"))
 
+(deftype tree-node ()
+  `(or frame output-node))
+
 ;; frame-tree interface
 (defgeneric set-split-frame-type (frame type)
   (:documentation "Sets the split frame type. Note that this may change the
@@ -127,14 +141,18 @@ See *new-split-type* for more details"))
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
      the the size is split evenly between the other child frame(s)
-   DIRECTION: where the new frame is placed. Either :left or :right"))
+   DIRECTION: where the new frame is placed. Either :left or :right")
+  (:method ((node output-node) &key &allow-other-keys)
+    (error 'mahogany/util:invalid-operation :text "Cannot split output node frames!")))
 
 (defgeneric split-frame-h (frame &key ratio direction)
   (:documentation "Split the frame horizontally. Returns a tree of the split frames.
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
      the the size is split evenly between the other child frame(s)
-   DIRECTION: where the new frame is placed. Either :top or :bottom"))
+   DIRECTION: where the new frame is placed. Either :top or :bottom")
+  (:method ((node output-node) &key &allow-other-keys)
+    (error 'mahogany/util:invalid-operation :text "Cannot split output node frames!")))
 
 (defgeneric remove-frame-from-parent (parent frame cleanup-func)
   (:documentation "Remove the frame from the tree. Parent must be the direct parent of frame."))
@@ -166,11 +184,19 @@ a view assigned to it."))
   (:method ((frame frame) seat)
     (declare (ignore seat))
     (log-string :trace "frame focused")
+    (setf (slot-value frame 'focused) t))
+  (:method ((frame output-node) seat)
+    (declare (ignore seat))
+    (log-string :trace "frame focused")
     (setf (slot-value frame 'focused) t)))
 
 (defgeneric unmark-frame-focused (frame seat)
   (:documentation "Mark the frame as being focused")
   (:method ((frame frame) seat)
+    (declare (ignore seat))
+    (log-string :trace "frame unfocused")
+    (setf (slot-value frame 'focused) nil))
+  (:method ((frame output-node) seat)
     (declare (ignore seat))
     (log-string :trace "frame unfocused")
     (setf (slot-value frame 'focused) nil)))
@@ -183,18 +209,26 @@ a view assigned to it."))
     nil))
 
 (defun root-frame-p (frame)
-  "Return T if FRAME is the topmost frame in a frame tree"
-  (let ((parent (frame-parent frame)))
-    (frame-anchor-p parent)))
+  "Return T if FRAME is the topmost node in a frame tree"
+  (frame-anchor-p frame))
+
+(defun topmost-frame-p (frame)
+  (root-frame-p (frame-parent frame)))
+
+(defun find-topmost-frame (frame)
+  "Find the root node for this frame tree"
+  (declare (type tree-node frame))
+  (do ((cur-frame frame (frame-parent cur-frame)))
+      ((topmost-frame-p cur-frame) cur-frame)))
 
 (defun find-root-frame (frame)
   "Find the root node for this frame tree"
-  (declare (type frame frame))
+  (declare (type tree-node frame))
   (do ((cur-frame frame (frame-parent cur-frame)))
       ((root-frame-p cur-frame) cur-frame)))
 
 (defun frame-find-layer (frame)
-  (declare (type frame frame))
+  (declare (type tree-node frame frame))
   (do ((cur-frame frame (frame-parent cur-frame)))
     ((typep cur-frame 'layer-container) cur-frame)))
 
@@ -226,8 +260,7 @@ a view assigned to it."))
   (let ((stack-var (gensym "stack"))
         (frame-var (gensym "frame")))
     `(let* ((,frame-var ,frame)
-            (,stack-var (if (or (typep ,frame-var 'tree-frame)
-                                (typep ,frame-var 'output-node))
+            (,stack-var (if (typep ,frame-var 'tree-parent)
                             (tree-children ,frame-var)
                             (list ,frame-var))))
        (iter (for ,var = (pop ,stack-var))
@@ -235,3 +268,9 @@ a view assigned to it."))
              (if (typep ,var 'tree-frame)
                  (appendf ,stack-var (tree-children ,var))
                  (progn ,@body))))))
+
+(defun find-focused-frame (frame)
+  (foreach-leaf (f frame)
+    (when (frame-focused f)
+      (return-from find-focused-frame f)))
+  nil)

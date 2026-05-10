@@ -33,10 +33,12 @@
            #:remove-frame
            #:swap-positions
            #:find-empty-frame
+           #:find-focused-frame
            #:find-view-frame
            #:get-populated-frames
            #:root-frame-p
            #:find-root-frame
+           #:find-topmost-frame
            #:find-first-leaf
            #:mark-frame-focused
            #:unmark-frame-focused
@@ -48,5 +50,8 @@
            #:frame-next
            #:frame-prev
            #:frame-find-layer
-           #:leafs-in
-           #:output-node-output))
+           #:find-frame-if
+           #:output-node
+           #:output-node-output
+           #:set-fullscreen
+           #:clear-fullscreen))

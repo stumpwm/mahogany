@@ -46,8 +46,7 @@
     ((view (:pointer (:struct hrt:hrt-view)))
      (output (:pointer (:struct hrt:hrt-output)))
      (fullscreen :bool))
-    ()
-  (log-string :trace "fullscreen requested: view ~S on output ~S" view output)
+    (:error-val nil)
   (mahogany-state-view-fullscreen *compositor-state* view output fullscreen))
 
 (hrt:define-hrt-callback handle-new-output :void

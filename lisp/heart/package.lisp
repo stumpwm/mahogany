@@ -23,6 +23,8 @@
            #:hrt-view
            #:view-mapped
            #:view-unmapped
+           #:view-set-fullscreen
+           #:view-fullscreen-p
            #:request-minimize
            #:request-maximize
            #:request-fullscreen
@@ -109,6 +111,7 @@
            #:hrt-scene-group-set-position
            ;; #:hrt-scene-group-layers
            #:scene-create-fullscreen-node
-           #:hrt-scene-fullscreen-layer-destroy
-           #:hrt-scene-fullscreen-configure
+           #:hrt-scene-fullscreen-node-destroy
+           #:scene-fullscreen-configure
+           #:scene-fullscreen-swap
            #:load-foreign-libraries))

@@ -66,6 +66,10 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree);
 
 void hrt_view_info(struct hrt_view *view);
 
+uint32_t hrt_view_fullscreen(struct hrt_view *view, bool fullscreen);
+
+bool hrt_view_fullscreened(struct hrt_view *view);
+
 /**
  * Request that this view be the given size. Returns the associated configure
  *serial.
