@@ -140,7 +140,7 @@
 of FRAME to those of ROOT."
   ;; check to see if we are replacing the topmost node in a tree
   ;; and the output node we are associated with has no siblings
-  (if (and (root-frame-p root) (not (cdr (tree-children (frame-parent (frame-parent root))))))
+  (if (and (topmost-frame-p root) (not (cdr (tree-children (frame-parent (frame-parent root))))))
       (setf (%frame-next frame) frame
             (%frame-prev frame) frame)
       (psetf (%frame-next (frame-prev root)) frame
@@ -536,7 +536,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       (return-from find-empty-frame empty)))
   nil)
 
-(defmethod find-view-frame ((root frame) view)
+(defmethod find-view-frame ((root tree-parent) view)
   (foreach-leaf (frame root)
     (alexandria:if-let ((f (find-view-frame frame view)))
       (return-from find-view-frame f)))

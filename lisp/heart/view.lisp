@@ -18,6 +18,11 @@
   (declare (type view view))
   (hrt-view-unfocus (view-hrt-view view) seat))
 
+(declaim (inline view-focused-p))
+(defun view-focused-p (view)
+  (declare (type view view))
+  (hrt-view-focused (view-hrt-view view)))
+
 (declaim (inline view-mapped-p))
 (defun view-mapped-p (view)
   (declare (type view view))
@@ -43,7 +48,12 @@
 (declaim (inline view-set-fullscreen))
 (defun view-set-fullscreen (view fullscreen)
   (declare (type view view))
-  (hrt-view-set-fullscreen (view-hrt-view view) fullscreen))
+  (hrt-view-fullscreen (view-hrt-view view) fullscreen))
+
+(declaim (inline view-fullscreen-p))
+(defun view-fullscreen-p (view)
+  (declare (type view view))
+  (hrt-view-fullscreened (view-hrt-view view)))
 
 (declaim (inline view-configure))
 (defun view-configure (view)

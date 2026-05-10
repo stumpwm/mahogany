@@ -7,11 +7,13 @@
   (mh-sys:open-terminal))
 
 (defcommand split-frame-h ()
+  "Split the current frame horizontally"
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
       (tree:split-frame-h frame :direction :right))))
 
 (defcommand split-frame-v ()
+  "Split the current frame horizontally"
   (let ((frame (mahogany-current-frame *compositor-state*)))
     (when frame
       (tree:split-frame-v frame :direction :bottom))))

@@ -133,11 +133,14 @@ to match."
       (declare (ignore found key))
       value)))
 
+(defun %group-current-output-node (group)
+  (let* ((cur-frame (mahogany-group-current-frame group))
+         (output-node (tree:find-root-frame cur-frame)))
+    output-node))
+
 (defun group-current-output (group)
   "Return the output that contains the group's currently focused frame"
-  (let* ((cur-frame (mahogany-group-current-frame group))
-         (output-node (tree:frame-parent (tree:find-root-frame cur-frame))))
-    (tree:output-node-output output-node)))
+  (tree:output-node-output (%group-current-output-node group)))
 
 (defun group-remove-output (group output seat)
   (declare (type hrt:output output)
@@ -167,9 +170,9 @@ to match."
     (push view (mahogany-group-views group))
     ;; We need to send a configure event, so we might as well
     ;; guess the size of the window:
-    (with-accessors ((focused-frame mahogany-group-current-frame))
-        group
-      (if focused-frame
+    (let ((focused-frame (mahogany-group-current-frame group)))
+      ;; TODO: Try to guess when there is a full screen view visible:
+      (if (and focused-frame (not (typep focused-frame 'tree:output-node)))
           (set-dimensions view (tree:frame-width focused-frame) (tree:frame-height focused-frame))
           (set-dimensions view 0 0)))
     view))
@@ -182,42 +185,54 @@ to match."
 		   (hidden mahogany-group-hidden-views))
       group
     (alexandria:when-let ((current-frame (mahogany-group-current-frame group)))
-      (alexandria:when-let ((view (tree:frame-view current-frame)))
-        (%add-hidden hidden view))
-      ;; we should be on the right layer already, but if we add frame rules
-      ;; or floating frames, we need to make sure the view goes in the right layer.
-      ;; I don't want to put this in the frame code until we had the layer shell code,
-      ;; as I don't think it will actually work there.
-      (let* ((layer (tree:frame-find-layer current-frame))
+      ;; By default, add new views to the tiled layer:
+      (let* ((layer (mahogany-group-tiled-container group))
              (hrt-layer (tree:layer-container-layer layer)))
         (hrt:scene-layer-add-view hrt-layer view))
-      ;; Adding a view to a frame dirties the view transaction:
-      (setf (tree:frame-view current-frame) view))))
+      (alexandria:when-let ((to-hide (tree:frame-view current-frame)))
+        (%add-hidden hidden to-hide))
+      (%swap-view-into-frame group current-frame view))))
 
 (declaim (inline %find-view-frame))
 (defun %find-view-frame (group view fn)
   (dolist (tree (tree:tree-children (mahogany-group-tiled-container group)))
+    ;; TODO: use foreach-leaf here:
     (dolist (f (mahogany/tree:get-populated-frames tree))
       (when (equalp (tree:frame-view f) view)
         (funcall fn f)))))
 
-(defun %group-remove-view (group view)
+(defun group-unmap-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
                    (output-map mahogany-group-output-map)
                    (hidden mahogany-group-hidden-views))
       group
-    (hrt:with-view-transaction ()
-      (flet ((remove-and-populate (f)
-               (setf (tree:frame-view f) nil)
-               (alexandria:when-let ((new-view (%pop-hidden-item hidden)))
-                 (setf (tree:frame-view f) new-view))))
-        (%find-view-frame group view #'remove-and-populate))
-      (ring-list:remove-item hidden view)
-      (hrt:dirty-view-transaction))))
-
-(defun group-unmap-view (group view)
-  (%group-remove-view group view))
+    (log-string :trace "unmapping view ~S" view)
+    (alexandria:if-let ((f (tree:find-view-frame (mahogany-group-tiled-container group) view)))
+      (hrt:with-view-transaction ()
+        (etypecase f
+          (tree:output-node
+           (log-string :trace "unmapping fullscreen view ~S" view)
+           (let ((to-replace (ring-list:peek-item hidden)))
+             (cond
+               ((and to-replace (hrt:view-fullscreen-p to-replace))
+                (tree:set-fullscreen f (%pop-hidden-item hidden)))
+               (t
+                (%clear-fullscreen-state group f)
+                ;; reset the current frame:
+                (let ((to-focus (tree:find-focused-frame f)))
+                  ;; Don't pull from the hidden list unless we land on an empty frame:
+                  (when (and to-replace
+                             (not (tree:frame-view to-focus)))
+                    (setf (tree:frame-view to-focus) (%pop-hidden-item hidden)))
+                  (setf (mahogany-group-current-frame group) to-focus)
+                  (tree:mark-frame-focused to-focus (server-seat *compositor-state*)))))))
+          (tree:view-frame
+           (setf (tree:frame-view f) nil)
+           (when (> (ring-list:ring-list-size hidden) 0)
+             (%swap-view-into-frame group f (%pop-hidden-item hidden)))))
+        (hrt:dirty-view-transaction))
+      (ring-list:remove-item hidden view))))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
@@ -239,11 +254,11 @@ to match."
 
 (defun %maximize-frame (group frame)
   (declare (type mahogany-group group))
-  (let ((tree-root (mahogany/tree:find-root-frame frame)))
+  (let ((topmost-frame (mahogany/tree:find-topmost-frame frame)))
     (flet ((hide-and-disable (view-frame)
              (alexandria:when-let ((view (tree:frame-view view-frame)))
                (%add-hidden (mahogany-group-hidden-views group) view))))
-      (tree:replace-frame tree-root frame #'hide-and-disable)))
+      (tree:replace-frame topmost-frame frame #'hide-and-disable)))
   (hrt:dirty-view-transaction))
 
 (defun group-maximize-current-frame (group)
@@ -253,10 +268,145 @@ currently focused frame"
   (let ((current-frame (mahogany-group-current-frame group)))
     (%maximize-frame group current-frame)))
 
+(defstruct (%hidden-view-info (:constructor %make-hidden-view-info (output frame)))
+  (output nil :type tree:output-node :read-only t)
+  (frame nil :type tree:view-frame :read-only t))
+
+(defun %hide-views-under-fullscreen (group output-node &optional (add-fun #'ring-list:add-item-prev))
+  (declare (optimize (speed 3))
+           (type mahogany-group group)
+           (type tree:output-node output-node)
+           (type (function (ring-list:ring-list T) (values fixnum)) add-fun))
+  (let ((hidden-views (mahogany-group-hidden-views group)))
+    (dolist (f (tree:get-populated-frames output-node))
+      (let ((v (tree:frame-view f)))
+        (unless (ring-list:contains-item hidden-views v)
+          (funcall add-fun hidden-views v)
+          (hrt:view-set-hidden v t))
+        (setf (gethash v (mahogany-group-hidden-view-map group))
+              (%make-hidden-view-info output-node f))))))
+
+(defun %group-make-fullscreen (group view output)
+  (declare (type (or null hrt:output) output)
+           (type hrt:view view)
+           (type mahogany-group group))
+  (hrt:view-set-fullscreen view t)
+  (alexandria:if-let ((frame (tree:find-view-frame
+			      (mahogany-group-tiled-container group)
+			      view)))
+    ;; The frame is visible, immediately fullscreen it:
+    (let ((output-node (if output
+			   (gethash (hrt:output-full-name output)
+                                    (mahogany-group-output-map group))
+			   (%group-current-output-node group))))
+      (unless output-node
+        (mahogany/log:log-string :warn "Could not find output when making view fullscreen")
+        (return-from %group-make-fullscreen nil))
+      (setf (tree:frame-view frame) nil)
+      (let ((prev-fullscreen (tree:set-fullscreen output-node view)))
+        (cond
+          (prev-fullscreen
+           (%add-hidden (mahogany-group-hidden-views group) prev-fullscreen))
+          (t
+           ;; Since there wasn't a fullscreen node here previously, mark all the views
+           ;; that it hides as hidden:
+           (%hide-views-under-fullscreen group output-node))))
+      ;; When a frame on the current output is focused, move the focus to the fullscreen
+      ;; view:
+      (when (eq (%group-current-output-node group)
+                output-node)
+        (tree:mark-frame-focused output-node (server-seat *compositor-state*))
+        (setf (mahogany-group-current-frame group) output-node)))
+    ;; Frame isn't visible; allow the view to be fullscreened and we will deal with it
+    ;; when it becomes visible:
+    (progn
+      (log-string :trace "Allowing hidden view to become fullscreen: ~S" view)))
+  ;; We always fulfull the request:
+  t)
+
+(defun %clear-fullscreen-state (group frame)
+  "Unmark the output node frame and make the views that are under it visible.
+After this function is ran, the current frame needs to be set and focused."
+  (declare (type tree:output-node frame)
+           (type mahogany-group group))
+  (let ((hidden-map (mahogany-group-hidden-view-map group)))
+    (loop :for hidden-view :being :the :hash-key
+            :of hidden-map
+              :using (hash-value data)
+          :when (eql frame (%hidden-view-info-output data))
+            :do (remhash hidden-view hidden-map)
+                (hrt:view-set-hidden hidden-view nil)
+                (ring-list:remove-item (mahogany-group-hidden-views group)
+                                       hidden-view
+                                       :test #'eql)))
+  (tree:unmark-frame-focused frame (server-seat *compositor-state*))
+  (tree:clear-fullscreen frame))
+
+(defun %group-unfullscreen (group view)
+  (declare (type mahogany-group group)
+           (type hrt:view view))
+  (hrt:view-set-fullscreen view nil)
+  (alexandria:if-let ((frame (tree:find-view-frame
+                              (mahogany-group-tiled-container group)
+                              view)))
+    ;; The frame is visible, we need to do some cleanup:
+    (cond
+      ((typep frame 'tree:output-node)
+       (%clear-fullscreen-state group frame)
+       (let ((to-focus (tree:find-focused-frame frame)))
+         (setf (mahogany-group-current-frame group) to-focus)
+         (alexandria:when-let ((prev (tree:frame-view to-focus)))
+           (%add-hidden (mahogany-group-hidden-views group) prev))
+         (setf (tree:frame-view to-focus) view)))
+      (t
+       ;; We aren't doing anything; communicate that to the calling code
+       nil))
+    (progn
+      (log-string :trace "Make hidden view not fullscreen: ~S" view))))
+
 (defun group-set-fullscreen (group view output set-fullscreen)
-  ;; TODO: implement me!
-  nil ; return nil to show no action was taken
-  )
+  (if set-fullscreen
+      (%group-make-fullscreen group view output)
+      (%group-unfullscreen group view)))
+
+(defun %swap-view-into-frame (group current-frame view)
+  (declare (type mahogany-group group)
+           (type (or null hrt:view) view))
+  (cond
+    ((hrt:view-fullscreen-p view)
+     (let* ((cur-output (%group-current-output-node group))
+            (prev-fullscreen (tree:set-fullscreen cur-output view)))
+       (unless prev-fullscreen
+         (%hide-views-under-fullscreen group cur-output #'ring-list:add-item))
+       (tree:mark-frame-focused cur-output (server-seat *compositor-state*))
+       (setf (mahogany-group-current-frame group) cur-output)))
+    (t
+     (let ((hidden-data (gethash view (mahogany-group-hidden-view-map group))))
+       (declare (type (or null %hidden-view-info) hidden-data))
+       (etypecase current-frame
+         (tree:output-node
+          (%clear-fullscreen-state group current-frame)
+          (cond
+            ((and hidden-data
+                  (eql (%hidden-view-info-output hidden-data) current-frame))
+             (log-string :trace "Hidden view is visible under fullscreen view")
+             ;; The view should be visible, focus its frame:
+             (let ((to-focus (%hidden-view-info-frame hidden-data)))
+               (setf (mahogany-group-current-frame group) to-focus)
+               (tree:mark-frame-focused to-focus (server-seat *compositor-state*))))
+            (t
+             (let ((to-focus (tree:find-focused-frame current-frame)))
+               (setf (mahogany-group-current-frame group) to-focus)
+               (alexandria:when-let ((prev (tree:frame-view to-focus)))
+                 (%add-hidden (mahogany-group-hidden-views group) prev))
+               (setf (tree:frame-view to-focus) view)))))
+         (tree:view-frame
+          (when hidden-data
+            (setf (tree:frame-view (%hidden-view-info-frame hidden-data))
+                  nil)
+            (remhash view (mahogany-group-hidden-view-map group)))
+          (setf (tree:frame-view current-frame) view))))))
+  (hrt:dirty-view-transaction))
 
 (defun group-next-hidden (group)
   (declare (type mahogany-group group))
@@ -267,8 +417,7 @@ currently focused frame"
       (alexandria:if-let ((view (tree:frame-view current-frame)))
         (setf next-view (%swap-next-hidden hidden-views view))
         (setf next-view (%pop-hidden-item hidden-views)))
-      (setf (tree:frame-view current-frame) next-view)
-      (hrt:dirty-view-transaction))))
+      (%swap-view-into-frame group current-frame next-view))))
 
 (defun group-previous-hidden (group)
   (declare (type mahogany-group group))
@@ -279,8 +428,7 @@ currently focused frame"
       (alexandria:if-let ((view (tree:frame-view current-frame)))
         (setf next-view (%swap-prev-hidden hidden-views view))
         (setf next-view (%pop-hidden-item hidden-views)))
-      (setf (tree:frame-view current-frame) next-view)
-      (hrt:dirty-view-transaction))))
+      (%swap-view-into-frame group current-frame next-view))))
 
 (defun group-next-frame (group seat)
   (declare (type mahogany-group group))

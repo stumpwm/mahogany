@@ -8,11 +8,11 @@
          :documentation "The client of the frame")
    (next :initarg next-frame
          :initform nil
-         :type (or view-frame null)
+         :type (or tree-node null)
          :reader frame-next)
    (prev :initarg prev-frame
          :initform nil
-         :type (or view-frame null)
+         :type (or tree-node null)
          :reader frame-prev)
    (seat :initform nil)))
 

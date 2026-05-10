@@ -161,8 +161,20 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
 
     hrt_view_reparent(view, root);
     hrt_view_set_relative(view, 0, 0);
+    hrt_view_set_size(view, width, height);
 
     return new_node;
+}
+
+struct hrt_view *hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
+			       struct hrt_view *view) {
+  struct hrt_view *v = node->view;
+  struct wlr_scene_tree *p = view->scene_tree->node.parent;
+  hrt_view_reparent(view, node->layer.tree);
+  hrt_view_reparent(node->view, p);
+  node->view = view;
+  hrt_view_fullscreen(view, true);
+  return v;
 }
 
 struct hrt_view *

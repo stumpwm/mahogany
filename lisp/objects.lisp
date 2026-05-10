@@ -8,8 +8,11 @@
   (hrt-group (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (tiled-container nil :type tree:layer-container :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
-  (current-frame nil :type (or tree:frame null))
+  (current-frame nil :type (or tree:frame tree:output-node null))
   (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)
+  ;; Map that contains views hidden by fullscreen windows.
+  ;; view -> %hidden-view-info
+  (hidden-view-map (make-hash-table) :type hash-table)
   (views nil :type list))
 
 (defclass mahogany-state ()

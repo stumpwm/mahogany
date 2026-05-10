@@ -70,8 +70,8 @@
                (:file "command")
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "message" :depends-on ("heart"))
-               (:file "group" :depends-on ("objects" "heart"))
-               (:file "state" :depends-on ("objects" "keyboard" "heart"))
+               (:file "group" :depends-on ("objects" "heart" "globals"))
+               (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
                       :depends-on ("objects" "globals" "keyboard" "input" "command"))

@@ -24,6 +24,7 @@
 (defun destroy-output (mh-output)
   (declare (ignore mh-output)))
 
+(declaim (inline output-resolution output-position))
 (defun output-resolution (output)
   (declare (type output output))
   (with-return-by-value ((width :int) (height :int))

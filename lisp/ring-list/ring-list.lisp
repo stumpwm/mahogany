@@ -10,6 +10,7 @@
    #:pop-item
    #:pop-item-prev
    #:peek-item
+   #:contains-item
    #:swap-next
    #:swap-previous
    #:swap-next-find
@@ -176,6 +177,12 @@ Reverses the action that swap-next performs"
       (setf (ring-item-item prev) item
             head prev)
       prev-item)))
+
+(defun contains-item (ring-list item &key (test #'equalp))
+  (declare (type ring-list ring-list))
+  (let ((found (%find-item ring-list item test)))
+    (when found
+      (ring-item-item found))))
 
 ;; We need to re-define print-object to prevent infinite recursion
 ;; when chasing the next and previous pointers:

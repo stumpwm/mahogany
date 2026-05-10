@@ -201,6 +201,9 @@
   (let ((output (%find-output output-ptr (mahogany-state-outputs state))))
     (%with-found-view state (view view-ptr)
       (%with-found-group state (group view)
+        (log-string :debug
+                    "~@<Fullscreen requested (~:[no~;yes~]):~I ~:_view ~S ~:_on output ~S~:>"
+                    set-fullscreen view output)
 	(group-set-fullscreen group view output set-fullscreen)))))
 
 (defun mahogany-state-view-map (state view-ptr)
