@@ -134,19 +134,20 @@
       (log-string :warn "Cannot remove the only group")
       (return-from mahogany-state-group-remove))
     (if (find group groups :test #'equalp)
-        (progn
+        (let* ((server (mahogany-state-server state))
+               (scene-tree (hrt:hrt-server-scene-tree server))
+               (seat (hrt:hrt-server-seat server)))
           (cond
             ((equal group current-group)
-             (setf current-group (ring-list:pop-item hidden-groups)))
+             (let ((new-current (ring-list:pop-item hidden-groups)))
+               (setf current-group new-current)
+               (group-wakeup new-current seat)))
             (t
              (ring-list:remove-item hidden-groups group)))
           (setf groups (delete group groups
                                :test #'equalp))
           (group-transfer-views current-group group)
-          (let* ((server (mahogany-state-server state))
-                 (scene-tree (hrt:hrt-server-scene-tree server))
-                 (seat (hrt:hrt-server-seat server)))
-            (destroy-mahogany-group group scene-tree seat))
+          (destroy-mahogany-group group scene-tree seat)
           (log-string :trace "Hidden groups: ~S" hidden-groups))
         (log-string :error "could not find group to delete"))))
 
