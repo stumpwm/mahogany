@@ -16,7 +16,8 @@
 		      gravity
 		      theme
 		      ms-delay)
-  (declare (type cffi:foreign-pointer server output)
+  (declare (type cffi:foreign-pointer server)
+           (type hrt:output output)
 	   (type toast-message-gravity gravity)
 	   (type integer ms-delay)
 	   (type mh/theme:theme theme)

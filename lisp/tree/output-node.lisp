@@ -1,9 +1,9 @@
 (in-package :mahogany/tree)
 
-(defun reconfigure-node (node hrt-output)
+(defun reconfigure-node (node output)
   (declare (type output-node node)
-           (type cffi:foreign-pointer hrt-output))
-  (multiple-value-bind (x y width height) (hrt:output-usable-area hrt-output)
+           (type hrt:output output))
+  (multiple-value-bind (x y width height) (hrt:output-usable-area output)
     (set-position node x y)
     (set-dimensions node width height)))
 

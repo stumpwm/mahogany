@@ -20,8 +20,7 @@
                    (hrt-server mahogany-state-server))
       state
     (let* ((cur-output (group-current-output cur-group)))
-      (alexandria:when-let ((hrt-output (mahogany-output-hrt-output cur-output)))
-        (hrt:toast-message hrt-server hrt-output text
-                           gravity
-                           theme
-                           ms-delay)))))
+      (hrt:toast-message hrt-server cur-output text
+                         gravity
+                         theme
+                         ms-delay))))

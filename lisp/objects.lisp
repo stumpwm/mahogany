@@ -1,10 +1,5 @@
 (in-package #:mahogany)
 
-(defstruct (mahogany-output (:constructor %make-mahogany-output
-                                          (hrt-output full-name)))
-  (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
-  (full-name "" :type string :read-only t))
-
 (defstruct (mahogany-group (:constructor %make-mahogany-group
                                (name number hrt-group tiled-container)))
   (name "" :type string)
@@ -35,9 +30,9 @@
                :initform (kbd "C-t")
                :reader mahogany-state-prefix-key
                :documentation "The prefix key used for prefix-bound kmaps.")
-   (outputs :type (vector mahogany-output *)
+   (outputs :type (vector hrt:output *)
             :initform (make-array 0
-                                  :element-type 'mahogany-output
+                                  :element-type 'hrt:output
                                   :adjustable t
                                   :fill-pointer t)
             :accessor mahogany-state-outputs)

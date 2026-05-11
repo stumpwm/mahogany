@@ -36,11 +36,11 @@
            #:hrt-seat-cursor-ly
            #:hrt-seat-set-keymap
            ;; output symbols:
+           #:output
            #:hrt-output
-           #:hrt-output-name
-           #:hrt-output-make
-           #:hrt-output-model
-           #:hrt-output-serial
+           #:output-hrt-output
+           #:make-output
+           #:destroy-output
            #:hrt-keypress-info
            ;; output callbacks
            #:output-added
@@ -50,6 +50,11 @@
            #:output-resolution
            #:output-position
            #:output-usable-area
+           #:output-full-name
+           #:output-name
+	   #:output-make
+	   #:output-model
+	   #:output-serial
            ;; view-methods
            #:view
            #:view-init

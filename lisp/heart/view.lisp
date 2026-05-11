@@ -48,6 +48,7 @@
 (declaim (inline view-configure))
 (defun view-configure (view)
   (declare (type view view))
+  (log-string :trace "Sending configure to view ~A" view)
   (hrt-view-send-configure (view-hrt-view view)))
 
 (defmethod mh/interface:set-dimensions ((view view) width height)

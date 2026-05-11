@@ -91,7 +91,7 @@
     (setf current-frame nil)))
 
 (defun group-add-output (group output seat)
-  (declare (type mahogany-output output)
+  (declare (type hrt:output output)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
                    (tiled-container mahogany-group-tiled-container)
@@ -99,13 +99,13 @@
                    (hidden-views mahogany-group-hidden-views))
       group
     (multiple-value-bind (x y)
-        (hrt:output-position (mahogany-output-hrt-output output))
+        (hrt:output-position output)
       (multiple-value-bind (width height)
-          (hrt:output-resolution (mahogany-output-hrt-output output))
+          (hrt:output-resolution output)
         (let ((new-tree (tree:tree-output-add tiled-container output
                                               :x x :y y
                                               :width width :height height)))
-          (setf (gethash (mahogany-output-full-name output) output-map) new-tree)
+          (setf (gethash (hrt:output-full-name output) output-map) new-tree)
           (when (not current-frame)
             (let ((first-leaf (tree:find-first-leaf new-tree)))
               (group-focus-frame group first-leaf seat)
@@ -117,12 +117,11 @@
   "Re-examine where the outputs are and adjust the trees that are associated with them
 to match."
   (with-accessors ((output-map mahogany-group-output-map)) group
-    (loop for mh-output across outputs
-          do (with-accessors ((full-name mahogany-output-full-name)
-                              (hrt-output mahogany-output-hrt-output))
-                 mh-output
+    (loop for output across outputs
+          do (with-accessors ((full-name hrt:output-full-name))
+                 output
                (alexandria:when-let ((tree (gethash full-name output-map)))
-                 (tree:reconfigure-node tree hrt-output))))))
+                 (tree:reconfigure-node tree output))))))
 
 (defun %first-hash-table-value (table)
   (declare (type hash-table table)
@@ -139,12 +138,12 @@ to match."
     (tree:output-node-output output-node)))
 
 (defun group-remove-output (group output seat)
-  (declare (type mahogany-output output)
+  (declare (type hrt:output output)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
                    (hidden-views mahogany-group-hidden-views))
       group
-    (let* ((output-name (mahogany-output-full-name output))
+    (let* ((output-name (hrt:output-full-name output))
            (tree (gethash output-name output-map)))
       (remhash output-name output-map)
       (when (equalp output (group-current-output group))

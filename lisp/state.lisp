@@ -81,15 +81,15 @@
                    (groups mahogany-state-groups)
                    (scene mahogany-state-scene))
       state
-    (let ((mh-output (make-mahogany-output hrt-output)))
-      (log-string :debug "New output added ~S" (mahogany-output-full-name mh-output))
+    (let ((mh-output (hrt:make-output hrt-output)))
+      (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
       (vector-push-extend mh-output outputs)
       (loop for g across groups
             do (group-add-output g mh-output (server-seat state))))))
 
 (defun %find-output (hrt-output outputs)
   (find hrt-output outputs
-      :key #'mahogany-output-hrt-output
+      :key #'hrt:output-hrt-output
       :test #'cffi:pointer-eq))
 
 (defun mahogany-state-output-remove (state hrt-output)
@@ -97,12 +97,12 @@
                    (groups mahogany-state-groups))
       state
     (let ((mh-output (%find-output hrt-output outputs)))
-      (log-string :debug "Output removed ~S" (mahogany-output-full-name mh-output))
+      (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
       (loop for g across groups
             do (group-remove-output g mh-output (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
       (setf outputs (delete mh-output outputs :test #'equalp))
-      (destroy-mahogany-output mh-output))))
+      (hrt:destroy-output mh-output))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (let ((index (length (mahogany-state-groups state))))

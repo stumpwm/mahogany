@@ -75,7 +75,6 @@
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
                       :depends-on ("objects" "globals" "keyboard" "input" "command"))
-               (:file "output" :depends-on ("objects" "heart" "state" "heart"))
                (:file "events" :depends-on ("globals" "state" "objects" "heart"))
                (:file "input" :depends-on ("state" "keyboard" "heart" "command" "message"))
                (:file "key-bindings"
