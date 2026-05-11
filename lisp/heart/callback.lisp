@@ -11,26 +11,27 @@
     (if (eql :void return-type)
         ;; To keep with non-void return type, establish a RETURN-VALUE restart,
         ;; except this one doesn't interactively take args
-        (let ((restarts (list `(return-value ()
+        (let ((restarts (list `(callback-exit ()
 	                            :report "Exit the callback"
 	                            nil))))
           (when-val-present (val error-spec :error-val)
             ;; let's be pendantic and require nil to make things a bit clearer:
             (unless (null val)
               (error "Default callback return value must be nil when the callback return type is :void"))
-            (push `(default-value ()
+            (push `(callback-exit-default ()
 	               :report "Return the default value from the callback (nil)"
 	               nil)
                   restarts))
             restarts)
-      (let ((restarts (list `(return-value ()
+      (let ((restarts (list `(callback-exit (val)
                                  :report "Exit the callback, returning the specified value"
                                  :interactive (lambda ()
-		                                (format *query-io* "Return value: ")
+		                                (format *query-io* "Return value (type ~S): " ,return-type)
                                                 (force-output *query-io*)
-		                                (list (read *query-io*)))))))
+		                                (list (read *query-io*)))
+                                 val))))
         (when-val-present (val error-spec :error-val)
-          (push `(default-value ()
+          (push `(callback-exit-default ()
                      :report (lambda (s)
                                (format s "Return the value produced by evaluating ~S"
                                        (quote ,val)))
