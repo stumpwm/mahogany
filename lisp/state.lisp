@@ -106,7 +106,7 @@
       (hrt:destroy-output mh-output))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
-  (let ((index (length (mahogany-state-groups state))))
+  (let ((index (+ 1 (length (mahogany-state-groups state)))))
     (unless group-name
       (setf group-name (concatenate 'string "DEFAULT" "-" (write-to-string index))))
     (let ((new-group (%add-group state group-name index)))
