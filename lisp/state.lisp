@@ -17,6 +17,7 @@
                    (server mahogany-state-server))
       state
     (let* ((default-group (make-mahogany-group name index server)))
+      (setf (mahogany-group-active-p default-group) t)
       (vector-push-extend default-group groups)
       default-group)))
 

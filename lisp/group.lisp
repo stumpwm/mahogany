@@ -50,6 +50,7 @@
                    (hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Suspending group ~A" (mahogany-group-name group))
+    (setf (mahogany-group-active-p group) nil)
     (when focused-frame
       (tree:unmark-frame-focused focused-frame seat))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)))
@@ -60,6 +61,7 @@
                    (hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Waking up group ~A" (mahogany-group-name group))
+    (setf (mahogany-group-active-p group) nil)
     (when focused-frame
       (tree:mark-frame-focused focused-frame seat))
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
