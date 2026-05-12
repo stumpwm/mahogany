@@ -5,6 +5,7 @@
    #:ring-list
    #:ring-list-size
    #:add-item
+   #:add-item-prev
    #:remove-item
    #:pop-item
    #:pop-item-prev
@@ -39,6 +40,21 @@
           (setf (ring-item-prev head) new-item
                 (ring-item-next prev) new-item
                 head new-item)))
+    (incf size)))
+
+(defun add-item-prev (ring-list item)
+  "Add the given item to the tail of the list"
+  (declare (type ring-list ring-list))
+  (with-slots (head size) ring-list
+    (if (null head)
+        (let ((new-head (make-ring-item item nil nil)))
+          (setf (ring-item-next new-head) new-head
+                (ring-item-prev new-head) new-head
+                head new-head))
+        (let* ((tail (ring-item-prev head))
+               (new-item (make-ring-item item tail head)))
+          (setf (ring-item-prev head) new-item
+                (ring-item-next tail) new-item)))
     (incf size)))
 
 (defun %find-item (ring-list item test)

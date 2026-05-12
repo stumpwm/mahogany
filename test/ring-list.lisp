@@ -63,3 +63,34 @@
     (add-item ring 'foo)
     (remove-item ring 'foo)
     (is (= 0 (ring-list-size ring)))))
+
+(fiasco:deftest add-item-prev-when-empty-works ()
+  (let* ((ring (make-ring-list)))
+    (add-item-prev ring 'a)
+    (is (= 1 (ring-list-size ring)))
+    (is (equal 'a (peek-item ring)))))
+
+(fiasco:deftest add-item-prev-increments-size ()
+  (let ((ring (make-ring-list)))
+    (add-item ring 'a)
+    (add-item-prev ring 'b)
+    (add-item-prev ring 'c)
+    (is (= 3 (ring-list-size ring)))))
+
+(fiasco:deftest add-item-prev-popping-with-pop-item ()
+  ;; Test removing items from the tail using pop-item
+  (let ((ring (make-ring-list)))
+    (loop for i from 1 to 4
+          do (add-item-prev ring i))
+    ;; Pop items sequentially - should get 1, 2, 3, 4
+    (dotimes (i 4)
+      (is (= (+ 1 i) (pop-item ring))))))
+
+(fiasco:deftest add-item-prev-popping-with-pop-item-prev ()
+  ;; Test removing items from the tail using pop-item
+  (let ((ring (make-ring-list)))
+    (loop for i from 1 to 4
+          do (add-item-prev ring i))
+    (ring-list::print-backwards ring)
+    (dolist (i (list 4 3 2 1))
+      (is (= i (pop-item-prev ring))))))
