@@ -8,6 +8,7 @@
    #:remove-item
    #:pop-item
    #:pop-item-prev
+   #:peek-item
    #:swap-next
    #:swap-previous
    #:swap-next-find
@@ -86,8 +87,14 @@ found and removed"
       (%remove-item ring-list head)
       (ring-item-item head))))
 
+(defun peek-item (ring-list)
+  "View the item at the top of the list."
+  (declare (type ring-list ring-list))
+  (alexandria:when-let ((head (ring-list-head ring-list)))
+    (ring-item-item head)))
+
 (defun pop-item-prev (ring-list)
-  "Remove the item before the head of the ist and return it"
+  "Remove the item before the head of the list (the tail) and return it"
   (declare (type ring-list ring-list))
   (alexandria:when-let* ((head (ring-list-head ring-list))
                          (last (ring-item-prev head)))
