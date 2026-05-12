@@ -42,4 +42,10 @@
 						    '(:struct hrt-message-theme)
 						    'border-color)
 			 (mh/theme:theme-border-color theme))
-      (hrt-toast-message server output m gravity message-theme ms-delay))))
+      (hrt-toast-message
+       server
+       (output-hrt-output output)
+       m
+       gravity
+       message-theme
+       ms-delay))))
