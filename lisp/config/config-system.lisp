@@ -49,13 +49,13 @@
 
 (defun describe-config-info (info &optional (stream *standard-output*))
   (declare (type config-info info))
-  (format stream "Setting Name: ~A~%  Documentation:~%    ~A~%  Default value: ~S~%Current value: ~S~%"
+  (format stream "Setting Name: ~A~%  Documentation:~%    ~A~%  Default value: ~S~%  Current value: ~S~%"
           (%full-symbol-string (config-info-name info))
           (config-info-doc info)
           (config-info-default info)
           (config-info-value info))
   (alexandria:when-let ((type-specifier (config-info-type info)))
-    (format stream "Type designator: ~S~%" type-specifier)))
+    (format stream "  Type designator: ~S~%" type-specifier)))
 
 (defun describe-config (config-name &optional (stream *standard-output*))
   "Print information about the configuration CONFIG-NAME to the given stream"
