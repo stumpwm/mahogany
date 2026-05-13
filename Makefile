@@ -35,7 +35,7 @@ $(CACHE)/wlroots-configured:
 	touch $(CACHE)/wlroots-configured
 
 run: $(BUILD_DIR)/mahogany
-	LD_LIBRARY_PATH=build/lib/ ./build/mahogany
+	LD_LIBRARY_PATH=build/lib/ ./build/mahogany -d
 
 runNoExec: $(BUILD_DIR)/heart/lib64/libheart.so
 	LD_LIBRARY_PATH=build/lib/ $(call $(LISP),run-main.lisp)
