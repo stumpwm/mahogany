@@ -75,9 +75,10 @@ now run =make= in the root directory of the project to build the C
 backend and the mahogany executable.
 #+BEGIN_SRC sh
   make
-  # if success, run the program!
+  # if successful, run the program with interative debugging
+  # enabled:
   make run
-  # Can also do:
+  # Can also be ran directly:
   LD_LIBRARY_PATH=build/lib64:build/lib ./build/mahogany
 #+END_SRC
 
@@ -89,7 +90,8 @@ make:
 #+END_SRC
 
 It is possible to run mahogany in an X11 or Wayland session, and is
-the recommended method of testing at this time.
+the recommended method of testing at this time. If running outside of
+one of these sessions, do not enable the interactive CLI debugger.
 
 ** Getting Started
 

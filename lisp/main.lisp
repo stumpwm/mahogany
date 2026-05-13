@@ -48,7 +48,9 @@ further up. "
   (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level (intern (gethash 'loglevel args) 'keyword))
-  (enable-debugger)
+  (when (gethash 'enable-debugger args)
+    (log-string :info "Running with debugger enabled.")
+    (enable-debugger))
   (cffi:with-foreign-objects ((output-callbacks '(:struct hrt:hrt-output-callbacks))
                               (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
                               (view-callbacks '(:struct hrt:hrt-view-callbacks))
@@ -92,6 +94,12 @@ further up. "
                          :short #\q
                          :help "Do not evaulate an init file on startup"
                          :reduce (constantly t)))
+        (enable-debugger (adopt:make-option
+                          'enable-debugger
+                          :long "enable-debugger"
+                          :short #\d
+                          :help "Enabled the interactive CLI debugger"
+                          :reduce (constantly t)))
         (loglevel (adopt:make-option
                    'loglevel
                    :long "loglevel"
@@ -108,7 +116,8 @@ further up. "
      :contents (list
                 help-option
                 no-init-option
-                loglevel))))
+                loglevel
+                enable-debugger))))
 
 (defun %parse-cmd-line-args (args)
   (let ((parser (%build-cmd-line-parser)))
@@ -119,7 +128,7 @@ further up. "
             ((gethash 'help found)
              (adopt:print-help-and-exit parser))
             ((not (member (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+ :test #'equalp))
-             (adopt:print-error-and-exit (format nil "invlid loglevel '~a'. it's must be one of ~{~A~^|~}" (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+)))
+             (adopt:print-error-and-exit (format nil "Invalid loglevel '~a'. Must be one of ~{~A~^|~}" (gethash 'loglevel found) +LOGLEVEL-SELECTIONS+)))
             (t
              found)
             ))
