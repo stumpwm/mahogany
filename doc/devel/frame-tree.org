@@ -1,11 +1,16 @@
-* Frame Tree
+* Tiling and the Frame Tree
+
+Tiling is accomplished via an n-ary tree, which is defined in the
+=mahogany/tree= package.
 
 There are three general types of nodes in the frame tree:
 
-+ Parent trees, represented by the =tree-frame= class
-+ Leaf frames, represented by the =view-frame= class. These nodes
++ *Output Nodes*, represented by the =output-node= class. These tie
+  the nodes below to an output and handle showing full screen windows.
++ *Leaf Frames*, represented by the =view-frame= class. These nodes
   contain application windows.
-+ Output nodes, represented by the =output-node= class.
++ *Tree Frames*, which represent splits in the frame tree. These
+  objects have a supertype of =frame-tree=.
 
 =tree-frame= objects are broken into two further categories:
 + =binary-tree-frame=, which represents a tree frame that always has
@@ -13,13 +18,54 @@ There are three general types of nodes in the frame tree:
 + =poly-tree-frame=, which represents a tree frame that has two or
   more children.
 
-Each complete tree is grouped into a =tree-container=, which contains
+Each complete tree is grouped into a =layer-container=, which contains
 one tree for each output that is currently visible.
 
+** Common Properties / Operations
+
++ Frame Navigation :: Each node in the frame tree has =frame-next= and
+  =frame-prev= attributes, which allow for iteration over the leafs in
+  the tree. In addition, they have =frame-parent= attribute to get the
+  node's parent.
++ Focus :: Each node in the frame tree can be marked as focused. What
+  exactly this does changes for each node type, but it provides a
+  mechanism to tell the compositor which frames have focus.
+
+** Classes
+
+*** Layer Container (=layer-container=)
+
+This class is not considered a part of the frame tree, but rather
+contains rendering information for the trees it contains. It also
+allows the root node in each tree to have a parent object. When used
+in a tiling layer, this class holds the list of visible output nodes.
+
+*** Output Nodes (=output-node=)
+
 The =output-node= class is the root of a frame tree, and has exactly
-one child, which is the actual tree graph. This class is here so that
-there is a fixed object that we can refer to when looking at the trees
-in the =tree-container= class; otherwise, operations like
-=replace-frame= and output manipulation become much more difficult to
-implement; without this, there is no fixed node to refer to instead of
-one that may be deleted or moved elsewhere in the tree.
+one child, which is the actual tree graph. This node contains the
+frame tree for the output and handles full screen views on the output.
+
+**** Fullscreen view handling
+
+When a view is fullscreened on an output node, the node starts to
+behave similarly to a view frame, although it keeps its children
+intact so that they can be restored when the view is no longer full
+screened.
+
+To full screen a view, the node places the view in an =hrt_scene_fullscreen_node=
+object provided by the backend. This node is only used for displaying
+the view; when the view no longer attached to the node, this object
+gets destroyed.
+
+*** Leaf Frames (=view-frame=)
+
+These frames hold application windows and manage their size and focus state.
+
+*** Tree Frames (=tree-frame=)
+
+~tree-frame~ objects represent split points in the layout tree, where
+space is partitioned into child frames.
+
+Tree frames can be split horizontally or vertically, and can have 2 or
+more children depending on the type.

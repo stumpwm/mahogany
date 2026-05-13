@@ -209,14 +209,15 @@ a view assigned to it."))
     nil))
 
 (defun root-frame-p (frame)
-  "Return T if FRAME is the topmost node in a frame tree"
+  "Return T if FRAME is the root node in a frame tree"
   (frame-anchor-p frame))
 
 (defun topmost-frame-p (frame)
+  "Return T if the frame is a child of a root node."
   (root-frame-p (frame-parent frame)))
 
 (defun find-topmost-frame (frame)
-  "Find the root node for this frame tree"
+  "Find the topmost node for this frame tree"
   (declare (type tree-node frame))
   (do ((cur-frame frame (frame-parent cur-frame)))
       ((topmost-frame-p cur-frame) cur-frame)))

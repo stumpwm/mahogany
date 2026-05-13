@@ -272,6 +272,9 @@ currently focused frame"
   (output nil :type tree:output-node :read-only t)
   (frame nil :type tree:view-frame :read-only t))
 
+;; In order to swap between hidden views, we need to record which views are under
+;; a fullscreen view so that we can remove the view from its frame if it gets placed
+;; in a different one.
 (defun %hide-views-under-fullscreen (group output-node &optional (add-fun #'ring-list:add-item-prev))
   (declare (optimize (speed 3))
            (type mahogany-group group)
