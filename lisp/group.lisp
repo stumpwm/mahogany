@@ -295,6 +295,8 @@ currently focused frame"
     (group-focus-frame group prev-frame seat)))
 
 (defun group-maximize-view (group view)
+  (declare (type mahogany-group group)
+           (type hrt:view view))
   ;; attempt to stop abuse by only listening when the
   ;; frame requesting this info is focused:
   (alexandria:if-let ((frame (tree:find-view-frame
@@ -306,6 +308,8 @@ currently focused frame"
     (hrt:view-configure view)))
 
 (defun group-minimize-view (group view)
+  (declare (type mahogany-group group)
+           (type hrt:view view))
   ;; attempt to stop abuse by only doing something
   ;; if the view is focused:
   (let* ((cur-frame (mahogany-group-current-frame group))

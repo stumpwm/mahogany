@@ -60,6 +60,7 @@ the KEYBINDINGS list."
   "List of defined kmap modes")
 
 (defun %validate-kmap-mode-symbol (symbol)
+  (declare (type symbol symbol))
   (let* ((name (symbol-name symbol))
          (len (length name))
          (must-end-msg "Mode symbol name must end in \"-mode\""))
