@@ -3,6 +3,8 @@
   (:use #:cl)
   (:export #:mahogany-error
            #:mahogany-panic
+           #:invalid-operation
+           #:condition-text
            #:defglobal
            #:disable-fpu-exceptions
            #:enable-debugger))
@@ -10,13 +12,17 @@
 (in-package #:mahogany/util)
 
 (define-condition mahogany-error (error)
-  ()
+  ((text :initarg :text :reader condition-text))
   (:documentation "Generic error condition for mahogany"))
 
 (define-condition mahogany-panic (mahogany-error)
-  ((text :initarg text :reader text))
+  ()
   (:documentation "Fatal error that cannot be recovered from.
 When this error is signaled, the only appropriate thing to do is exit."))
+
+(define-condition invalid-operation (mahogany-error)
+  ()
+  (:documentation "Used when an invalid operation was requested"))
 
 (defmacro defglobal (name value &optional doc)
   #+sbcl

@@ -6,6 +6,7 @@
   (:export
    #:theme
    #:make-theme
+   #:augment-theme
    #:theme-font
    #:theme-font-name
    #:theme-font-size
@@ -43,6 +44,19 @@
 
 (defun theme-font-size (theme)
   (values (parse-integer (%theme-font-size theme))))
+
+(defun augment-theme (theme &key font font-color background-color border-color)
+  "Create a new theme, using THEME for the default values"
+  (declare (type theme theme))
+  (let ((new-theme (copy-theme theme)))
+    (macrolet ((set-not-null (var accessor)
+                 `(when ,var
+                    (setf (,accessor new-theme) ,var))))
+      (set-not-null font theme-font)
+      (set-not-null font-color theme-font-color)
+      (set-not-null background-color theme-background-color)
+      (set-not-null border-color theme-border-color))
+    new-theme))
 
 (defun (setf theme-font-name) (name theme)
   (declare (type theme theme))

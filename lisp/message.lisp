@@ -12,6 +12,14 @@
   mh/theme:theme
   "Theme data for displaying toast messages")
 
+(config:defconfig *message-error-theme*
+    (mh/theme:augment-theme
+     *message-theme*
+     :font-color (colors:rgb 1.0 0.0 0.0)
+     :border-color (colors:rgb 1.0 0.0 0.0))
+  mh/theme:theme
+  "Theme data for error messages")
+
 (defun toast-message (state text &key (gravity *message-gravity*)
                                    (ms-delay *message-delay*)
                                    (theme *message-theme*))
