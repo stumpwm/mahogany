@@ -125,7 +125,7 @@ view, if there was one."
       node)
     (call-next-method)))
 
-(defmethod frame-anchor-p ((frame output-node))
+(defmethod root-frame-p ((frame output-node))
   t)
 
 (defmethod print-object ((object output-node) stream)

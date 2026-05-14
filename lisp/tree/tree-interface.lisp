@@ -203,14 +203,10 @@ a view assigned to it."))
 
 ;; helper functions:
 
-(defgeneric frame-anchor-p (frame)
+(defgeneric root-frame-p (frame)
   (:documentation "Return if the frame can be considered a root of a tree")
   (:method ((frame frame))
     nil))
-
-(defun root-frame-p (frame)
-  "Return T if FRAME is the root node in a frame tree"
-  (frame-anchor-p frame))
 
 (defun topmost-frame-p (frame)
   "Return T if the frame is a child of a root node."
