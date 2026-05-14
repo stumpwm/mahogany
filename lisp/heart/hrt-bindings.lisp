@@ -529,3 +529,66 @@ whenever the semaphore is non-zero."
 
 (declaim (inline hrt-server-struct-size))
 (cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
+
+;; next section imported from file build/include/hrt/hrt_theme.h
+
+(cffi:defcenum hrt-border-style
+  (:hrt-border-solid 0)
+  (:hrt-border-dotted 1))
+
+;; next section imported from file build/include/hrt/hrt_border_box.h
+
+(cffi:defcstruct hrt-border-box-style)
+
+(cffi:defcstruct hrt-border-box)
+
+(declaim (inline hrt-border-box-style-create))
+(cffi:defcfun ("hrt_border_box_style_create" hrt-border-box-style-create) (:pointer (:struct hrt-border-box-style))
+  (border hrt-border-style)
+  (color :pointer)
+  (line-width :double))
+
+(declaim (inline hrt-border-box-style-ref))
+(cffi:defcfun ("hrt_border_box_style_ref" hrt-border-box-style-ref) :void
+  (style (:pointer (:struct hrt-border-box-style))))
+
+(declaim (inline hrt-border-box-style-unref))
+(cffi:defcfun ("hrt_border_box_style_unref" hrt-border-box-style-unref) :void
+  (unknown (:pointer (:struct hrt-border-box-style))))
+
+(declaim (inline hrt-border-box-style-update))
+(cffi:defcfun ("hrt_border_box_style_update" hrt-border-box-style-update) :void
+  (style (:pointer (:struct hrt-border-box-style)))
+  (border hrt-border-style)
+  (color :pointer #|:float :count 4 |#)
+  (line-width :double))
+
+(declaim (inline hrt-border-box-create))
+(cffi:defcfun ("hrt_border_box_create" hrt-border-box-create) (:pointer (:struct hrt-border-box))
+  (parent (:pointer (:struct hrt-scene-layer)))
+  (style (:pointer (:struct hrt-border-box-style)))
+  (x :int)
+  (y :int)
+  (width :int)
+  (height :int))
+
+(declaim (inline hrt-border-box-destroy))
+(cffi:defcfun ("hrt_border_box_destroy" hrt-border-box-destroy) :void
+  (box (:pointer (:struct hrt-border-box))))
+
+(declaim (inline hrt-border-box-set-size))
+(cffi:defcfun ("hrt_border_box_set_size" hrt-border-box-set-size) :void
+  (box (:pointer (:struct hrt-border-box)))
+  (width :int)
+  (height :int))
+
+(declaim (inline hrt-border-box-set-relative))
+(cffi:defcfun ("hrt_border_box_set_relative" hrt-border-box-set-relative) :void
+  (box (:pointer (:struct hrt-border-box)))
+  (x :int)
+  (y :int))
+
+(declaim (inline hrt-border-box-set-enabled))
+(cffi:defcfun ("hrt_border_box_set_enabled" hrt-border-box-set-enabled) :void
+  (box (:pointer (:struct hrt-border-box)))
+  (enabled :bool))

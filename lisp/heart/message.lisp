@@ -3,15 +3,6 @@
 (deftype toast-message-gravity ()
   `(member ,@(cffi:foreign-enum-keyword-list 'window-gravity)))
 
-(declaim (inline write-color-array))
-(defun write-color-array (ptr color)
-  (declare (type cl-colors2:rgb color)
-	   (type cffi:foreign-pointer ptr))
-  (setf (cffi:mem-aref ptr :float 0) (coerce (colors:rgb-red color) 'single-float)
-	(cffi:mem-aref ptr :float 1) (coerce (colors:rgb-green color) 'single-float)
-	(cffi:mem-aref ptr :float 2) (coerce (colors:rgb-blue color) 'single-float)
-	(cffi:mem-aref ptr :float 3) 1.0))
-
 (defun toast-message (server output text
 		      gravity
 		      theme
