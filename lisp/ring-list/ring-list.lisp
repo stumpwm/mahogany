@@ -14,7 +14,8 @@
    #:swap-next
    #:swap-previous
    #:swap-next-find
-   #:swap-previous-find))
+   #:swap-previous-find
+   #:foreach-item))
 
 (in-package #:ring-list)
 
@@ -183,6 +184,22 @@ Reverses the action that swap-next performs"
   (let ((found (%find-item ring-list item test)))
     (when found
       (ring-item-item found))))
+
+(defmacro foreach-item ((var lst) &body body)
+  (let ((lst-var (gensym))
+        (cur (gensym "cur"))
+        (top-tag (gensym "top")))
+    `(let ((,lst-var ,lst))
+       (block nil
+         (let ((,cur (ring-list-head ,lst-var)))
+           (when ,cur
+             (tagbody
+                ,top-tag
+                (let ((,var (ring-item-item ,cur)))
+                  ,@body)
+                (setf ,cur (ring-item-next ,cur))
+                (when (not (eql (ring-list-head ,lst-var) ,cur))
+                  (go ,top-tag)))))))))
 
 ;; We need to re-define print-object to prevent infinite recursion
 ;; when chasing the next and previous pointers:
