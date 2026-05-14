@@ -14,7 +14,21 @@
          :initform nil
          :type (or tree-node null)
          :reader frame-prev)
+   (border-box :initform nil
+               :type (or null cffi:foreign-pointer))
+   (focus-style :initarg focus-style
+                :type cffi:foreign-pointer)
+   (unfocus-style :initarg unfocus-style
+                  :type cffi:foreign-pointer)
    (seat :initform nil)))
+
+;; (defmethod initialize-instance :after ((frame view-frame) &key &allow-other-keys)
+;;   (with-slots (border-box) frame
+;;     (unless view
+;;       (let ((layer-container (frame-find-layer frame)))
+;;         (setf border-box (hrt::hrt-border-box-create
+;;                           (layer-container-layer layer-container)
+
 
 (defmethod (setf %frame-prev) (prev (frame view-frame))
   (setf (slot-value frame 'prev) prev))

@@ -9,6 +9,7 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_scene.h>
 #include <hrt/hrt_server.h>
+#include "render/scale_util.h"
 
 struct message {
     struct wlr_buffer base;
@@ -177,16 +178,6 @@ out:
     return message;
 }
 
-static bool scaled_box(int width, int height, double scale, struct wlr_box *box) {
-    if (!box || scale <= 0)
-        return false;
-
-    *box = (struct wlr_box){0};
-    box->width = (int)((double)width / scale);
-    box->height = (int)((double)height / scale);
-    return true;
-}
-
 static bool margin_box(struct wlr_box *src,
                        int margin_x,
                        int margin_y,
@@ -281,20 +272,6 @@ static bool gravity_coords(enum window_gravity gravity,
     return true;
 }
 
-static enum wlr_scale_filter_mode
-compute_scale_filter(struct message *message, struct wlr_box *message_box,
-                     double scale) {
-    /* apply nearest scaling if output has an integer scale factor, linear otherwise */
-    enum wlr_scale_filter_mode scale_filter = (ceilf(scale) == scale) ?
-        WLR_SCALE_FILTER_NEAREST :
-        WLR_SCALE_FILTER_BILINEAR;
-    if (message_box->width < message->base.width &&
-        message_box->height < message->base.height)
-        /* if we are scaling down, we should always choose linear */
-        scale_filter = WLR_SCALE_FILTER_BILINEAR;
-    return scale_filter;
-}
-
 bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
                        const char *text, enum window_gravity gravity,
                        struct hrt_message_theme *theme, int ms_delay) {
@@ -322,7 +299,7 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
         return false;
 
     struct wlr_box message_box;
-    if (!scaled_box(message->base.width, message->base.height, scale, &message_box)) {
+    if (!compute_scaled_box(message->base.width, message->base.height, scale, &message_box)) {
         wlr_buffer_drop(&message->base);
         return false;
     }
@@ -347,7 +324,7 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
     }
 
     enum wlr_scale_filter_mode scale_filter =
-        compute_scale_filter(message, &message_box, scale);
+        compute_scale_filter(&message->base, &message_box, scale);
     wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width, message_box.height);
 
