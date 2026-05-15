@@ -6,6 +6,7 @@
            config-info-default
            config-info-doc
            config-info-value
+           config-value
            describe-all-config-info
            describe-config-info
            describe-config
@@ -14,6 +15,7 @@
            invalid-datum-error
            define-config-enum
            defconfig
+           define-setf-config
            all-config-info
            get-config-info
            set-config
@@ -30,8 +32,14 @@
   (name t :type symbol :read-only t)
   (type nil :read-only t) ; this is a type specifier
   (default nil :read-only t)
-  (value nil)
-  (doc "" :type string :read-only t))
+  (doc "" :type string :read-only t)
+  (set-function nil :type function :read-only t)
+  (get-function nil :type function :read-only t))
+
+(declaim (inline config-info-value))
+(defun config-info-value (config-info)
+  (declare (type config-info config-info))
+  (funcall (config-info-get-function config-info)))
 
 (defun %full-symbol-string (symb)
   "Get the full name of the symbol complete with the package name"
@@ -122,26 +130,98 @@
                    (%full-symbol-string place-symbol) alternatives)
            (format s  "Setting ~A not found." (%full-symbol-string place-symbol)))))))
 
-(defun %add-config-info (name default-value type-specifier documentation)
+;; TODO: Instead of overwriting the config object, updating it if already exists
+;;  could lead to better warnings and optimizations, as we could guarantee that a
+;;  symbol is always associated with the same config object.
+(defun %add-config-info (name default-value type-specifier documentation setter getter)
   (setf (gethash name *config-vars*)
         (make-config-info :name name :default default-value
-                          :type type-specifier :doc documentation)))
+                          :type type-specifier :doc documentation
+                          :set-function setter
+                          :get-function getter)))
 
 (defmacro defconfig (name default type-specifier documentation)
   "Create and register a configurable variable with the given default value,
-type specifier, and documentation"
+type specifier, and documentation.
+
+Example:
+   (config-system:defconfig config-var :default symbol \"Documentation\")"
   (check-type documentation string)
   (check-type name symbol)
-  (with-gensyms (default-value)
+  (with-gensyms (setf-arg)
+    `(progn
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (declaim (type ,type-specifier ,name))
+         (defvar ,name ,default ,@(when documentation
+                                    (list documentation))))
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (if (typep ,name (quote ,type-specifier))
+             (%add-config-info (quote ,name) ,name (quote ,type-specifier) ,documentation
+                               (lambda (,setf-arg)
+                                 (if (typep ,setf-arg (quote ,type-specifier))
+                                     (setf ,name ,setf-arg)
+                                     (error 'invalid-datum-error :place (quote ,name)
+                                                                 :value ,setf-arg)))
+                               (lambda ()
+                                 ,name))
+             (error 'invalid-datum-error :place (quote ,name) :value ,name))))))
+
+(defun %check-define-setf-config-clauses (getter setter)
+  (let ((missing nil))
+    (when (not getter)
+      (push :getter missing))
+    (when (not setter)
+      (push :setter missing))
+    (when missing
+      (error (format nil "Missing section~P ~{~S~^, ~} in ~S"
+                     (length missing) missing 'define-setf-config)))))
+
+(defconstant +no-default+ 'no-default)
+
+(defmacro define-setf-config ((name &key type (default (quote +no-default+))) documentation &body body)
+  "Define a configuration object whose values are modified by a setf function
+and retreived using a getter function.
+
+Example:
+  (define-setf-config
+      (focus-theme :type symbol)
+      \"documentation\"
+    (:setter (test)
+      (setf focus-theme-var test))
+    (:getter ()
+      focus-theme-var))"
+  (let ((setter (assoc :setter body))
+        (getter (assoc :getter body))
+        (forms nil))
+    (%check-define-setf-config-clauses getter setter)
+    (destructuring-bind (setter-symb (parameter)
+                         &body body)
+        setter
+      (declare (ignore setter-symb))
+      (push `(defun (setf ,name) (,parameter)
+               ,(if type
+                  `(if (typep ,parameter (quote ,type))
+                        (progn
+                          ,@body)
+                        (error 'invalid-datum-error :place (quote ,name) :value ,parameter))
+                  body))
+            forms))
+    (destructuring-bind (setter-symb ()
+                     &body body)
+        getter
+      (declare (ignore setter-symb))
+      (push `(defun ,name ()
+               ,@body)
+            forms))
+    (when type
+      (push `(declaim (ftype (function () (values ,type)) ,name))
+            forms))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (let* ((,default-value ,default))
-         (if (typep ,default-value (quote ,type-specifier))
-             (progn
-               (%add-config-info (quote ,name) ,default (quote ,type-specifier) ,documentation)
-               (declaim (type ,type-specifier ,name))
-               (defvar ,name ,default-value ,@(when documentation
-                                                (list documentation))))
-             (error 'invalid-datum-error :place (quote ,name) :value ,default-value))))))
+       ,@forms
+       (%add-config-info (quote ,name) ,default t ,documentation
+                  (function (setf ,name))
+                  (function ,name)))))
+
 
 (defun all-config-info (&key (name-matches ".*") (package-matches ".*"))
   "List all of the available customizable settings matching the given criteria."
@@ -162,23 +242,38 @@ type specifier, and documentation"
             (remove-if-not (lambda (x) (string-equal (symbol-name x) name))
                            (mapcar #'config-info-name (hash-table-values table))))))
 
+(declaim (ftype (function (symbol)
+                          (values (or config-info null) boolean &optional))
+                get-config-info))
 (defun get-config-info (setting-name)
   "Find the info for the config variable stored in the symbol SETTING-NAME."
+  ;; (declare (type symbol setting-name))
+  (gethash setting-name *config-vars*))
+
+(defmacro with-config-info ((var) setting-name &body body)
+  `(let ((,var (get-config-info ,setting-name)))
+     (if ,var
+         (progn ,@body)
+         (error 'config-not-found-error
+                :place ,setting-name
+                :alternatives
+                (%find-possible-settings ,setting-name *config-vars*)))))
+
+(defun config-value (setting-name)
   (declare (type symbol setting-name))
-  (if-let ((info (gethash setting-name *config-vars*)))
-    (progn
-      ;; Since the setting values can be changed outside of the API,
-      ;; we need to update the value of the varible here.
-      (setf (config-info-value info) (symbol-value setting-name))
-      info)))
+  (with-config-info (info) setting-name
+    (config-info-value info)))
+
+(defun (setf config-value) (setting value)
+  (declare (type symbol setting))
+  (with-config-info (info) setting
+    (funcall (config-info-set-function info) value)))
 
 (defmacro %set-config (setting-name value)
   (with-gensyms (actual-value info)
     `(let ((,actual-value ,value))
        (if-let ((,info (get-config-info (quote ,setting-name))))
-         (if (typep ,actual-value (config-info-type ,info))
-             (setf ,setting-name ,actual-value)
-             (error 'invalid-datum-error :place (quote ,setting-name) :value ,actual-value))
+         (funcall (config-info-set-function ,info) ,actual-value)
          (error 'config-not-found-error
                 :place (quote ,setting-name)
                 :alternatives (%find-possible-settings (quote ,setting-name) *config-vars*))))))
@@ -194,14 +289,15 @@ type specifier, and documentation"
 
 (defmacro reset-config (&rest settings)
   "Reset the list of settings to their default values"
-  (let ((accumulate (list)))
-    ;; add everything backwards, as the list is built in reverse
+  (let ((accumulate (list))
+        (let-var (gensym)))
     (dolist (setting-name settings)
       (check-type setting-name symbol)
-      (push `(config-info-default (get-config-info (quote ,setting-name))) accumulate)
-      (push setting-name accumulate))
-    (push 'setf accumulate)
-    accumulate))
+      (push `(let ((,let-var (get-config-info (quote ,setting-name))))
+               (funcall (config-info-set-function ,let-var) (config-info-default ,let-var)))
+            accumulate))
+    `(progn
+       ,@(nreverse accumulate))))
 
 (defun %make-storage-pair (symbol)
   (declare (type symbol symbol))

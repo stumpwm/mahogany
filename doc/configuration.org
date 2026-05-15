@@ -16,8 +16,7 @@ You can specify a regex to search by name or package using keyword parameters:
 
 ** Setting Configuration Properties
 
-Mahogany configuration properties are regular dynamically-scoped
-variables, and can be set as such. However, they are strongly typed,
+Mahogany configuration properties are strongly typed,
 and it is recommended to use the various setter macros that are
 available to avoid causing problems with the system.
 
