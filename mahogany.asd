@@ -44,12 +44,14 @@
                                      (:file "cffi-util" :depends-on ("package"))
                                      (:file "hrt-debug" :depends-on ("hrt-bindings")
                                             :if-feature :hrt-debug)
-                                     (:file "message" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "message"
+                                      :depends-on ("cffi-util" "hrt-bindings" "output"))
                                      (:file "output" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "subprocess"
                                             :depends-on ("cffi-util" "hrt-bindings" "callback"))
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "scene-group" :depends-on ("cffi-util" "hrt-bindings"))
+                                     (:file "scene-group"
+                                      :depends-on ("cffi-util" "hrt-bindings" "output"))
                                      (:file "server"
                                       :depends-on ("package" "hrt-bindings" "callback"))
                                      (:file "transaction" :depends-on ("server"))))
