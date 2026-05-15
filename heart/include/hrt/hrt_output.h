@@ -11,6 +11,19 @@
 
 struct hrt_scene_output;
 
+struct hrt_output_config {
+    double scale;
+    // Use the exact settings instead of the closest supported match:
+    bool custom_mode;
+    int width, height;
+    float refresh_rate;
+    // Place the output in a specific spot in the layout based on the
+    // given X,Y coordinates:
+    bool custom_position;
+    // These are in layout coordinates, not pixel coordinates:
+    int x, y;
+};
+
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
@@ -32,6 +45,16 @@ struct hrt_output_callbacks {
     void (*output_removed)(struct hrt_output *output);
     void (*output_layout_changed)();
 };
+
+/**
+ * Initialize the output with the given config. Without this call,
+ * the output will not be displayed.
+ * @param output the output to initalized
+ * @param config the configuration to use. To pick the default values,
+ *   pass nullptr.
+ **/
+bool hrt_output_init(struct hrt_output *output,
+                     struct hrt_output_config *config);
 
 /**
  * Get the effective output resolution of the output that can be used to
