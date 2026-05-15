@@ -344,6 +344,12 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
     wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width, message_box.height);
 
+    pixman_region32_t opaque;
+    pixman_region32_init(&opaque);
+    pixman_region32_union_rect(&opaque, &opaque, 0, 0, message_box.width,
+                               message_box.height);
+    wlr_scene_buffer_set_opaque_region(scene_buffer, &opaque);
+
     wlr_scene_node_set_position(&scene_buffer->node, message_box.x, message_box.y);
     wlr_scene_node_set_enabled(&scene_buffer->node, true);
 
