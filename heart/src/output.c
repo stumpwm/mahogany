@@ -145,6 +145,19 @@ static int compute_default_scale(struct wlr_output *output,
     return 2;
 }
 
+static void set_transform(struct wlr_output_state *state) {
+#if WLR_HAS_DRM_BACKEND
+    if (wlr_output_is_drm(wlr_output)) {
+        wlr_output_state_set_transform(
+            pending, wlr_drm_connector_get_panel_orientation(wlr_output));
+    } else {
+#endif
+        wlr_output_state_set_transform(state, WL_OUTPUT_TRANSFORM_NORMAL);
+#if WLR_HAS_DRM_BACKEND
+    }
+#endif
+}
+
 static void handle_new_output(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "New output detected");
     struct hrt_server *server = wl_container_of(listener, server, new_output);
@@ -166,6 +179,8 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     if (mode != NULL) {
         wlr_output_state_set_mode(&state, mode);
     }
+
+    set_transform(&state);
 
     wlr_output_state_set_scale(&state,
                                compute_default_scale(wlr_output, &state));
