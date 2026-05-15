@@ -82,6 +82,7 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   (if *hrt-server*
       *hrt-server*
       (error 'mahogany/util:mahogany-panic
+             :text
 	     "hrt server object has not been registered. SERVER-INIT must be called first."))
   #-hrt-debug
   *hrt-server*)
