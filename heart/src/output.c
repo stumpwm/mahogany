@@ -79,6 +79,9 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
     printf("Output color: {%f, %f, %f, %f}\n", output->color[0],
            output->color[1], output->color[2], output->color[3]);
 
+    output->destroy.notify = handle_output_destroy;
+    wl_signal_add(&wlr_output->events.destroy, &output->destroy);
+
     return output;
 }
 
@@ -158,19 +161,8 @@ static void set_transform(struct wlr_output_state *state) {
 #endif
 }
 
-static void handle_new_output(struct wl_listener *listener, void *data) {
-    wlr_log(WLR_DEBUG, "New output detected");
-    struct hrt_server *server = wl_container_of(listener, server, new_output);
-
-    struct wlr_output *wlr_output = data;
-
-    // Initialize and set the data pointer so it's available in any events that
-    // are triggered in the subsequent code:
-    struct hrt_output *output = hrt_output_create(server, wlr_output);
-    wlr_output->data = output;
-
-    wlr_output_init_render(wlr_output, server->allocator, server->renderer);
-
+static void output_configure(struct hrt_output *output) {
+    struct wlr_output *wlr_output = output->wlr_output;
     struct wlr_output_state state;
     wlr_output_state_init(&state);
     wlr_output_state_set_enabled(&state, true);
@@ -190,6 +182,22 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
         wlr_log(WLR_ERROR, "Output state could not be committed");
     }
     wlr_output_state_finish(&state);
+}
+
+static void handle_new_output(struct wl_listener *listener, void *data) {
+    wlr_log(WLR_DEBUG, "New output detected");
+    struct hrt_server *server = wl_container_of(listener, server, new_output);
+
+    struct wlr_output *wlr_output = data;
+
+    // Initialize and set the data pointer so it's available in any events that
+    // are triggered in the subsequent code:
+    struct hrt_output *output = hrt_output_create(server, wlr_output);
+    wlr_output->data = output;
+
+    wlr_output_init_render(wlr_output, server->allocator, server->renderer);
+
+    output_configure(output);
 
     struct wlr_output_layout_output *l_output =
         wlr_output_layout_add_auto(server->output_layout, wlr_output);
@@ -198,9 +206,6 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
                                        scene_output);
     output->wlr_scene = scene_output;
-
-    output->destroy.notify = handle_output_destroy;
-    wl_signal_add(&wlr_output->events.destroy, &output->destroy);
 
     server->output_callback->output_added(output);
 }
