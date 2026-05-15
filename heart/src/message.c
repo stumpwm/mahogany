@@ -281,6 +281,20 @@ static bool gravity_coords(enum window_gravity gravity,
     return true;
 }
 
+static enum wlr_scale_filter_mode
+compute_scale_filter(struct message *message, struct wlr_box *message_box,
+                     double scale) {
+    /* apply nearest scaling if output has an integer scale factor, linear otherwise */
+    enum wlr_scale_filter_mode scale_filter = (ceilf(scale) == scale) ?
+        WLR_SCALE_FILTER_NEAREST :
+        WLR_SCALE_FILTER_BILINEAR;
+    if (message_box->width < message->base.width &&
+        message_box->height < message->base.height)
+        /* if we are scaling down, we should always choose linear */
+        scale_filter = WLR_SCALE_FILTER_BILINEAR;
+    return scale_filter;
+}
+
 bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
                        const char *text, enum window_gravity gravity,
                        struct hrt_message_theme *theme, int ms_delay) {
@@ -332,20 +346,14 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
         return false;
     }
 
-    /* apply nearest scaling if output has an integer scale factor, linear otherwise */
-    enum wlr_scale_filter_mode scale_filter = (ceilf(scale) == scale) ?
-        WLR_SCALE_FILTER_NEAREST :
-        WLR_SCALE_FILTER_BILINEAR;
-    if (message_box.width < message->base.width &&
-        message_box.height < message->base.height)
-        /* if we are scaling down, we should always choose linear */
-        scale_filter = WLR_SCALE_FILTER_BILINEAR;
-
+    enum wlr_scale_filter_mode scale_filter =
+        compute_scale_filter(message, &message_box, scale);
     wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width, message_box.height);
 
     pixman_region32_t opaque;
     pixman_region32_init(&opaque);
+    // From what I can see, we need the scaled size:
     pixman_region32_union_rect(&opaque, &opaque, 0, 0, message_box.width,
                                message_box.height);
     wlr_scene_buffer_set_opaque_region(scene_buffer, &opaque);
