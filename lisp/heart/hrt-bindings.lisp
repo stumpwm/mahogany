@@ -206,6 +206,16 @@ well behaved ones should."
 
 (cffi:defcstruct hrt-scene-output)
 
+(cffi:defcstruct hrt-output-config
+  (scale :double)
+  (custom-mode :bool)
+  (width :int)
+  (height :int)
+  (refresh-rate :float)
+  (custom-position :bool)
+  (x :int)
+  (y :int))
+
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |#)
   (server (:pointer (:struct hrt-server)))
@@ -221,6 +231,16 @@ well behaved ones should."
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
   (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
   (output-layout-changed :pointer #| function ptr void () |#))
+
+(declaim (inline hrt-output-init))
+(cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
+  "Initialize the output with the given config. Without this call,
+the output will not be displayed.
+@param output the output to initalized
+@param config the configuration to use. To pick the default values,
+  pass nullptr."
+  (output (:pointer (:struct hrt-output)))
+  (config (:pointer (:struct hrt-output-config))))
 
 (declaim (inline hrt-output-resolution))
 (cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void

@@ -5,6 +5,39 @@
   (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
+(defstruct output-config
+  (scale 1 :type (or number null) :read-only t)
+  (refresh-rate nil :type (or number null) :read-only t)
+  (custom-mode nil :type boolean :read-only t)
+  ;; a cons of (width . height)
+  (dimensions nil :type (or cons null) :read-only t)
+  ;; a cons of (x . y)
+  (position nil :type (or cons null) :read-only t))
+
+(defun %transfer-output-config (hrt-config config)
+  (cffi:with-foreign-slots
+      ((scale custom-mode width height refresh-rate custom-position x y)
+       hrt-config (:struct hrt-output-config))
+    (setf scale (if (output-config-scale config)
+                    (coerce (output-config-scale config) 'double-float)
+                    0.0d0))
+    (alexandria:when-let ((dimensions (output-config-dimensions config)))
+      (setf custom-mode (output-config-custom-mode config)
+            refresh-rate (alexandria:if-let ((rate (output-config-refresh-rate config)))
+                           (coerce rate 'single-float)
+                           0.0)
+            width (car dimensions)
+            height (cdr dimensions)))
+    (alexandria:when-let ((position (output-config-position config)))
+      (setf custom-position t
+            x (car position)
+            y (cdr position)))))
+
+(defmacro with-output-config ((var config) &body body)
+  `(cffi:with-foreign-object (,var '(:struct hrt-output-config))
+     (%transfer-output-config ,var ,config)
+     ,@body))
+
 (defun %get-output-full-name (hrt-output)
   (let ((make (hrt-output-make hrt-output))
 	(name (hrt-output-name hrt-output))
@@ -20,6 +53,15 @@
   (declare (type cffi:foreign-pointer hrt-output))
   (let ((name (%get-output-full-name hrt-output)))
     (%make-output hrt-output name)))
+
+(defun output-init (output config)
+  (if config
+      (with-output-config (hrt-config config)
+        (mahogany/log:log-string
+         :info "Appyling configuration to output ~S: ~S"
+         (output-full-name output) config)
+        (hrt-output-init (output-hrt-output output) hrt-config))
+      (hrt-output-init (output-hrt-output output) (cffi:null-pointer))))
 
 (defun destroy-output (mh-output)
   (declare (ignore mh-output)))

@@ -46,6 +46,8 @@ static void cursor_wheel_callback(struct hrt_seat *seat,
 static void output_added_callback(struct hrt_output *output) {
     printf("Output added callback called, scale=%f\n",
            output->wlr_output->scale);
+    hrt_output_init(output, nullptr);
+
     struct example_output *o = calloc(1, sizeof(*o));
     o->output                = output;
     wl_list_insert(&server.outputs, &o->link);

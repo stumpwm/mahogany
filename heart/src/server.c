@@ -82,7 +82,7 @@ bool hrt_server_init(struct hrt_server *server,
         return false;
     }
 
-    if (!hrt_output_init(server, output_callbacks)) {
+    if (!hrt_server_output_init(server, output_callbacks)) {
         return false;
     }
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
