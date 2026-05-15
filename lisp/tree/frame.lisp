@@ -420,6 +420,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
     (funcall cleanup-func f)))
 
 (defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
+  (declare (ignore cleanup-func))
   (assert (equal (frame-parent frame) parent)))
 
 (defmethod remove-frame-from-parent :after ((parent tree-parent) frame cleanup-func)
@@ -453,11 +454,13 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                          (setf new-y (+ new-y new-child-height))))))))))
 
 (defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
+  (declare (ignore cleanup-func))
   (let ((other-child (find-if (lambda (x) (not (equal x frame)))
                               (tree-children parent))))
     (%replace-frame parent other-child)))
 
 (defmethod remove-frame-from-parent ((root layer-container) frame cleanup-func)
+  (declare (ignore cleanup-func))
   ;; TODO: test me!
   (with-accessors ((tree-children tree-children)) root
     (setf (tree-children root) (remove frame (tree-children root) :test #'equal))
