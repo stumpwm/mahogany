@@ -11,6 +11,16 @@
 
 struct hrt_scene_output;
 
+struct hrt_output_config {
+    double scale;
+    // If the width and height are set
+    bool custom_mode;
+    int width, height;
+  float refresh_rate;
+    // These are in layout coordinates, not pixel coordinates:
+    int x, y;
+};
+
 struct hrt_output {
     struct wlr_output *wlr_output;
     struct hrt_server *server;
