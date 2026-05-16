@@ -1,5 +1,6 @@
 #include "hrt/hrt_border_box.h"
 #include "hrt/hrt_theme.h"
+#include "render/cairo_buffer.h"
 #include "render/scale_util.h"
 #include "wlr/util/log.h"
 
@@ -22,14 +23,9 @@ struct hrt_border_box_style {
     struct wl_list boxes;
 };
 
-struct hrt_border_box_buffer {
-    struct wlr_buffer base;
-    cairo_surface_t *surface;
-};
-
 struct hrt_border_box {
     struct wlr_scene_buffer *scene_buffer;
-    struct hrt_border_box_buffer *buffer;
+    struct cairo_buffer *buffer;
     struct hrt_border_box_style *style;
 
     struct {
@@ -45,36 +41,6 @@ constexpr double scale = 2.0;
 void hrt_border_box_style_ref(struct hrt_border_box_style *style) {
     atomic_fetch_add_explicit(&style->refcount, 1, memory_order_relaxed);
 }
-
-static void box_buffer_destroy(struct wlr_buffer *buffer) {
-    struct hrt_border_box_buffer *box_buffer =
-        wl_container_of(buffer, box_buffer, base);
-    wlr_buffer_finish(buffer);
-    cairo_surface_destroy(box_buffer->surface);
-    free(box_buffer);
-}
-
-static bool box_begin_data_ptr_access(struct wlr_buffer *wlr_buffer,
-                                      uint32_t flags, void **data,
-                                      uint32_t *format, size_t *stride) {
-    struct hrt_border_box_buffer *box_buffer =
-        wl_container_of(wlr_buffer, box_buffer, base);
-    if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE)
-        return false;
-
-    *format = DRM_FORMAT_ARGB8888;
-    *data   = cairo_image_surface_get_data(box_buffer->surface);
-    *stride = cairo_image_surface_get_stride(box_buffer->surface);
-    return true;
-}
-
-static void box_end_data_ptr_access(struct wlr_buffer *wlr_buffer) {}
-
-static const struct wlr_buffer_impl box_impl = {
-    .destroy               = box_buffer_destroy,
-    .begin_data_ptr_access = box_begin_data_ptr_access,
-    .end_data_ptr_access   = box_end_data_ptr_access,
-};
 
 static bool draw_box(struct hrt_border_box_style *style,
                      cairo_surface_t *surface, const double width,
@@ -101,22 +67,19 @@ static bool draw_box(struct hrt_border_box_style *style,
     return true;
 }
 
-struct hrt_border_box_buffer *
-draw_box_surface(struct hrt_border_box_style *style, int width, int height) {
-    struct hrt_border_box_buffer *buffer = calloc(1, sizeof(*buffer));
-
-    buffer->surface =
-        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    if (cairo_surface_status(buffer->surface) != CAIRO_STATUS_SUCCESS) {
-        cairo_surface_destroy(buffer->surface);
+struct cairo_buffer *draw_box_surface(struct hrt_border_box_style *style,
+                                      int width, int height) {
+    struct cairo_buffer *buffer = cairo_buffer_create(width, height);
+    if (!buffer) {
+        wlr_log(WLR_ERROR, "%s: cannot get pango layout", __func__);
         return nullptr;
     }
+
     if (!draw_box(style, buffer->surface, width, height, scale)) {
-        cairo_surface_destroy(buffer->surface);
+        wlr_buffer_drop(&buffer->base);
         return nullptr;
     }
 
-    wlr_buffer_init(&buffer->base, &box_impl, width, height);
     return buffer;
 }
 
@@ -154,37 +117,36 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
                                              int x, int y, int width,
                                              int height) {
     struct hrt_border_box *box = calloc(1, sizeof(*box));
-
     if (!box) {
         return nullptr;
     }
+
     box->buffer = draw_box_surface(style, width, height);
-    struct hrt_border_box_buffer *buffer = box->buffer;
-    box->style                           = style;
-    if (!buffer) {
+    if (!box->buffer) {
         free(box);
         return nullptr;
     }
 
-    box->scene_buffer = wlr_scene_buffer_create(parent->tree, &buffer->base);
+    box->style = style;
+
+    box->scene_buffer =
+        wlr_scene_buffer_create(parent->tree, &box->buffer->base);
     if (!box->scene_buffer) {
         wlr_log(WLR_ERROR, "Failed to build wlr_scene_buffer");
-        wlr_buffer_drop(&buffer->base);
+        wlr_buffer_drop(&box->buffer->base);
         free(box);
         return nullptr;
     }
 
     if (!set_box_scale(box, width, height, scale)) {
         wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
-        wlr_buffer_drop(&buffer->base);
+        wlr_buffer_drop(&box->buffer->base);
         free(box);
         return nullptr;
     }
 
     wlr_scene_node_set_enabled(&box->scene_buffer->node, true);
     wlr_scene_node_set_position(&box->scene_buffer->node, x, y);
-
-    // TODO: Scaling!!
 
     box->listeners.destroy.notify = &hrt_border_box_handle_destroy;
     wl_signal_add(&box->scene_buffer->node.events.destroy,
@@ -203,7 +165,7 @@ void hrt_border_box_destroy(struct hrt_border_box *box) {
 
 static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
                                   int height) {
-    struct hrt_border_box_buffer *buffer =
+    struct cairo_buffer *buffer =
         draw_box_surface(box->style, width, height);
     if (!buffer) {
         wlr_log(WLR_ERROR, "Could not redraw box surface");
@@ -211,9 +173,9 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
         return;
     }
 
-    // Do it in this order so we keep the old buffer valid until after it is removed from
-    // the scene node. I don't know if it's needed, but it can't hurt:
-    struct hrt_border_box_buffer *old = box->buffer;
+    // Keep the old buffer so we can restore it if there's an issue and
+    // so we can drop it after we set the new buffer:
+    struct cairo_buffer *old = box->buffer;
     wlr_scene_buffer_set_buffer(box->scene_buffer, &buffer->base);
     box->buffer = buffer;
 
@@ -223,7 +185,10 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
         wlr_scene_buffer_set_buffer(box->scene_buffer, &old->base);
         box->buffer = old;
         wlr_buffer_drop(&buffer->base);
+        return;
     }
+
+    wlr_buffer_drop(&old->base);
 }
 
 void hrt_border_box_set_size(struct hrt_border_box *box, int width,
