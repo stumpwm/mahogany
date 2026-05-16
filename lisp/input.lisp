@@ -1,8 +1,53 @@
 (in-package #:mahogany)
 
-(config-system:defconfig *keyboard-focus-type* :click
-  (member :click-and-wheel :click :ignore :sloppy)
-  "How keyboard focus is controlled by the mouse")
+(declaim (type fixnum *keyboard-focus-bits*
+               +click-mask+
+               +wheel-mask+
+               +sloppy-mask+))
+(defconstant +click-mask+ 1)
+(defconstant +wheel-mask+ (ash 1 1))
+(defconstant +sloppy-mask+ (ash 1 2))
+
+(defglobal *keyboard-focus-bits* +click-mask+)
+
+(config-system:define-setf-config
+    (keyboard-focus-type
+     :default :click
+     :type (member :click-and-wheel :click :ignore :sloppy))
+    "How keyboard focus is changed based on mouse input.
+Values:
+  :click
+     Change when a button on the mouse is clicked
+  :click-and-wheel
+     Change when a button is clicked or the scroll whell is used.
+  :sloppy (not implemented)
+     Change focus when the mouse is moved over surface, is clicked,
+     or the wheel is used.
+  :ignore
+     Do not change focus after the mouse is used."
+  (:setter (val)
+           (setf *keyboard-focus-bits*
+                 (case val
+                   (:click-and-wheel
+                    (logior +click-mask+ +wheel-mask+))
+                   (:sloppy
+                    (logior +click-mask+ +wheel-mask+ +sloppy-mask+))
+                   (:click
+                    +click-mask+)
+                   (:ignore 0)))
+           val)
+  (:getter ()
+           (macrolet ((not-set-p (&rest args)
+                        `(= *keyboard-focus-bits* (logior ,@args))))
+             (cond
+               ((not-set-p +click-mask+ +wheel-mask+ +sloppy-mask+)
+                :sloppy)
+               ((not-set-p +click-mask+ +wheel-mask+)
+                :click-and-wheel)
+               ((not-set-p +click-mask+)
+                :click)
+               ((= *keyboard-focus-bits* 0)
+                :ignore)))))
 
 (defun execute-command (function key-sequence seat)
   (hrt:with-view-transaction ()
@@ -59,7 +104,7 @@
 (defun handle-key-event (state key seat event-state)
   (declare (type key key)
            (type bit event-state)
-           (optimize(speed 3)))
+           (optimize (speed 3)))
   (let ((key-state (mahogany-state-key-state state)))
     (declare (type key-state key-state))
     (if (= event-state 1)
@@ -77,7 +122,7 @@
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
-  (when (eq *keyboard-focus-type* :click-and-wheel)
+  (when (logand *keyboard-focus-bits* +wheel-mask+)
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
 
@@ -85,8 +130,7 @@
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
-  (when (or (eq *keyboard-focus-type* :click)
-            (eq *keyboard-focus-type* :click-and-wheel))
+  (when (logand *keyboard-focus-bits* +click-mask+)
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
 

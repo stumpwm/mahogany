@@ -11,7 +11,7 @@ settings that control how focus moves from one surface to another.
   cursor, or through various commands.
 
 ** Setting how focus is controlled
-  + =(config-system:set-config *keyboard-focus-type* type)= :: Sets the way the keyboard
+  + =(config-system:set-config keyboard-focus-type type)= :: Sets the way the keyboard
     focus is set. The valid values are:
     - =:click= :: /Default/ Switch the keyboard focus to
       windows that are clicked on in addition to wm commands.
