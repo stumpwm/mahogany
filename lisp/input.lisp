@@ -69,7 +69,9 @@ Values:
     (format s "\"~%is undefined.")))
 
 (defun check-and-run-keybinding (key seat key-state)
-  (declare (type key key) (optimize (speed 3)))
+  (declare (type key key)
+           (type key-state key-state)
+           (optimize (speed 3)))
   (when (not (key-modifier-key-p key))
     (let* ((handling-keybinding (key-state-active-p key-state)))
       (log-string :trace "Already handling keybinding: ~A" handling-keybinding)
@@ -97,7 +99,7 @@ Values:
              ;; Since we still took an action (canceling the keybinding),
              ;; still consume the pressed key
              t)
-            ;; No action was taken, don't comsume the pressed key:
+            ;; No action was taken, don't consume the pressed key:
             (t  nil)))))))
 
 (defun handle-key-event (state key seat event-state)
