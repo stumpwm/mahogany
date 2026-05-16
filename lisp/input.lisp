@@ -123,6 +123,7 @@ Values:
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
+  (declare (optimize (speed 3)))
   (when (logand *keyboard-focus-bits* +wheel-mask+)
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
@@ -131,6 +132,7 @@ Values:
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
+  (declare (optimize (speed 3)))
   (when (logand *keyboard-focus-bits* +click-mask+)
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
@@ -139,6 +141,7 @@ Values:
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (info (:pointer (:struct hrt:hrt-keypress-info))))
     ()
+  (declare (optimize (speed 3)))
   (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
                             info (:struct hrt:hrt-keypress-info))
     ;; I'm not sure why this is an array, but it's what tinywl does:
