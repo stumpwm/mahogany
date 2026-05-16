@@ -11,8 +11,7 @@
 (defglobal *keyboard-focus-bits* +click-mask+)
 
 (config-system:define-setf-config
-    (keyboard-focus-type
-     :default :click
+    (keyboard-focus-type :click
      :type (member :click-and-wheel :click :ignore :sloppy))
     "How keyboard focus is changed based on mouse input.
 Values:

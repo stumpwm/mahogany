@@ -178,7 +178,7 @@ Example:
 
 (defconstant +no-default+ 'no-default)
 
-(defmacro define-setf-config ((name &key type (default (quote +no-default+))) documentation &body body)
+(defmacro define-setf-config ((name default &key (type t)) documentation &body body)
   "Define a configuration object whose values are modified by a setf function
 and retreived using a getter function.
 
@@ -218,7 +218,7 @@ Example:
             forms))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ,@forms
-       (%add-config-info (quote ,name) ,default t ,documentation
+       (%add-config-info (quote ,name) ,default (quote ,type) ,documentation
                   (function (setf ,name))
                   (function ,name)))))
 
