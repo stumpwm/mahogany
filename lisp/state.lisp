@@ -310,3 +310,13 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
       (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
     (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
+
+(defun state-layer-surface-add (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (setf (gethash hrt-layer-surface surfaces) (hrt::make-layer-surface hrt-layer-surface))))
+
+(defun state-layer-surface-remove (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (remhash hrt-layer-surface surfaces)))
