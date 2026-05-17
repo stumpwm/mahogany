@@ -18,34 +18,34 @@
 (defclass mahogany-state ()
   ((hrt-server :type hrt-server
                :initarg server
-               :accessor mahogany-state-server)
+               :accessor state-server)
    (key-state :type key-state
               :initform (make-key-state nil)
-              :accessor mahogany-state-key-state)
+              :accessor server-key-state)
    (current-group :type mahogany-group
-                  :accessor mahogany-current-group)
+                  :accessor state-current-group)
    (keybindings :type list
                 :initform nil
-                :reader mahogany-state-keybindings)
+                :reader state-keybindings)
    (active-kmap-modes :type list
                       :initform nil
-                      :accessor mahogany-active-kmap-modes)
+                      :accessor state-active-kmap-modes)
    (prefix-key :type key
                :initform (kbd "C-t")
-               :reader mahogany-state-prefix-key
+               :reader state-prefix-key
                :documentation "The prefix key used for prefix-bound kmaps.")
    (outputs :type (vector hrt:output *)
             :initform (make-array 0
                                   :element-type 'hrt:output
                                   :adjustable t
                                   :fill-pointer t)
-            :accessor mahogany-state-outputs)
+            :accessor state-outputs)
    (groups :type vector
-           :accessor mahogany-state-groups
+           :accessor state-groups
            :initform (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t))
    (hidden-groups :initform (ring-list:make-ring-list)
                   :type ring-list:ring-list
-                  :reader mahogany-state-hidden-groups)
+                  :reader state-hidden-groups)
    (views :type hash-table
           :initform (make-hash-table)
-          :reader mahogany-state-views)))
+          :reader state-views)))

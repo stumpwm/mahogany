@@ -11,8 +11,8 @@
 (defun kmap-mode-deactivate (state kmap-mode)
   (declare (type kmap-mode kmap-mode)
            (mahogany-state state))
-  (with-accessors ((active-bindings mahogany-state-keybindings)
-                   (active-modes mahogany-active-kmap-modes))
+  (with-accessors ((active-bindings state-keybindings)
+                   (active-modes state-active-kmap-modes))
       state
     (labels ((relevant-kmap-p (kmap)
                (declare (type kmap kmap))
@@ -25,7 +25,7 @@
 (defun %kmap-mode-active-in-state (state kmap-mode)
   (declare (type kmap-mode kmap-mode)
            (type mahogany-state state))
-  (member kmap-mode (mahogany-active-kmap-modes state) :test #'eq))
+  (member kmap-mode (state-active-kmap-modes state) :test #'eq))
 
 (defun %build-kmaps-from-mode (prefix-key kmap-mode keybindings)
   "Push the kmaps from the KMAP-MODE onto the list KEYBINDINGS using the
@@ -48,9 +48,9 @@ the KEYBINDINGS list."
   (when (%kmap-mode-active-in-state state kmap-mode)
     (assert (not (null (kmap-mode-top-kmap kmap-mode))))
     (return-from kmap-mode-activate))
-  (with-accessors ((keybindings mahogany-state-keybindings)
-                   (active-kmap-modes mahogany-active-kmap-modes)
-                   (prefix-key mahogany-state-prefix-key))
+  (with-accessors ((keybindings state-keybindings)
+                   (active-kmap-modes state-active-kmap-modes)
+                   (prefix-key state-prefix-key))
       state
     (setf keybindings (%build-kmaps-from-mode prefix-key kmap-mode keybindings))
     (push kmap-mode active-kmap-modes))
@@ -94,15 +94,15 @@ the KEYBINDINGS list."
 
 (defvar *prefix-passthrough-kmap*
   (define-kmap
-    (mahogany-state-prefix-key *compositor-state*) #'passthrough-key-event))
+    (state-prefix-key *compositor-state*) #'passthrough-key-event))
 
-(defun (setf mahogany-state-prefix-key) (key state)
+(defun (setf state-prefix-key) (key state)
   (declare (type key key)
            (type mahogany-state state))
   ;; to change the prefix key, we rebuild the keybinding list
   ;; using the new prefix key.
-  (with-accessors ((active-modes mahogany-active-kmap-modes)
-                   (prefix-key mahogany-state-prefix-key))
+  (with-accessors ((active-modes state-active-kmap-modes)
+                   (prefix-key state-prefix-key))
       state
     ;; change the passthrough maps
     (define-key *prefix-passthrough-kmap* prefix-key nil)
@@ -112,5 +112,5 @@ the KEYBINDINGS list."
       ;; go backwards so pushing gets us the same order:
       (dolist (mode active-modes)
         (setf new-bindings (%build-kmaps-from-mode key mode new-bindings)))
-      (setf (mahogany-state-keybindings state) new-bindings
+      (setf (state-keybindings state) new-bindings
             (slot-value state 'prefix-key) key))))

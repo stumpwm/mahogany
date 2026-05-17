@@ -12,9 +12,9 @@
   (declare (type mahogany-state state)
            (type string name)
            (type fixnum index))
-  (with-accessors ((groups mahogany-state-groups)
-                   (current-group mahogany-current-group)
-                   (server mahogany-state-server))
+  (with-accessors ((groups state-groups)
+                   (current-group state-current-group)
+                   (server state-server))
       state
     (let* ((default-group (make-mahogany-group name index server)))
       (setf (mahogany-group-active-p default-group) t)
@@ -23,17 +23,17 @@
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
                           &key (debug-level 3))
-  (setf (mahogany-state-server state) server)
+  (setf (state-server state) server)
   (hrt:server-init server
                    output-callbacks seat-callbacks view-callbacks
                    debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
-    (setf (mahogany-current-group state) default-group)))
+    (setf (state-current-group state) default-group)))
 
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
-  (with-accessors ((groups mahogany-state-groups)
-                   (server mahogany-state-server))
+  (with-accessors ((groups state-groups)
+                   (server state-server))
       state
     (let ((scene-tree (hrt:hrt-server-scene-tree server))
           (seat (hrt:hrt-server-seat server)))
@@ -46,40 +46,40 @@
 
 (defun server-stop (state)
   (declare (type mahogany-state state))
-  (hrt:hrt-server-stop (mahogany-state-server state)))
+  (hrt:hrt-server-stop (state-server state)))
 
-(defmethod (setf mahogany-current-group) :around (group state)
-  (with-accessors ((hidden-groups mahogany-state-hidden-groups)
-                   (server mahogany-state-server))
+(defmethod (setf state-current-group) :around (group state)
+  (with-accessors ((hidden-groups state-hidden-groups)
+                   (server state-server))
       state
-    (when (not (find group (mahogany-state-groups state) :test #'equalp))
+    (when (not (find group (state-groups state) :test #'equalp))
       (error (format nil "Group ~S is not part of this state" group)))
     (when (slot-boundp state 'current-group)
-      (group-suspend (mahogany-current-group state) (hrt:hrt-server-seat server)))
+      (group-suspend (state-current-group state) (hrt:hrt-server-seat server)))
     (call-next-method)
     (group-wakeup group (hrt:hrt-server-seat server))
     (hrt:dirty-view-transaction)))
 
 (declaim (inline server-seat))
 (defun server-seat (state)
-  (hrt:hrt-server-seat (mahogany-state-server state)))
+  (hrt:hrt-server-seat (state-server state)))
 
 (defun server-keystate-reset (state)
-  (setf (mahogany-state-key-state state)
-        (make-key-state (mahogany-state-keybindings state))))
+  (setf (server-key-state state)
+        (make-key-state (state-keybindings state))))
 
-(defun (setf mahogany-state-keybindings) (kmaps state)
+(defun (setf state-keybindings) (kmaps state)
   (declare (type list kmaps)
            (type mahogany-state state))
   (setf (slot-value state 'keybindings) kmaps)
-  (unless (key-state-active-p (mahogany-state-key-state state))
+  (unless (key-state-active-p (server-key-state state))
     (server-keystate-reset state)))
 
 (defun mahogany-state-output-add (state hrt-output)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer hrt-output))
-  (with-accessors ((outputs mahogany-state-outputs)
-                   (groups mahogany-state-groups)
+  (with-accessors ((outputs state-outputs)
+                   (groups state-groups)
                    (scene mahogany-state-scene))
       state
     (let ((mh-output (hrt:make-output hrt-output)))
@@ -94,8 +94,8 @@
       :test #'cffi:pointer-eq))
 
 (defun mahogany-state-output-remove (state hrt-output)
-  (with-accessors ((outputs mahogany-state-outputs)
-                   (groups mahogany-state-groups))
+  (with-accessors ((outputs state-outputs)
+                   (groups state-groups))
       state
     (let ((mh-output (%find-output hrt-output outputs)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
@@ -106,13 +106,13 @@
       (hrt:destroy-output mh-output))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
-  (let ((index (+ 1 (length (mahogany-state-groups state)))))
+  (let ((index (+ 1 (length (state-groups state)))))
     (unless group-name
       (setf group-name (concatenate 'string "DEFAULT" "-" (write-to-string index))))
     (let ((new-group (%add-group state group-name index)))
-      (with-accessors ((current-group mahogany-current-group)
-                       (hidden-groups mahogany-state-hidden-groups)
-                       (state-outputs mahogany-state-outputs))
+      (with-accessors ((current-group state-current-group)
+                       (hidden-groups state-hidden-groups)
+                       (state-outputs state-outputs))
           state
         (loop for o across state-outputs
               do (group-add-output new-group o (server-seat state)))
@@ -126,15 +126,15 @@
       new-group)))
 
 (defun mahogany-state-group-remove (state group)
-  (with-accessors ((groups mahogany-state-groups)
-                   (hidden-groups mahogany-state-hidden-groups)
-                   (current-group mahogany-current-group))
+  (with-accessors ((groups state-groups)
+                   (hidden-groups state-hidden-groups)
+                   (current-group state-current-group))
       state
     (when (= (length groups) 1)
       (log-string :warn "Cannot remove the only group")
       (return-from mahogany-state-group-remove))
     (if (find group groups :test #'equalp)
-        (let* ((server (mahogany-state-server state))
+        (let* ((server (state-server state))
                (scene-tree (hrt:hrt-server-scene-tree server))
                (seat (hrt:hrt-server-seat server)))
           (cond
@@ -154,16 +154,16 @@
 (defun mahogany-state-output-reconfigure (state)
   (log-string :trace "Output layout changed!")
   (hrt:with-view-transaction ()
-    (with-accessors ((groups mahogany-state-groups)) state
+    (with-accessors ((groups state-groups)) state
       (loop for g across groups
-            do (group-reconfigure-outputs g (mahogany-state-outputs state))))))
+            do (group-reconfigure-outputs g (state-outputs state))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer view-ptr))
-  (with-accessors ((view-tbl mahogany-state-views)
-                   (current-group mahogany-current-group)
-                   (server mahogany-state-server))
+  (with-accessors ((view-tbl state-views)
+                   (current-group state-current-group)
+                   (server state-server))
       state
     (let ((new-view (group-add-initialize-view current-group view-ptr)))
       (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view))))
@@ -179,7 +179,7 @@
   (find-if (lambda (g) (member view (mahogany-group-views g))) groups))
 
 (defmacro %with-found-group (state (group-var view) &body body)
-  `(alexandria:if-let ((,group-var (%find-view-in-groups ,view (mahogany-state-groups ,state))))
+  `(alexandria:if-let ((,group-var (%find-view-in-groups ,view (state-groups ,state))))
      (progn
        ,@body)
      (log-string :error "Could not find mahogany view in any groups!")))
@@ -198,7 +198,7 @@
 (defun mahogany-state-view-fullscreen (state view-ptr output-ptr set-fullscreen)
   (declare (type mahogany-state state)
 	   (type cffi:foreign-pointer view-ptr))
-  (let ((output (%find-output output-ptr (mahogany-state-outputs state))))
+  (let ((output (%find-output output-ptr (state-outputs state))))
     (%with-found-view state (view view-ptr)
       (%with-found-group state (group view)
         (log-string :debug
@@ -250,26 +250,26 @@
 
 (defun state-next-hidden-group (state)
   (declare (type mahogany-state state))
-  (let ((current-group (mahogany-current-group state))
-        (hidden-groups (mahogany-state-hidden-groups state)))
+  (let ((current-group (state-current-group state))
+        (hidden-groups (state-hidden-groups state)))
     (when (> (ring-list:ring-list-size hidden-groups) 0)
-      (setf (mahogany-current-group state) (ring-list:swap-next hidden-groups current-group))
+      (setf (state-current-group state) (ring-list:swap-next hidden-groups current-group))
       (log-string :trace "Hidden groups: ~S" hidden-groups))))
 
 (defun state-prev-hidden-group (state)
   (declare (type mahogany-state state))
-  (let ((current-group (mahogany-current-group state))
-        (hidden-groups (mahogany-state-hidden-groups state)))
+  (let ((current-group (state-current-group state))
+        (hidden-groups (state-hidden-groups state)))
     (when (> (ring-list:ring-list-size hidden-groups) 0)
-      (setf (mahogany-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
+      (setf (state-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
 
 (defun mahogany-current-frame (state)
-  (mahogany-group-current-frame (mahogany-current-group state)))
+  (mahogany-group-current-frame (state-current-group state)))
 
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   "Set the xkb keymap using the provided rules and flags. Signals a
 KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
-  (let* ((seat (hrt:hrt-server-seat (mahogany-state-server state)))
+  (let* ((seat (hrt:hrt-server-seat (state-server state)))
 	 (success (hrt:hrt-seat-set-keymap seat rules keymap-flags)))
     (unless success
       ;; TODO: register with xkb's logging handling to get

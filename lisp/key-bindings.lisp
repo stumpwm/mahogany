@@ -19,7 +19,7 @@
       (tree:split-frame-v frame :direction :bottom))))
 
 (defcommand maximize-current-frame ()
-  (let ((group (mahogany-current-group *compositor-state*)))
+  (let ((group (state-current-group *compositor-state*)))
     (group-maximize-current-frame group)))
 
 (defcommand close-current-view ()
@@ -29,27 +29,27 @@
 
 (defcommand next-view ()
   "Raise the next hidden view in the current group"
-  (let ((group (mahogany-current-group *compositor-state*)))
+  (let ((group (state-current-group *compositor-state*)))
     (group-next-hidden group)))
 
 (defcommand previous-view ()
   "Raise the next hidden view in the current group"
-  (let ((group (mahogany-current-group *compositor-state*)))
+  (let ((group (state-current-group *compositor-state*)))
     (group-previous-hidden group)))
 
 (defcommand next-frame (:seat seat)
-  (let ((group (mahogany-current-group *compositor-state*)))
+  (let ((group (state-current-group *compositor-state*)))
     (group-next-frame group seat)))
 
 (defcommand prev-frame (:seat seat)
-  (let ((group (mahogany-current-group *compositor-state*)))
+  (let ((group (state-current-group *compositor-state*)))
     (group-prev-frame group seat)))
 
 (defcommand gnew ()
   (mahogany-state-group-add *compositor-state*))
 
 (defcommand gkill ()
-  (let ((current-group (mahogany-current-group *compositor-state*)))
+  (let ((current-group (state-current-group *compositor-state*)))
     (mahogany-state-group-remove *compositor-state* current-group)))
 
 (defcommand gnext ()
@@ -60,7 +60,7 @@
 
 #+:hrt-debug
 (defcommand add-output ()
-  (if (hrt:hrt-add-output (mahogany-state-server *compositor-state*))
+  (if (hrt:hrt-add-output (state-server *compositor-state*))
       (log-string :info "Output not added")
       (log-string :info "Output added")))
 

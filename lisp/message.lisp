@@ -24,8 +24,8 @@
                                    (ms-delay *message-delay*)
                                    (theme *message-theme*))
   (declare (type mahogany-state state))
-  (with-accessors ((cur-group mahogany-current-group)
-                   (hrt-server mahogany-state-server))
+  (with-accessors ((cur-group state-current-group)
+                   (hrt-server state-server))
       state
     (let* ((cur-output (group-current-output cur-group)))
       (hrt:toast-message hrt-server cur-output text
