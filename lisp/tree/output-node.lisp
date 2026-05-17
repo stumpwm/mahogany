@@ -4,6 +4,8 @@
   (declare (type output-node node)
            (type hrt:output output))
   (multiple-value-bind (x y width height) (hrt:output-usable-area output)
+    (log-string :trace "Reconfiguring output node ~S to (~S,~S) width: ~S height: ~S"
+                (hrt:output-full-name output) x y width height)
     (set-position (first (tree-children node)) x y)
     (set-dimensions (first (tree-children node)) width height))
   (alexandria:when-let ((fullscreen-node (output-node-fullscreen node)))

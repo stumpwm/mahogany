@@ -93,6 +93,7 @@ static void check_callbacks(const struct hrt_layer_shell_callbacks *callbacks) {
     assert(callbacks->new_layer_surface != nullptr);
     assert(callbacks->layer_surface_mapped != nullptr);
     assert(callbacks->layer_surface_unmapped != nullptr);
+    assert(callbacks->layers_reconfigured != nullptr);
 }
 
 bool hrt_layer_shell_init(struct hrt_server *server,
@@ -148,9 +149,10 @@ static void arrange_surface(const struct wlr_box *full_area,
     }
 }
 
-static void arrange_layers(struct hrt_output *output,
-                           struct hrt_scene_output *scene_output) {
-    struct wlr_box usable_area = {0};
+void hrt_layer_shell_arrange_layers(struct hrt_output *output,
+                                    bool emit_event) {
+    struct hrt_scene_output *scene_output = output->scene;
+    struct wlr_box usable_area            = {0};
     hrt_output_position(output, &usable_area.x, &usable_area.y);
     wlr_output_effective_resolution(output->wlr_output, &usable_area.width,
                                     &usable_area.height);
@@ -169,8 +171,9 @@ static void arrange_layers(struct hrt_output *output,
     if (!wlr_box_equal(&usable_area, &output->usable_area)) {
         wlr_log(WLR_DEBUG, "Usable area changed, rearranging output");
         output->usable_area = usable_area;
-        // TODO: this reconfigures all outputs, we can do way less work:
-        output->server->output_callback->output_layout_changed();
+        if (emit_event) {
+            output->server->layer_shell_callbacks->layers_reconfigured(output);
+        }
     } else {
         // arrange_popups(root->layers.popup);
     }
@@ -194,10 +197,10 @@ static void handle_surface_commit(struct wl_listener *listener, void *data) {
 
     if (layer_surface->initial_commit || committed ||
         layer_surface->surface->mapped != surface->mapped) {
-        wlr_log(WLR_DEBUG, "layer shell surface initial commit");
+        wlr_log(WLR_DEBUG, "layer shell surface updated");
         surface->mapped               = layer_surface->surface->mapped;
         struct hrt_output *hrt_output = surface->output;
-        arrange_layers(hrt_output, surface->output->scene);
+        hrt_layer_shell_arrange_layers(hrt_output, true);
     }
 }
 
@@ -331,7 +334,7 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
 
     scene_descriptor_destroy(&surface->tree->node, HRT_SCENE_DESC_LAYER_SHELL);
     if (surface->output) {
-        arrange_layers(surface->output, surface->output->scene);
+        hrt_layer_shell_arrange_layers(surface->output, true);
     }
 
     wl_list_remove(&surface->events.scene_destroy.link);

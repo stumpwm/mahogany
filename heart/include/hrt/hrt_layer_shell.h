@@ -33,6 +33,7 @@ struct hrt_layer_shell_callbacks {
     layer_shell_event_handler new_layer_surface;
     layer_shell_event_handler layer_surface_mapped;
     layer_shell_event_handler layer_surface_unmapped;
+    void (*layers_reconfigured)(struct hrt_output *);
 };
 
 /**

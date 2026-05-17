@@ -155,11 +155,20 @@
         (log-string :error "could not find group to delete"))))
 
 (defun mahogany-state-output-reconfigure (state)
-  (log-string :trace "Output layout changed!")
   (hrt:with-view-transaction ()
     (with-accessors ((groups state-groups)) state
       (loop for g across groups
             do (group-reconfigure-outputs g (state-outputs state))))))
+
+(defun mahogany-state-layers-arrange (state hrt-output)
+  (declare (type mahogany-state state))
+  (let ((output (%find-output hrt-output (state-outputs state))))
+    (log-string :debug "layer shell layers re-arranged on output ~S"
+                (hrt:output-full-name output))
+    (hrt:with-view-transaction ()
+      (with-accessors ((groups state-groups)) state
+        (loop for g across groups
+              do (group-rearrange-output g output))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
