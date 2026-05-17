@@ -475,6 +475,8 @@ whenever the semaphore is non-zero."
 
 ;; next section imported from file build/include/hrt/hrt_layer_shell.h
 
+(cffi:defcstruct hrt-layer-shell-callbacks)
+
 (cffi:defcstruct hrt-layer-shell-surface-events
   (commit (:struct wl-listener))
   (map (:struct wl-listener))
@@ -488,6 +490,7 @@ whenever the semaphore is non-zero."
   (output (:pointer (:struct hrt-output)))
   (tree :pointer #| (:struct wlr-scene-tree) |#)
   (mapped :bool)
+  (callbacks (:pointer (:struct hrt-layer-shell-callbacks)))
   (events (:struct hrt-layer-shell-surface-events)))
 
 (cffi:defctype layer-shell-event-handler :pointer #| function ptr void (struct hrt_layer_shell_surface *) |#)
@@ -495,11 +498,8 @@ whenever the semaphore is non-zero."
 (cffi:defcstruct hrt-layer-shell-callbacks
   (new-layer-surface layer-shell-event-handler)
   (layer-surface-mapped layer-shell-event-handler)
-  (layer-surface-unmapped layer-shell-event-handler))
-
-(declaim (inline hrt-layer-shell-surface-create))
-(cffi:defcfun ("hrt_layer_shell_surface_create" hrt-layer-shell-surface-create) (:pointer (:struct hrt-layer-shell-surface))
-  (surface :pointer #| (:struct wlr-layer-surface-v1) |#))
+  (layer-surface-unmapped layer-shell-event-handler)
+  (layers-reconfigured :pointer #| function ptr void (struct hrt_output *) |#))
 
 (declaim (inline hrt-layer-shell-surface-abort))
 (cffi:defcfun ("hrt_layer_shell_surface_abort" hrt-layer-shell-surface-abort) :void
