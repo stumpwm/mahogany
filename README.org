@@ -55,7 +55,8 @@ to build it. The following development dependencies are also needed:
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
-version that the CFFI library supports, SBCL and CCL are supported.
+version that the CFFI library supports, SBCL, CCL and Clasp are
+tested frequently.
 
 The recommended way to install the dependencies is using
 Quicklisp. Follow the instructions at https://www.quicklisp.org/ to

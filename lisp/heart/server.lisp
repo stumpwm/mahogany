@@ -99,6 +99,10 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
                                           (cffi:callback work-queue-callback))))
     initialized))
 
+(defun server-start (server)
+  (float-features:with-float-traps-masked (:overflow :divide-by-zero)
+    (hrt-server-start server)))
+
 (defun server-finish (server)
   (hrt-event-loop-semaphore-close *workqueue-semaphore*)
   (setf *workqueue-semaphore* nil)

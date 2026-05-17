@@ -20,6 +20,7 @@
                #:atomics
                #:fset
                #:bordeaux-threads
+               #:float-features
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"

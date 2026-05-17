@@ -34,10 +34,6 @@ When this error is signaled, the only appropriate thing to do is exit."))
 
 (defun enable-debugger ()
   #+sbcl
-  (sb-ext:enable-debugger))
-
-(defun disable-fpu-exceptions ()
-  #+sbcl
-  (sb-int:set-floating-point-modes :traps nil)
-  #+ccl
-  (ccl:set-fpu-mode :overflow nil))
+  (sb-ext:enable-debugger)
+  #+clasp
+  (ext:enable-debugger))

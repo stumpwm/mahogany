@@ -45,7 +45,6 @@ further up. "
     (hrt:request-fullscreen handle-request-fullscreen)))
 
 (defun run-server (args)
-  (disable-fpu-exceptions)
   (hrt:load-foreign-libraries)
   (log-init :level (intern (gethash 'loglevel args) 'keyword))
   (when (gethash 'enable-debugger args)
@@ -73,7 +72,7 @@ further up. "
         (log-string :info "Init file loading skipped")
         (load-config-file))
     (unwind-protect
-         (hrt:hrt-server-start server)
+         (hrt:server-start server)
       (log-string :debug "Cleaning up...")
       (server-stop *compositor-state*)
       (server-state-reset *compositor-state*)

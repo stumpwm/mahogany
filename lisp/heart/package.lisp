@@ -79,7 +79,7 @@
            #:hrt-server-scene-tree
            #:hrt-server-group-create
            #:hrt-server-seat
-           #:hrt-server-start
+           #:server-start
            #:hrt-server-stop
            #:run-in-main-thread
            ;; Toast messages:
