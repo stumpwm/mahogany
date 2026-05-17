@@ -15,37 +15,39 @@
   (hidden-view-map (make-hash-table) :type hash-table)
   (views nil :type list))
 
-(defclass mahogany-state ()
-  ((hrt-server :type hrt-server
-               :initarg server
-               :accessor state-server)
-   (key-state :type key-state
-              :initform (make-key-state nil)
-              :accessor server-key-state)
-   (current-group :type mahogany-group
-                  :accessor state-current-group)
-   (keybindings :type list
-                :initform nil
-                :reader state-keybindings)
-   (active-kmap-modes :type list
-                      :initform nil
-                      :accessor state-active-kmap-modes)
-   (prefix-key :type key
-               :initform (kbd "C-t")
-               :reader state-prefix-key
-               :documentation "The prefix key used for prefix-bound kmaps.")
-   (outputs :type (vector hrt:output *)
-            :initform (make-array 0
-                                  :element-type 'hrt:output
-                                  :adjustable t
-                                  :fill-pointer t)
-            :accessor state-outputs)
-   (groups :type vector
-           :accessor state-groups
-           :initform (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t))
-   (hidden-groups :initform (ring-list:make-ring-list)
-                  :type ring-list:ring-list
-                  :reader state-hidden-groups)
-   (views :type hash-table
-          :initform (make-hash-table)
-          :reader state-views)))
+(defstruct (mahogany-state (:conc-name state-))
+  (server nil :type (or null cffi:foreign-pointer))
+  (key-state (make-key-state nil):type key-state)
+  (%current-group nil :type (or null mahogany-group))
+  (%keybindings nil :type list)
+  (active-kmap-modes nil :type list)
+  (%prefix-key (kbd "C-t") :type key)
+  (outputs (make-array 0 :element-type 'hrt:output :adjustable t :fill-pointer t)
+   :type (vector hrt:output *))
+  (groups (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t)
+   :type (vector mahogany-group *))
+  (hidden-groups (ring-list:make-ring-list)
+   :type ring-list:ring-list
+   :read-only t)
+  (views (make-hash-table)
+   :type hash-table
+   :read-only t))
+
+(declaim (inline state-current-group))
+(defun state-current-group (state)
+  (declare (type mahogany-state state))
+  (state-%current-group state))
+
+(declaim (inline state-keybindings))
+(defun state-keybindings (state)
+  (declare (type mahogany-state state))
+  (state-%keybindings state))
+
+(declaim (inline state-prefix-key))
+(defun state-prefix-key (state)
+  (declare (type mahogany-state state))
+  (state-%prefix-key state))
+
+(declaim (inline server-seat))
+(defun server-seat (state)
+  (hrt:hrt-server-seat (state-server state)))

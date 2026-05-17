@@ -102,7 +102,7 @@ the KEYBINDINGS list."
   ;; to change the prefix key, we rebuild the keybinding list
   ;; using the new prefix key.
   (with-accessors ((active-modes state-active-kmap-modes)
-                   (prefix-key state-prefix-key))
+                   (prefix-key state-%prefix-key))
       state
     ;; change the passthrough maps
     (define-key *prefix-passthrough-kmap* prefix-key nil)

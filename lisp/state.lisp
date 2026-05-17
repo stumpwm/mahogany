@@ -48,31 +48,27 @@
   (declare (type mahogany-state state))
   (hrt:hrt-server-stop (state-server state)))
 
-(defmethod (setf state-current-group) :around (group state)
+(defun (setf state-current-group) (group state)
   (with-accessors ((hidden-groups state-hidden-groups)
                    (server state-server))
       state
     (when (not (find group (state-groups state) :test #'equalp))
       (error (format nil "Group ~S is not part of this state" group)))
-    (when (slot-boundp state 'current-group)
+    (when (state-%current-group state)
       (group-suspend (state-current-group state) (hrt:hrt-server-seat server)))
-    (call-next-method)
+    (setf (state-%current-group state) group)
     (group-wakeup group (hrt:hrt-server-seat server))
     (hrt:dirty-view-transaction)))
 
-(declaim (inline server-seat))
-(defun server-seat (state)
-  (hrt:hrt-server-seat (state-server state)))
-
 (defun server-keystate-reset (state)
-  (setf (server-key-state state)
+  (setf (state-key-state state)
         (make-key-state (state-keybindings state))))
 
 (defun (setf state-keybindings) (kmaps state)
   (declare (type list kmaps)
            (type mahogany-state state))
-  (setf (slot-value state 'keybindings) kmaps)
-  (unless (key-state-active-p (server-key-state state))
+  (setf (state-%keybindings state) kmaps)
+  (unless (key-state-active-p (state-key-state state))
     (server-keystate-reset state)))
 
 (defun mahogany-state-output-add (state hrt-output)
