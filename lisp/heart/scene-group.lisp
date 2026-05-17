@@ -7,13 +7,12 @@
   (hrt-scene-layer-add-view scene-layer (view-hrt-view view)))
 
 (declaim (inline scene-create-fullscreen-node))
-(defun scene-create-fullscreen-node (hrt-layer view output)
+(defun scene-create-fullscreen-node (output view)
   (declare (type view view)
-           (type output output)
-           (type cffi:foreign-pointer hrt-layer))
-  (let ((node (hrt-scene-create-fullscreen-node hrt-layer
-                                                 (view-hrt-view view)
-                                                 (output-hrt-output output))))
+           (type output output))
+  (let ((node (hrt-scene-create-fullscreen-node
+               (output-hrt-output output)
+               (view-hrt-view view))))
     (if (not (cffi:null-pointer-p node))
         node
         (error "Could not allocate fullscreen node."))))

@@ -79,12 +79,8 @@ struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);
  * Mode the hrt_view inside the node, removing it from where ever it was in the scene tree.
  **/
 struct hrt_scene_fullscreen_node *
-hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
-                                 struct hrt_view *view,
-                                 struct hrt_output *output);
-
-struct hrt_view *hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
-                               struct hrt_view *view);
+hrt_scene_create_fullscreen_node(struct hrt_output *output,
+                                 struct hrt_view *view);
 
 
 /**

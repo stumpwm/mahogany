@@ -120,9 +120,8 @@ void hrt_scene_layer_add_view(struct hrt_scene_layer *layer,
 }
 
 struct hrt_scene_fullscreen_node *
-hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
-                                 struct hrt_view *view,
-                                 struct hrt_output *output) {
+hrt_scene_create_fullscreen_node(struct hrt_output *output,
+                                 struct hrt_view *view) {
     struct hrt_scene_fullscreen_node *new_node = calloc(1, sizeof(*new_node));
 
     if (!new_node) {
@@ -130,7 +129,7 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
         return NULL;
     }
 
-    struct wlr_scene_tree *root = wlr_scene_tree_create(layer->tree);
+    struct wlr_scene_tree *root = wlr_scene_tree_create(output->scene->top);
     if (!root) {
         wlr_log(WLR_ERROR, "Failed to allocate wlr_scene_tree");
         return NULL;

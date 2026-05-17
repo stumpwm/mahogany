@@ -330,9 +330,8 @@ destination layer"
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
   "Create a hrt_scene_fullscreen_layer with a black bacground of the given size.
 Mode the hrt_view inside the node, removing it from where ever it was in the scene tree."
-  (layer (:pointer (:struct hrt-scene-layer)))
-  (view (:pointer (:struct hrt-view)))
-  (output (:pointer (:struct hrt-output))))
+  (output (:pointer (:struct hrt-output)))
+  (view (:pointer (:struct hrt-view))))
 
 (declaim (inline hrt-scene-fullscreen-swap))
 (cffi:defcfun ("hrt_scene_fullscreen_swap" hrt-scene-fullscreen-swap) (:pointer (:struct hrt-view))
