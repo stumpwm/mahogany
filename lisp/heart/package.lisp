@@ -22,6 +22,7 @@
            #:new-layer-surface
            #:layer-surface-mapped
            #:layer-surface-unmapped
+           #:layers-reconfigured
            #:new-view
            #:view-size-changed
            #:hrt-view

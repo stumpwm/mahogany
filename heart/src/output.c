@@ -1,5 +1,7 @@
+#include "hrt/hrt_layer_shell.h"
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
+#include "layer_shell_impl.h"
 #include "wlr/util/log.h"
 #include <assert.h>
 #include <time.h>
@@ -252,14 +254,9 @@ static void handle_output_layout_changed(struct wl_listener *listener,
         struct wlr_output *wlr_output = output->output;
         struct hrt_output *hrt_output = wlr_output->data;
 
-        // This will eventually change to re-computing how the layer shell
-        // windows take up space, but for now, just use the resolution
-        // and position:
-        hrt_output->usable_area.x = output->x;
-        hrt_output->usable_area.y = output->y;
-        struct wlr_box *area      = &hrt_output->usable_area;
-        wlr_output_effective_resolution(wlr_output, &area->width,
-                                        &area->height);
+        // Since the layout change action should trigger the same
+        //  actions as arranging the layers, don't emit the event:
+        hrt_layer_shell_arrange_layers(hrt_output, false);
     }
 
     server->output_callback->output_layout_changed();
