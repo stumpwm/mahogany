@@ -79,3 +79,8 @@
     ((surface :pointer))
     ()
   (log-string :trace "Layer shell unmapped"))
+
+(hrt:define-hrt-callback handle-layer-shell-arrange :void
+    ((output (:pointer (:struct hrt:hrt-output))))
+    ()
+  (mahogany-state-layers-arrange *compositor-state* output))

@@ -58,7 +58,8 @@ further up. "
   (init-callback-struct layer-shell-callbacks (:struct hrt:hrt-layer-shell-callbacks)
     (hrt:new-layer-surface handle-layer-shell-recieved)
     (hrt:layer-surface-mapped handle-layer-shell-mapped)
-    (hrt:layer-surface-unmapped handle-layer-shell-unmapped)))
+    (hrt:layer-surface-unmapped handle-layer-shell-unmapped)
+    (hrt:layers-reconfigured handle-layer-shell-arrange)))
 
 (defun run-server (args)
   (hrt:load-foreign-libraries)
