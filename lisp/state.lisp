@@ -157,10 +157,10 @@
 
 (defun mahogany-state-layers-arrange (state hrt-output)
   (declare (type mahogany-state state))
-  (let ((output (%find-output hrt-output (mahogany-state-outputs state))))
+  (let ((output (%find-output hrt-output (state-outputs state))))
     (log-string :debug "layer shell layers re-arranged on output ~S"
                 (hrt:output-full-name output))
-    (with-accessors ((groups mahogany-state-groups)) state
+    (with-accessors ((groups state-groups)) state
       (loop for g across groups
             do (group-rearrange-output g output)))))
 
@@ -286,9 +286,9 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
-      (with-accessors ((outputs mahogany-state-outputs)) state
+      (with-accessors ((outputs state-outputs)) state
         (the (or mahogany-output null) (%find-output hrt-output outputs)))
-    (let ((current-output (group-current-output (mahogany-current-group state))))
+    (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
       (unless current-output
 	    (log-string :error "Could not auto-assign output to layer surface")
@@ -304,3 +304,13 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
       (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
     (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
+
+(defun state-layer-surface-add (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (setf (gethash hrt-layer-surface surfaces) (hrt::make-layer-surface hrt-layer-surface))))
+
+(defun state-layer-surface-remove (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (remhash hrt-layer-surface surfaces)))
