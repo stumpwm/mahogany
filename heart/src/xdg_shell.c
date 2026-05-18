@@ -7,6 +7,7 @@
 
 #include "hrt/hrt_input.h"
 #include "hrt/hrt_output.h"
+#include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
 #include "xdg_impl.h"
 #include "hrt/hrt_view.h"
@@ -17,7 +18,7 @@
 static void handle_xdg_toplevel_map(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
     struct hrt_view *view = wl_container_of(listener, view, map);
-	// The callback should be sending a configure event:
+    // The callback should be sending a configure event:
     view->callbacks->view_mapped(view);
 }
 
@@ -93,7 +94,8 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
     wl_list_remove(&view->commit.link);
     wl_list_remove(&view->request_fullscreen.link);
     wl_list_remove(&view->request_maximize.link);
-	wl_list_remove(&view->request_minimize.link);
+    wl_list_remove(&view->request_minimize.link);
+    wl_list_remove(&view->new_popup.link);
 
     hrt_view_cleanup(view);
     free(view);
@@ -108,6 +110,8 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
         view->callbacks->view_size_changed(view);
     }
 }
+
+static void handle_new_xdg_popup(struct wl_listener *listener, void *data);
 
 static struct hrt_view *
 create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
@@ -134,6 +138,8 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     wl_signal_add(&xdg_toplevel->events.destroy, &view->destroy);
     view->commit.notify = handle_xdg_toplevel_commit;
     wl_signal_add(&xdg_toplevel->base->surface->events.commit, &view->commit);
+    view->new_popup.notify = handle_new_xdg_popup;
+    wl_signal_add(&xdg_surface->events.new_popup, &view->new_popup);
 
     // Swaywm registers these when the toplevel is mapped, but I don't think  that should make
     // a difference:
@@ -162,41 +168,52 @@ static void handle_xdg_popup_destroy(struct wl_listener *listener, void *data) {
 
     wl_list_remove(&popup->destroy.link);
     wl_list_remove(&popup->commit.link);
+    wl_list_remove(&popup->new_popup.link);
 
     free(popup);
 }
 
+static void handle_popup_new_xdg_popup(struct wl_listener *listener,
+                                       void *data);
+
+static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
+                                          struct wlr_xdg_popup *xdg_popup,
+                                          struct wlr_scene_tree *parent) {
+    struct hrt_xdg_popup *popup = calloc(1, sizeof(*popup));
+    if (!popup) {
+      wlr_log(WLR_ERROR, "Failed to allocated hrt_xdg_popup");
+      return nullptr;
+    }
+    popup->view                 = view;
+    popup->xdg_popup            = xdg_popup;
+    popup->scene =
+      wlr_scene_xdg_surface_create(parent, xdg_popup->base);
+    xdg_popup->base->data = popup->scene;
+
+    popup->commit.notify = handle_xdg_popup_commit;
+    wl_signal_add(&xdg_popup->base->surface->events.commit, &popup->commit);
+
+    popup->destroy.notify = handle_xdg_popup_destroy;
+    wl_signal_add(&xdg_popup->events.destroy, &popup->destroy);
+
+    popup->new_popup.notify = handle_popup_new_xdg_popup;
+    wl_signal_add(&xdg_popup->base->events.new_popup, &popup->new_popup);
+
+    return popup;
+}
+
+static void handle_popup_new_xdg_popup(struct wl_listener *listener,
+                                       void *data) {
+    struct hrt_xdg_popup *parent = wl_container_of(listener, parent, new_popup);
+    struct wlr_xdg_popup *xdg_popup = data;
+    create_popup(parent->view, xdg_popup, parent->scene);
+}
+
 static void handle_new_xdg_popup(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "New xdg popup received");
-    struct hrt_server *server =
-        wl_container_of(listener, server, new_xdg_popup);
+    struct hrt_view *view = wl_container_of(listener, view, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
-
-    // The front end doesn't need to know about popups; wlroots handles it for
-    // us. we do need to set some internal data so that they can be rendered
-    // though.
-    struct wlr_xdg_surface *parent =
-        wlr_xdg_surface_try_from_wlr_surface(xdg_popup->parent);
-    struct wlr_scene_tree *parent_tree = parent->data;
-
-    // The parent view might not have been initizlized properly. In that case,
-    // it isn't being displayed, so we just ignore it:
-    if (parent_tree) {
-        xdg_popup->base->data =
-            wlr_scene_xdg_surface_create(parent_tree, xdg_popup->base);
-        struct hrt_xdg_popup *popup = calloc(1, sizeof(*popup));
-        popup->xdg_popup            = xdg_popup;
-
-        popup->commit.notify = handle_xdg_popup_commit;
-        wl_signal_add(&xdg_popup->base->surface->events.commit, &popup->commit);
-
-        popup->destroy.notify = handle_xdg_popup_destroy;
-        wl_signal_add(&xdg_popup->events.destroy, &popup->destroy);
-
-    } else {
-        wlr_log(WLR_ERROR,
-                "Encountered XDG Popup without properly configured parent");
-    }
+    create_popup(view, xdg_popup, view->xdg_scene);
 }
 
 static void handle_new_xdg_toplevel(struct wl_listener *listener, void *data) {
@@ -228,8 +245,6 @@ bool hrt_xdg_shell_init(struct hrt_server *server) {
         wlr_log(WLR_ERROR, "Could not initialize wlr_xdg_shell");
         return false;
     }
-    server->new_xdg_popup.notify = handle_new_xdg_popup;
-    wl_signal_add(&server->xdg_shell->events.new_popup, &server->new_xdg_popup);
 
     server->new_xdg_toplevel.notify = handle_new_xdg_toplevel;
     wl_signal_add(&server->xdg_shell->events.new_toplevel,
@@ -239,5 +254,4 @@ bool hrt_xdg_shell_init(struct hrt_server *server) {
 
 void hrt_xdg_shell_destroy(struct hrt_server *server) {
     wl_list_remove(&server->new_xdg_toplevel.link);
-    wl_list_remove(&server->new_xdg_popup.link);
 }

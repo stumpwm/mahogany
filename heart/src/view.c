@@ -22,6 +22,9 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
         view->scene_tree, view->xdg_toplevel->base);
     xdg_tree->node.data     = view;
     view->xdg_surface->data = xdg_tree;
+
+    view->xdg_scene = xdg_tree;
+
     hrt_view_info(view);
 }
 

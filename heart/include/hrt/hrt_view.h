@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <wayland-server-core.h>
 #include <hrt/hrt_server.h>
+#include "hrt/hrt_scene.h"
 #include "hrt_input.h"
 #include "hrt_output.h"
 
@@ -45,12 +46,14 @@ struct hrt_view {
       plus decorations and that sort of thing.
      */
     struct wlr_scene_tree *scene_tree;
+    struct wlr_scene_tree *xdg_scene;
 
     // internal state:
     struct wl_listener map;
     struct wl_listener unmap;
     struct wl_listener commit;
     struct wl_listener destroy;
+    struct wl_listener new_popup;
 
     struct wl_listener request_maximize;
     struct wl_listener request_minimize;
