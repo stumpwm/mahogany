@@ -160,9 +160,10 @@
   (let ((output (%find-output hrt-output (state-outputs state))))
     (log-string :debug "layer shell layers re-arranged on output ~S"
                 (hrt:output-full-name output))
-    (with-accessors ((groups state-groups)) state
-      (loop for g across groups
-            do (group-rearrange-output g output)))))
+    (hrt:with-view-transaction ()
+      (with-accessors ((groups state-groups)) state
+        (loop for g across groups
+              do (group-rearrange-output g output))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
