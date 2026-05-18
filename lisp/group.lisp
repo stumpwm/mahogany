@@ -115,15 +115,23 @@
                 (setf (tree:frame-view first-leaf) spare)))))))
     (log-string :trace "Group map: ~S" output-map)))
 
+(defun group-rearrange-output (group output)
+  (declare (type mahogany-group group)
+           (type hrt:output output))
+  (let ((full-name (hrt:output-full-name output))
+        (output-map (mahogany-group-output-map group)))
+    (alexandria:when-let ((tree (gethash full-name output-map)))
+      (tree:reconfigure-node tree output))))
+
 (defun group-reconfigure-outputs (group outputs)
+  (declare (type mahogany-group group))
   "Re-examine where the outputs are and adjust the trees that are associated with them
 to match."
+  (log-string :debug "Reconfiguring group ~S outputs"
+              (mahogany-group-name group))
   (with-accessors ((output-map mahogany-group-output-map)) group
     (loop for output across outputs
-          do (with-accessors ((full-name hrt:output-full-name))
-                 output
-               (alexandria:when-let ((tree (gethash full-name output-map)))
-                 (tree:reconfigure-node tree output))))))
+          do (group-rearrange-output group output))))
 
 (defun %first-hash-table-value (table)
   (declare (type hash-table table)
@@ -158,7 +166,7 @@ to match."
       (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat))
       (tree:remove-frame tree (lambda (x) (alexandria:when-let ((v (tree:frame-view x)))
-                                            (%add-hidden hidden-views v)))))))
+				            (%add-hidden hidden-views v)))))))
 
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)

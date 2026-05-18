@@ -63,3 +63,26 @@
     ()
     ()
   (mahogany-state-output-reconfigure *compositor-state*))
+
+(hrt:define-hrt-callback handle-layer-shell-recieved :void
+    ((surface :pointer))
+    ()
+  (log-string :trace "Layer shell recieved")
+  (mahogany-state-layer-shell-handle *compositor-state* surface))
+
+(hrt:define-hrt-callback handle-layer-shell-mapped :void
+    ((surface :pointer))
+    ()
+  (log-string :trace "Layer shell mapped")
+  (state-layer-surface-add *compositor-state* surface))
+
+(hrt:define-hrt-callback handle-layer-shell-unmapped :void
+    ((surface :pointer))
+    ()
+  (log-string :trace "Layer shell unmapped")
+  (state-layer-surface-remove *compositor-state* surface))
+
+(hrt:define-hrt-callback handle-layer-shell-arrange :void
+    ((output (:pointer (:struct hrt:hrt-output))))
+    ()
+  (mahogany-state-layers-arrange *compositor-state* output))
