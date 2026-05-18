@@ -59,6 +59,7 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     wlr_log(WLR_DEBUG, "placing in layer %d", layer_type);
     surface->scene_surface =
         wlr_scene_layer_surface_v1_create(output_layer, surface->layer_surface);
+    surface->scene_surface->tree->node.data = surface;
 
     // Set this so we can reference it in the arrange_surface function
     // FIXME: This pointer is used for other things; it may be good to
@@ -108,6 +109,7 @@ bool hrt_layer_shell_init(struct hrt_server *server,
 
     server->new_layer_shell.notify = handle_new_layer_surface;
     wl_signal_add(&shell->events.new_surface, &server->new_layer_shell);
+
     server->destroy_listener.layer_shell.notify = hrt_layer_shell_destroy;
     wl_signal_add(&shell->events.destroy,
                   &server->destroy_listener.layer_shell);
@@ -248,11 +250,13 @@ static void popup_handle_commit(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_popup *popup =
         wl_container_of(listener, popup, commit);
     if (popup->wlr_popup->base->initial_commit) {
+        wlr_log(WLR_DEBUG, "Layer shell popup initial  commit");
         popup_unconstrain(popup);
     }
 }
 
 static void popup_handle_destroy(struct wl_listener *listener, void *data) {
+    wlr_log(WLR_DEBUG, "Layer shell Popup Destroyed");
     struct hrt_layer_shell_popup *popup =
         wl_container_of(listener, popup, destroy);
 
@@ -268,9 +272,11 @@ static struct hrt_layer_shell_popup *
 create_popup(struct wlr_xdg_popup *wlr_popup,
              struct hrt_layer_shell_surface *toplevel,
              struct wlr_scene_tree *parent) {
+    wlr_log(WLR_DEBUG, "New Layer Shell popup");
     struct hrt_layer_shell_popup *popup = calloc(1, sizeof(*popup));
     if (popup == NULL) {
-        return NULL;
+        wlr_log(WLR_ERROR, "Failed to allocated hrt_layer_shell_popup");
+        return nullptr;
     }
 
     popup->toplevel  = toplevel;
@@ -279,7 +285,7 @@ create_popup(struct wlr_xdg_popup *wlr_popup,
 
     if (!popup->scene) {
         free(popup);
-        return NULL;
+        return nullptr;
     }
 
     popup->destroy.notify = popup_handle_destroy;
@@ -303,7 +309,8 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data) {
 static void handle_new_popup(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.new_popup);
-    wlr_log(WLR_DEBUG, "layer shell surface popup");
+    struct wlr_xdg_popup *wlr_popup = data;
+    create_popup(wlr_popup, surface, surface->tree);
 }
 
 static void handle_node_destroy(struct wl_listener *listener, void *data) {
