@@ -19,13 +19,16 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: 'recursive'
-      - name: Prepare Lisp Environment
+      - name: Install Quicklisp Environment
         run: |
-          curl -O https://beta.quicklisp.org/quicklisp.lisp \
-          && sbcl --noinform --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" \
-          && sbcl --noinform --load "$HOME/quicklisp/setup.lisp"  --eval "(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))" \
-          && sbcl --noinform --eval "(ql:quickload '("alexandria" "bordeaux-threads" "fset" "atomics" "cl-ansi-text" "terminfo" "iterate" "cffi" "cffi-grovel" "closer-mop" "adopt"))" \
-          && sbcl --noinform --eval "(ql:quickload '("fiasco"))"
+          curl -O https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --noinform --load quicklisp.lisp --eval "(quicklisp-quickstart:install)"
+          sbcl --noinform --load "$HOME/quicklisp/setup.lisp" \
+               --eval "(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))"
+      - name: Install Dependencies
+        run: |
+          chmod +x scripts/install-dependencies.lisp
+          yes | ./scripts/install-dependencies.lisp
       - name: Build
         run: make
       - name: Test

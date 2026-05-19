@@ -1,5 +1,7 @@
 (declaim (optimize (debug 3)))
 
+(require :asdf)
+
 ;; Adding this enables several safety checks and several functions
 ;; that are useful for debugging:
 (cl:pushnew :hrt-debug *features*)
