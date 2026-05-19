@@ -66,8 +66,8 @@
   ;; We don't need to dirty the view transaction here,
   ;; as this is *requesting* that the view change size,
   ;; not actually changing the size.
-  (hrt-view-set-size (view-hrt-view view) width height))
+  (hrt-view-set-size (view-hrt-view view) (round width) (round height)))
 
 (defmethod mh/interface:set-position ((view view) x y)
-  (hrt-view-set-relative (view-hrt-view view) x y)
+  (hrt-view-set-relative (view-hrt-view view) (round x) (round y))
   (dirty-view-transaction))

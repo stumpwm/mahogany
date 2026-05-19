@@ -592,3 +592,8 @@ whenever the semaphore is non-zero."
 (cffi:defcfun ("hrt_border_box_set_enabled" hrt-border-box-set-enabled) :void
   (box (:pointer (:struct hrt-border-box)))
   (enabled :bool))
+
+(declaim (inline hrt-border-box-set-style))
+(cffi:defcfun ("hrt_border_box_set_style" hrt-border-box-set-style) :void
+  (box (:pointer (:struct hrt-border-box)))
+  (style (:pointer (:struct hrt-border-box-style))))

@@ -5,7 +5,12 @@
 
 (defun border-box-create (layer style x y width height)
   (hrt-border-box-create layer (border-box-style-ptr style)
-                         x y width height))
+                         (round x) (round y)
+                         (round width)
+                         (round height)))
+
+(defun border-box-set-style (box style)
+  (hrt-border-box-set-style box (border-box-style-ptr style)))
 
 (defun border-box-style-create (border-style color line-width)
   (declare (type colors:rgb color))
