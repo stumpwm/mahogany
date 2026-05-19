@@ -118,12 +118,21 @@ static void hrt_border_box_handle_destroy(struct wl_listener *listener,
     free(box);
 }
 
+static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
+                                  int height);
+
 static void border_box_handle_outputs_update(struct wl_listener *listener,
                                              void *data) {
   struct hrt_border_box *box = wl_container_of(listener, box, listeners.outputs_update);
   // struct wlr_scene_outputs_update_event *event = data;
 
-  wlr_log(WLR_DEBUG, "Outputs update");
+  const float scale = box->scene_buffer->primary_output->output->scale;
+  if (box->scale != scale) {
+      box->scale = scale;
+      const struct wlr_buffer *const buff = &box->buffer->base;
+      set_box_scale(box, buff->width, buff->height, scale);
+      hrt_border_box_redraw(box, buff->width, buff->height);
+  }
 }
 
 static bool buffer_accepts_input_p(struct wlr_scene_buffer *buffer, double *sx,
@@ -135,16 +144,15 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
                                              struct hrt_border_box_style *style,
                                              int x, int y, int width,
                                              int height) {
-    constexpr float scale = 1;
     struct hrt_border_box *box = calloc(1, sizeof(*box));
     if (!box) {
+      wlr_log(WLR_ERROR, "Cannot alloc box");
       return nullptr;
     }
-    box->scale = scale;
-    box->buffer = draw_box_surface(style, width, height, scale);
+    box->buffer = cairo_buffer_create(width, height);
     if (!box->buffer) {
+        wlr_log(WLR_ERROR, "Cannot create cairo buffer");
         free(box);
-        return nullptr;
     }
 
     box->style = style;
@@ -156,6 +164,15 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
         goto error;
     }
     box->scene_buffer->point_accepts_input = buffer_accepts_input_p;
+
+    wlr_scene_node_set_position(&box->scene_buffer->node, x, y);
+    const float scale = box->scene_buffer->primary_output->output->scale;
+    box->scale        = scale;
+
+    if (!draw_box(style, box->buffer->surface, width, height, scale)) {
+        wlr_buffer_drop(&box->buffer->base);
+        return nullptr;
+    }
 
     if (!scene_descriptor_assign(&box->scene_buffer->node,
                                  HRT_SCENE_DESC_NON_INTERACTIVE, box)) {
@@ -169,7 +186,6 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
     }
 
     wlr_scene_node_set_enabled(&box->scene_buffer->node, true);
-    wlr_scene_node_set_position(&box->scene_buffer->node, x, y);
 
     box->listeners.destroy.notify = &hrt_border_box_handle_destroy;
     wl_signal_add(&box->scene_buffer->node.events.destroy,
@@ -226,7 +242,10 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
 
 void hrt_border_box_set_size(struct hrt_border_box *box, int width,
                              int height) {
-    hrt_border_box_redraw(box, width, height);
+    const struct wlr_buffer *const buff = &box->buffer->base;
+    if(buff->width != width || buff->height != height) {
+        hrt_border_box_redraw(box, width, height);
+    }
 }
 
 void hrt_border_box_set_style(struct hrt_border_box *box,
