@@ -7,6 +7,7 @@
            #:make-key
            #:print-key
            #:pprint-key
+           #:gimme-key-format
            #:key-keysym
            #:key-modifier-mask
            #:key-modifier-key-p
