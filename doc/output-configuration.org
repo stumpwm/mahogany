@@ -1,0 +1,42 @@
+#+TITLE: Output Configuration
+
+* Configuring individual Outputs
+
+To configure the position, scale, resolution and refresh rate of an
+output, you can use the =define-output-config= macro:
+
+#+BEGIN_SRC lisp
+  (define-output-config "default"
+    "WL-1"
+    (:scale 2))
+#+END_SRC
+
+The first argument is the name of the configuration, which allows it
+to be referenced in other contexts. Configuration names must be
+unique; defining a second configuration with the same name will
+overwrite the  first. The next argument is the name of the output or
+a list specifying the name, make, model or serial of the output. The
+rest of the arguments allow you to define the output's scale,
+resolution and position.
+
+** Grammar
+
+The grammar for this macro is as follows:
+
+#+BEGIN_SRC text
+(define-output-config NAME OUTPUT-CLAUSE)
+
+NAME : name
+
+OUTPUT-CLAUSE : NAME-OR-DETAILS OUTPUT-PROPERTIES
+
+NAME-OR-DETAILS : output-name | (&key name make model serial)
+
+OUTPUT-PROPERTIES :
+     (:scale scale)
+   | (:mode width height &key refresh custom)
+   | (:position x y)
+   | (:mirror NAME-OR-DETAILS)
+#+END_SRC
+
+Note that screen mirroring is not supported yet.
