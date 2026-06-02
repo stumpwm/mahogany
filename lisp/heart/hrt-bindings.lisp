@@ -400,7 +400,7 @@ Returns the view that was in the node."
 ;; next section imported from file build/include/hrt/hrt_event_loop.h
 
 (cl:defconstant +hrt-event-readable+ 1)
-(cl:defconstant +hrt-event-writable* 2)
+(cl:defconstant +hrt-event-writable+ 2)
 (cl:defconstant +hrt-event-hangup+ 4)
 (cl:defconstant +hrt-event-error+ 8)
 
