@@ -116,6 +116,7 @@ names."
   (xdg-surface :pointer #| (:struct wlr-xdg-surface) |#)
   (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |#)
   (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
+  (xdg-scene :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
