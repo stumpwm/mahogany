@@ -72,6 +72,7 @@
                (:file "package")
                (:file "command")
                (:file "objects" :depends-on ("package" "ring-list"))
+               (:file "output-config" :depends-on ("heart"))
                (:file "message" :depends-on ("heart"))
                (:file "group" :depends-on ("objects" "heart" "globals"))
                (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))

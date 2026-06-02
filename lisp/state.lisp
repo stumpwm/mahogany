@@ -80,8 +80,11 @@
       state
     (let ((mh-output (hrt:make-output hrt-output)))
       (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
-      ;; TODO: Pick a configuration to use instead of passing nil:
-      (hrt:output-init mh-output nil)
+      (hrt:output-init mh-output
+                       (let ((output-match-data (find-output-config mh-output)))
+                         (if output-match-data
+                             (output-match-data-config output-match-data)
+                             nil)))
       (vector-push-extend mh-output outputs)
       (loop for g across groups
             do (group-add-output g mh-output (server-seat state))))))
