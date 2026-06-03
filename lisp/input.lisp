@@ -125,7 +125,7 @@ Values:
      (event :pointer))
     ()
   (declare (optimize (speed 3)))
-  (when (logand *keyboard-focus-bits* +wheel-mask+)
+  (when (not (zerop (logand *keyboard-focus-bits* +wheel-mask+)))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
 
@@ -134,7 +134,7 @@ Values:
      (event :pointer))
     ()
   (declare (optimize (speed 3)))
-  (when (logand *keyboard-focus-bits* +click-mask+)
+  (when (not (zerop (logand *keyboard-focus-bits* +click-mask+)))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
 
