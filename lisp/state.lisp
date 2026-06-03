@@ -22,11 +22,13 @@
       default-group)))
 
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
+			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (state-server state) server)
   (hrt:server-init server
-                   output-callbacks seat-callbacks view-callbacks
-                   debug-level)
+                       output-callbacks seat-callbacks view-callbacks
+		       layer-shell-callbacks
+                       debug-level)
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (state-current-group state) default-group)))
 
@@ -153,11 +155,20 @@
         (log-string :error "could not find group to delete"))))
 
 (defun mahogany-state-output-reconfigure (state)
-  (log-string :trace "Output layout changed!")
   (hrt:with-view-transaction ()
     (with-accessors ((groups state-groups)) state
       (loop for g across groups
             do (group-reconfigure-outputs g (state-outputs state))))))
+
+(defun mahogany-state-layers-arrange (state hrt-output)
+  (declare (type mahogany-state state))
+  (let ((output (%find-output hrt-output (state-outputs state))))
+    (log-string :debug "layer shell layers re-arranged on output ~S"
+                (hrt:output-full-name output))
+    (hrt:with-view-transaction ()
+      (with-accessors ((groups state-groups)) state
+        (loop for g across groups
+              do (group-rearrange-output g output))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
@@ -277,3 +288,35 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       ;; some sort of usable error message?
       ;; Either that, or just turn this into a warning or return a boolean?
       (error 'xkb:keymap-creation-error))))
+
+(defun %get-or-autoassign-output (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
+      (with-accessors ((outputs state-outputs)) state
+        (the (or hrt:output null) (%find-output hrt-output outputs)))
+    (let ((current-output (group-current-output (state-current-group state))))
+      ;; TODO: try to use the fallback output:
+      (unless current-output
+	    (log-string :error "Could not auto-assign output to layer surface")
+	    (return-from %get-or-autoassign-output nil))
+      (hrt:hrt-layer-shell-surface-set-output hrt-layer-shell
+                                              (hrt:output-hrt-output current-output))
+      (the hrt:output current-output))))
+
+(defun mahogany-state-layer-shell-handle (state hrt-layer-shell)
+  (declare (type mahogany-state state))
+  (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
+    (progn
+      (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
+      (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
+    (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
+
+(defun state-layer-surface-add (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (setf (gethash hrt-layer-surface surfaces) (hrt::make-layer-surface hrt-layer-surface))))
+
+(defun state-layer-surface-remove (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (remhash hrt-layer-surface surfaces)))
