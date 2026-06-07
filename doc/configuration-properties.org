@@ -1,7 +1,12 @@
-#+TITLE: Configuration
+* Configuration Properties
 
-Mahogany is configured by setting various properties via Common Lisp
-code. To get the full list of available properties, evaluate the
+One of the main ways that mahogany can be customized is through the
+use of /configuration properties/. These properties can be searched,
+viewed and modified through a series of functions and macros.
+
+** Discovering Configuration Properties
+
+To get the full list of available properties, evaluate the
 function =describe-all-config-info=:
 
 #+BEGIN_SRC lisp
@@ -14,12 +19,6 @@ You can specify a regex to search by name or package using keyword parameters:
 (config-system:describe-all-config-info :name-matches ".*" :package-matches ".*")
 #+END_SRC
 
-** Setting Configuration Properties
-
-Mahogany configuration properties are strongly typed,
-and it is recommended to use the various setter macros that are
-available to avoid causing problems with the system.
-
 *** =describe-config=
 This macro prints information about the configuration variable to the
 provided stream, which defaults to =*standard-output*=
@@ -28,13 +27,19 @@ provided stream, which defaults to =*standard-output*=
   (config-system:describe-config 'config-property)
 #+END_SRC
 
+** Setting Configuration Properties
+
+Mahogany configuration properties are strongly typed,
+and it is recommended to use the various setter macros that are
+available to avoid causing problems with the system.
+
 *** =set-config=
 The macro =set-config= works the same as =setf=, and sets each
 property given to it sequentially:
 
 #+BEGIN_SRC lisp
   (set-config property-1 val-1
-  	    property-2 val-2)
+  			property-2 val-2)
 #+END_SRC
 
 *** =with-atomic-update=
@@ -57,7 +62,7 @@ their original values if an error occurs during the form's execution.
 
 #+BEGIN_SRC lisp
   (set-config-atomic prop-1 val-1
-  		   prop-2 val-2)
+  				   prop-2 val-2)
 #+END_SRC
 
 ** Error Handling

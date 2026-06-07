@@ -1,0 +1,9 @@
+#+TITLE: Mahogany Configuration Manual
+#+OPTIONS: toc:2 num:2 html-self-link-headlines:t
+
+#+INCLUDE: "configuration-files.org"
+#+INCLUDE: "configuration-properties.org"
+#+INCLUDE: "keybindings.org"
+#+INCLUDE: "keyboard-layout.org"
+#+INCLUDE: "kmap-modes.org"
+#+INCLUDE: "output-configuration.org"
