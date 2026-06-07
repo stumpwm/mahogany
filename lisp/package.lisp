@@ -18,6 +18,6 @@
            #:*debug-map*))
 
 (defpackage #:mahogany-user
-  (:use :cl
-        #:mahogany)
+  (:use :cl)
+  (:local-nicknames (#:mh #:mahogany))
   (:documentation "User package for the mahogany system."))
