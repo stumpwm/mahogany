@@ -1,4 +1,4 @@
-#+TITLE: Customizing Keybindings
+* Customizing Keybindings
 
 In Mahogany, keyboard shortcuts are implemented via /keybindings/,
 which are defined as a mapping between a /key/ and commands in a

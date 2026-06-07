@@ -1,0 +1,91 @@
+* Configuration Files
+
+** Init File
+
+Mahogany is configured via Common Lisp code evaluated at
+startup via an initialization script. This script is found at
+=~/.config/mahogany/init.lisp=, although the location can be
+customized as laid out in the [[https://specifications.freedesktop.org/basedir/latest/][XDG Base Directory Specification]]. It is
+here that you customize colors, keybindings, mouse focus behavior, and
+many other parts of the compositor.
+
+To skip loading the init file, you can pass =-q= or =--no-init-file=
+to Mahogany when starting it.
+
+** Authoring Init files
+
+Init files are composed of Common Lisp code, and should be formatted
+and laid out as such.
+
+*** Mahogany User Package
+
+To avoid initialization code interfering with other parts of the
+system, it's best to use a different [[https://lispcookbook.github.io/cl-cookbook/packages.html][package]] from the default.
+The =mahogany-user= package is predefined and sets up some package
+local nicknames that make using the system a bit more consise. To use
+it, add the following to the top of your init file:
+
+#+BEGIN_SRC lisp
+  (in-package :mahogany-user)
+#+END_SRC
+
+This package notably adds a local nickname for the =mahogany= package
+so that it is abbreviated to just =mh=.
+
+*** Public vs Private interfaces
+
+Mahogany is currently in a pre-alpha state, and the APIs it exposes may
+change significantly over the course of development. We will make sure
+to document these changes between releases, but these interfaces may
+change at any time. To separate interfaces that are declared stable
+from unstable or dangerouse APIs, stable interfaces are exported from
+the =mahogany= package.
+
+To use a stable feature of mahogany, the symbol can be accessed via a
+single colon after the package name, and a double colon for unstable symbols:
+
+#+BEGIN_SRC lisp
+  (mh:add-to-kmap mahogany:*root-map*
+    (kbd "e") #'mh::open-terminal)
+#+END_SRC
+
+Reading the code above, the =add-to-kmap= symbol is exported and
+declared stable, while the =open-terminal= symbol is private and
+therefore unstable.
+
+** More Context and Advance Usage
+
+*** Symbols and Packages in Common Lisp
+
+Objects in Common lisp are identified via /symbols/. Symbols can represent
+variables, functions, types and a few other entities, and are how
+things are identified within the language. Each symbol is found in a
+/package/, which controls which symbols are visible at any given
+time. Only symbols within the current package are directly available;
+symbols in other packages need to be prefixed by their package
+identifier in order to be referenced. For example, while in the
+default =CL-USER= package, exported symbols in the mahogany package can be
+referenced by appending =mahogany= to the to the symbol name:
+=mahogany:kbd=. Non-exported symbols can be referenced using two
+colons instead of of one: =mahogany::define-kmap-mode=.
+
+*** Defining your own configuration package
+
+For whatever reason, you may want to define your own configuraiton
+package instead of using the provided =mahogany-user= one. To do so,
+use the =defpackage= form:
+
+#+BEGIN_SRC lisp
+    (defpackage :my-config
+      (:use :cl)
+      ;; Instead of USEing the mahogany package,
+      ;; it's best to give it a nickname to make
+      ;; it easier to type:
+      (:local-nicknames (#:mh #:mahogany)))
+
+    (in-package :my-config)
+#+END_SRC
+
+While you can =USE= the mahogany package to save some typing, it's
+[[https://gist.github.com/phoe/2b63f33a2a4727a437403eceb7a6b4a3][recommended to give it a short nickname]] as what was done in this
+example instead.

@@ -1,6 +1,6 @@
-#+TITLE: Output Configuration
+* Output Configuration
 
-* Configuring individual Outputs
+** Configuring individual Outputs
 
 To configure the position, scale, resolution and refresh rate of an
 output, you can use the =define-output-config= macro:
@@ -19,7 +19,7 @@ a list specifying the name, make, model or serial of the output. The
 rest of the arguments allow you to define the output's scale,
 resolution and position.
 
-** Grammar
+*** Grammar
 
 The grammar for this macro is as follows:
 

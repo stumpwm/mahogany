@@ -1,4 +1,4 @@
-#+TITLE: Keymap modes
+* Keymap modes
 
 It's possbile to bundle keymaps into =kmap-modes=, which allow those
 keymaps to be enabled or disabled by calling a function. To define a
@@ -15,7 +15,7 @@ keymap mode, use the =define-kmap-mode= macro:
 
 The macro takes the name of the mode, as well as three optional
 keyword arguments:
-+ =documentation= :: The documentatoin associated with this mode
++ =documentation= :: The documentation associated with this mode
 + =top-binding= :: The keymap the gets bound to the top level when
   the mode is activated
 + =prefix-binding= :: The keymap that gets bound behind the prefix key

@@ -1,4 +1,4 @@
-#+TITLE: Keyboard Layout
+* Keyboard Layout
 
 It's possible to customize the keyboard layout mahogany uses via the
 =mahogany-set-keymap= function. Please consult the [[https://xkbcommon.org/doc/current/index.html][libxkbcommon]]
