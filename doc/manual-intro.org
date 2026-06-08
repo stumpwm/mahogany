@@ -1,4 +1,12 @@
+# This document serves as a stub to initialize org export settings.
+# It is intentionally left with just a title. See the org files in
+# ./manual/ for the rest of the document.
+
 #+TITLE: Mahogany Configuration Manual
+
+This document describes the mechanisms that can be used to configure
+and customize the Mahogany Wayland compositor.
+
 #+OPTIONS: toc:2 num:2 html-self-link-headlines:t
 
 #+HTML_HEAD: <style>

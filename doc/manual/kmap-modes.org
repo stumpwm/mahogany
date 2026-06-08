@@ -1,6 +1,6 @@
 * Keymap modes
 
-It's possbile to bundle keymaps into =kmap-modes=, which allow those
+It's possbile to bundle keymaps into a =kmap-mode=, which allow those
 keymaps to be enabled or disabled by calling a function. To define a
 keymap mode, use the =define-kmap-mode= macro:
 

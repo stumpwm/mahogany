@@ -6,9 +6,9 @@ datastructure called a /keymap/.
 
 By default, there are two keymaps enabled on startup:
 
-+ *root-map* :: To activate these keybindings, you must first press
++ =*root-map*= :: To activate these keybindings, you must first press
   the =prefix-key=, which is bound by default to =C-t=.
-+ *top-map* :: Bindings made on this keymap are executed without the
++ =*top-map*= :: Bindings made on this keymap are executed without the
   prefix key, so that pressing those keys will execute the given
   commands.
 
