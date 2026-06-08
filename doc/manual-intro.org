@@ -1,0 +1,16 @@
+#+TITLE: Mahogany Configuration Manual
+#+OPTIONS: toc:2 num:2 html-self-link-headlines:t
+
+#+HTML_HEAD: <style>
+#+HTML_HEAD_EXTRA: .outline-2 { border-top: 1px solid black; }
+#+HTML_HEAD_EXTRA: .h3 a, h4 a { color: black; text-decoration: none;
+#+HTML_HEAD_EXTRA: }
+#+HTML_HEAD_EXTRA: #text-table-of-contents > ul {
+#+HTML_HEAD_EXTRA:  > li {
+#+HTML_HEAD_EXTRA:    margin-bottom: .5em;
+#+HTML_HEAD_EXTRA:    > a {
+#+HTML_HEAD_EXTRA:      font-weight: bold;
+#+HTML_HEAD_EXTRA:    }
+#+HTML_HEAD_EXTRA:  }
+#+HTML_HEAD_EXTRA: }
+#+HTML_HEAD_EXTRA: </style>

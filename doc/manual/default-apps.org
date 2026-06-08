@@ -1,4 +1,4 @@
-#+TITLE: Default Applications
+* Default Applications
 
 Mahogany assumes several applications are installed by default. This
 is a guide on how to customize those applications.
