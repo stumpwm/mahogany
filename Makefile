@@ -15,6 +15,10 @@ CACHE := $(BUILD_DIR)/internal
 HRT_INCLUDES = $(shell find $(ROOT)/heart/include/hrt/ -type f)
 # WLR_INCLUDES = $(shell find $(ROOT)/heart/subprojects/wlroots/include/wlr/ -type f)
 
+MANUAL_ORG_FILES = $(shell find doc/manual -path "doc/devel" -prune -type f -o -name "*.org" | sort)
+
+.PHONY: doc run runNoExec clean test
+
 $(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
 
@@ -40,15 +44,36 @@ run: $(BUILD_DIR)/mahogany
 runNoExec: $(BUILD_DIR)/heart/lib64/libheart.so
 	LD_LIBRARY_PATH=build/lib/ $(call $(LISP),run-main.lisp)
 
-clean: FORCE
+clean:
 	ninja -C $(BUILD_DIR)/heart clean
 	rm -f $(BUILD_DIR)/mahogany
 	rm -rf $(BUILD_DIR)/lib64
 	rm -rf $(BUILD_DIR)/include
 	rm -rf $(BUILD_DIR)/install_output.txt
 	rm -rf $(BUILD_DIR)/asdf-cache/*
+	rm -rf $(BUILD_DIR)/doc
 
 test: $(BUILD_DIR)/heart/lib64/libheart.so
 	$(call $(LISP),run-tests.lisp)
+
+$(BUILD_DIR)/doc:
+	mkdir -p $@
+
+$(BUILD_DIR)/doc/mahogany-manual.org: doc/manual-intro.org $(BUILD_DIR)/doc $(MANUAL_ORG_FILES)
+	cat $< $(MANUAL_ORG_FILES) > $@
+
+$(BUILD_DIR)/doc/mahogany-manual.texi: $(BUILD_DIR)/doc/mahogany-manual.org
+	emacs $< --batch --kill --eval "(require 'ox-texinfo)" --eval "(org-texinfo-export-to-texinfo)" --kill
+
+$(BUILD_DIR)/doc/mahogany-manual.pdf: $(BUILD_DIR)/doc/mahogany-manual.texi
+	makeinfo --pdf $< -o $@
+
+$(BUILD_DIR)/doc/mahogany-manual.html: $(BUILD_DIR)/doc/mahogany-manual.org
+	emacs $< --batch -f package-initialize -f org-html-export-to-html --kill
+
+$(BUILD_DIR)/doc/mahogany-manual-texinfo.html: $(BUILD_DIR)/doc/mahogany-manual.texi
+	makeinfo --html --no-split $< -o $@
+
+doc: $(BUILD_DIR)/doc/mahogany-manual.html $(BUILD_DIR)/doc/mahogany-manual.pdf $(BUILD_DIR)/doc/mahogany-manual-texinfo.html
 
 FORCE: ;

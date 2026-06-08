@@ -22,7 +22,7 @@ and laid out as such.
 To avoid initialization code interfering with other parts of the
 system, it's best to use a different [[https://lispcookbook.github.io/cl-cookbook/packages.html][package]] from the default.
 The =mahogany-user= package is predefined and sets up some package
-local nicknames that make using the system a bit more consise. To use
+local nicknames that make using the system a bit more concise. To use
 it, add the following to the top of your init file:
 
 #+BEGIN_SRC lisp
@@ -38,7 +38,7 @@ Mahogany is currently in a pre-alpha state, and the APIs it exposes may
 change significantly over the course of development. We will make sure
 to document these changes between releases, but these interfaces may
 change at any time. To separate interfaces that are declared stable
-from unstable or dangerouse APIs, stable interfaces are exported from
+from unstable or dangerous APIs, stable interfaces are exported from
 the =mahogany= package.
 
 To use a stable feature of mahogany, the symbol can be accessed via a
@@ -71,7 +71,7 @@ colons instead of of one: =mahogany::define-kmap-mode=.
 
 *** Defining your own configuration package
 
-For whatever reason, you may want to define your own configuraiton
+For whatever reason, you may want to define your own configuration
 package instead of using the provided =mahogany-user= one. To do so,
 use the =defpackage= form:
 
