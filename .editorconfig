@@ -10,3 +10,6 @@ indent_style = space
 [*.c]
 indent_size = 4
 max_line_length = 80
+
+[Makefile]
+indent_style = unset
