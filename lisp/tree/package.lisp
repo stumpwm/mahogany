@@ -51,6 +51,8 @@
            #:frame-prev
            #:frame-find-layer
            #:find-frame-if
+           #:border-box-style-create
+           #:border-box-style-update
            #:output-node
            #:output-node-output
            #:set-fullscreen

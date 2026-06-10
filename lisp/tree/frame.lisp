@@ -417,7 +417,9 @@ Used to initially split all frames, regardless of type."
   "Remove the views stored in the frame. When a frame is removed,
 REMOVE-FUNC is called with one argument: the view that was removed."
   (foreach-leaf (f frame)
-    (funcall cleanup-func f)))
+    (log-string :trace "Cleaning up frame ~S" frame)
+    (funcall cleanup-func f)
+    (cleanup-frame f)))
 
 (defmethod remove-frame-from-parent :before (parent (frame frame) cleanup-func)
   (declare (ignore cleanup-func))
@@ -469,11 +471,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       (setf (%frame-next frame-prev) frame-next
             (%frame-prev frame-next) frame-prev))))
 
-(defmethod replace-frame ((root frame) frame &optional (cleanup-func #'identity))
-  (unless (eql root frame)
-    (funcall cleanup-func frame)
-    (%replace-frame frame frame)))
-
 (defmethod replace-frame ((root tree-frame) frame &optional (cleanup-func #'identity))
   (let ((stack (tree-children root)))
     (iter (for child = (pop stack))
@@ -483,6 +480,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
               (tree-frame
                (alexandria:appendf stack (tree-children child)))
               (frame
+               (cleanup-frame child)
                (funcall cleanup-func child))))))
   (%replace-frame root frame))
 
