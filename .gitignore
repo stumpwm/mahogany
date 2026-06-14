@@ -19,5 +19,8 @@ build/
 .ccls-cache
 .cache
 
-compile_commands.json# OCICL Package management
+compile_commands.json
+
+# Package management
 ocicl/
+/.qlot/

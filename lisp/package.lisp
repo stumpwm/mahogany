@@ -5,6 +5,10 @@
         #:mahogany/wm-interface
         #:mahogany/util
         #:mahogany/keyboard)
+  (:import-from #:cl-interactive/input-method
+                #:input-method
+                #:prepare-completions-for-input-method
+                #:input-method-read)
   (:local-nicknames (#:tree #:mahogany/tree)
                     (#:colors #:cl-colors2)
                     (#:config #:config-system))

@@ -1,68 +1,88 @@
 (in-package #:mahogany)
 
+(defcommand run-shell-command
+    ((shell-command (:function interactively-read-string "Exec: ")))
+  (:method ((exec string))
+    (uiop:launch-program exec)))
+
 (defcommand handle-server-stop ()
-  (server-stop *compositor-state*))
+  (:method ()
+    (server-stop *compositor-state*)))
 
 (defcommand open-terminal ()
-  (mh-sys:open-terminal))
+  (:method ()
+    (mh-sys:open-terminal)))
 
 (defcommand split-frame-h ()
-  "Split the current frame horizontally"
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (when frame
-      (tree:split-frame-h frame :direction :right))))
+  (:documentation "Split the current frame horizontally")
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (when frame
+        (tree:split-frame-h frame :direction :right)))))
 
 (defcommand split-frame-v ()
-  "Split the current frame horizontally"
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (when frame
-      (tree:split-frame-v frame :direction :bottom))))
+  (:documentation "Split the current frame horizontally")
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (when frame
+        (tree:split-frame-v frame :direction :bottom)))))
 
 (defcommand maximize-current-frame ()
-  (let ((group (state-current-group *compositor-state*)))
-    (group-maximize-current-frame group)))
+  (:method ()
+    (let ((group (state-current-group *compositor-state*)))
+      (group-maximize-current-frame group))))
 
 (defcommand close-current-view ()
-  (let ((frame (mahogany-current-frame *compositor-state*)))
-    (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
-      (hrt:view-request-close view))))
+  (:method ()
+    (let ((frame (mahogany-current-frame *compositor-state*)))
+      (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
+        (hrt:view-request-close view)))))
 
 (defcommand next-view ()
-  "Raise the next hidden view in the current group"
-  (let ((group (state-current-group *compositor-state*)))
-    (group-next-hidden group)))
+  (:documentation "Raise the next hidden view in the current group")
+  (:method ()
+    (let ((group (state-current-group *compositor-state*)))
+      (group-next-hidden group))))
 
 (defcommand previous-view ()
-  "Raise the next hidden view in the current group"
-  (let ((group (state-current-group *compositor-state*)))
-    (group-previous-hidden group)))
+  (:documentation "Raise the next hidden view in the current group")
+  (:method ()
+    (let ((group (state-current-group *compositor-state*)))
+      (group-previous-hidden group))))
 
-(defcommand next-frame (:seat seat)
-  (let ((group (state-current-group *compositor-state*)))
-    (group-next-frame group seat)))
+(defcommand next-frame (seat)
+  (:method (seat)
+    (let ((group (state-current-group *compositor-state*)))
+      (group-next-frame group seat))))
 
-(defcommand prev-frame (:seat seat)
-  (let ((group (state-current-group *compositor-state*)))
-    (group-prev-frame group seat)))
+(defcommand prev-frame (seat)
+  (:method (seat)
+    (let ((group (state-current-group *compositor-state*)))
+      (group-prev-frame group seat))))
 
 (defcommand gnew ()
-  (mahogany-state-group-add *compositor-state*))
+  (:method ()
+    (mahogany-state-group-add *compositor-state*)))
 
 (defcommand gkill ()
-  (let ((current-group (state-current-group *compositor-state*)))
-    (mahogany-state-group-remove *compositor-state* current-group)))
+  (:method ()
+    (let ((current-group (state-current-group *compositor-state*)))
+      (mahogany-state-group-remove *compositor-state* current-group))))
 
 (defcommand gnext ()
-  (state-next-hidden-group *compositor-state*))
+  (:method ()
+    (state-next-hidden-group *compositor-state*)))
 
 (defcommand gprev ()
-  (state-next-hidden-group *compositor-state*))
+  (:method ()
+    (state-next-hidden-group *compositor-state*)))
 
 #+:hrt-debug
 (defcommand add-output ()
-  (if (hrt:hrt-add-output (state-server *compositor-state*))
-      (log-string :info "Output not added")
-      (log-string :info "Output added")))
+  (:method ()
+    (if (hrt:hrt-add-output (state-server *compositor-state*))
+        (log-string :info "Output not added")
+        (log-string :info "Output added"))))
 
 #+:hrt-debug
 (defvar *debug-map*
@@ -78,6 +98,8 @@
 
 (defvar *root-map*
   (define-kmap
+    (kbd "!") #'run-shell-command
+    (kbd ";") #'colon
     (kbd "o") #'next-frame
     (kbd "O") #'prev-frame
     (kbd "q") #'handle-server-stop

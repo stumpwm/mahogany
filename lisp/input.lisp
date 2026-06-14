@@ -48,14 +48,6 @@ Values:
                ((= *keyboard-focus-bits* 0)
                 :ignore)))))
 
-(defun execute-command (function key-sequence seat)
-  (hrt:with-view-transaction ()
-    (handler-case
-        (funcall function key-sequence seat)
-      (invalid-operation (condition)
-        (toast-message *compositor-state* (condition-text condition)
-                       :theme *message-error-theme*)))))
-
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))
            (type key-state key-state)

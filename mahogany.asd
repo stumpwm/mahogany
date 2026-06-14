@@ -21,6 +21,7 @@
                #:fset
                #:bordeaux-threads
                #:float-features
+               #:cl-interactive
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"
@@ -69,11 +70,19 @@
                                      (:file "output-node" :depends-on ("tree-interface"))
                                      (:file "frame" :depends-on ("tree-interface"))
                                      (:file "view" :depends-on ("tree-interface"))))
+               (:module input-methods
+                :depends-on ("package")
+                ;; It would be cool to figure out module loading
+                ;; so that we could have a bunch of input methods
+                ;; but not have them loaded until needed:
+                :components ((:file "rofi-input-method")
+                             #+sbcl
+                             (:file "foot-input-method")))
                (:file "package")
-               (:file "command")
+               (:file "command" :depends-on ("input-methods" "globals" "message"))
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "output-config" :depends-on ("heart"))
-               (:file "message" :depends-on ("heart"))
+               (:file "message" :depends-on ("heart" "config"))
                (:file "group" :depends-on ("objects" "heart" "globals"))
                (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))
                (:file "globals" :depends-on ("objects" "system"))
