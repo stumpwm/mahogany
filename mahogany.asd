@@ -79,10 +79,10 @@
                              #+sbcl
                              (:file "foot-input-method")))
                (:file "package")
-               (:file "command" :depends-on ("input-methods"))
+               (:file "command" :depends-on ("input-methods" "globals" "message"))
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "output-config" :depends-on ("heart"))
-               (:file "message" :depends-on ("heart"))
+               (:file "message" :depends-on ("heart" "config"))
                (:file "group" :depends-on ("objects" "heart" "globals"))
                (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))
                (:file "globals" :depends-on ("objects" "system"))

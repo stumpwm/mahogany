@@ -99,6 +99,7 @@
 (defvar *root-map*
   (define-kmap
     (kbd "!") #'run-shell-command
+    (kbd ";") #'colon
     (kbd "o") #'next-frame
     (kbd "O") #'prev-frame
     (kbd "q") #'handle-server-stop

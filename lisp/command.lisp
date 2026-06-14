@@ -16,6 +16,12 @@
   (declare (ignore com arg))
   (cl-interactive:input-method-read im prompt :require-match nil))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun read-command-name (command input-method arg prompt)
+    (declare (ignore command arg))
+    (cl-interactive:completing-read input-method prompt
+                                    :completions cl-interactive:*default-command-database*)))
+
 (defmacro defcommand (name args &body impl)
   "Define a command that can be invoked interactively via a keybinding.
 
@@ -66,6 +72,14 @@ See the documentation for cl-interactive:define-command for more details.
                     (toast-message *compositor-state* (condition-text condition)
                                    :theme *message-error-theme*))))))))))))
 
-(defcommand colon ((cmd-line (:function #'read-command-name ": ")))
-  (:method ((exec string))
-    (toast-message *compositor-state* exec)))
+(defcommand colon (sequence
+                   seat
+                   (cmd-line (:function read-command-name ": ")))
+  (:method (sequence seat (exec string))
+    (let ((cmd (cl-interactive:find-command cl-interactive:*default-command-database*
+                                            exec)))
+      (if cmd
+          (execute-command cmd sequence seat)
+          (toast-message *compositor-state*
+                         (format nil "Command not found: ~A" exec)
+                         :theme *message-error-theme*)))))
