@@ -46,6 +46,7 @@ struct hrt_seat {
 
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
+    size_t cursor_img_buf_len;
 
     struct {
         struct wl_listener seat;
