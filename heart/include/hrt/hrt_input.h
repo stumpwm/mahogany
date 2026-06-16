@@ -47,6 +47,7 @@ struct hrt_seat {
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
     size_t cursor_img_buf_len;
+    bool grabbed;
 
     struct {
         struct wl_listener seat;
@@ -89,19 +90,21 @@ struct hrt_input {
 
 /**
  * Send the appropriate cursor event to the view under the
- * cursor.
+ * cursor and ensure the cursor has the correct image
+ * for what it is hovering over.
  **/
 void hrt_seat_reset_view_under(struct hrt_seat *seat);
 
 /**
- * Set the seat's default cursor image to the given cursor name.
- *
- * Does not take ownership of the string.
- *
- * See themes section of man xcursor(3) to find where to find valid cursor
- * names.
- */
-void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name);
+ * Unfocus all clients and prevent input events from being emitted
+ * and set the cursor image to the given image name.
+ **/
+void hrt_seat_grab(struct hrt_seat *seat, char *img_name);
+
+/**
+ * Reactivate input events and return to normal cursor image behavior.
+ **/
+void hrt_seat_ungrab(struct hrt_seat *seat);
 
 void hrt_seat_notify_button(struct hrt_seat *seat,
                             struct wlr_pointer_button_event *event);

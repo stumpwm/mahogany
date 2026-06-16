@@ -34,6 +34,7 @@
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
   (cursor-image (:pointer :char))
   (cursor-img-buf-len :size)
+  (grabbed :bool)
   (destroy (:struct hrt-seat-destroy)))
 
 (cffi:defcstruct hrt-keypress-info
@@ -57,7 +58,8 @@
 (declaim (inline hrt-seat-reset-view-under))
 (cffi:defcfun ("hrt_seat_reset_view_under" hrt-seat-reset-view-under) :void
   "Send the appropriate cursor event to the view under the
-cursor."
+cursor and ensure the cursor has the correct image
+for what it is hovering over."
   (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
@@ -71,6 +73,23 @@ See themes section of man xcursor(3) to find where to find valid cursor
 names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-reset-cursor-img))
+(cffi:defcfun ("hrt_seat_reset_cursor_img" hrt-seat-reset-cursor-img) :void
+  "Set the cursor image back to the default."
+  (seat (:pointer (:struct hrt-seat))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-grab))
+(cffi:defcfun ("hrt_seat_grab" hrt-seat-grab) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (img-name (:pointer :char)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-ungrab))
+(cffi:defcfun ("hrt_seat_ungrab" hrt-seat-ungrab) :void
+  (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
 (declaim (inline hrt-seat-notify-button))

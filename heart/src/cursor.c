@@ -1,4 +1,3 @@
-#include "hrt/hrt_view.h"
 #include "wlr/util/log.h"
 #include <wayland-util.h>
 #include <wlr/types/wlr_xcursor_manager.h>
@@ -42,35 +41,40 @@ static void *find_view_at(struct hrt_server *server, double lx, double ly,
 }
 
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {
-    double sx, sy;
-    struct wlr_surface *found_surface = NULL;
-    void *view = find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
-                              &found_surface, &sx, &sy);
-    if (!view) {
-        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                               seat->cursor_image);
-    }
-    if (found_surface) {
-        wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
-    } else {
-        wlr_seat_pointer_clear_focus(seat->seat);
+    if (!seat->grabbed) {
+        double sx, sy;
+        struct wlr_surface *found_surface = NULL;
+        void *view = find_view_at(seat->server, seat->cursor->x,
+                                  seat->cursor->y, &found_surface, &sx, &sy);
+
+        if (!view) {
+            wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                                   seat->cursor_image);
+        }
+        if (found_surface) {
+            wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
+        } else {
+            wlr_seat_pointer_clear_focus(seat->seat);
+        }
     }
 }
 
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
-    double sx, sy;
-    struct wlr_surface *found_surface = NULL;
-    void *view = find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
-                              &found_surface, &sx, &sy);
-    if (!view) {
-        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                               seat->cursor_image);
-    }
-    if (found_surface) {
-        wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
-        wlr_seat_pointer_notify_motion(seat->seat, time, sx, sy);
-    } else {
-        wlr_seat_pointer_clear_focus(seat->seat);
+    if (!seat->grabbed) {
+        double sx, sy;
+        struct wlr_surface *found_surface = NULL;
+        void *view = find_view_at(seat->server, seat->cursor->x,
+                                  seat->cursor->y, &found_surface, &sx, &sy);
+        if (!view) {
+            wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                                   seat->cursor_image);
+        }
+        if (found_surface) {
+            wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
+            wlr_seat_pointer_notify_motion(seat->seat, time, sx, sy);
+        } else {
+            wlr_seat_pointer_clear_focus(seat->seat);
+        }
     }
 }
 
@@ -92,17 +96,20 @@ static void seat_motion_absolute(struct wl_listener *listener, void *data) {
 
 static void seat_button(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, button);
-    struct wlr_pointer_button_event *event = data;
-    /* Notify the client with pointer focus that a button press has occurred */
+    if (!seat->grabbed) {
+        struct wlr_pointer_button_event *event = data;
 
-    seat->callbacks->button_event(seat, event);
+        /* Notify the client with pointer focus that a button press has occurred */
+        seat->callbacks->button_event(seat, event);
+    }
 }
 
 static void seat_axis(struct wl_listener *listener, void *data) {
-    struct hrt_seat *seat             = wl_container_of(listener, seat, axis);
-    struct wlr_pointer_axis_event *ev = data;
-
-    seat->callbacks->wheel_event(seat, ev);
+    struct hrt_seat *seat = wl_container_of(listener, seat, axis);
+    if (!seat->grabbed) {
+        struct wlr_pointer_axis_event *ev = data;
+        seat->callbacks->wheel_event(seat, ev);
+    }
 }
 
 static void seat_frame(struct wl_listener *listener, void *data) {

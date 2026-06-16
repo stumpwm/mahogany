@@ -59,6 +59,8 @@
                               :depends-on ("cffi-util" "hrt-bindings" "output"))
                              (:file "border-box"
                               :depends-on ("cffi-util" "hrt-bindings"))
+                             (:file "seat"
+                              :depends-on ("package"))
                              (:file "server"
                               :depends-on ("package" "hrt-bindings" "callback"))
                              (:file "layer-shell")

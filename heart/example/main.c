@@ -102,8 +102,6 @@ static void view_destroy_callback(struct hrt_view *view) {
     puts("View destroy callback called");
 }
 
-static bool showNormalCursor = true;
-
 static const char *gravity_names[] = {
     "top right",
     "top left",
@@ -156,12 +154,7 @@ static bool keyboard_callback(struct hrt_seat *seat,
         char buffer[20];
         xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
         printf(" %s", buffer);
-        if (strcmp(buffer, "c") == 0) {
-            puts("Changing Cursor\n");
-            hrt_seat_set_cursor_img(
-                seat, showNormalCursor ? "context-menu" : "left_ptr");
-            showNormalCursor = !showNormalCursor;
-        } else if (strcmp(buffer, "m") == 0 && server.current_output != NULL) {
+        if (strcmp(buffer, "m") == 0 && server.current_output != NULL) {
             show_message();
         } else if (strcmp(buffer, "o") == 0 &&
                    wl_list_length(&server.outputs) > 1) {
