@@ -61,14 +61,17 @@
 
 (defun %find-item (ring-list item test)
   (declare (type ring-list ring-list)
-           (type (or (function (t t) t) symbol) test)
-           (optimize (speed 3) (safety 0)))
+           (type (or function symbol) test)
+           (optimize (speed 3) (safety 1)))
   (with-slots (head) ring-list
     (when head
-      (do* ((cur (ring-item-next head) (ring-item-next cur)))
+      (do* ((cur (ring-item-next head) (ring-item-next cur))
+            (test-fn (if (functionp test)
+                         test
+                         (fdefinition test))))
            (nil)
         (cond
-          ((funcall test (ring-item-item cur) item)
+          ((funcall test-fn (ring-item-item cur) item)
            (return-from %find-item cur))
           ((eql head cur)
            (return-from %find-item nil)))))))
