@@ -37,7 +37,8 @@
 
 (declaim (inline view-reparent))
 (defun view-reparent (view new-parent)
-  (declare (type view view))
+  (declare (type view view)
+           (type cffi:foreign-pointer new-parent))
   (hrt-view-reparent (view-hrt-view view) new-parent))
 
 (declaim (inline view-request-close))

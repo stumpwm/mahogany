@@ -107,6 +107,8 @@ Values:
         (key-state-active-p key-state))))
 
 (defun %focus-frame-under-cursor (seat)
+  (declare (optimize (speed 2)))
+  (declare (type cffi:foreign-pointer seat))
   (let* ((group (state-current-group *compositor-state*))
          (found (tree:frame-at (mahogany-group-tiled-container group)
                                (hrt:hrt-seat-cursor-lx seat)
