@@ -136,8 +136,9 @@ static bool keyboard_callback(struct hrt_seat *seat,
         xkb_keysym_get_name(info->keysyms[i], buffer, sizeof(buffer));
         printf(" %s", buffer);
         if (strcmp(buffer, "c") == 0) {
+            puts("Changing Cursor\n");
             hrt_seat_set_cursor_img(
-                seat, showNormalCursor ? "crossed_circle" : "left_ptr");
+                seat, showNormalCursor ? "context-menu" : "left_ptr");
             showNormalCursor = !showNormalCursor;
         } else if (strcmp(buffer, "m") == 0 && server.current_output != NULL) {
             show_message();
@@ -150,6 +151,12 @@ static bool keyboard_callback(struct hrt_seat *seat,
         }
     }
     puts("\n\n");
+    return false;
+}
+
+static void empty_callback(struct hrt_view *view) {}
+static bool request_fullscreen(struct hrt_view *view, struct hrt_output *output,
+                               bool fullscreen) {
     return false;
 }
 
@@ -168,8 +175,14 @@ static const struct hrt_seat_callbacks seat_callbacks = {
 };
 
 static const struct hrt_view_callbacks view_callbacks = {
-    .new_view       = &new_view_callback,
-    .view_destroyed = &view_destroy_callback,
+    .new_view           = &new_view_callback,
+    .view_size_changed  = &empty_callback,
+    .view_destroyed     = &view_destroy_callback,
+    .view_mapped        = &empty_callback,
+    .view_unmapped      = &empty_callback,
+    .request_minimize   = &empty_callback,
+    .request_maximize   = &empty_callback,
+    .request_fullscreen = &request_fullscreen,
 };
 
 int main(int argc, char *argv[]) {
