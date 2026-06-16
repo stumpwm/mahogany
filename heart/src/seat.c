@@ -1,34 +1,10 @@
 #include <hrt/hrt_input.h>
 
-#include <stdlib.h>
-#include <string.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
-
-void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name) {
-    // Ensure that our buffer is big enough,
-    // unless the string is super big
-    const size_t len = strlen(img_name) + 1;
-    if (len > seat->cursor_img_buf_len) {
-        if (len > 100) {
-            wlr_log(WLR_ERROR, "Ignoring hrt_set_cursor_img: cursor name is unreasonable large: %s",
-                   img_name);
-          return;
-        }
-        char *new_ptr = realloc(seat->cursor_image, len);
-        if (!new_ptr) {
-            wlr_log(WLR_ERROR, "Failed to realloc cursor name buffer");
-            return;
-        }
-    }
-    memcpy(seat->cursor_image, img_name, len);
-
-    wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                           seat->cursor_image);
-}
 
 void hrt_seat_notify_button(struct hrt_seat *seat,
                             struct wlr_pointer_button_event *event) {

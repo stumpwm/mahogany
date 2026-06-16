@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "hrt/hrt_view.h"
 #include "wlr/util/log.h"
 #include <wayland-util.h>
@@ -55,6 +58,40 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat) {
     } else {
         wlr_seat_pointer_clear_focus(seat->seat);
     }
+}
+
+static void seat_set_cursor_img(struct hrt_seat *seat, char *img_name) {
+    // Ensure that our buffer is big enough,
+    // unless the string is super big
+    const size_t len = strlen(img_name) + 1;
+    if (len > seat->cursor_img_buf_len) {
+        if (len > 100) {
+            wlr_log(WLR_ERROR,
+                    "Ignoring hrt_set_cursor_img: cursor name is unreasonable "
+                    "large: %s",
+                    img_name);
+            return;
+        }
+        char *new_ptr = realloc(seat->cursor_image, len);
+        if (!new_ptr) {
+            wlr_log(WLR_ERROR, "Failed to realloc cursor name buffer");
+            return;
+        }
+    }
+    memcpy(seat->cursor_image, img_name, len);
+}
+
+void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name) {
+    seat_set_cursor_img(seat, img_name);
+    wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                           seat->cursor_image);
+}
+
+void hrt_seat_reset_cursor_img(struct hrt_seat *seat) {
+    seat_set_cursor_img(seat, "default");
+    // TODO: investigate; this may send the pointer_enter event
+    // when the pointer is already in the view. Does that matter?
+    hrt_seat_reset_view_under(seat);
 }
 
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {

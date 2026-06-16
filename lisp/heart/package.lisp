@@ -62,6 +62,8 @@
            ;; Seat
            #:hrt-seat
            #:hrt-seat-reset-view-under
+           #:seat-set-cursor-img
+           #:hrt-seat-reset-cursor-img
            #:hrt-seat-notify-button
            #:hrt-seat-notify-axis
            #:hrt-seat-cursor-lx
