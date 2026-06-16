@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/util/log.h>
@@ -240,12 +241,18 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     wl_signal_add(&seat->seat->events.start_drag,
                   &seat->start_drag);
 
-    seat->cursor_image = "left_ptr";
+    const char *const default_cursor = "default";
+    seat->cursor_img_buf_len = strlen(default_cursor) + 1;
+    seat->cursor_image   = calloc(20, sizeof(char));
+    memcpy(seat->cursor_image, default_cursor, seat->cursor_img_buf_len);
 
     return true;
 }
 
 void hrt_seat_destroy(struct hrt_seat *seat) {
+    free(seat->cursor_image);
+    seat->cursor_img_buf_len = 0;
+
     hrt_keyboard_destroy(seat);
     hrt_cursor_destroy(seat);
 

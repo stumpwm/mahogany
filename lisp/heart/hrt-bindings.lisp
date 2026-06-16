@@ -28,7 +28,8 @@
   (request-start-drag (:struct wl-listener))
   (start-drag (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
-  (cursor-image (:pointer :char)))
+  (cursor-image (:pointer :char))
+  (cursor-img-buf-len :size))
 
 (cffi:defcstruct hrt-keypress-info
   (keysyms :pointer #| xkb-keysym-t |#)
