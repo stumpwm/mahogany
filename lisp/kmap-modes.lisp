@@ -103,7 +103,7 @@ the KEYBINDINGS list."
       state
     ;; change the passthrough maps
     (define-key *prefix-passthrough-kmap* prefix-key nil)
-    (define-key *prefix-passthrough-kmap* key #'passthrough-key-event)
+    (define-key *prefix-passthrough-kmap* key :pass-through)
     ;; re-initialize the kmap list:
     (let ((new-bindings nil))
       ;; go backwards so pushing gets us the same order:
