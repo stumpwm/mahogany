@@ -46,6 +46,7 @@ struct hrt_seat {
 
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
+    size_t cursor_img_buf_len;
 };
 
 struct hrt_keypress_info {
@@ -83,7 +84,8 @@ struct hrt_input {
 
 /**
  * Send the appropriate cursor event to the view under the
- * cursor.
+ * cursor and ensure the cursor has the correct image
+ * for what it is hovering over.
  **/
 void hrt_seat_reset_view_under(struct hrt_seat *seat);
 
@@ -96,6 +98,11 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat);
  * names.
  */
 void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name);
+
+/**
+ * Set the cursor image back to the default.
+ **/
+void hrt_seat_reset_cursor_img(struct hrt_seat *seat);
 
 void hrt_seat_notify_button(struct hrt_seat *seat,
                             struct wlr_pointer_button_event *event);

@@ -3,13 +3,8 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
-
-void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name) {
-    seat->cursor_image = img_name;
-    wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                           seat->cursor_image);
-}
 
 void hrt_seat_notify_button(struct hrt_seat *seat,
                             struct wlr_pointer_button_event *event) {

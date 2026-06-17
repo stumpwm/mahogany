@@ -28,7 +28,8 @@
   (request-start-drag (:struct wl-listener))
   (start-drag (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
-  (cursor-image (:pointer :char)))
+  (cursor-image (:pointer :char))
+  (cursor-img-buf-len :size))
 
 (cffi:defcstruct hrt-keypress-info
   (keysyms :pointer #| xkb-keysym-t |#)
@@ -50,7 +51,8 @@
 (declaim (inline hrt-seat-reset-view-under))
 (cffi:defcfun ("hrt_seat_reset_view_under" hrt-seat-reset-view-under) :void
   "Send the appropriate cursor event to the view under the
-cursor."
+cursor and ensure the cursor has the correct image
+for what it is hovering over."
   (seat (:pointer (:struct hrt-seat))))
 
 (declaim (inline hrt-seat-set-cursor-img))
@@ -63,6 +65,11 @@ See themes section of man xcursor(3) to find where to find valid cursor
 names."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
+
+(declaim (inline hrt-seat-reset-cursor-img))
+(cffi:defcfun ("hrt_seat_reset_cursor_img" hrt-seat-reset-cursor-img) :void
+  "Set the cursor image back to the default."
+  (seat (:pointer (:struct hrt-seat))))
 
 (declaim (inline hrt-seat-notify-button))
 (cffi:defcfun ("hrt_seat_notify_button" hrt-seat-notify-button) :void

@@ -54,6 +54,7 @@
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "scene-group"
                                       :depends-on ("cffi-util" "hrt-bindings" "output"))
+                                     (:file "seat" :depends-on ("package"))
                                      (:file "server"
                                       :depends-on ("package" "hrt-bindings" "callback"))
                                      (:file "transaction" :depends-on ("server"))))
