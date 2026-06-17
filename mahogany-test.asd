@@ -5,7 +5,8 @@ This file is a part of mahogany.
 
 (asdf:defsystem #:mahogany-test
   :depends-on (#:mahogany
-	       #:fiasco)
+               #:fiasco
+               #:cl-mock)
   :pathname "test/"
   :serial nil
   :components ((:file "util")

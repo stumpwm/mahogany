@@ -24,6 +24,16 @@ further up. "
           (log-string :info "Did not find config file")
           (values t nil nil)))))
 
+(defun init-frame-border-styles ()
+  (setf tree::*frame-focus-border-style*
+        (hrt:border-box-style-create
+         :hrt-border-solid (cl-colors2:as-rgb "#ACE1AF") ; 9900a4
+         1.5d0)
+        tree::*frame-unfocus-border-style*
+        (hrt:border-box-style-create
+         :hrt-border-dotted (cl-colors2:as-rgb "cccccc")
+         1.0d0)))
+
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
     `(cffi:with-foreign-slots (,vars ,variable ,type)
@@ -46,6 +56,7 @@ further up. "
 
 (defun run-server (args)
   (hrt:load-foreign-libraries)
+  (init-frame-border-styles)
   (log-init :level (intern (gethash 'loglevel args) 'keyword))
   (when (gethash 'enable-debugger args)
     (log-string :info "Running with debugger enabled.")
