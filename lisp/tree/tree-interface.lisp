@@ -70,7 +70,7 @@ should not be directly instantiated; inherit from it instead."))
   (:documentation "A class that contains a frame-tree layer"))
 
 (defun make-layer-container (hrt-group)
-  (let ((hrt-tiled-layer (hrt:hrt-scene-layer-create hrt-group)))
+  (let ((hrt-tiled-layer (hrt:scene-layer-create hrt-group)))
     (make-instance 'layer-container
 	           :hrt-layer hrt-tiled-layer)))
 

@@ -1,7 +1,7 @@
 (in-package #:mahogany)
 
 (defun make-mahogany-group (name number hrt-server)
-  (let* ((hrt-group (hrt:hrt-server-group-create hrt-server))
+  (let* ((hrt-group (hrt:server-group-create hrt-server))
         (tiled-layer (tree:make-layer-container hrt-group)))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)
     (log-string :debug "Created group ~A" name)

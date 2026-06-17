@@ -72,6 +72,10 @@ struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
         return NULL;
     }
     group->layers      = wlr_scene_tree_create(parent->normal);
+    if (!group->layers) {
+        wlr_log(WLR_ERROR, "Could not create wlr_scene_tree for scene group");
+        return nullptr;
+    }
 
     return group;
 }
@@ -106,6 +110,10 @@ struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group) {
 struct hrt_scene_layer *hrt_scene_layer_create(struct hrt_scene_group *group) {
     struct hrt_scene_layer *layer = calloc(1, sizeof(*layer));
     layer->tree                   = wlr_scene_tree_create(group->layers);
+    if (!layer->tree) {
+      wlr_log(WLR_ERROR, "Could not create scene tree for hrt_scene_layer (group %p)", group);
+      return nullptr;
+    }
     return layer;
 }
 

@@ -83,6 +83,7 @@
            #:hrt-server-group-create
            #:hrt-server-seat
            #:server-start
+           #:server-group-create
            #:hrt-server-stop
            #:run-in-main-thread
            ;; Toast messages:
@@ -105,7 +106,7 @@
            #:hrt-scene-group-destroy
            #:hrt-scene-output-create
            #:hrt-scene-output-destroy
-           #:hrt-scene-layer-create
+           #:scene-layer-create
            #:hrt-scene-layer-destroy
            #:scene-layer-add-view
            #:hrt-scene-group-set-enabled

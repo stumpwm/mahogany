@@ -16,7 +16,8 @@
                                                  (output-hrt-output output))))
     (if (not (cffi:null-pointer-p node))
         node
-        (error "Could not allocate fullscreen node."))))
+        (error 'mahogany/util:mahogany-panic
+               :text "Could not allocate fullscreen node."))))
 
 (declaim (inline scene-fullscreen-swap))
 (defun scene-fullscreen-swap (hrt-node view)
@@ -26,3 +27,11 @@
   (declare (type output output)
            (type cffi:foreign-pointer hrt-node))
   (hrt-scene-fullscreen-configure hrt-node (output-hrt-output output)))
+
+(defun scene-layer-create (group)
+  (declare (type cffi:foreign-pointer group))
+  (let ((result (hrt-scene-layer-create group)))
+    (if (not (cffi:null-pointer-p result))
+        result
+        (error 'mahogany/util:mahogany-panic
+               :text "Could not create hrt-scene-layer"))))

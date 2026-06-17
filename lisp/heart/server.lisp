@@ -108,3 +108,11 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   (setf *workqueue-semaphore* nil)
   (setf *hrt-server* nil)
   (hrt-server-finish server))
+
+(defun server-group-create (server)
+  (declare (type cffi:foreign-pointer server))
+  (let ((result (hrt-server-group-create server)))
+    (if result
+        result
+        (error 'mahogany/util:mahogany-panic
+               "Could not make hrt-server-group"))))
