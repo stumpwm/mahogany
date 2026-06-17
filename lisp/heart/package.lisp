@@ -30,6 +30,16 @@
            #:request-fullscreen
            #:view-destroyed
            #:view-mapped-p
+           ;; border box
+           #:border-box-set-style
+           #:border-box-style-create
+           #:border-box-style-update
+           #:border-box-create
+           #:hrt-border-box-destroy
+           #:hrt-border-box-set-size
+           #:hrt-border-box-set-relative
+           #:hrt-border-box-set-enabled
+           ;; Seat
            #:hrt-seat
            #:hrt-seat-reset-view-under
            #:hrt-seat-notify-button
