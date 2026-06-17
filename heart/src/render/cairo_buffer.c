@@ -7,7 +7,7 @@
 /* this will get called whenever wlr_scene_node_destroy() is called on the parent
  * wlr_scene_buffer, or with wlr_buffer_drop() during error handling */
 static void cairo_buffer_destroy(struct wlr_buffer *wlr_buffer) {
-    struct cairo_buffer *buffer = wl_container_of(wlr_buffer, buffer, base);
+    struct hrt_cairo_buffer *buffer = wl_container_of(wlr_buffer, buffer, base);
     wlr_buffer_finish(wlr_buffer);
     if (buffer->surface) {
         cairo_surface_destroy(buffer->surface);
@@ -19,7 +19,7 @@ static bool cairo_buffer_begin_data_ptr_access(struct wlr_buffer *wlr_buffer,
                                                uint32_t flags, void **data,
                                                uint32_t *format,
                                                size_t *stride) {
-    struct cairo_buffer *buffer = wl_container_of(wlr_buffer, buffer, base);
+    struct hrt_cairo_buffer *buffer = wl_container_of(wlr_buffer, buffer, base);
     if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE)
         return false;
 
@@ -37,8 +37,8 @@ static const struct wlr_buffer_impl cairo_buffer_impl = {
     .end_data_ptr_access   = cairo_buffer_end_data_ptr_access,
 };
 
-struct cairo_buffer *cairo_buffer_create(int width, int height) {
-    struct cairo_buffer *buffer = calloc(1, sizeof(*buffer));
+struct hrt_cairo_buffer *hrt_cairo_buffer_create(int width, int height) {
+    struct hrt_cairo_buffer *buffer = calloc(1, sizeof(*buffer));
 
     buffer->surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);

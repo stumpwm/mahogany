@@ -1,5 +1,5 @@
-#ifndef RENDER_SCAL_UTIL_H
-#define RENDER_SCAL_UTIL_H
+#ifndef RENDER_SCALE_UTIL_H
+#define RENDER_SCALE_UTIL_H
 
 #include <wlr/util/box.h>
 #include <wlr/types/wlr_buffer.h>

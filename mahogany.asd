@@ -22,6 +22,7 @@
                #:bordeaux-threads
                #:float-features
                #:cl-interactive
+               #:trivial-garbage
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"
@@ -54,6 +55,7 @@
                                      (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "scene-group"
                                       :depends-on ("cffi-util" "hrt-bindings" "output"))
+                                     (:file "border-box" :depends-on ("cffi-util" "hrt-bindings"))
                                      (:file "server"
                                       :depends-on ("package" "hrt-bindings" "callback"))
                                      (:file "transaction" :depends-on ("server"))))

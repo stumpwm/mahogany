@@ -4,11 +4,11 @@
 #include <wlr/types/wlr_buffer.h>
 #include <cairo.h>
 
-struct cairo_buffer {
+struct hrt_cairo_buffer {
     struct wlr_buffer base;
     cairo_surface_t *surface;
 };
 
-struct cairo_buffer *cairo_buffer_create(int width, int height);
+struct hrt_cairo_buffer *hrt_cairo_buffer_create(int width, int height);
 
 #endif

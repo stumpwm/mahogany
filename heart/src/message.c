@@ -46,14 +46,14 @@ static cairo_font_options_t *get_font_options() {
     return font_options;
 }
 
-static struct cairo_buffer *render_message(const char *text, double scale,
+static struct hrt_cairo_buffer *render_message(const char *text, double scale,
                                            struct hrt_message_theme *theme) {
     /* TODO: configurable options: font (name/size), bg/fg color, border, per-output scale */
     char *font         = theme->font;
     int border_padding = theme->message_padding;
     int border_width   = theme->message_border_width;
 
-    struct cairo_buffer *message       = NULL;
+    struct hrt_cairo_buffer *message       = NULL;
     PangoContext *pango_context        = NULL;
     cairo_font_options_t *font_options = NULL;
     PangoLayout *pango_layout          = NULL;
@@ -77,7 +77,7 @@ static struct cairo_buffer *render_message(const char *text, double scale,
     int total_width  = text_width + ((border_width + border_padding) * 2);
     int total_height = text_height + ((border_width + border_padding) * 2);
 
-    message = cairo_buffer_create(total_width, total_height);
+    message = hrt_cairo_buffer_create(total_width, total_height);
     if (!message) {
         wlr_log(WLR_ERROR, "%s: cannot allocate message: %s", __func__,
                 strerror(errno));
@@ -253,7 +253,7 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
                     &framed_box))
         return false;
 
-    struct cairo_buffer *message = render_message(text, scale, theme);
+    struct hrt_cairo_buffer *message = render_message(text, scale, theme);
     if (!message)
         return false;
 
