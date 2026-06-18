@@ -4,10 +4,14 @@
   (ptr nil :type cffi:foreign-pointer))
 
 (defun border-box-create (layer style x y width height)
-  (hrt-border-box-create layer (border-box-style-ptr style)
+  (let ((result (hrt-border-box-create layer (border-box-style-ptr style)
                          (round x) (round y)
                          (round width)
-                         (round height)))
+                         (round height))))
+    (if result
+        result
+        (error 'mahogany/util:mahogany-panic
+               "Could not make border box"))))
 
 (defun border-box-set-style (box style)
   (hrt-border-box-set-style box (border-box-style-ptr style)))
