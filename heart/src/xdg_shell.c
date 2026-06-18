@@ -116,7 +116,12 @@ static void handle_new_xdg_popup(struct wl_listener *listener, void *data);
 static struct hrt_view *
 create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
                              struct hrt_server *server) {
-    struct hrt_view *view               = calloc(1, sizeof(struct hrt_view));
+    struct hrt_view *view = calloc(1, sizeof(struct hrt_view));
+    if (!view) {
+        wlr_log(WLR_ERROR, "Failed to allocate hrt_view object for toplevel %p",
+               xdg_toplevel);
+      return nullptr;
+    }
     view->xdg_toplevel                  = xdg_toplevel;
     struct wlr_xdg_surface *xdg_surface = xdg_toplevel->base;
     // TODO: Maybe remove view->xdg_surface? We can get to it via the toplevel.
