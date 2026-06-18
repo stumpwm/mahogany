@@ -4,6 +4,7 @@
 #include "render/scale_util.h"
 #include "scene_descriptor.h"
 #include "wlr/util/log.h"
+#include <wlr/types/wlr_output.h>
 
 #include <assert.h>
 #include <stdatomic.h>
