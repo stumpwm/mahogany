@@ -8,7 +8,7 @@
                          (round x) (round y)
                          (round width)
                          (round height))))
-    (if result
+    (if (not (cffi:null-pointer-p result))
         result
         (error 'mahogany/util:mahogany-panic
                "Could not make border box"))))

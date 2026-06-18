@@ -126,12 +126,14 @@ static void border_box_handle_outputs_update(struct wl_listener *listener,
         wl_container_of(listener, box, listeners.outputs_update);
     // struct wlr_scene_outputs_update_event *event = data;
 
-    const float scale = box->scene_buffer->primary_output->output->scale;
-    if (box->scale != scale) {
-        box->scale                          = scale;
-        const struct wlr_buffer *const buff = &box->buffer->base;
-        set_box_scale(box, buff->width, buff->height, scale);
-        hrt_border_box_redraw(box, buff->width, buff->height);
+    if (box->scene_buffer->primary_output) {
+        const float scale = box->scene_buffer->primary_output->output->scale;
+        if (box->scale != scale) {
+            box->scale                          = scale;
+            const struct wlr_buffer *const buff = &box->buffer->base;
+            set_box_scale(box, buff->width, buff->height, scale);
+            hrt_border_box_redraw(box, buff->width, buff->height);
+        }
     }
 }
 
