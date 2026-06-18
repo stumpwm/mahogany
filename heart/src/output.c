@@ -65,11 +65,6 @@ static struct hrt_output *hrt_output_create(struct hrt_server *server,
     output->server            = server;
     output->scene = hrt_scene_output_create(server->scene_root);
 
-    output->frame.notify = handle_frame_notify;
-    wl_signal_add(&wlr_output->events.frame, &output->frame);
-    output->request_state.notify = handle_request_state;
-    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
-
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
     output->color[0] = float_rand();
@@ -256,6 +251,12 @@ bool hrt_output_init(struct hrt_output *output,
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
                                        scene_output);
     output->wlr_scene = scene_output;
+
+    output->frame.notify = handle_frame_notify;
+    wl_signal_add(&wlr_output->events.frame, &output->frame);
+    output->request_state.notify = handle_request_state;
+    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
+
     return true;
 }
 
