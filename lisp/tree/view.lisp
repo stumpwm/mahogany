@@ -54,7 +54,7 @@
 (defmethod replace-frame ((root view-frame) frame &optional (cleanup-func #'identity))
   (unless (eql root frame)
     (funcall cleanup-func frame)
-    (cleanup-frame f)
+    (cleanup-frame frame)
     (%replace-frame frame frame)))
 
 (defmethod (setf %frame-prev) (prev (frame view-frame))
