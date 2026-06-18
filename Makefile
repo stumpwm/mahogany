@@ -47,7 +47,7 @@ runNoExec: $(BUILD_DIR)/heart/lib64/libheart.so
 clean:
 	ninja -C $(BUILD_DIR)/heart clean
 	rm -f $(BUILD_DIR)/mahogany
-	rm -rf $(BUILD_DIR)/lib64
+	rm -rf $(BUILD_DIR)/lib64 $(BUILD_DIR)/lib
 	rm -rf $(BUILD_DIR)/include
 	rm -rf $(BUILD_DIR)/install_output.txt
 	rm -rf $(BUILD_DIR)/asdf-cache/*
