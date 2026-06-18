@@ -200,6 +200,23 @@ static void handle_start_drag(struct wl_listener *listener,
     wlr_scene_node_set_position(&drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y);
 }
 
+static void handle_seat_destroy(struct wl_listener *listener, void *data) {
+    // struct wlr_seat *wlr_seat = data;
+    struct hrt_seat *seat = wl_container_of(listener, seat, destroy);
+
+    hrt_keyboard_destroy(seat);
+    hrt_cursor_destroy(seat);
+    wlr_log(WLR_DEBUG, "Seat destroyed");
+
+    wl_list_remove(&seat->request_cursor.link);
+    wl_list_remove(&seat->request_selection.link);
+    wl_list_remove(&seat->request_primary_selection.link);
+    wl_list_remove(&seat->request_start_drag.link);
+    wl_list_remove(&seat->start_drag.link);
+    wl_list_remove(&seat->new_input.link);
+    wl_list_remove(&seat->destroy.seat.link);
+}
+
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
                    const struct hrt_seat_callbacks *callbacks) {
     check_callbacks(callbacks);
@@ -240,21 +257,14 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     wl_signal_add(&seat->seat->events.start_drag,
                   &seat->start_drag);
 
+    seat->destroy.seat.notify = handle_seat_destroy;
+    wl_signal_add(&seat->seat->events.destroy, &seat->destroy.seat);
+
     seat->cursor_image = "left_ptr";
 
     return true;
 }
 
 void hrt_seat_destroy(struct hrt_seat *seat) {
-    hrt_keyboard_destroy(seat);
-    hrt_cursor_destroy(seat);
-
-    wl_list_remove(&seat->request_cursor.link);
-    wl_list_remove(&seat->request_selection.link);
-    wl_list_remove(&seat->request_primary_selection.link);
-    wl_list_remove(&seat->request_start_drag.link);
-    wl_list_remove(&seat->start_drag.link);
-
     wlr_seat_destroy(seat->seat);
-    wl_list_remove(&seat->new_input.link);
 }

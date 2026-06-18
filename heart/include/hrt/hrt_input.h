@@ -46,6 +46,11 @@ struct hrt_seat {
 
     const struct hrt_seat_callbacks *callbacks;
     char *cursor_image;
+
+    struct {
+        struct wl_listener seat;
+        struct wl_listener keyboard;
+    } destroy;
 };
 
 struct hrt_keypress_info {

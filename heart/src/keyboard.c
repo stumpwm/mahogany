@@ -98,6 +98,17 @@ static void seat_handle_modifiers(struct wl_listener *listener, void *data) {
         seat->seat, &seat->keyboard_group->keyboard.modifiers);
 }
 
+static void handle_keyboard_destroy(struct wl_listener *listener, void *data) {
+    struct wlr_keyboard *kb = data;
+    wlr_log(WLR_DEBUG, "hrt keyboard destroyed %p", kb);
+    struct hrt_seat *seat = wl_container_of(listener, seat, destroy.keyboard);
+
+    xkb_context_unref(seat->xkb_context);
+    wl_list_remove(&seat->keyboard_key.link);
+    wl_list_remove(&seat->keyboard_modifiers.link);
+    wl_list_remove(&seat->destroy.keyboard.link);
+}
+
 void hrt_keyboard_init(struct hrt_seat *seat) {
     seat->keyboard_group    = wlr_keyboard_group_create();
     struct wlr_keyboard *kb = &seat->keyboard_group->keyboard;
@@ -115,12 +126,11 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
     wl_signal_add(&kb->events.modifiers, &seat->keyboard_modifiers);
 
     wlr_seat_set_keyboard(seat->seat, kb);
+
+    seat->destroy.keyboard.notify = handle_keyboard_destroy;
+    wl_signal_add(&kb->base.events.destroy, &seat->destroy.keyboard);
 }
 
 void hrt_keyboard_destroy(struct hrt_seat *seat) {
-    xkb_context_unref(seat->xkb_context);
-    wl_list_remove(&seat->keyboard_key.link);
-    wl_list_remove(&seat->keyboard_modifiers.link);
-
     wlr_keyboard_group_destroy(seat->keyboard_group);
 }
