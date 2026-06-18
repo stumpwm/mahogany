@@ -104,7 +104,7 @@ static bool phys_size_is_aspect_ratio(struct wlr_output *output) {
 static int compute_default_scale(struct wlr_output *output,
                                  struct wlr_output_state *pending) {
     struct wlr_box box = {.width = output->width, .height = output->height};
-    if (pending->committed & WLR_OUTPUT_STATE_MODE) {
+    if (pending->mode && pending->committed & WLR_OUTPUT_STATE_MODE) {
         switch (pending->mode_type) {
             case WLR_OUTPUT_STATE_MODE_FIXED:
                 box.width  = pending->mode->width;
