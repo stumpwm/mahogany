@@ -6,6 +6,10 @@
 
 (cffi:defcstruct hrt-seat-callbacks)
 
+(cffi:defcstruct hrt-seat-destroy
+  (seat (:struct wl-listener))
+  (keyboard (:struct wl-listener)))
+
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
   (cursor :pointer #| (:struct wlr-cursor) |#)
@@ -28,7 +32,8 @@
   (request-start-drag (:struct wl-listener))
   (start-drag (:struct wl-listener))
   (callbacks (:pointer (:struct hrt-seat-callbacks)))
-  (cursor-image (:pointer :char)))
+  (cursor-image (:pointer :char))
+  (destroy (:struct hrt-seat-destroy)))
 
 (cffi:defcstruct hrt-keypress-info
   (keysyms :pointer #| xkb-keysym-t |#)
