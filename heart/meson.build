@@ -22,7 +22,7 @@ add_project_arguments(
 
 cc = meson.get_compiler('c')
 
-wlroots_version = ['>=0.19.0', '<0.20.0']
+wlroots_version = ['>=0.20.0', '<0.21.0']
 
 cairo          = dependency('cairo', required: true)
 pangocairo     = dependency('pangocairo', required: true)
