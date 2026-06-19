@@ -104,10 +104,14 @@ static void handle_xdg_toplevel_destroy(struct wl_listener *listener,
 static void handle_xdg_toplevel_commit(struct wl_listener *listener,
                                        void *data) {
     struct hrt_view *view = wl_container_of(listener, view, commit);
-    if (view->xdg_toplevel->base->initial_commit) {
+    struct wlr_xdg_toplevel *const toplevel = view->xdg_toplevel;
+    if (toplevel->base->initial_commit) {
         view->callbacks->new_view(view);
     } else if (view->xdg_surface->surface->mapped) {
-        view->callbacks->view_size_changed(view);
+      const uint32_t committed = toplevel->base->current.committed;
+      if(committed & WLR_XDG_SURFACE_STATE_WINDOW_GEOMETRY) {
+          view->callbacks->view_size_changed(view);
+      }
     }
 }
 
