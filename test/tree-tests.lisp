@@ -5,11 +5,13 @@
 
 (in-package #:mahogany-tests/tree)
 
+(defstruct (mock-output (:include mahogany/core:output)))
+
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree:layer-container
                                   :hrt-layer (cffi:null-pointer))))
     (multiple-value-bind (output-node frame)
-        (tree:tree-output-add container t :x x :y y :width width :height height)
+        (tree:tree-output-add container (make-mock-output) :x x :y y :width width :height height)
       (values frame output-node))))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))
@@ -471,3 +473,20 @@
                   (child-1 :x 0 :y 0 :width 100 :height 100)
                   (child-2 :view view :x 100 :y 0 :width 100 :height 100))
         (is (eq child-2 (tree:find-view-frame parent view)))))))
+
+(fiasco:deftest remove-frame-output-node-fullscreen-calls-cleanup ()
+  (with-border-box-mocks ()
+    (cl-mock:dflet ((hrt:scene-create-fullscreen-node
+                     (layer view output)
+                     (declare (ignore layer view output))
+                     (cffi:null-pointer)))
+      (multiple-value-bind (frame output-node)
+          (make-tree-for-tests)
+        (declare (ignore frame))
+        (let ((view (make-mock-view (cffi:null-pointer)))
+              (visited nil))
+          (tree:set-fullscreen output-node view)
+          (tree:remove-frame output-node (lambda (x)
+                                           (when (eq output-node x)
+                                             (setf visited t))))
+          (is visited))))))

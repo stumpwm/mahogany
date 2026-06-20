@@ -429,6 +429,11 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (declare (ignore parent))
   (release-frames frame cleanup-func))
 
+(defmethod remove-frame-from-parent :after (parent (frame output-node) cleanup-func)
+  (with-slots (fullscreen) frame
+    (when fullscreen
+      (funcall cleanup-func frame))))
+
 (defmethod remove-frame-from-parent ((parent poly-tree-frame) frame cleanup-func)
   (declare (ignore cleanup-func))
   (let ((new-num-children (- (length (tree-children parent)) 1)))
