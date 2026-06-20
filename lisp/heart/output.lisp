@@ -66,6 +66,7 @@
 (defun destroy-output (mh-output)
   (declare (ignore mh-output)))
 
+#-hrt-debug
 (declaim (inline output-resolution output-position))
 (defun output-resolution (output)
   (declare (type output output))
@@ -85,6 +86,7 @@
     (cffi:with-foreign-slots ((x y width height) box (:struct wlr-box))
       (values x y width height))))
 
+#-hrt-debug
 (declaim (inline output-name output-make output-model output-serial))
 (defun output-name (output)
   (declare (type output output))

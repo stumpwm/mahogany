@@ -1,11 +1,13 @@
 (in-package #:hrt)
 
+#-hrt-debug
 (declaim (inline scene-group-add-view))
 (defun scene-layer-add-view (scene-layer view)
   (declare (type view view)
            (type cffi:foreign-pointer scene-layer))
   (hrt-scene-layer-add-view scene-layer (view-hrt-view view)))
 
+#-hrt-debug
 (declaim (inline scene-create-fullscreen-node))
 (defun scene-create-fullscreen-node (hrt-layer view output)
   (declare (type view view)
@@ -19,6 +21,7 @@
         (error 'mahogany/util:mahogany-panic
                :text "Could not allocate fullscreen node."))))
 
+#-hrt-debug
 (declaim (inline scene-fullscreen-swap))
 (defun scene-fullscreen-swap (hrt-node view)
   (hrt-scene-fullscreen-swap hrt-node (view-hrt-view view)))

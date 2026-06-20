@@ -3,31 +3,37 @@
 (defstruct (view (:constructor %make-view (hrt-view)))
   (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
 
+#-hrt-debug
 (declaim (inline init-view))
 (defun view-init (view-ptr)
   (declare (type cffi:foreign-pointer view-ptr))
   (%make-view view-ptr))
 
+#-hrt-debug
 (declaim (inline focus-view))
 (defun focus-view (view seat)
   (declare (type view view))
   (hrt-view-focus (view-hrt-view view) seat))
 
+#-hrt-debug
 (declaim (inline unfocus-view))
 (defun unfocus-view (view seat)
   (declare (type view view))
   (hrt-view-unfocus (view-hrt-view view) seat))
 
+#-hrt-debug
 (declaim (inline view-focused-p))
 (defun view-focused-p (view)
   (declare (type view view))
   (hrt-view-focused (view-hrt-view view)))
 
+#-hrt-debug
 (declaim (inline view-mapped-p))
 (defun view-mapped-p (view)
   (declare (type view view))
   (hrt-view-mapped (view-hrt-view view)))
 
+#-hrt-debug
 (declaim (inline view-set-hidden))
 (defun view-set-hidden (view hidden)
   (declare (type view view)
@@ -35,27 +41,32 @@
   (hrt-view-set-hidden (view-hrt-view view) hidden)
   (dirty-view-transaction))
 
+#-hrt-debug
 (declaim (inline view-reparent))
 (defun view-reparent (view new-parent)
   (declare (type view view)
            (type cffi:foreign-pointer new-parent))
   (hrt-view-reparent (view-hrt-view view) new-parent))
 
+#-hrt-debug
 (declaim (inline view-request-close))
 (defun view-request-close (view)
   (declare (type view view))
   (hrt-view-request-close (view-hrt-view view)))
 
+#-hrt-debug
 (declaim (inline view-set-fullscreen))
 (defun view-set-fullscreen (view fullscreen)
   (declare (type view view))
   (hrt-view-fullscreen (view-hrt-view view) fullscreen))
 
+#-hrt-debug
 (declaim (inline view-fullscreen-p))
 (defun view-fullscreen-p (view)
   (declare (type view view))
   (hrt-view-fullscreened (view-hrt-view view)))
 
+#-hrt-debug
 (declaim (inline view-configure))
 (defun view-configure (view)
   (declare (type view view))
