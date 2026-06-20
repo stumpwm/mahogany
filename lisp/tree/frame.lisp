@@ -292,28 +292,28 @@ Used to initially split all frames, regardless of type."
         (setf other-children-width result
               new-frame-width (+ new-frame-width remainder)))
       ;; create the new frame and add it to a new frame-list:
-      (ecase direction
-        (:right
-         (setf new-frame (make-instance 'view-frame
-                                        :parent frame
-                                        :width new-frame-width
-                                        :height (frame-height frame)
-                                        :x (+ parent-x (- parent-width new-frame-width))
-                                        :y parent-y)
-               x-adjust 0
-               ;; adding to the back, create new list so parent-children is unchanged:
-               new-frame-list (append parent-children (list new-frame))))
-        (:left
-         (setf new-frame (make-instance 'view-frame
-                                        :parent frame
-                                        :width new-frame-width
-                                        :height (frame-height frame)
-                                        :x parent-x
-                                        :y parent-y)
-               x-adjust (+ parent-x new-frame-width)
-               ;; we can still use parent-children to access all frames that were already there,
-               ;; as we add to the front of the list:
-               new-frame-list (cons new-frame parent-children))))
+      (flet ((make-new-frame (x)
+               (make-instance 'view-frame
+                              :parent frame
+                              :width new-frame-width
+                              :height (frame-height frame)
+                              :x x
+                              :y parent-y)))
+        (ecase direction
+          (:right
+           (setf new-frame (make-new-frame (+ parent-x
+                                              (- parent-width new-frame-width)))
+                 x-adjust 0
+                 ;; adding to the back, create new list so
+                 ;; parent-children is unchanged:
+                 new-frame-list (append parent-children (list new-frame))))
+          (:left
+           (setf new-frame (make-new-frame parent-x)
+                 x-adjust (+ parent-x new-frame-width)
+                 ;; we can still use parent-children to access
+                 ;; all frames that were already there,
+                 ;; as we add to the front of the list:
+                 new-frame-list (cons new-frame parent-children)))))
       ;; adjust the older child frames:
       (dolist (child parent-children)
         (setf (frame-width child) other-children-width)
@@ -351,28 +351,28 @@ Used to initially split all frames, regardless of type."
         (setf other-children-height result
               new-frame-height (+ new-frame-height remainder)))
       ;; create the new frame and add it to a new frame-list:
-      (ecase direction
-        (:top
-         (setf new-frame (make-instance 'view-frame
-                                        :parent frame
-                                        :width parent-width
-                                        :height new-frame-height
-                                        :x parent-x
-                                        :y parent-y)
-               y-adjust 0
-               ;; adding to the back, create new list so parent-children is unchanged:
-               new-frame-list (append parent-children (list new-frame))))
-        (:bottom
-         (setf new-frame (make-instance 'view-frame
-                                        :parent frame
-                                        :width parent-width
-                                        :height new-frame-height
-                                        :x parent-x
-                                        :y (+ parent-y (- parent-height new-frame-height)))
-               y-adjust (+ parent-x new-frame-height)
-               ;; we can still use parent-children to access all frames that were already there,
-               ;; as we add to the front of the list:
-               new-frame-list (cons new-frame parent-children))))
+      (flet ((make-new-frame (y)
+               (make-instance 'view-frame
+                              :parent frame
+                              :width parent-width
+                              :height new-frame-height
+                              :x parent-x
+                              :y y)))
+        (ecase direction
+          (:top
+           (setf new-frame (make-new-frame parent-y)
+                 y-adjust 0
+                 ;; adding to the back, create new list so parent-children
+                 ;; is unchanged:
+                 new-frame-list (append parent-children (list new-frame))))
+          (:bottom
+           (setf new-frame (make-new-frame (+ parent-y
+                                              (- parent-height new-frame-height)))
+                 y-adjust (+ parent-x new-frame-height)
+                 ;; we can still use parent-children to access all frames
+                 ;; that were already there, as we add to the front
+                 ;; of the list:
+                 new-frame-list (cons new-frame parent-children)))))
       ;; adjust the older child frames:
       (dolist (child parent-children)
         (setf (frame-height child) other-children-height)
