@@ -2,7 +2,7 @@
 
 (defstruct (output (:constructor %make-output
 					  (hrt-output full-name)))
-  (hrt-output cffi:null-pointer :type cffi:foreign-pointer :read-only t)
+  (hrt-output (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
 (defstruct output-config
