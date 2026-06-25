@@ -4,7 +4,10 @@
   (:export #:wl-list
            #:wl-listener
            #:wl-output-transform
-           #:wl-keyboard-key-state))
+           #:wl-keyboard-key-state
+           #:+wl-keyboard-key-state-released+
+           #:+wl-keyboard-key-state-pressed+
+           #:+wl-keyboard-key-state-repeated+))
 
 (defpackage #:wlr
   (:use :cl #:wayland)

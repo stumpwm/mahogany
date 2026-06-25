@@ -39,7 +39,7 @@
   (keysyms :pointer #| xkb-keysym-t |#)
   (modifiers :uint32)
   (keysyms-len :size)
-  (wl-key-state :int #| enum wl-keyboard-key-state |#))
+  (wl-key-state :unsigned-int #| enum wl-keyboard-key-state |#))
 
 (cffi:defcstruct hrt-seat-callbacks
   (button-event :pointer #| function ptr void (struct hrt_seat *, struct wlr_pointer_button_event *) |#)
