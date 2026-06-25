@@ -20,9 +20,17 @@ files:
 pointer-expansion:
   include:
     match: "hrt.*"
-# make-inline:
-#   include:
-#     match: "hrt.*"
+enum-constants:
+  include:
+    match: ".*"
+  exclude:
+    names:
+    - window-gravity
+    - hrt-border-style
+make-inline:
+  - include:
+      match: "hrt.*"
+    feature-flag: "-HRT-DEBUG"
 string-return:
   include:
     names:

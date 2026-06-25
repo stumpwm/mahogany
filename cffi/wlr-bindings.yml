@@ -8,12 +8,13 @@ arguments:
 files:
   # - heart/subprojects/wlroots/include/wlr/util/addon.h
   - heart/subprojects/wlroots/include/wlr/util/box.h
+  - heart/subprojects/wlroots/include/wlr/util/log.h
   # - heart/subprojects/wlroots/include/wlr/types/wlr_scene.h
 pointer-expansion:
   exclude:
     match:
       - ".*"
 make-inline:
-  include:
-    match:
-      - ".*"
+  - include:
+      match:
+       - ".*"

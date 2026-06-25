@@ -106,3 +106,12 @@ A box is considered empty if its width and/or height is zero or negative."
   "Returns true if the two boxes are equal, false otherwise."
   (a :pointer #| (:struct wlr-fbox) |#)
   (b :pointer #| (:struct wlr-fbox) |#))
+
+;; next section imported from file heart/subprojects/wlroots/include/wlr/util/log.h
+
+(cffi:defcenum wlr-log-importance
+  (:wlr-silent 0)
+  (:wlr-error 1)
+  (:wlr-info 2)
+  (:wlr-debug 3)
+  (:wlr-log-importance-last 4))

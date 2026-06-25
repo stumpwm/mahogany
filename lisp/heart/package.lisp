@@ -6,7 +6,8 @@
    #:x
    #:y
    #:width
-   #:height))
+   #:height
+   #:wlr-log-importance))
 
 (defpackage #:mahogany/core
   (:use :cl #:wayland-server-core #:xkb #:wlr)
