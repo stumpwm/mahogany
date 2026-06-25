@@ -10,13 +10,13 @@ This file is a part of mahogany.
   :pathname "test/"
   :serial nil
   :components ((:file "util")
-	       (:file "ring-list")
+	           (:file "ring-list")
                (:file "theme/theme-tests")
-	       (:file "tree-tests" :depends-on ("util"))
-	       (:file "keyboard-tests")
-	       (:file "kmap-modes")
-	       (:file "config-system-tests")
-	       (:file "log-tests"))
+	           (:file "tree-tests" :depends-on ("util"))
+	           (:file "keyboard-tests")
+	           (:file "kmap-modes")
+	           (:file "config-system-tests")
+	           (:file "log-tests"))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
                     (uiop/package:symbol-call "FIASCO" "ALL-TESTS")))

@@ -30,49 +30,52 @@
                (:file "util")
                (:file "system" :depends-on ("util" "config" "log"))
                (:module config
-                        :components ((:file "config-system")))
+                :components ((:file "config-system")))
                (:module ring-list
-                        :components ((:file "ring-list")))
+                :components ((:file "ring-list")))
                (:module interfaces
-                        :components ((:file "view-interface")))
+                :components ((:file "view-interface")))
                (:module theme
-                        :components ((:file "theme")))
+                :components ((:file "theme")))
                (:module heart
-                        :depends-on ("interfaces" "theme" "util" "log")
-                        :components ((:file "package")
-                                     (:file "wlr-bindings" :depends-on ("package"))
-                                     (:file "hrt-libs" :depends-on ("package"))
-                                     (:file "hrt-bindings" :depends-on ("wlr-bindings"))
-                                     (:file "callback" :depends-on ("package"))
-                                     (:file "cffi-util" :depends-on ("package"))
-                                     (:file "hrt-debug" :depends-on ("hrt-bindings")
-                                            :if-feature :hrt-debug)
-                                     (:file "message"
-                                      :depends-on ("cffi-util" "hrt-bindings" "output"))
-                                     (:file "output" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "subprocess"
-                                            :depends-on ("cffi-util" "hrt-bindings" "callback"))
-                                     (:file "view" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "scene-group"
-                                      :depends-on ("cffi-util" "hrt-bindings" "output"))
-                                     (:file "border-box" :depends-on ("cffi-util" "hrt-bindings"))
-                                     (:file "server"
-                                      :depends-on ("package" "hrt-bindings" "callback"))
-                                     (:file "layer-shell")
-                                     (:file "transaction" :depends-on ("server"))))
+                :depends-on ("interfaces" "theme" "util" "log")
+                :components ((:file "package")
+                             (:file "wlr-bindings" :depends-on ("package"))
+                             (:file "hrt-libs" :depends-on ("package"))
+                             (:file "hrt-bindings" :depends-on ("wlr-bindings"))
+                             (:file "callback" :depends-on ("package"))
+                             (:file "cffi-util" :depends-on ("package"))
+                             (:file "hrt-debug" :depends-on ("hrt-bindings")
+                              :if-feature :hrt-debug)
+                             (:file "message"
+                              :depends-on ("cffi-util" "hrt-bindings" "output"))
+                             (:file "output"
+                              :depends-on ("cffi-util" "hrt-bindings"))
+                             (:file "subprocess"
+                              :depends-on ("cffi-util" "hrt-bindings" "callback"))
+                             (:file "view"
+                              :depends-on ("cffi-util" "hrt-bindings"))
+                             (:file "scene-group"
+                              :depends-on ("cffi-util" "hrt-bindings" "output"))
+                             (:file "border-box"
+                              :depends-on ("cffi-util" "hrt-bindings"))
+                             (:file "server"
+                              :depends-on ("package" "hrt-bindings" "callback"))
+                             (:file "layer-shell")
+                             (:file "transaction" :depends-on ("server"))))
                (:module keyboard
-                        :depends-on ("util")
-                        :components ((:file "package")
-                                     (:file "keytrans")
-                                     (:file "key")
-                                     (:file "kmap")))
+                :depends-on ("util")
+                :components ((:file "package")
+                             (:file "keytrans")
+                             (:file "key")
+                             (:file "kmap")))
                (:module tree
-                        :depends-on ("log" "util" "interfaces" "heart")
-                        :components ((:file "package")
-                                     (:file "tree-interface")
-                                     (:file "output-node" :depends-on ("tree-interface"))
-                                     (:file "frame" :depends-on ("tree-interface"))
-                                     (:file "view" :depends-on ("tree-interface"))))
+                :depends-on ("log" "util" "interfaces" "heart")
+                :components ((:file "package")
+                             (:file "tree-interface")
+                             (:file "output-node" :depends-on ("tree-interface"))
+                             (:file "frame" :depends-on ("tree-interface"))
+                             (:file "view" :depends-on ("tree-interface"))))
                (:module input-methods
                 :depends-on ("package")
                 ;; It would be cool to figure out module loading
@@ -90,11 +93,13 @@
                (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
-                      :depends-on ("objects" "globals" "keyboard" "input" "command"))
-               (:file "events" :depends-on ("globals" "state" "objects" "heart"))
-               (:file "input" :depends-on ("state" "keyboard" "heart" "command" "message"))
+                :depends-on ("objects" "globals" "keyboard" "input" "command"))
+               (:file "events"
+                :depends-on ("globals" "state" "objects" "heart"))
+               (:file "input"
+                :depends-on ("state" "keyboard" "heart" "command" "message"))
                (:file "key-bindings"
-                      :depends-on ("kmap-modes" "state" "tree" "input" "command"))
+                :depends-on ("kmap-modes" "state" "tree" "input" "command"))
                (:file "main" :depends-on ("heart" "keyboard" "input" "package"))))
 
 (asdf:defsystem #:mahogany/executable
