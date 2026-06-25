@@ -97,12 +97,12 @@ Values:
 
 (defun handle-key-event (state key seat event-state)
   (declare (type key key)
-           (type bit event-state)
+           (type (unsigned-byte 32) event-state)
            (type mahogany-state state)
            (optimize (speed 3)))
   (let ((key-state (state-key-state state)))
     (declare (type key-state key-state))
-    (if (= event-state 1)
+    (if (= event-state wl:+wl-keyboard-key-state-pressed+)
         (check-and-run-keybinding key seat key-state)
         (key-state-active-p key-state))))
 
