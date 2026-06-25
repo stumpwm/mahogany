@@ -56,7 +56,6 @@
      (list mahogany-heart
            sbcl-xkbcommon
            libxkbcommon
-           sbcl-cl-wayland
            sbcl-alexandria
            sbcl-cl-ansi-text
            sbcl-terminfo

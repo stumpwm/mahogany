@@ -1,0 +1,9 @@
+output: lisp/heart/wl-bindings-gen.lisp
+package: wl
+files:
+- /usr/include/wayland-util.h
+- /usr/include/wayland-server-protocol.h
+- /usr/include/wayland-server-core.h
+enum_constants:
+  include:
+    match: ".*"

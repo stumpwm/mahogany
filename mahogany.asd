@@ -15,7 +15,6 @@
                #:terminfo
                #:adopt
                #:xkbcommon
-               #:cl-wayland
                #:iterate
                #:atomics
                #:fset
@@ -40,7 +39,8 @@
                (:module heart
                 :depends-on ("interfaces" "theme" "util" "log")
                 :components ((:file "package")
-                             (:file "wlr-bindings" :depends-on ("package"))
+                             (:file "wl-bindings" :depends-on ("package"))
+                             (:file "wlr-bindings" :depends-on ("wl-bindings"))
                              (:file "hrt-libs" :depends-on ("package"))
                              (:file "hrt-bindings" :depends-on ("wlr-bindings"))
                              (:file "callback" :depends-on ("package"))

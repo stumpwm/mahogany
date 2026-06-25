@@ -1,5 +1,13 @@
+(defpackage #:wayland
+  (:use :cl)
+  (:nicknames #:wl)
+  (:export #:wl-list
+           #:wl-listener
+           #:wl-output-transform
+           #:wl-keyboard-key-state))
+
 (defpackage #:wlr
-  (:use :cl #:wayland-server-core)
+  (:use :cl #:wayland)
   (:export
    ;; Symbols for wlr-box:
    #:wlr-box
@@ -10,7 +18,7 @@
    #:wlr-log-importance))
 
 (defpackage #:mahogany/core
-  (:use :cl #:wayland-server-core #:xkb #:wlr)
+  (:use :cl #:wayland #:xkb #:wlr)
   (:local-nicknames (#:mh/interface #:mahogany/wm-interface)
                     (#:colors #:cl-colors2))
   (:nicknames #:hrt)
