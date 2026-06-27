@@ -1,63 +1,94 @@
 (in-package #:mahogany)
 
+(defmacro silence-notes (&body body)
+  `(locally
+       (declare
+        #+sbcl
+        (sb-ext:muffle-conditions sb-ext:compiler-note))
+     ,@body))
+
+(defmacro %with-found-view (state (view-var view-ptr) &body body)
+  ;; There might be a way to prevent SBCL from needing to box
+  ;; the 64 bit pointers in order to hash them, but it's not obvious.
+  ;; Silence the note to make more important notes more visible:
+  `(alexandria:if-let ((,view-var (silence-notes
+                                   (gethash (cffi:pointer-address ,view-ptr)
+                                            (slot-value ,state 'views)))))
+     (progn
+       ,@body)
+     (silence-notes
+      (log-string :error "Could not find mahogany view associated with pointer ~S"
+                  (cffi:pointer-address ,view-ptr)))))
+
 (hrt:define-hrt-callback handle-new-view-event :void
     ((view (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "New view callback called!")
-  (mahogany-state-view-add *compositor-state* view))
+  (silence-notes
+   (mahogany-state-view-add *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-view-size-changed :void
-    ((view (:pointer (:struct hrt:hrt-view))))
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View size changed")
-  (mahogany-state-view-size-changed *compositor-state* view))
+  (%with-found-view *compositor-state* (view view-ptr)
+    (mahogany-state-view-size-changed *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-view-mapped :void
-    ((view (:pointer (:struct hrt:hrt-view))))
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View Mapped!")
-  (mahogany-state-view-map *compositor-state* view))
+  (%with-found-view *compositor-state* (view view-ptr)
+    (mahogany-state-view-map *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-view-unmapped :void
-    ((view (:pointer (:struct hrt:hrt-view))))
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View unmapped!")
-  (mahogany-state-view-unmap *compositor-state* view))
+  (%with-found-view *compositor-state* (view view-ptr)
+    (mahogany-state-view-unmap *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-view-destroyed-event :void
     ((view (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View destroyed callback called!")
-  (mahogany-state-view-remove *compositor-state*  view))
+  (silence-notes
+   (mahogany-state-view-remove *compositor-state*  view)))
 
 (hrt:define-hrt-callback handle-view-minimize :void
-    ((view (:pointer (:struct hrt:hrt-view))))
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View minimize callback called!")
-  (mahogany-state-view-minimize *compositor-state* view))
+  (%with-found-view *compositor-state* (view view-ptr)
+    (mahogany-state-view-minimize *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-view-maximize :void
-    ((view (:pointer (:struct hrt:hrt-view))))
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
     ()
   (log-string :trace "View maximize callback called!")
-  (mahogany-state-view-maximize *compositor-state* view))
+  (%with-found-view *compositor-state* (view view-ptr)
+    (mahogany-state-view-maximize *compositor-state* view)))
 
 (hrt:define-hrt-callback handle-request-fullscreen :bool
-    ((view (:pointer (:struct hrt:hrt-view)))
-     (output (:pointer (:struct hrt:hrt-output)))
+    ((view-ptr (:pointer (:struct hrt:hrt-view)))
+     (output-ptr (:pointer (:struct hrt:hrt-output)))
      (fullscreen :bool))
     (:error-val nil)
-  (mahogany-state-view-fullscreen *compositor-state* view output fullscreen))
+  (let ((output (%find-output output-ptr *compositor-state*)))
+    (%with-found-view *compositor-state* (view view-ptr)
+      (mahogany-state-view-fullscreen *compositor-state* view output fullscreen))))
 
 (hrt:define-hrt-callback handle-new-output :void
-    ((output (:pointer (:struct hrt:hrt-output))))
+    ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()
-  (mahogany-state-output-add *compositor-state* output))
+  (silence-notes
+   (mahogany-state-output-add *compositor-state* output-ptr)))
 
 (hrt:define-hrt-callback handle-output-removed :void
-    ((output (:pointer (:struct hrt:hrt-output))))
+    ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()
-  (mahogany-state-output-remove *compositor-state* output))
+  (silence-notes
+   (mahogany-state-output-remove *compositor-state* output-ptr)))
 
 (hrt:define-hrt-callback handle-output-layout-change :void
     ()
@@ -81,6 +112,7 @@
   (log-string :trace "Layer shell unmapped"))
 
 (hrt:define-hrt-callback handle-layer-shell-arrange :void
-    ((output (:pointer (:struct hrt:hrt-output))))
+    ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()
-  (mahogany-state-layers-arrange *compositor-state* output))
+  (let ((output (%find-output output-ptr *compositor-state*)))
+    (mahogany-state-layers-arrange *compositor-state* output)))

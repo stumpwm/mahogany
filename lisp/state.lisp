@@ -91,16 +91,18 @@
       (loop for g across groups
             do (group-add-output g mh-output (server-seat state))))))
 
-(defun %find-output (hrt-output outputs)
-  (find hrt-output outputs
-      :key #'hrt:output-hrt-output
-      :test #'cffi:pointer-eq))
+(declaim (inline %find-output))
+(defun %find-output (hrt-output state)
+  (declare (type mahogany-state state))
+  (find hrt-output (state-outputs state)
+        :key #'hrt:output-hrt-output
+        :test #'cffi:pointer-eq))
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs state-outputs)
                    (groups state-groups))
       state
-    (let ((mh-output (%find-output hrt-output outputs)))
+    (let ((mh-output (%find-output hrt-output state)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
       (loop for g across groups
             do (group-remove-output g mh-output (server-seat state)))
@@ -160,15 +162,14 @@
       (loop for g across groups
             do (group-reconfigure-outputs g (state-outputs state))))))
 
-(defun mahogany-state-layers-arrange (state hrt-output)
+(defun mahogany-state-layers-arrange (state output)
   (declare (type mahogany-state state))
-  (let ((output (%find-output hrt-output (state-outputs state))))
-    (log-string :debug "layer shell layers re-arranged on output ~S"
-                (hrt:output-full-name output))
-    (hrt:with-view-transaction ()
-      (with-accessors ((groups state-groups)) state
-        (loop for g across groups
-              do (group-rearrange-output g output))))))
+  (log-string :debug "layer shell layers re-arranged on output ~S"
+              (hrt:output-full-name output))
+  (hrt:with-view-transaction ()
+    (with-accessors ((groups state-groups)) state
+      (loop for g across groups
+            do (group-rearrange-output g output)))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
@@ -179,13 +180,6 @@
       state
     (let ((new-view (group-add-initialize-view current-group view-ptr)))
       (setf (gethash (cffi:pointer-address view-ptr) view-tbl) new-view))))
-
-(defmacro %with-found-view (state (view-var view-ptr) &body body)
-  `(alexandria:if-let ((,view-var (gethash (cffi:pointer-address ,view-ptr)
-                                           (slot-value ,state 'views))))
-     (progn
-       ,@body)
-     (log-string :error "Could not find mahogany view associated with pointer ~S" ,view-ptr)))
 
 (defun %find-view-in-groups (view groups)
   (find-if (lambda (g) (member view (mahogany-group-views g))) groups))
@@ -207,58 +201,52 @@
         (remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
-(defun mahogany-state-view-fullscreen (state view-ptr output-ptr set-fullscreen)
+(defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)
-	   (type cffi:foreign-pointer view-ptr))
-  (let ((output (%find-output output-ptr (state-outputs state))))
-    (%with-found-view state (view view-ptr)
-      (%with-found-group state (group view)
-        (log-string :debug
-                    "~@<Fullscreen requested (~:[no~;yes~]):~I ~:_view ~S ~:_on output ~S~:>"
-                    set-fullscreen view output)
-	(group-set-fullscreen group view output set-fullscreen)))))
+	       (type hrt:view view))
+  (%with-found-group state (group view)
+    (log-string :debug
+                "~@<Fullscreen requested (~:[no~;yes~]):~I ~:_view ~S ~:_on output ~S~:>"
+                set-fullscreen view output)
+	(group-set-fullscreen group view output set-fullscreen)))
 
-(defun mahogany-state-view-map (state view-ptr)
+(defun mahogany-state-view-map (state view)
   (declare (type mahogany-state state)
-           (type cffi:foreign-pointer view-ptr))
-  (%with-found-view state (view view-ptr)
-    (%with-found-group state (group view)
-      (group-map-view group view))))
+           (type hrt:view view))
+  (%with-found-group state (group view)
+    (group-map-view group view)))
 
-(defun mahogany-state-view-unmap (state view-ptr)
+(defun mahogany-state-view-unmap (state view)
   (declare (type mahogany-state state)
-           (type cffi:foreign-pointer view-ptr))
-  (%with-found-view state (view view-ptr)
-    (%with-found-group state (group view)
-      (group-unmap-view group view))))
+           (type hrt:view view))
+  (%with-found-group state (group view)
+    (group-unmap-view group view)))
 
-(defun mahogany-state-view-size-changed (state view-ptr)
+(defun mahogany-state-view-size-changed (state view)
   (declare (type mahogany-state state)
-	   (type cffi:foreign-pointer view-ptr))
-  (%with-found-view state (view view-ptr)
-    ;; For now, just check to see if the view is now under the cursor:
-    (hrt:dirty-view-transaction)
-    ;; TODO: Center the view in its frame if the dimensions do not match. May
-    ;;  also need to do something if it's now bigger than the frame:
-    ))
+	       (type hrt:view view)
+           (ignore state view))
+  ;; For now, just check to see if the view is now under the cursor:
+  (hrt:dirty-view-transaction)
+  ;; TODO: Center the view in its frame if the dimensions do not match. May
+  ;;  also need to do something if it's now bigger than the frame:
+  )
 
-(defun mahogany-state-view-maximize (state view-ptr)
+(defun mahogany-state-view-maximize (state view)
   (declare (type mahogany-state state)
-           (type cffi:foreign-pointer view-ptr))
-  (%with-found-view state (view view-ptr)
-    (%with-found-group state (group view)
-      (if (member *follow-config-events* '(:all :maximize))
-          (group-maximize-view group view)
-          (hrt:view-configure view)))))
+           (type hrt:view view))
+  (%with-found-group state (group view)
+    (if (member *follow-config-events* '(:all :maximize))
+        (group-maximize-view group view)
+        (hrt:view-configure view))))
 
-(defun mahogany-state-view-minimize (state view-ptr)
+(defun mahogany-state-view-minimize (state view)
   (declare (type mahogany-state state)
-           (type cffi:foreign-pointer view-ptr))
-  (%with-found-view state (view view-ptr)
-    (%with-found-group state (group view)
-      (if (member *follow-config-events* '(:all :minimize))
-          (group-minimize-view group view)
-          (hrt:view-configure view)))))
+           (type hrt:view view))
+  (%with-found-group state (group view)
+    (if (member *follow-config-events* '(:all :minimize))
+        (group-minimize-view group view)
+        (hrt:view-configure view))))
 
 (defun state-next-hidden-group (state)
   (declare (type mahogany-state state))
@@ -292,8 +280,7 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
-      (with-accessors ((outputs state-outputs)) state
-        (the (or hrt:output null) (%find-output hrt-output outputs)))
+    (the (or hrt:output null) (%find-output hrt-output state))
     (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
       (unless current-output
