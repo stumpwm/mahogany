@@ -302,14 +302,25 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
   (declare (type mahogany-state state))
   (let* ((surfaces (state-layer-surfaces state))
          (new-surface (hrt:make-layer-surface hrt-layer-surface))
-         (output (%find-output (hrt:layer-surface-output new-surface) state)))
+         (output (%find-output (hrt:layer-surface-output new-surface) state))
+         (interactivity (hrt:layer-surface-keyboard-interactivity new-surface)))
     (setf (gethash hrt-layer-surface surfaces) new-surface)
     (log-string
      :info
      "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
      output
      (hrt::layer-surface-layer new-surface)
-     (hrt:layer-surface-keyboard-interactivity new-surface))))
+     interactivity)
+    ;; If the surface can't be focused, don't do anything to place it.
+    ;; Otherwise, add it to the tree data structure so we can navigate
+    ;; to it by keyboard. The only difference between exclusive and
+    ;; "on demand" surfaces is that we focus exclusive surfaces when
+    ;; they appear.
+    ;; We need to do something different
+    ;; in the future for bottom or background surfaces.
+    (unless (eq :keyboard-interactivity-none interactivity)
+
+    )))
 
 (defun state-layer-surface-remove (state hrt-layer-surface)
   (declare (type mahogany-state state))

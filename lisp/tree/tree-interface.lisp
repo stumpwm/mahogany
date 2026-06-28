@@ -98,9 +98,21 @@ should not be directly instantiated; inherit from it instead."))
                :type (or null %fullscreen-data)
                :accessor output-node-fullscreen)
    (focused :initarg :focused
-         :reader frame-focused
-         :initform nil
-         :type boolean))
+            :reader frame-focused
+            :initform nil
+            :type boolean)
+   (background-layer :initarg :background-layer
+                     :type layer-container
+                     :reader output-node-background)
+   (bottom-layer :initarg :background-layer
+                 :type layer-container
+                 :reader output-node-bottom)
+   (top-layer :initarg :background-layer
+              :type layer-container
+              :reader output-node-top)
+   (overlay-layer :initarg :background-layer
+                  :type layer-container
+                  :reader output-node-overlay))
   (:documentation
    "A node in the frame tree that contains the tiled frames tied to
 a specific output."))

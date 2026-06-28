@@ -129,12 +129,6 @@
    (log-string :trace "Keyboard interactivity of surface ~S changed"
                surface)))
 
-(hrt:define-hrt-callback handle-layer-shell-keyboard-interactivity :void
-    ((surface :pointer))
-    ()
-  (log-string :trace "Keyboard interactivity of surface ~S changed"
-              surface))
-
 (hrt:define-hrt-callback handle-layer-shell-layer-changed :void
     ((surface :pointer))
     ()
