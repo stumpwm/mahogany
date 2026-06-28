@@ -59,7 +59,9 @@ further up. "
     (hrt:new-layer-surface handle-layer-shell-recieved)
     (hrt:layer-surface-mapped handle-layer-shell-mapped)
     (hrt:layer-surface-unmapped handle-layer-shell-unmapped)
-    (hrt:layers-reconfigured handle-layer-shell-arrange)))
+    (hrt:layers-reconfigured handle-layer-shell-arrange)
+    (hrt:keyboard-interactivity-updated handle-layer-shell-keyboard-interactivity)
+    (hrt:layer-changed handle-layer-shell-layer-changed)))
 
 (defun run-server (args)
   (hrt:load-foreign-libraries)

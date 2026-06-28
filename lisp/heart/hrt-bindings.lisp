@@ -352,7 +352,7 @@ set the width and height of views."
 (declaim (inline hrt-scene-output-get-layer))
 (cffi:defcfun ("hrt_scene_output_get_layer" hrt-scene-output-get-layer) :pointer #| (:struct wlr-scene-tree) |#
   (output (:pointer (:struct hrt-scene-output)))
-  (layer-type :unsigned-int #| zwlr-layer-shell-v1-layer |#))
+  (layer-type zwlr-layer-shell-v1-layer))
 
 #-HRT-DEBUG
 (declaim (inline hrt-scene-group-destroy))
@@ -553,7 +553,14 @@ whenever the semaphore is non-zero."
   (new-layer-surface layer-shell-event-handler)
   (layer-surface-mapped layer-shell-event-handler)
   (layer-surface-unmapped layer-shell-event-handler)
-  (layers-reconfigured :pointer #| function ptr void (struct hrt_output *) |#))
+  (layers-reconfigured :pointer #| function ptr void (struct hrt_output *) |#)
+  (keyboard-interactivity-updated layer-shell-event-handler)
+  (layer-changed layer-shell-event-handler))
+
+(cffi:defcenum hrt-layer-shell-keyboard-interactivity
+  (:layer-shell-keyboard-none 0)
+  (:layer-shell-keyboard-exclusive 1)
+  (:layer-shell-keyboard-on-demand 2))
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-shell-surface-abort))
@@ -563,8 +570,8 @@ whenever the semaphore is non-zero."
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))
-(cffi:defcfun ("hrt_layer_surface_output" hrt-layer-surface-output) (:pointer (:struct hrt-output))
-  (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
+(cffi:defcfun ("hrt_layer_surface_output" %hrt-layer-surface-output) (:pointer (:struct hrt-output))
+  (layer-shell (:pointer (:struct hrt-layer-shell-surface))))xo
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-shell-surface-set-output))
@@ -597,6 +604,23 @@ intial placement."
 (cffi:defcfun ("hrt_layer_surface_unfocus" hrt-layer-surface-unfocus) :void
   (surface (:pointer (:struct hrt-layer-shell-surface)))
   (seat (:pointer (:struct hrt-seat))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-keyboard-interactivity))
+(cffi:defcfun ("hrt_layer_surface_keyboard_interactivity" hrt-layer-surface-keyboard-interactivity) hrt-layer-shell-keyboard-interactivity
+  (surface (:pointer (:struct hrt-layer-shell-surface))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-layer))
+(cffi:defcfun ("hrt_layer_surface_layer" hrt-layer-surface-layer) zwlr-layer-shell-v1-layer
+  (surface (:pointer (:struct hrt-layer-shell-surface))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-position))
+(cffi:defcfun ("hrt_layer_surface_position" hrt-layer-surface-position) :void
+  (surface (:pointer (:struct hrt-layer-shell-surface)))
+  (x (:pointer :int))
+  (y (:pointer :int)))
 
 ;; next section imported from file build/include/hrt/hrt_server.h
 

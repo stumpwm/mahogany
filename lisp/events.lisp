@@ -99,20 +99,39 @@
     ((surface :pointer))
     ()
   (log-string :trace "Layer shell recieved")
-  (mahogany-state-layer-shell-handle *compositor-state* surface))
+  (silence-notes
+   (mahogany-state-layer-shell-handle *compositor-state* surface)))
 
 (hrt:define-hrt-callback handle-layer-shell-mapped :void
     ((surface :pointer))
     ()
-  (log-string :trace "Layer shell mapped"))
+  (log-string :trace "Layer shell mapped")
+  (silence-notes
+   (state-layer-surface-add *compositor-state* surface)))
 
 (hrt:define-hrt-callback handle-layer-shell-unmapped :void
     ((surface :pointer))
     ()
-  (log-string :trace "Layer shell unmapped"))
+  (log-string :trace "Layer shell unmapped")
+  (silence-notes
+   (state-layer-surface-remove *compositor-state* surface)))
 
 (hrt:define-hrt-callback handle-layer-shell-arrange :void
     ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()
   (let ((output (%find-output output-ptr *compositor-state*)))
     (mahogany-state-layers-arrange *compositor-state* output)))
+
+(hrt:define-hrt-callback handle-layer-shell-keyboard-interactivity :void
+    ((surface :pointer))
+    ()
+  (silence-notes
+    (log-string :trace "Keyboard interactivity of surface ~S changed"
+                surface)))
+
+(hrt:define-hrt-callback handle-layer-shell-layer-changed :void
+    ((surface :pointer))
+    ()
+  (silence-notes
+    (log-string :trace "Surface ~S moved to layer ~S"
+                surface surface)))

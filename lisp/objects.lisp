@@ -31,6 +31,9 @@
    :read-only t)
   (views (make-hash-table)
    :type hash-table
+   :read-only t)
+  (layer-surfaces (make-hash-table)
+   :type hash-table
    :read-only t))
 
 (declaim (inline state-current-group))
