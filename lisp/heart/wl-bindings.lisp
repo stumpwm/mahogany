@@ -28,3 +28,9 @@
   (:keyboard-interactivity-none 0)
   (:keyboard-interactivity-exclusive 1)
   (:keyboard-interactivity-on-demand 2))
+
+(cffi:defcenum zwlr-layer-shell-v1-layer
+  (:layer-background 0)
+  (:layer-bottom 1)
+  (:layer-top 2)
+  (:layer-overlay 3))

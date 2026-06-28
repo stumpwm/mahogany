@@ -8,6 +8,7 @@
 #include "hrt/hrt_scene.h"
 #include "scene_descriptor.h"
 #include "types/wlr_xdg_shell.h"
+#include "wlr-layer-shell-unstable-v1-protocol.h"
 #include "wlr/util/box.h"
 #include "wlr/util/log.h"
 
@@ -73,12 +74,18 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     }
     wlr_log(WLR_DEBUG, "Surface created");
     surface->output = output;
+    surface->layer_surface->output = output->wlr_output;
     surface->tree   = surface->scene_surface->tree;
 }
 
 void hrt_layer_shell_surface_set_output(
     struct hrt_layer_shell_surface *layer_shell, struct hrt_output *output) {
     layer_shell->layer_surface->output = output->wlr_output;
+}
+
+enum zwlr_layer_shell_v1_layer hrt_layer_shell_surface_get_layer(
+    struct hrt_layer_shell_surface *layer_shell) {
+  return layer_shell->layer_surface->current.layer;
 }
 
 static void hrt_layer_shell_destroy(struct wl_listener *listener, void *data) {
@@ -94,6 +101,8 @@ static void check_callbacks(const struct hrt_layer_shell_callbacks *callbacks) {
     assert(callbacks->layer_surface_mapped != nullptr);
     assert(callbacks->layer_surface_unmapped != nullptr);
     assert(callbacks->layers_reconfigured != nullptr);
+    assert(callbacks->keyboard_interactivity_updated != nullptr);
+    assert(callbacks->layer_changed != nullptr);
 }
 
 bool hrt_layer_shell_init(struct hrt_server *server,
@@ -201,6 +210,18 @@ static void handle_surface_commit(struct wl_listener *listener, void *data) {
         surface->mapped               = layer_surface->surface->mapped;
         struct hrt_output *hrt_output = surface->output;
         hrt_layer_shell_arrange_layers(hrt_output, true);
+    }
+
+    if (surface->mapped) {
+        bool keyboard_interactive =
+            committed & WLR_LAYER_SURFACE_V1_STATE_KEYBOARD_INTERACTIVITY;
+        if (keyboard_interactive) {
+            surface->callbacks->keyboard_interactivity_updated(surface);
+        }
+        bool layer_changed = committed & WLR_LAYER_SURFACE_V1_STATE_LAYER;
+        if (layer_changed) {
+            surface->callbacks->layer_changed(surface);
+        }
     }
 }
 
@@ -366,5 +387,22 @@ void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
 
 struct hrt_output *
 hrt_layer_surface_output(struct hrt_layer_shell_surface *layer_shell) {
-    return (struct hrt_output *)layer_shell->layer_surface->data;
+    struct wlr_output *output = layer_shell->layer_surface->output;
+    if (output) {
+        return (struct hrt_output *)output->data;
+    } else {
+        return nullptr;
+    }
+}
+
+enum hrt_layer_shell_keyboard_interactivity
+hrt_layer_surface_keyboard_interactivity(
+    struct hrt_layer_shell_surface *surface) {
+    return (enum hrt_layer_shell_keyboard_interactivity)
+        surface->layer_surface->current.keyboard_interactive;
+}
+
+enum zwlr_layer_shell_v1_layer
+hrt_layer_surface_layer(struct hrt_layer_shell_surface *surface) {
+  return surface->layer_surface->current.layer;
 }

@@ -2,6 +2,7 @@
 #define HRT_LAYER_SHELL
 
 #include "hrt_scene.h"
+#include "wlr-layer-shell-unstable-v1-protocol.h"
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_output.h>
@@ -34,6 +35,17 @@ struct hrt_layer_shell_callbacks {
     layer_shell_event_handler layer_surface_mapped;
     layer_shell_event_handler layer_surface_unmapped;
     void (*layers_reconfigured)(struct hrt_output *);
+    layer_shell_event_handler keyboard_interactivity_updated;
+    layer_shell_event_handler layer_changed;
+};
+
+enum hrt_layer_shell_keyboard_interactivity {
+    HRT_LAYER_SHELL_KEYBOARD_NONE =
+        ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE,
+    HRT_LAYER_SHELL_KEYBOARD_EXCLUSIVE =
+        ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE,
+    HRT_LAYER_SHELL_KEYBOARD_ON_DEMAND =
+        ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND,
 };
 
 /**
@@ -58,5 +70,11 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
  * Finish initializing the layer shell object
  */
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface);
+
+enum hrt_layer_shell_keyboard_interactivity
+hrt_layer_surface_keyboard_interactivity(struct hrt_layer_shell_surface *surface);
+
+enum zwlr_layer_shell_v1_layer
+hrt_layer_surface_layer(struct hrt_layer_shell_surface *surface);
 
 #endif

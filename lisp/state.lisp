@@ -279,7 +279,7 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
-  (alexandria:if-let ((hrt-output (hrt:layer-surface-output hrt-layer-shell)))
+  (alexandria:if-let ((hrt-output (hrt:hrt-layer-surface-output hrt-layer-shell)))
     (the (or hrt:output null) (%find-output hrt-output state))
     (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
@@ -297,3 +297,21 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
       (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
     (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
+
+(defun state-layer-surface-add (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let* ((surfaces (state-layer-surfaces state))
+         (new-surface (hrt:make-layer-surface hrt-layer-surface))
+         (output (%find-output (hrt:layer-surface-output new-surface) state)))
+    (setf (gethash hrt-layer-surface surfaces) new-surface)
+    (log-string
+     :info
+     "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
+     output
+     (hrt::layer-surface-layer new-surface)
+     (hrt:layer-surface-keyboard-interactivity new-surface))))
+
+(defun state-layer-surface-remove (state hrt-layer-surface)
+  (declare (type mahogany-state state))
+  (let ((surfaces (state-layer-surfaces state)))
+    (remhash hrt-layer-surface surfaces)))
