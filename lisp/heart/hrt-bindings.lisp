@@ -328,11 +328,8 @@ set the width and height of views."
 (cffi:defcstruct hrt-scene-group
   (layers :pointer #| (:struct wlr-scene-tree) |#))
 
-(cffi:defcstruct hrt-scene-layer
-  (tree :pointer #| (:struct wlr-scene-tree) |#))
-
 (cffi:defcstruct hrt-scene-fullscreen-node
-  (layer (:struct hrt-scene-layer))
+  (layer :pointer #| (:struct wlr-scene-tree) |#)
   (background :pointer #| (:struct wlr-scene-rect) |#)
   (view (:pointer (:struct hrt-view))))
 
@@ -370,18 +367,18 @@ set the width and height of views."
 
 #-HRT-DEBUG
 (declaim (inline hrt-scene-layer-create))
-(cffi:defcfun ("hrt_scene_layer_create" hrt-scene-layer-create) (:pointer (:struct hrt-scene-layer))
+(cffi:defcfun ("hrt_scene_layer_create" hrt-scene-layer-create) :pointer #| (:struct wlr-scene-tree) |#
   (group (:pointer (:struct hrt-scene-group))))
 
 #-HRT-DEBUG
 (declaim (inline hrt-scene-layer-destroy))
 (cffi:defcfun ("hrt_scene_layer_destroy" hrt-scene-layer-destroy) :void
-  (layer (:pointer (:struct hrt-scene-layer))))
+  (layer :pointer #| (:struct wlr-scene-tree) |#))
 
 #-HRT-DEBUG
 (declaim (inline hrt-scene-layer-add-view))
 (cffi:defcfun ("hrt_scene_layer_add_view" hrt-scene-layer-add-view) :void
-  (layer (:pointer (:struct hrt-scene-layer)))
+  (layer :pointer #| (:struct wlr-scene-tree) |#)
   (view (:pointer (:struct hrt-view))))
 
 #-HRT-DEBUG
@@ -389,8 +386,8 @@ set the width and height of views."
 (cffi:defcfun ("hrt_scene_layer_transfer" hrt-scene-layer-transfer) :void
   "Transfer all of the views in the source layer to the
 destination layer"
-  (source (:pointer (:struct hrt-scene-layer)))
-  (destination (:pointer (:struct hrt-scene-layer))))
+  (source :pointer #| (:struct wlr-scene-tree) |#)
+  (destination :pointer #| (:struct wlr-scene-tree) |#))
 
 #-HRT-DEBUG
 (declaim (inline hrt-scene-group-layers))
@@ -402,7 +399,7 @@ destination layer"
 (cffi:defcfun ("hrt_scene_create_fullscreen_node" hrt-scene-create-fullscreen-node) (:pointer (:struct hrt-scene-fullscreen-node))
   "Create a hrt_scene_fullscreen_layer with a black bacground of the given size.
 Mode the hrt_view inside the node, removing it from where ever it was in the scene tree."
-  (layer (:pointer (:struct hrt-scene-layer)))
+  (layer :pointer #| (:struct wlr-scene-tree) |#)
   (view (:pointer (:struct hrt-view)))
   (output (:pointer (:struct hrt-output))))
 
@@ -711,7 +708,7 @@ intial placement."
 #-HRT-DEBUG
 (declaim (inline hrt-border-box-create))
 (cffi:defcfun ("hrt_border_box_create" hrt-border-box-create) (:pointer (:struct hrt-border-box))
-  (parent (:pointer (:struct hrt-scene-layer)))
+  (parent :pointer #| (:struct wlr-scene-tree) |#)
   (style (:pointer (:struct hrt-border-box-style)))
   (x :int)
   (y :int)
