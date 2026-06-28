@@ -19,7 +19,7 @@ void hrt_border_box_style_update(struct hrt_border_box_style *style,
                                  enum hrt_border_style border, float color[4],
                                  double line_width);
 
-struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
+struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
                                              struct hrt_border_box_style *style,
                                              int x, int y, int width,
                                              int height);

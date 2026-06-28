@@ -38,13 +38,9 @@ struct hrt_scene_group {
     struct wlr_scene_tree *layers;
 };
 
-struct hrt_scene_layer {
-    struct wlr_scene_tree *tree;
-};
-
 struct hrt_scene_fullscreen_node {
     /// the tree holding the background node as well as the view:
-    struct hrt_scene_layer layer;
+    struct wlr_scene_tree *layer;
     struct wlr_scene_rect *background;
     struct hrt_view *view;
 };
@@ -63,19 +59,19 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group);
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled);
 
-struct hrt_scene_layer *hrt_scene_layer_create(struct hrt_scene_group *group);
+struct wlr_scene_tree *hrt_scene_layer_create(struct hrt_scene_group *group);
 
-void hrt_scene_layer_destroy(struct hrt_scene_layer *layer);
+void hrt_scene_layer_destroy(struct wlr_scene_tree *layer);
 
-void hrt_scene_layer_add_view(struct hrt_scene_layer *layer,
+void hrt_scene_layer_add_view(struct wlr_scene_tree *layer,
                               struct hrt_view *view);
 
 /**
  * Transfer all of the views in the source layer to the
  * destination layer
  **/
-void hrt_scene_layer_transfer(struct hrt_scene_layer *source,
-                              struct hrt_scene_layer *destination);
+void hrt_scene_layer_transfer(struct wlr_scene_tree *source,
+                              struct wlr_scene_tree *destination);
 
 struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);
 
@@ -86,7 +82,7 @@ struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);
  * Mode the hrt_view inside the node, removing it from where ever it was in the scene tree.
  **/
 struct hrt_scene_fullscreen_node *
-hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
+hrt_scene_create_fullscreen_node(struct wlr_scene_tree *layer,
                                  struct hrt_view *view,
                                  struct hrt_output *output);
 

@@ -143,7 +143,7 @@ static bool buffer_accepts_input_p(struct wlr_scene_buffer *buffer, double *sx,
     return false;
 }
 
-struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
+struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
                                              struct hrt_border_box_style *style,
                                              int x, int y, int width,
                                              int height) {
@@ -161,8 +161,7 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
 
     box->style = style;
 
-    box->scene_buffer =
-        wlr_scene_buffer_create(parent->tree, &box->buffer->base);
+    box->scene_buffer = wlr_scene_buffer_create(parent, &box->buffer->base);
     if (!box->scene_buffer) {
         wlr_log(WLR_ERROR, "Failed to build wlr_scene_buffer");
         goto error;
