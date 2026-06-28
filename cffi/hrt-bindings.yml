@@ -27,6 +27,7 @@ enum-constants:
     names:
     - window-gravity
     - hrt-border-style
+    - hrt-layer-shell-keyboard-interactivity
 make-inline:
   - include:
       match: "hrt.*"

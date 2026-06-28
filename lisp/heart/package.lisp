@@ -7,7 +7,9 @@
            #:wl-keyboard-key-state
            #:+wl-keyboard-key-state-released+
            #:+wl-keyboard-key-state-pressed+
-           #:+wl-keyboard-key-state-repeated+))
+           #:+wl-keyboard-key-state-repeated+
+           #:zwlr-layer-surface-v1-keyboard-interactivity
+           #:zwlr-layer-shell-v1-layer))
 
 (defpackage #:wlr
   (:use :cl #:wayland)
@@ -35,6 +37,7 @@
            #:layer-surface-mapped
            #:layer-surface-unmapped
            #:layers-reconfigured
+           #:make-layer-surface
            #:new-view
            #:view-size-changed
            #:hrt-view
@@ -149,6 +152,10 @@
            #:load-foreign-libraries
            ;; layer shell methods
            #:layer-surface-output
+           #:hrt-layer-surface-output
+           #:layer-surface-keyboard-interactivity
+           #:layer-changed
+           #:keyboard-interactivity-updated
            #:hrt-layer-shell-surface-set-output
            #:hrt-layer-shell-surface-abort
            #:hrt-layer-shell-surface-place
