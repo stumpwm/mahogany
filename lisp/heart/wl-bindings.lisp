@@ -23,3 +23,8 @@
   +wl-keyboard-key-state-released+
   +wl-keyboard-key-state-pressed+
   +wl-keyboard-key-state-repeated+)
+
+(cffi:defcenum zwlr-layer-surface-v1-keyboard-interactivity
+  (:keyboard-interactivity-none 0)
+  (:keyboard-interactivity-exclusive 1)
+  (:keyboard-interactivity-on-demand 2))
