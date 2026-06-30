@@ -100,19 +100,13 @@
                    (current-frame mahogany-group-current-frame)
                    (hidden-views mahogany-group-hidden-views))
       group
-    (multiple-value-bind (x y)
-        (hrt:output-position output)
-      (multiple-value-bind (width height)
-          (hrt:output-resolution output)
-        (let ((new-tree (tree:tree-output-add tiled-container output
-                                              :x x :y y
-                                              :width width :height height)))
-          (setf (gethash (hrt:output-full-name output) output-map) new-tree)
-          (when (not current-frame)
-            (let ((first-leaf (tree:find-first-leaf new-tree)))
-              (group-focus-frame group first-leaf seat)
-              (alexandria:when-let ((spare (%pop-hidden-item hidden-views)))
-                (setf (tree:frame-view first-leaf) spare)))))))
+    (let ((new-tree (tree:tree-output-add tiled-container output)))
+      (setf (gethash (hrt:output-full-name output) output-map) new-tree)
+      (when (not current-frame)
+        (let ((first-leaf (tree:find-first-leaf new-tree)))
+          (group-focus-frame group first-leaf seat)
+          (alexandria:when-let ((spare (%pop-hidden-item hidden-views)))
+            (setf (tree:frame-view first-leaf) spare)))))
     (log-string :trace "Group map: ~S" output-map)))
 
 (defun group-rearrange-output (group output)

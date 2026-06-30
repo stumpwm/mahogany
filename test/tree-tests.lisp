@@ -7,11 +7,23 @@
 
 (defstruct (mock-output (:include mahogany/core:output)))
 
+(defun container-add-mock-output (container
+                                  &key (x 0) (y 0) (width 100) (height 100))
+  (cl-mock:dflet ((hrt:output-position
+                     (output)
+                     (declare (ignore output))
+                     (values x y))
+                    (hrt:output-resolution
+                     (output)
+                     (declare (ignore output))
+                     (values width height)))
+    (tree:tree-output-add container (make-mock-output))))
+
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree:layer-container
                                   :hrt-layer (cffi:null-pointer))))
     (multiple-value-bind (output-node frame)
-        (tree:tree-output-add container (make-mock-output) :x x :y y :width width :height height)
+        (container-add-mock-output container :x x :y y :width width :height height)
       (values frame output-node))))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))
@@ -440,7 +452,7 @@
         (make-tree-for-tests)
       (declare (ignore frame))
       (let* ((container (tree:frame-parent output-node))
-             (output-node-2 (tree:tree-output-add container t)))
+             (output-node-2 (container-add-mock-output container)))
         (tree:remove-frame output-node-2)
         (is (eq (tree:frame-next output-node) (first (tree:tree-children output-node))))))))
 
@@ -451,7 +463,7 @@
         (make-tree-for-tests)
       (declare (ignore frame))
       (let* ((container (tree:frame-parent output-node))
-	         (output-node-2 (tree:tree-output-add container t)))
+	         (output-node-2 (container-add-mock-output container)))
         (tree:remove-frame output-node-2)
         (is (eq (tree:frame-prev output-node) (first (tree:tree-children output-node))))))))
 
