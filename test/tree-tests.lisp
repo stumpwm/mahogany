@@ -24,7 +24,7 @@
                                   :hrt-layer (cffi:null-pointer))))
     (multiple-value-bind (output-node frame)
         (container-add-mock-output container :x x :y y :width width :height height)
-      (values frame output-node))))
+      (values frame output-node container))))
 
 (defun make-tree-frame (children &key split-direction (x 0) (y 0) (width 100) (height 100))
   (let ((parent (make-instance  'tree:tree-frame
@@ -467,6 +467,34 @@
         (tree:remove-frame output-node-2)
         (is (eq (tree:frame-prev output-node) (first (tree:tree-children output-node))))))))
 
+(fiasco:deftest add-output-new-output-frame-next ()
+  (with-border-box-mocks ()
+    (multiple-value-bind (frame output-node)
+        (make-tree-for-tests)
+      (let* ((container (tree:frame-parent output-node))
+             (output-node-2 (container-add-mock-output container)))
+        (is (eq (tree:frame-next output-node-2) frame))))))
+
+(fiasco:deftest add-output-split-right-frame-next ()
+  (declare (optimize (debug 3) (speed 0)))
+  (with-border-box-mocks ()
+    (multiple-value-bind (frame output-node container)
+        (make-tree-for-tests)
+      (let* ((new-frame (tree:split-frame-h frame :direction :left))
+             (new-output (container-add-mock-output container))
+             (next-frame (tree:frame-next new-output)))
+        (is (eq next-frame new-frame))))))
+
+(fiasco:deftest add-output-split-right-frame-prev ()
+  (declare (optimize (debug 3) (speed 0)))
+  (with-border-box-mocks ()
+    (multiple-value-bind (frame output-node container)
+        (make-tree-for-tests)
+      (let* ((new-frame (tree:split-frame-h frame :direction :right))
+             (new-output (container-add-mock-output container))
+             (prev-frame (tree:frame-prev new-output)))
+        (is (eq prev-frame new-frame))))))
+
 (defstruct (mock-view (:include hrt::view)
                       (:constructor make-mock-view (hrt-view))))
 
@@ -502,3 +530,12 @@
                                            (when (eq output-node x)
                                              (setf visited t))))
           (is visited))))))
+
+(fiasco:deftest find-first-leaf-from-output-node ()
+  (declare (optimize (debug 3) (speed 0)))
+  (with-border-box-mocks ()
+    (multiple-value-bind (frame output-node)
+        (make-tree-for-tests)
+      (let* ((new-frame (tree:split-frame-h frame :direction :left))
+             (found (tree:find-first-leaf output-node)))
+        (is (eq new-frame found))))))

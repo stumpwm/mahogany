@@ -248,8 +248,8 @@ a view assigned to it."))
           (push new-output container-children)
           (push new-tree (tree-children new-output))
           (if prev-output
-              (let* ((prev-head (first (tree-children prev-output)))
-                     (prev-frame (frame-prev prev-head)))
+              (let* ((prev-frame (frame-prev prev-output))
+                     (prev-head (frame-next prev-frame)))
                 (setf (%frame-next prev-frame) new-tree
                       (%frame-prev new-tree) prev-frame
                       (%frame-prev prev-head) new-tree

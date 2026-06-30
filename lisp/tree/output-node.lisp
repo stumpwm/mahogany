@@ -15,24 +15,6 @@
 ;;  dimensions we need to worry about; the usable area for the tilted layers
 ;;  and the full area for the fullscreen windows. These methods don't differentiate.
 
-(defmethod frame-prev ((frame output-node))
-  (with-slots (children) frame
-    (frame-prev (first children))))
-
-(defmethod (setf %frame-prev) (prev (frame output-node))
-  (with-slots (children) frame
-    (let ((first-child (first children)))
-      (setf (%frame-prev first-child) prev))))
-
-(defmethod (setf %frame-next) (next (frame output-node))
-  (with-slots (children) frame
-    (let ((last-child (car (last children))))
-      (setf (%frame-next last-child) next))))
-
-(defmethod frame-next ((frame output-node))
-  (with-slots (children) frame
-    (frame-next (car (last children)))))
-
 (defun set-fullscreen (output-node view)
   "Set the given view to fullscreen on this output and return the previously fullscreened
 view, if there was one."

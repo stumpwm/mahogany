@@ -73,6 +73,7 @@
                 :depends-on ("log" "util" "interfaces" "heart")
                 :components ((:file "package")
                              (:file "tree-interface")
+                             (:file "tree-parent" :depends-on ("tree-interface"))
                              (:file "output-node" :depends-on ("tree-interface"))
                              (:file "frame" :depends-on ("tree-interface"))
                              (:file "view" :depends-on ("tree-interface"))))
