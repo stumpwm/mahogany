@@ -82,6 +82,8 @@
            #:output-removed
            #:output-layout-changed
            ;; output methods:
+           #:output-scene
+           #:output-scene-layer
            #:output-resolution
            #:output-position
            #:output-usable-area
@@ -157,5 +159,5 @@
            #:keyboard-interactivity-updated
            #:hrt-layer-shell-surface-set-output
            #:hrt-layer-shell-surface-abort
-           #:hrt-layer-shell-surface-place
+           #:layer-shell-surface-place
            #:hrt-layer-shell-finish-init))

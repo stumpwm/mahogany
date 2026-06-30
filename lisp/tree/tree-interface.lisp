@@ -100,19 +100,7 @@ should not be directly instantiated; inherit from it instead."))
    (focused :initarg :focused
             :reader frame-focused
             :initform nil
-            :type boolean)
-   (background-layer :initarg :background-layer
-                     :type layer-container
-                     :reader output-node-background)
-   (bottom-layer :initarg :background-layer
-                 :type layer-container
-                 :reader output-node-bottom)
-   (top-layer :initarg :background-layer
-              :type layer-container
-              :reader output-node-top)
-   (overlay-layer :initarg :background-layer
-                  :type layer-container
-                  :reader output-node-overlay))
+            :type boolean))
   (:documentation
    "A node in the frame tree that contains the tiled frames tied to
 a specific output."))
@@ -241,9 +229,12 @@ a view assigned to it."))
   (do ((cur-frame frame (frame-parent cur-frame)))
     ((typep cur-frame 'layer-container) cur-frame)))
 
-(defun tree-output-add (layer-container output)
+(defun tree-output-add (layer-container output-container
+                        &aux (output (output-container-output
+                                      output-container)))
   "Add a new output node to the layer container. Returns (output-node new-view-frame)."
-  (declare (type layer-container layer-container))
+  (declare (type layer-container layer-container)
+           (type output-container output-container))
   (multiple-value-bind (x y)
       (hrt:output-position output)
     (multiple-value-bind (width height)
@@ -251,7 +242,7 @@ a view assigned to it."))
       (with-accessors ((container-children tree-children)) layer-container
         (let* ((new-output (make-instance 'output-node
                                           :parent layer-container
-                                          :output output))
+                                          :output output-container))
                (new-tree (make-instance 'view-frame :x x :y y
                                                     :width width :height height
                                                     :parent new-output))

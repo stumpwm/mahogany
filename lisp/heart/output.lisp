@@ -103,3 +103,41 @@
 (defun output-serial (output)
   (declare (type output output))
   (hrt-output-serial (output-hrt-output output)))
+
+(declaim (inline output-scene))
+(defun output-scene (output)
+  (declare (type output output))
+  (cffi:foreign-slot-value (output-hrt-output output)
+                           '(:struct hrt-output)
+                           'scene))
+
+(defun output-scene-layer (output-scene layer)
+  (declare (type cffi:foreign-pointer output-scene))
+  (ecase layer
+    (:layer-background
+     (cffi:foreign-slot-value output-scene '(:struct hrt-scene-output)
+                              'background))
+    (:layer-bottom
+     (cffi:foreign-slot-value output-scene '(:struct hrt-scene-output)
+                               'bottom))
+    (:layer-top
+     (cffi:foreign-slot-value output-scene '(:struct hrt-scene-output)
+                               'top))
+    (:layer-overlay
+     (cffi:foreign-slot-value output-scene '(:struct hrt-scene-output)
+                               'overlay))))
+
+(define-compiler-macro output-scene-layer (&whole whole output-scene layer)
+  (if (constantp layer)
+      (let ((slot-name (ecase layer
+                         (:layer-background
+                          'background)
+                         (:layer-bottom
+                          'bottom)
+                         (:layer-top
+                          'top)
+                         (:layer-overlay
+                          'overlay))))
+        `(cffi:foreign-slot-value ,output-scene '(:struct hrt-scene-output)
+                                  (quote ,slot-name)))
+      whole))

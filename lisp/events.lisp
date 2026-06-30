@@ -132,5 +132,5 @@
 (hrt:define-hrt-callback handle-layer-shell-layer-changed :void
     ((surface :pointer))
     ()
-  (log-string :trace "Surface ~S moved to layer ~S"
-              surface surface))
+  (silence-notes (log-string :trace "Surface ~S moved to layer ~S"
+                             surface surface)))

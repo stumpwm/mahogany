@@ -80,34 +80,36 @@
                    (groups state-groups)
                    (scene mahogany-state-scene))
       state
-    (let ((mh-output (hrt:make-output hrt-output)))
+    (let* ((mh-output (hrt:make-output hrt-output))
+           (output-container (tree::make-output-container mh-output)))
       (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
       (hrt:output-init mh-output
                        (let ((output-match-data (find-output-config mh-output)))
                          (if output-match-data
                              (output-match-data-config output-match-data)
                              nil)))
-      (vector-push-extend mh-output outputs)
+      (vector-push-extend output-container outputs)
       (loop for g across groups
-            do (group-add-output g mh-output (server-seat state))))))
+            do (group-add-output g output-container (server-seat state))))))
 
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)
   (declare (type mahogany-state state))
   (find hrt-output (state-outputs state)
-        :key #'hrt:output-hrt-output
+        :key #'tree::output-container-output-ptr
         :test #'cffi:pointer-eq))
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs state-outputs)
                    (groups state-groups))
       state
-    (let ((mh-output (%find-output hrt-output state)))
+    (let* ((output-container (%find-output hrt-output state))
+          (mh-output (tree::output-container-output output-container)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
       (loop for g across groups
-            do (group-remove-output g mh-output (server-seat state)))
+            do (group-remove-output g output-container (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
-      (setf outputs (delete mh-output outputs :test #'equalp))
+      (setf outputs (delete output-container outputs))
       (hrt:destroy-output mh-output))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
@@ -167,9 +169,10 @@
   (log-string :debug "layer shell layers re-arranged on output ~S"
               (hrt:output-full-name output))
   (hrt:with-view-transaction ()
-    (with-accessors ((groups state-groups)) state
-      (loop for g across groups
-            do (group-rearrange-output g output)))))
+    (let ((hrt-output (tree:output-container-output output)))
+      (with-accessors ((groups state-groups)) state
+        (loop for g across groups
+              do (group-rearrange-output g hrt-output))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
@@ -280,7 +283,7 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((hrt-output (hrt:hrt-layer-surface-output hrt-layer-shell)))
-    (the (or hrt:output null) (%find-output hrt-output state))
+    (the (or tree::output-container null) (%find-output hrt-output state))
     (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
       (unless current-output
@@ -294,7 +297,8 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
   (declare (type mahogany-state state))
   (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
     (progn
-      (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
+      (hrt:layer-shell-surface-place hrt-layer-shell
+                                     output)
       (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
     (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
 
@@ -302,13 +306,14 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
   (declare (type mahogany-state state))
   (let* ((surfaces (state-layer-surfaces state))
          (new-surface (hrt:make-layer-surface hrt-layer-surface))
-         (output (%find-output (hrt:layer-surface-output new-surface) state))
+         (output-container (%find-output (hrt:layer-surface-output new-surface)
+                                         state))
          (interactivity (hrt:layer-surface-keyboard-interactivity new-surface)))
     (setf (gethash hrt-layer-surface surfaces) new-surface)
     (log-string
      :info
      "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
-     output
+     (tree::output-container-output output-container)
      (hrt::layer-surface-layer new-surface)
      interactivity)
     ;; If the surface can't be focused, don't do anything to place it.

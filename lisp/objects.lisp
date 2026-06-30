@@ -22,9 +22,11 @@
   (%keybindings nil :type list)
   (active-kmap-modes nil :type list)
   (%prefix-key (kbd "C-t") :type key)
-  (outputs (make-array 0 :element-type 'hrt:output :adjustable t :fill-pointer t)
-   :type (vector hrt:output *))
-  (groups (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t)
+  (outputs (make-array 0 :element-type 'tree::output-container
+                         :adjustable t :fill-pointer t)
+   :type (vector tree::output-container *))
+  (groups (make-array 0 :element-type 'mahogany-group
+                        :adjustable t :fill-pointer t)
    :type (vector mahogany-group *))
   (hidden-groups (ring-list:make-ring-list)
    :type ring-list:ring-list

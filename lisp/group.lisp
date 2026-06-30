@@ -92,15 +92,16 @@
     (tree:unmark-frame-focused frame seat)
     (setf current-frame nil)))
 
-(defun group-add-output (group output seat)
-  (declare (type hrt:output output)
+(defun group-add-output (group output-container seat
+                               &aux (output (tree::output-container-output output-container)))
+  (declare (type tree:output-container output-container)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
                    (tiled-container mahogany-group-tiled-container)
                    (current-frame mahogany-group-current-frame)
                    (hidden-views mahogany-group-hidden-views))
       group
-    (let ((new-tree (tree:tree-output-add tiled-container output)))
+    (let ((new-tree (tree:tree-output-add tiled-container output-container)))
       (setf (gethash (hrt:output-full-name output) output-map) new-tree)
       (when (not current-frame)
         (let ((first-leaf (tree:find-first-leaf new-tree)))
@@ -123,9 +124,8 @@
 to match."
   (log-string :debug "Reconfiguring group ~S outputs"
               (mahogany-group-name group))
-  (with-accessors ((output-map mahogany-group-output-map)) group
-    (loop for output across outputs
-          do (group-rearrange-output group output))))
+  (loop for output across outputs
+        do (group-rearrange-output group (tree:output-container-output output))))
 
 (defun %first-hash-table-value (table)
   (declare (type hash-table table)
@@ -140,12 +140,15 @@ to match."
          (output-node (tree:find-root-frame cur-frame)))
     output-node))
 
+(declaim (ftype (function (mahogany-group) (or null hrt:output)) group-current-output))
 (defun group-current-output (group)
   "Return the output that contains the group's currently focused frame"
-  (tree:output-node-output (%group-current-output-node group)))
+  (alexandria:when-let ((cur-output-node (%group-current-output-node group)))
+    (tree:output-container-output (tree:output-node-output cur-output-node))))
 
-(defun group-remove-output (group output seat)
-  (declare (type hrt:output output)
+(defun group-remove-output (group output-container seat
+                            &aux (output (tree::output-container-output output-container)))
+  (declare (type tree:output-container output-container)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
                    (hidden-views mahogany-group-hidden-views))
@@ -153,7 +156,7 @@ to match."
     (let* ((output-name (hrt:output-full-name output))
            (tree (gethash output-name output-map)))
       (remhash output-name output-map)
-      (when (equalp output (group-current-output group))
+      (when (equalp output-container (group-current-output group))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat)
         (alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
           (group-focus-frame group (tree:find-first-leaf other-tree) seat)))

@@ -52,6 +52,8 @@
            #:frame-prev
            #:frame-find-layer
            #:find-frame-if
+           #:output-container
+           #:output-container-output
            #:output-node
            #:output-node-output
            #:set-fullscreen
