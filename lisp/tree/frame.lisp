@@ -525,12 +525,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
       (format stream ":layer ~S :children ~S"
               hrt-layer children))))
 
-(defmethod print-object ((object tree-parent) stream)
-  (print-unreadable-object (object stream :type t)
-    (with-slots (children)
-        object
-      (format stream ":children ~S" children))))
-
 (defmethod print-object ((object tree-frame) stream)
   (print-unreadable-object (object stream :type t)
     (with-slots (width height x y children split-direction)
@@ -542,18 +536,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   (foreach-leaf (frame root)
     (unless (frame-view frame)
       (return-from find-empty-frame frame))))
-
-(defmethod find-empty-frame ((root tree-parent))
-  (dolist (tree (tree-children root))
-    (alexandria:when-let (empty (find-empty-frame tree))
-      (return-from find-empty-frame empty)))
-  nil)
-
-(defmethod find-view-frame ((root tree-parent) view)
-  (foreach-leaf (frame root)
-    (alexandria:if-let ((f (find-view-frame frame view)))
-      (return-from find-view-frame f)))
-  nil)
 
 (defun find-first-leaf (tree)
   (let ((prev-frame (frame-prev tree)))
@@ -577,12 +559,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
          (<  x (+ frame-x frame-width))
          (<= frame-y y)
          (<  y (+ frame-y frame-height)))))
-
-(defmethod frame-at ((root tree-parent) x y)
-  (declare (type real x y))
-  (dolist (cur-frame (tree-children root))
-    (when (in-frame-p cur-frame x y)
-      (return-from frame-at (frame-at cur-frame x y)))))
 
 (defmethod frame-at ((frame frame) x y)
   (declare (type real x y))
