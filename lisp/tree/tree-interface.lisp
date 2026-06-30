@@ -229,29 +229,34 @@ a view assigned to it."))
   (do ((cur-frame frame (frame-parent cur-frame)))
     ((typep cur-frame 'layer-container) cur-frame)))
 
-(defun tree-output-add (layer-container output &key (x 0) (y 0) (width 100) (height 100))
+(defun tree-output-add (layer-container output)
   "Add a new output node to the layer container. Returns (output-node new-view-frame)."
   (declare (type layer-container layer-container))
-  (with-accessors ((container-children tree-children)) layer-container
-    (let* ((new-output (make-instance 'output-node
-                                      :parent layer-container
-                                      :output output))
-           (new-tree (make-instance 'view-frame :x x :y y :width width :height height
-                                    :parent new-output))
-           (prev-output (first container-children)))
-      ;; We'll need to place it somewhere in the middle of the list eventually:
-      (push new-output container-children)
-      (push new-tree (tree-children new-output))
-      (if prev-output
-          (let* ((prev-head (first (tree-children prev-output)))
-                 (prev-frame (frame-prev prev-head)))
-            (setf (%frame-next prev-frame) new-tree
-                  (%frame-prev new-tree) prev-frame
-                  (%frame-prev prev-head) new-tree
-                  (%frame-next new-tree) prev-head))
-          (setf (%frame-next new-tree) new-tree
-                (%frame-prev new-tree) new-tree))
-      (values new-output new-tree))))
+  (multiple-value-bind (x y)
+      (hrt:output-position output)
+    (multiple-value-bind (width height)
+        (hrt:output-resolution output)
+      (with-accessors ((container-children tree-children)) layer-container
+        (let* ((new-output (make-instance 'output-node
+                                          :parent layer-container
+                                          :output output))
+               (new-tree (make-instance 'view-frame :x x :y y
+                                                    :width width :height height
+                                                    :parent new-output))
+               (prev-output (first container-children)))
+          ;; We'll need to place it somewhere in the middle of the list eventually:
+          (push new-output container-children)
+          (push new-tree (tree-children new-output))
+          (if prev-output
+              (let* ((prev-head (first (tree-children prev-output)))
+                     (prev-frame (frame-prev prev-head)))
+                (setf (%frame-next prev-frame) new-tree
+                      (%frame-prev new-tree) prev-frame
+                      (%frame-prev prev-head) new-tree
+                      (%frame-next new-tree) prev-head))
+              (setf (%frame-next new-tree) new-tree
+                    (%frame-prev new-tree) new-tree))
+          (values new-output new-tree))))))
 
 (defmacro foreach-leaf ((var frame) &body body)
   (let ((stack-var (gensym "stack"))
