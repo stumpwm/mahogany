@@ -40,3 +40,13 @@ OUTPUT-PROPERTIES :
 #+END_SRC
 
 Note that screen mirroring is not supported yet.
+
+** Configuration Priority
+
+When there are mulitple configurations that could match the same
+output, the one with the most specificity is chosen. The order of
+precidence for outputs are =:name=, =:make=, =model=, and =serial=. A
+configuration with a property with higher precidence is picked over
+ones with less precidence, even if more properties match. For example,
+if a =serial= property matches, it will always have precidence over a
+configuration without that property.

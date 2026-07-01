@@ -64,7 +64,7 @@
         (push match-data settings)))
     (%make-output-layout-config name settings)))
 
-(defvar *output-configurations* (make-hash-table)
+(defvar *output-configurations* (make-hash-table :test 'equalp)
   "Name output configurations that define how a single output should be configured.")
 
 (defmacro define-output-config (name &body config)
@@ -73,7 +73,7 @@
        (setf (gethash ,name-symb *output-configurations*)
              (build-output-match-data (quote ,config))))))
 
-(defvar *output-layout-configurations* (make-hash-table)
+(defvar *output-layout-configurations* (make-hash-table :test 'equalp)
   "Named output layout configurations that define how a set of outputs
 should be configured and laid out.")
 
@@ -83,7 +83,7 @@ should be configured and laid out.")
        (setf (gethash ,name-symb *output-layout-configurations*)
              (make-output-layout-config ,name-symb (quote ,outputs))))))
 
-(defun output-match-data-matches-p (output match-data)
+(defun score-output-match-data-match (output match-data)
   (declare (type hrt:output output)
            (type output-match-data match-data))
   (with-accessors ((name output-match-data-name)
@@ -91,18 +91,34 @@ should be configured and laid out.")
                    (model output-match-data-model)
                    (serial output-match-data-serial))
       match-data
-    (macrolet ((present-compare (match-accessor val)
-                 `(if ,match-accessor
-                      (string= ,match-accessor ,val)
-                      t)))
-      (and
-       (present-compare name (hrt:output-name output))
-       (present-compare make (hrt:output-make output))
-       (present-compare model (hrt:output-model output))
-       (present-compare serial (hrt:output-serial output))))))
+    (macrolet ((present-compare (match-accessor val score)
+                 `(if (and ,match-accessor (string= ,match-accessor ,val))
+                      ,score
+                      0)))
+      (+
+       (present-compare name (hrt:output-name output) 1)
+       (present-compare make (hrt:output-make output) 2)
+       (present-compare model (hrt:output-model output) 4)
+       (present-compare serial (hrt:output-serial output) 8)))))
 
 (defun find-output-config (output)
   "Find an individual output configuration that matches the given output."
-  (loop :for c :being :the :hash-value :of *output-configurations*
-        :when (output-match-data-matches-p output c)
-          :return c))
+  (let ((score 0))
+    (with-hash-table-iterator (iter *output-configurations*)
+      (multiple-value-bind (more key matching)
+          (iter)
+        (declare (ignore key))
+        (unless more
+          (return-from find-output-config))
+        (setf score (score-output-match-data-match output matching))
+        (loop
+          (multiple-value-bind (more key cur)
+              (iter)
+            (declare (ignore key))
+            (unless more
+              (return))
+            (let ((cur-score (score-output-match-data-match output cur)))
+              (when (> cur-score score)
+                (setf score cur-score
+                      matching cur)))))
+        (values matching score)))))

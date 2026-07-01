@@ -1,8 +1,17 @@
 (defpackage #:mahogany/test/util
   (:use :cl)
-  (:export #:define-matrix))
+  (:export #:define-matrix
+           #:mock-output
+           #:make-mock-output
+           #:mock-view
+           #:make-mock-view))
 
 (in-package #:mahogany/test/util)
+
+(defstruct (mock-output (:include mahogany/core:output)))
+
+(defstruct (mock-view (:include hrt::view)
+                      (:constructor make-mock-view (hrt-view))))
 
 (defun build-func-code (fn-name-string var-list body)
   (dolist (v var-list)
