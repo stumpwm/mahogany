@@ -489,24 +489,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                (funcall cleanup-func child))))))
   (%replace-frame root frame))
 
-(defmethod frame-prev ((frame tree-frame))
-  (with-slots (children) frame
-    (frame-prev (first children))))
-
-(defmethod (setf %frame-prev) (prev (frame tree-frame))
-  (with-slots (children) frame
-    (let ((first-child (first children)))
-      (setf (%frame-prev first-child) prev))))
-
-(defmethod frame-next ((frame tree-frame))
-  (with-slots (children) frame
-    (frame-next (car (last children)))))
-
-(defmethod (setf %frame-next) (next (frame tree-frame))
-  (with-slots (children) frame
-    (let ((last-child (car (last children))))
-      (setf (%frame-next last-child) next))))
-
 ;; (defgeneric replace-frame ((frame frame) frame &optional (cleanup-func #'identity))
 ;;   (%replace-frame root frame)
 ;;   (funcall cleanup-func frame))
