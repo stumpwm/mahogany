@@ -5,8 +5,6 @@
 
 (in-package #:mahogany-tests/tree)
 
-(defstruct (mock-output (:include mahogany/core:output)))
-
 (defun container-add-mock-output (container
                                   &key (x 0) (y 0) (width 100) (height 100))
   (cl-mock:dflet ((hrt:output-position
@@ -496,9 +494,6 @@
              (new-output (container-add-mock-output container))
              (prev-frame (tree:frame-prev new-output)))
         (is (eq prev-frame new-frame))))))
-
-(defstruct (mock-view (:include hrt::view)
-                      (:constructor make-mock-view (hrt-view))))
 
 (fiasco:deftest find-view-finds-empty ()
   (with-border-box-mocks ()
