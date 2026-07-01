@@ -201,6 +201,12 @@ a view assigned to it."))
     (log-string :trace "frame unfocused")
     (setf (slot-value frame 'focused) nil)))
 
+(defgeneric frame-position (frame)
+  (:documentation "Returns the (X, Y) position of the frame as
+multiple values.")
+  (:method ((frame frame))
+    (values (frame-x frame) (frame-y frame))))
+
 ;; helper functions:
 
 (defgeneric root-frame-p (frame)
