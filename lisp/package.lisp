@@ -1,3 +1,10 @@
+(defpackage #:mahogany/output-config
+  (:use #:cl)
+  (:export #:find-output-configurations
+           #:find-output-config
+           #:define-output-config
+           #:define-output-layout))
+
 (defpackage #:mahogany
   (:use :cl
         #:alexandria
@@ -5,6 +12,11 @@
         #:mahogany/wm-interface
         #:mahogany/util
         #:mahogany/keyboard)
+  (:import-from #:mahogany/output-config
+                #:find-output-configurations
+                #:find-output-config
+                #:define-output-config
+                #:define-output-layout)
   (:import-from #:cl-interactive/input-method
                 #:input-method
                 #:prepare-completions-for-input-method

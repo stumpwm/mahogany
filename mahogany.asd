@@ -88,10 +88,10 @@
                (:file "package")
                (:file "command" :depends-on ("input-methods" "globals" "message"))
                (:file "objects" :depends-on ("package" "ring-list"))
-               (:file "output-config" :depends-on ("heart"))
+               (:file "output-config" :depends-on ("heart" "package"))
                (:file "message" :depends-on ("heart" "config"))
                (:file "group" :depends-on ("objects" "heart" "globals"))
-               (:file "state" :depends-on ("objects" "keyboard" "heart" "group"))
+               (:file "state" :depends-on ("objects" "keyboard" "heart" "group" "output-config"))
                (:file "globals" :depends-on ("objects" "system"))
                (:file "kmap-modes"
                 :depends-on ("objects" "globals" "keyboard" "input" "command"))

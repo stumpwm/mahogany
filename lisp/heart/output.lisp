@@ -14,6 +14,25 @@
   ;; a cons of (x . y)
   (position nil :type (or cons null) :read-only t))
 
+(defun output-config-merge (base override)
+  (macrolet ((override-val (accessor)
+                 `(if (,accessor override)
+                      (,accessor override)
+                      (,accessor base))))
+    (let ((dimensions (output-config-dimensions base))
+          (refresh-rate (output-config-refresh-rate base))
+          (custom-mode (output-config-custom-mode base)))
+      (when (output-config-dimensions override)
+        (setf dimensions (output-config-dimensions override)
+              refresh-rate (output-config-refresh-rate override)
+              custom-mode (output-config-custom-mode override))
+      (make-output-config
+       :scale (override-val output-config-scale)
+       :position (override-val output-config-position)
+       :dimensions dimensions
+       :refresh-rate refresh-rate
+       :custom-mode custom-mode)))))
+
 (defun %transfer-output-config (hrt-config config)
   (cffi:with-foreign-slots
       ((scale custom-mode width height refresh-rate custom-position x y)
