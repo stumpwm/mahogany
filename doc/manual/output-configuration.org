@@ -3,7 +3,7 @@
 ** Configuring individual Outputs
 
 To configure the position, scale, resolution and refresh rate of an
-output, you can use the =define-output-config= macro:
+individual output, you can use the =define-output-config= macro:
 
 #+BEGIN_SRC lisp
   (define-output-config "default"
@@ -24,24 +24,25 @@ resolution and position.
 The grammar for this macro is as follows:
 
 #+BEGIN_SRC text
-(define-output-config NAME OUTPUT-CLAUSE)
+  (define-output-config NAME OUTPUT-CLAUSE)
 
-NAME : name
+  NAME : name
 
-OUTPUT-CLAUSE : NAME-OR-DETAILS OUTPUT-PROPERTIES
+  OUTPUT-CLAUSE : NAME-OR-DETAILS OUTPUT-PROPERTIES
 
-NAME-OR-DETAILS : output-name | (&key name make model serial)
+  NAME-OR-DETAILS : output-name | (&key name make model serial)
 
-OUTPUT-PROPERTIES :
-     (:scale scale)
-   | (:mode width height &key refresh custom)
-   | (:position x y)
-   | (:mirror NAME-OR-DETAILS)
+  OUTPUT-PROPERTIES :
+       (:scale scale)
+     | (:mode width height &key refresh custom)
+     | (:position x y)
+     | (:mirror NAME-OR-DETAILS) ;; Not supported yet
+     | (:enabled enabled)        ;; Not supported yet
 #+END_SRC
 
-Note that screen mirroring is not supported yet.
+Note that screen mirroring and disabling outputs is not supported yet.
 
-** Configuration Priority
+*** Configuration Priority
 
 When there are mulitple configurations that could match the same
 output, the one with the most specificity is chosen. The order of
@@ -50,3 +51,85 @@ configuration with a property with higher precidence is picked over
 ones with less precidence, even if more properties match. For example,
 if a =serial= property matches, it will always have precidence over a
 configuration without that property.
+
+
+** Configuring Output Layouts
+
+When multiple outputs are present, you can use the
+=define-output-layout= macro to declare configurations that are only
+active when certain outputs are connected. This macro is similar to
+=define-output-config=, but it takes a list of output properties
+instead of just a single one.
+
+For example, if you have a laptop that
+you use with different monitor setups, you can declare all
+setups, and mahogany will pick the closest matching one. Let's say
+there is a "theater" configuration, and a "desktop" configuration:
+
+#+BEGIN_SRC lisp
+  (mh::define-output-layout "theater"
+    ;; there's a single visio-branded TV
+    ((:make "visio")
+     (:scale 2))
+    ;; disable the laptop's screen (not implemented yet)
+    ((:name "eda")
+     (:enabled nil)))
+
+  (mh::define-output-layout "desktop"
+    ;; An external moditor is connected that is 1080p:
+    ((:name "DP-1" :make "HP")
+     (:position 0 0))
+    ;; Put the built-in monitor to the right:
+    ("eda"
+     (:position 1920 0)))
+#+END_SRC
+
+In this setup, if an output with a make of ="visio"= is connected, the
+="theather"= configuration is applied. If an output with make of "HP" is
+connected to the ="DP-1"= output, then the ="desktop"= configuration is
+applied.
+
+When an output is matched by both a =define-output-config= declaration
+and a =define-output-layout= configuration, the properties from the
+=define-output-config= declaration are applied unless they are
+overridden by the properties in =define-output-layout=. For example,
+if the following was also present in the configuration above, the
+="eda"= output would always have a scale of 2:
+
+#+BEGIN_SRC lisp
+  (mh::define-output-config "eda-default"
+    "eda"
+    (:scale 2))
+#+END_SRC
+
+*** Grammar
+
+#+BEGIN_SRC text
+  (define-output-layout NAME-OR-OPTIONS OUTPUT-CLAUSES)
+
+  NAME-OR-OPTIONS : name | (name priority)
+
+  OUTPUT-CLAUSES :
+       (NAME-OR-DETAILS OUTPUT-PROPERTIES)
+     | (NAME-OR-DETAILS OUTPUT-PROPERTIES) OUTPUT-CLAUSES
+
+  NAME-OR-DETAILS : output-name | (&key name make model serial)
+
+  OUTPUT-PROPERTIES :
+       (:scale scale)
+     | (:mode width height &key refresh custom)
+     | (:position x y)
+     | (:mirror NAME-OR-DETAILS) ;; Not supported yet
+     | (:enabled enabled)        ;; Not supported yet
+#+END_SRC
+
+*** Resolving Conflicts
+
+If multiple layouts could be applied with the current set of connected
+outputs, the following order is used to determine which one to use:
+1. The number of outputs matched; layouts with a higher number of
+   outputs will be preferred over ones with less.
+2. The priority of the layout as specified in the layout definitions
+3. The total specificity of the configuration of the individual output
+   matchers as defined in the
+   [[*Configuration Priority][configuration priority section]].
