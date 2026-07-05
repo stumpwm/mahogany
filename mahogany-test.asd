@@ -17,7 +17,9 @@ This file is a part of mahogany.
                (:file "output-config-tests" :depends-on ("util"))
 	           (:file "kmap-modes")
 	           (:file "config-system-tests")
-	           (:file "log-tests"))
+	           (:file "log-tests")
+               (:module "heart"
+                :components ((:file "output-tests"))))
   :description "Test System for mahogany."
   :perform (test-op :after (op c)
                     (uiop/package:symbol-call "FIASCO" "ALL-TESTS")))

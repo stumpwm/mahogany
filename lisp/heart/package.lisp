@@ -73,6 +73,7 @@
            #:output-init
            #:make-output-config
            #:output-config
+           #:output-config-merge
            #:hrt-keypress-info
            ;; output callbacks
            #:output-added
