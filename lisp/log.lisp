@@ -23,6 +23,16 @@
   "The file to print log messages")
 (declaim (type stream *log-output-file*))
 
+(declaim (type (vector string 7) +level-strings+))
+(alexandria:define-constant +level-strings+
+  (make-array 7
+              :element-type 'string
+              :initial-contents
+              (mapcar (lambda (x)
+                        (string-upcase (format nil "~5A" x)))
+                      '(:ignore :fatal :error :warn :info :debug :trace)))
+  :test 'equalp)
+
 ;; log-string is used in this file, so get-print-data needs to
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -36,7 +46,18 @@
       (:warn   (values 3 :yellow))
       (:error  (values 2 :red))
       (:fatal  (values 1 :red))
-      (:ignore (values 0)))))
+      (:ignore (values 0))))
+
+  (defun info-line (pkg lvl)
+    ;; (declare (type package pkg)
+    ;;          (type (integer 0 7) lvl))
+    (let ((name (string-downcase (or (first (package-nicknames pkg))
+                                     (package-name pkg)))))
+      (format nil "[~A] ~A - "
+              (if (> (length name) 14)
+                  (concatenate 'string (subseq name 0 11) "...")
+                  (format nil "~14A" name))
+              (aref +level-strings+ lvl)))))
 
 ;; if you need to add more log levels, you may need to recompile, as
 ;; the level is translated to a number at read time. See log-string.
@@ -53,12 +74,18 @@
     (1  (values :fatal :red))
     (0 (values :ignore))))
 
-(defun %log-stream (lvl color stream-fn)
-  (declare (optimize speed)
-           (type fixnum lvl)
+(define-compiler-macro info-line (&whole whole pkg lvl)
+  (if (and (constantp pkg) (constantp lvl))
+      (info-line pkg lvl)
+      whole))
+
+(defun %log-stream (lvl info-line color stream-fn)
+  (declare (optimize (speed 3))
+           (type (integer 0 7) lvl)
            (type (function (stream) (values &optional)) stream-fn))
   (when (>= *log-level* lvl)
     (let ((output *log-output-file*))
+      (write-string info-line output)
       (with-color (color :effect :bright :stream output)
         (funcall stream-fn output))
       (finish-output output))))
@@ -70,13 +97,13 @@
            (type (function (stream) (values &optional)) stream-fn))
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
-      (%log-stream lvl color stream-fn))))
+      (%log-stream lvl (info-line *package* lvl) color stream-fn))))
 
 (define-compiler-macro log-stream (&whole form log-lvl stream-fn)
   (if (constantp log-lvl)
       (unless (eql :ignore log-lvl)
         (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
-          `(%log-stream ,lvl ,color ,stream-fn)))
+          `(%log-stream ,lvl ,(info-line *package* lvl) ,color ,stream-fn)))
       (progn
         (alex:simple-style-warning
          "Missed optimization in log-stream: the log level is not specificed as a constant")
@@ -92,7 +119,7 @@ level is not high enough."
                           (values))))
 
 (defun term-colorable-p ()
-  (and (interactive-stream-p *standard-input*)
+  (and (interactive-stream-p *log-output-file*)
        (member :max-colors (terminfo:capabilities
                             (terminfo:set-terminal (uiop:getenv "TERM"))))))
 
@@ -123,7 +150,7 @@ level is not high enough."
 (defun (setf log-colored) (enablep)
   (setf cl-ansi-text:*enabled* enablep))
 
-(defun log-init (&key (level *log-level*) (output *standard-output*) (color t))
+(defun log-init (&key (level *log-level*) (output *debug-io*) (color t))
   "Initialize logging. Call this to setup colorized output, ect.
 It is not necessary to call this for logging to work properly, but coloring may be messed up.
 If *log-output-file* is changed, it is a good idea to call this function again.
