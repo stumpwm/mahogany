@@ -208,9 +208,9 @@ static void set_mode(struct wlr_output *output,
     wlr_output_state_set_mode(pending, best);
 }
 
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config) {
-    struct hrt_server *server     = output->server;
+static struct wlr_output_layout_output *
+hrt_output_set_config(struct hrt_server *server, struct hrt_output *output,
+                      struct hrt_output_config *config) {
     struct wlr_output *wlr_output = output->wlr_output;
     struct wlr_output_state state;
     wlr_output_state_init(&state);
@@ -239,7 +239,7 @@ bool hrt_output_init(struct hrt_output *output,
     if (!wlr_output_commit_state(wlr_output, &state)) {
         // FIXME: Actually do some error handling instead of just logging:
         wlr_log(WLR_ERROR, "Output state could not be committed");
-        return false;
+        return nullptr;
     }
     wlr_output_state_finish(&state);
 
@@ -252,6 +252,20 @@ bool hrt_output_init(struct hrt_output *output,
             wlr_output_layout_add_auto(server->output_layout, wlr_output);
     }
     assert(l_output != nullptr);
+    return l_output;
+}
+
+bool hrt_output_init(struct hrt_output *output,
+                     struct hrt_output_config *config) {
+    struct hrt_server *server     = output->server;
+    struct wlr_output *wlr_output = output->wlr_output;
+
+    struct wlr_output_layout_output *l_output =
+        hrt_output_set_config(server, output, config);
+    if (!l_output) {
+        return false;
+    }
+
     struct wlr_scene_output *scene_output =
         wlr_scene_output_create(server->scene, wlr_output);
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
@@ -303,31 +317,42 @@ static void handle_output_manager_apply(struct wl_listener *listener,
 static void handle_output_manager_test(struct wl_listener *listener,
                                        void *data) {}
 
+static int handle_request_modeset(void *server_ptr) {
+    struct hrt_server *server = server_ptr;
+    // struct wlr_output_layout *const layout = server->output_layout;
+
+    server->output_callback->output_modeset_requested();
+
+    wl_event_source_remove(server->modeset_timer);
+    server->modeset_timer = nullptr;
+
+    return 0;
+}
+
 static void handle_output_layout_changed(struct wl_listener *listener,
                                          void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, output_layout_changed);
-    struct wlr_output_layout *layout = data;
 
-    // There's probably a way to deal with changes to outputs individually,
-    // which may be more efficient in certain situations (but not others)
-    struct wlr_output_layout_output *output;
-    wl_list_for_each(output, &layout->outputs, link) {
-        struct wlr_output *wlr_output = output->output;
-        struct hrt_output *hrt_output = wlr_output->data;
-
-        // Since the layout change action should trigger the same
-        //  actions as arranging the layers, don't emit the event:
-        hrt_layer_shell_arrange_layers(hrt_output, false);
+    // Delaying the reconfiguration does two things:
+    //  1. Prevents a bunch of unneeded work upon startup when multiple
+    //     outputs are attached; the requests are effectively debounced.
+    //  2. Allows a nicer initialization order so that the reconfiguration
+    //     occurs after an output is fully initialized, not in the middle
+    //     of the process.
+    if (server->modeset_timer == nullptr) {
+        struct wl_event_loop *const event_loop =
+            wl_display_get_event_loop(server->wl_display);
+        server->modeset_timer =
+            wl_event_loop_add_timer(event_loop, handle_request_modeset, server);
+        wl_event_source_timer_update(server->modeset_timer, 10);
     }
-
-    server->output_callback->output_layout_changed();
 }
 
 static void check_callbacks(const struct hrt_output_callbacks *callbacks) {
     assert(callbacks->output_added != nullptr);
     assert(callbacks->output_removed != nullptr);
-    assert(callbacks->output_layout_changed != nullptr);
+    assert(callbacks->output_modeset_requested != nullptr);
 }
 
 bool hrt_server_output_init(struct hrt_server *server,

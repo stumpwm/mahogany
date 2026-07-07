@@ -43,7 +43,7 @@ struct hrt_output {
 struct hrt_output_callbacks {
     void (*output_added)(struct hrt_output *output);
     void (*output_removed)(struct hrt_output *output);
-    void (*output_layout_changed)();
+    void (*output_modeset_requested)();
 };
 
 /**

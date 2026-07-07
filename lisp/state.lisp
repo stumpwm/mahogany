@@ -157,9 +157,17 @@
           (log-string :trace "Hidden groups: ~S" hidden-groups))
         (log-string :error "could not find group to delete"))))
 
-(defun mahogany-state-output-reconfigure (state)
+(defun mahogany-state-modeset (state)
+  (declare (optimize (speed 3)))
   (hrt:with-view-transaction ()
-    (with-accessors ((groups state-groups)) state
+    (with-accessors ((groups state-groups)
+                     (outputs state-outputs))
+        state
+      (loop for o across outputs
+            ;; We don't emit the output reconfigure event, as the
+            ;; reconfigure event does it below:
+            ;; Should we refactor to use that method instead?
+            do (hrt:layer-shell-arrange-layers o nil))
       (loop for g across groups
             do (group-reconfigure-outputs g (state-outputs state))))))
 

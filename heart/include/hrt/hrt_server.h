@@ -37,6 +37,7 @@ struct hrt_server {
     struct wl_listener output_layout_changed;
     struct wl_listener output_manager_apply;
     struct wl_listener output_manager_test;
+    struct wl_event_source *modeset_timer;
 
     struct hrt_seat seat;
     struct hrt_scene_root *scene_root;

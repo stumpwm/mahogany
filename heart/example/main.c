@@ -180,7 +180,7 @@ static void layout_changed() {}
 static const struct hrt_output_callbacks output_callbacks = {
     .output_added          = &output_added_callback,
     .output_removed        = &output_removed_callback,
-    .output_layout_changed = &layout_changed,
+    .output_modeset_requested = &layout_changed,
 };
 
 static const struct hrt_seat_callbacks seat_callbacks = {

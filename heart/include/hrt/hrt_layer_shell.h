@@ -59,4 +59,10 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
  */
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface);
 
+/**
+ * Determine where the layer shell surfaces should sit on the output
+ * and set the output's usable area.
+ **/
+void hrt_layer_shell_arrange_layers(struct hrt_output *output, bool emit_event);
+
 #endif

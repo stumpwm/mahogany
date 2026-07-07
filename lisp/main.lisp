@@ -76,7 +76,7 @@ further up. "
     (init-callback-struct output-callbacks (:struct hrt:hrt-output-callbacks)
       (hrt:output-added handle-new-output)
       (hrt:output-removed handle-output-removed)
-      (hrt:output-layout-changed handle-output-layout-change))
+      (hrt:output-modeset-requested handle-modeset-requested))
     (init-callback-struct seat-callbacks (:struct hrt:hrt-seat-callbacks)
       (hrt:button-event handle-mouse-button-event)
       (hrt:wheel-event handle-mouse-wheel-event)

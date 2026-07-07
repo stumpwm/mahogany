@@ -78,7 +78,7 @@
            ;; output callbacks
            #:output-added
            #:output-removed
-           #:output-layout-changed
+           #:output-modeset-requested
            ;; output methods:
            #:output-resolution
            #:output-position
@@ -149,6 +149,7 @@
            #:load-foreign-libraries
            ;; layer shell methods
            #:layer-surface-output
+           #:layer-shell-arrange-layers
            #:hrt-layer-shell-surface-set-output
            #:hrt-layer-shell-surface-abort
            #:hrt-layer-shell-surface-place

@@ -90,10 +90,10 @@
   (silence-notes
    (mahogany-state-output-remove *compositor-state* output-ptr)))
 
-(hrt:define-hrt-callback handle-output-layout-change :void
+(hrt:define-hrt-callback handle-modeset-requested :void
     ()
     ()
-  (mahogany-state-output-reconfigure *compositor-state*))
+  (mahogany-state-modeset *compositor-state*))
 
 (hrt:define-hrt-callback handle-layer-shell-recieved :void
     ((surface :pointer))

@@ -255,7 +255,7 @@ well behaved ones should."
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
   (output-removed :pointer #| function ptr void (struct hrt_output *) |#)
-  (output-layout-changed :pointer #| function ptr void () |#))
+  (output-modeset-requested :pointer #| function ptr void () |#))
 
 #-HRT-DEBUG
 (declaim (inline hrt-output-init))
@@ -265,6 +265,13 @@ the output will not be displayed.
 @param output the output to initalized
 @param config the configuration to use. To pick the default values,
   pass nullptr."
+  (output (:pointer (:struct hrt-output)))
+  (config (:pointer (:struct hrt-output-config))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-output-set-config))
+(cffi:defcfun ("hrt_output_set_config" hrt-output-set-config) :pointer #| (:struct wlr-output-layout-output) |#
+  (server (:pointer (:struct hrt-server)))
   (output (:pointer (:struct hrt-output)))
   (config (:pointer (:struct hrt-output-config))))
 
@@ -589,6 +596,14 @@ intial placement."
   "Finish initializing the layer shell object"
   (surface (:pointer (:struct hrt-layer-shell-surface))))
 
+#-HRT-DEBUG
+(declaim (inline hrt-layer-shell-arrange-layers))
+(cffi:defcfun ("hrt_layer_shell_arrange_layers" hrt-layer-shell-arrange-layers) :void
+  "Determine where the layer shell surfaces should sit on the output
+and set the output's usable area."
+  (output (:pointer (:struct hrt-output)))
+  (emit-event :bool))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
@@ -613,6 +628,7 @@ intial placement."
   (output-layout-changed (:struct wl-listener))
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
+  (modeset-timer :pointer #| (:struct wl-event-source) |#)
   (seat (:struct hrt-seat))
   (scene-root (:pointer (:struct hrt-scene-root)))
   (fallback-output (:pointer (:struct hrt-output)))
