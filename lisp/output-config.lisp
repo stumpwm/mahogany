@@ -274,8 +274,8 @@ should be configured and laid out.")
                  (hrt:output-config-merge base from-layout)))
           (base
            (setf (gethash o configurations)
-                 base)
+                 base))
           (from-layout
            (setf (gethash o configurations)
-                 from-layout))))))
+                 from-layout)))))
     configurations))
