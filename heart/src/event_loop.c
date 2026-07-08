@@ -9,10 +9,10 @@
 #include <hrt/hrt_event_loop.h>
 #include <wayland-server-core.h>
 
-struct wl_event_source *hrt_event_loop_add_fd(struct hrt_server *server, int fd,
-                                              uint32_t mask,
-                                              wl_event_loop_fd_func_t callback,
-                                              void *data) {
+struct wl_event_source *hrt_event_loop_add_fd(
+    struct hrt_server *server, int fd, uint32_t mask,
+    wl_event_loop_fd_func_t callback, void *data
+) {
     struct wl_event_loop *event_loop =
         wl_display_get_event_loop(server->wl_display);
     return wl_event_loop_add_fd(event_loop, fd, mask, callback, data);
@@ -22,9 +22,9 @@ void hrt_event_loop_remove(struct wl_event_source *source) {
     wl_event_source_remove(source);
 }
 
-struct hrt_fd_semaphore *
-hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
-                             hrt_event_loop_fd_func_t callback) {
+struct hrt_fd_semaphore *hrt_event_loop_semaphore_add(
+    struct hrt_server *server, int initval, hrt_event_loop_fd_func_t callback
+) {
     struct hrt_fd_semaphore *semaphore = calloc(1, sizeof(*semaphore));
     if (!semaphore) {
         return nullptr;
@@ -35,8 +35,8 @@ hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
         free(semaphore);
         return nullptr;
     }
-    semaphore->event_source = hrt_event_loop_add_fd(
-        server, fd, WL_EVENT_READABLE, callback, nullptr);
+    semaphore->event_source =
+        hrt_event_loop_add_fd(server, fd, WL_EVENT_READABLE, callback, nullptr);
 
     if (!semaphore->event_source) {
         close(fd);
@@ -46,13 +46,15 @@ hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
     return semaphore;
 }
 
-bool hrt_event_loop_semaphore_increment(struct hrt_fd_semaphore *fd,
-                                        uint64_t increment) {
+bool hrt_event_loop_semaphore_increment(
+    struct hrt_fd_semaphore *fd, uint64_t increment
+) {
     uint64_t buffer[1] = {increment};
     if (!write(fd->fd, buffer, sizeof(buffer))) {
         if (errno == EAGAIN) {
-            wlr_log(WLR_ERROR,
-                    "Incrementing semaphore failed: counter too big.");
+            wlr_log(
+                WLR_ERROR, "Incrementing semaphore failed: counter too big."
+            );
         } else {
             wlr_log(WLR_ERROR, "Cannot read semaphore");
         }

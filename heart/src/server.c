@@ -26,16 +26,16 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
-static void handle_headless_backend_destroyed(struct wl_listener *listener,
-                                              void *data) {
+static void
+handle_headless_backend_destroyed(struct wl_listener *listener, void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, destroy_listener.headless);
     wlr_log(WLR_DEBUG, "Headless Backend destroyed");
     wl_list_remove(&listener->link);
 }
 
-static void handle_auto_backend_destroyed(struct wl_listener *listener,
-                                          void *data) {
+static void
+handle_auto_backend_destroyed(struct wl_listener *listener, void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, destroy_listener.backend);
     wlr_log(WLR_DEBUG, "Backend destroyed");
@@ -48,7 +48,8 @@ bool hrt_server_init(
     const struct hrt_seat_callbacks *seat_callbacks,
     const struct hrt_view_callbacks *view_callbacks,
     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
-    enum wlr_log_importance log_level) {
+    enum wlr_log_importance log_level
+) {
     wlr_log_init(log_level, NULL);
     server->wl_display = wl_display_create();
     struct wl_event_loop *event_loop =
@@ -56,8 +57,9 @@ bool hrt_server_init(
     server->backend = wlr_backend_autocreate(event_loop, &server->session);
 
     server->destroy_listener.backend.notify = &handle_auto_backend_destroyed;
-    wl_signal_add(&server->backend->events.destroy,
-                  &server->destroy_listener.backend);
+    wl_signal_add(
+        &server->backend->events.destroy, &server->destroy_listener.backend
+    );
 
     if (!server->backend) {
         return false;
@@ -66,8 +68,10 @@ bool hrt_server_init(
     server->headless_backend = wlr_headless_backend_create(event_loop);
     server->destroy_listener.headless.notify =
         &handle_headless_backend_destroyed;
-    wl_signal_add(&server->headless_backend->events.destroy,
-                  &server->destroy_listener.headless);
+    wl_signal_add(
+        &server->headless_backend->events.destroy,
+        &server->destroy_listener.headless
+    );
 
     if (!server->headless_backend) {
         return false;
@@ -101,14 +105,13 @@ bool hrt_server_init(
 
     server->scene         = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
-    server->scene_root = hrt_scene_root_create(&server->scene->tree);
+    server->scene_root    = hrt_scene_root_create(&server->scene->tree);
 
     server->view_callbacks = view_callbacks;
 
     struct wlr_output *fallback =
-      wlr_headless_add_output(server->headless_backend, 800, 800);
+        wlr_headless_add_output(server->headless_backend, 800, 800);
     server->fallback_output = hrt_output_create(server, fallback);
-
 
     if (!hrt_xdg_shell_init(server)) {
         return false;
@@ -196,7 +199,7 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 struct hrt_scene_group *hrt_server_group_create(struct hrt_server *server) {
-  return hrt_scene_group_create(server->scene_root);
+    return hrt_scene_group_create(server->scene_root);
 }
 
 size_t hrt_server_struct_size() {

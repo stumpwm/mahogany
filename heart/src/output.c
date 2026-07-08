@@ -48,11 +48,11 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
 
     hrt_scene_output_destroy(output->scene);
 
-    if(output != server->fallback_output) {
-      wl_list_remove(&output->frame.link);
-      wl_list_remove(&output->request_state.link);
+    if (output != server->fallback_output) {
+        wl_list_remove(&output->frame.link);
+        wl_list_remove(&output->request_state.link);
     } else {
-      server->fallback_output = nullptr;
+        server->fallback_output = nullptr;
     }
     wl_list_remove(&output->destroy.link);
 
@@ -65,12 +65,12 @@ static float float_rand() {
     return (float)(rand() / (double)RAND_MAX); /* [0, 1.0] */
 }
 
-struct hrt_output *hrt_output_create(struct hrt_server *server,
-                                     struct wlr_output *wlr_output) {
+struct hrt_output *
+hrt_output_create(struct hrt_server *server, struct wlr_output *wlr_output) {
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
-    output->scene = hrt_scene_output_create(server->scene_root);
+    output->scene             = hrt_scene_output_create(server->scene_root);
 
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -79,8 +79,13 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     output->color[2] = float_rand();
     output->color[3] = 1.0;
 
-    printf("Output color: {%f, %f, %f, %f}\n", output->color[0],
-           output->color[1], output->color[2], output->color[3]);
+    printf(
+        "Output color: {%f, %f, %f, %f}\n",
+        output->color[0],
+        output->color[1],
+        output->color[2],
+        output->color[3]
+    );
 
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
@@ -107,8 +112,9 @@ static bool phys_size_is_aspect_ratio(struct wlr_output *output) {
 // 1 inch = 25.4 mm
 #define MM_PER_INCH 25.4
 
-static int compute_default_scale(struct wlr_output *output,
-                                 struct wlr_output_state *pending) {
+static int compute_default_scale(
+    struct wlr_output *output, struct wlr_output_state *pending
+) {
     struct wlr_box box = {.width = output->width, .height = output->height};
     if (pending->mode && pending->committed & WLR_OUTPUT_STATE_MODE) {
         switch (pending->mode_type) {
@@ -156,7 +162,8 @@ static void set_transform(struct wlr_output_state *state) {
 #if WLR_HAS_DRM_BACKEND
     if (wlr_output_is_drm(wlr_output)) {
         wlr_output_state_set_transform(
-            pending, wlr_drm_connector_get_panel_orientation(wlr_output));
+            pending, wlr_drm_connector_get_panel_orientation(wlr_output)
+        );
     } else {
 #endif
         wlr_output_state_set_transform(state, WL_OUTPUT_TRANSFORM_NORMAL);
@@ -165,9 +172,10 @@ static void set_transform(struct wlr_output_state *state) {
 #endif
 }
 
-static void set_mode(struct wlr_output *output,
-                     struct wlr_output_state *pending, int width, int height,
-                     float refresh_rate, bool custom) {
+static void set_mode(
+    struct wlr_output *output, struct wlr_output_state *pending, int width,
+    int height, float refresh_rate, bool custom
+) {
     // Not all floating point integers can be represented exactly
     // as (int)(1000 * mHz / 1000.f)
     // round() the result to avoid any error
@@ -177,8 +185,13 @@ static void set_mode(struct wlr_output *output,
 
     if (wl_list_empty(&output->modes) || custom) {
         const int applied_mhz = refresh_rate > 0 ? mhz : 0;
-        wlr_log(WLR_INFO, "Applying custom mode %d, %d, %d mhz", width, height,
-                applied_mhz);
+        wlr_log(
+            WLR_INFO,
+            "Applying custom mode %d, %d, %d mhz",
+            width,
+            height,
+            applied_mhz
+        );
         wlr_output_state_set_custom_mode(pending, width, height, applied_mhz);
         return;
     }
@@ -199,17 +212,24 @@ static void set_mode(struct wlr_output *output,
     }
     if (!best) {
         best = wlr_output_preferred_mode(output);
-        wlr_log(WLR_INFO,
-                "Configured mode (%dx%d@%.3fHz) not available, "
-                "applying preferred mode (%dx%d@%.3fHz)",
-                width, height, refresh_rate, best->width, best->height,
-                best->refresh / 1000.f);
+        wlr_log(
+            WLR_INFO,
+            "Configured mode (%dx%d@%.3fHz) not available, "
+            "applying preferred mode (%dx%d@%.3fHz)",
+            width,
+            height,
+            refresh_rate,
+            best->width,
+            best->height,
+            best->refresh / 1000.f
+        );
     }
     wlr_output_state_set_mode(pending, best);
 }
 
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config) {
+bool hrt_output_init(
+    struct hrt_output *output, struct hrt_output_config *config
+) {
     struct hrt_server *server     = output->server;
     struct wlr_output *wlr_output = output->wlr_output;
     struct wlr_output_state state;
@@ -217,8 +237,14 @@ bool hrt_output_init(struct hrt_output *output,
     wlr_output_state_set_enabled(&state, true);
 
     if (config && (config->width > 0 && config->height > 0)) {
-        set_mode(wlr_output, &state, config->width, config->height,
-                 config->refresh_rate, config->custom_mode);
+        set_mode(
+            wlr_output,
+            &state,
+            config->width,
+            config->height,
+            config->refresh_rate,
+            config->custom_mode
+        );
     } else if (!wl_list_empty(&wlr_output->modes)) {
         struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
         wlr_output_state_set_mode(&state, mode);
@@ -232,8 +258,9 @@ bool hrt_output_init(struct hrt_output *output,
         // same value as the clients'.
         wlr_output_state_set_scale(&state, round(config->scale * 120) / 120);
     } else {
-        wlr_output_state_set_scale(&state,
-                                   compute_default_scale(wlr_output, &state));
+        wlr_output_state_set_scale(
+            &state, compute_default_scale(wlr_output, &state)
+        );
     }
 
     if (!wlr_output_commit_state(wlr_output, &state)) {
@@ -245,8 +272,9 @@ bool hrt_output_init(struct hrt_output *output,
 
     struct wlr_output_layout_output *l_output;
     if (config && config->custom_position) {
-        l_output = wlr_output_layout_add(server->output_layout, wlr_output,
-                                         config->x, config->y);
+        l_output = wlr_output_layout_add(
+            server->output_layout, wlr_output, config->x, config->y
+        );
     } else {
         l_output =
             wlr_output_layout_add_auto(server->output_layout, wlr_output);
@@ -254,8 +282,9 @@ bool hrt_output_init(struct hrt_output *output,
     assert(l_output != nullptr);
     struct wlr_scene_output *scene_output =
         wlr_scene_output_create(server->scene, wlr_output);
-    wlr_scene_output_layout_add_output(server->scene_layout, l_output,
-                                       scene_output);
+    wlr_scene_output_layout_add_output(
+        server->scene_layout, l_output, scene_output
+    );
     output->wlr_scene = scene_output;
 
     output->frame.notify = handle_frame_notify;
@@ -285,8 +314,8 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     server->output_callback->output_added(output);
 }
 
-static void handle_output_manager_destroy(struct wl_listener *listener,
-                                          void *data) {
+static void
+handle_output_manager_destroy(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "Output Manager destroyed");
 
     struct hrt_server *server =
@@ -297,14 +326,14 @@ static void handle_output_manager_destroy(struct wl_listener *listener,
     wl_list_remove(&server->destroy_listener.output_manager.link);
 }
 
-static void handle_output_manager_apply(struct wl_listener *listener,
-                                        void *data) {}
+static void
+handle_output_manager_apply(struct wl_listener *listener, void *data) {}
 
-static void handle_output_manager_test(struct wl_listener *listener,
-                                       void *data) {}
+static void
+handle_output_manager_test(struct wl_listener *listener, void *data) {}
 
-static void handle_output_layout_changed(struct wl_listener *listener,
-                                         void *data) {
+static void
+handle_output_layout_changed(struct wl_listener *listener, void *data) {
     struct hrt_server *server =
         wl_container_of(listener, server, output_layout_changed);
     struct wlr_output_layout *layout = data;
@@ -330,8 +359,9 @@ static void check_callbacks(const struct hrt_output_callbacks *callbacks) {
     assert(callbacks->output_layout_changed != nullptr);
 }
 
-bool hrt_server_output_init(struct hrt_server *server,
-                            const struct hrt_output_callbacks *callbacks) {
+bool hrt_server_output_init(
+    struct hrt_server *server, const struct hrt_output_callbacks *callbacks
+) {
     check_callbacks(callbacks);
     server->output_callback   = callbacks;
     server->new_output.notify = handle_new_output;
@@ -342,8 +372,9 @@ bool hrt_server_output_init(struct hrt_server *server,
         wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
     server->output_layout_changed.notify = handle_output_layout_changed;
-    wl_signal_add(&server->output_layout->events.change,
-                  &server->output_layout_changed);
+    wl_signal_add(
+        &server->output_layout->events.change, &server->output_layout_changed
+    );
 
     server->output_manager = wlr_output_manager_v1_create(server->wl_display);
 
@@ -351,14 +382,19 @@ bool hrt_server_output_init(struct hrt_server *server,
         return false;
     }
     server->output_manager_apply.notify = handle_output_manager_apply;
-    wl_signal_add(&server->output_manager->events.apply,
-                  &server->output_manager_apply);
+    wl_signal_add(
+        &server->output_manager->events.apply, &server->output_manager_apply
+    );
     server->output_manager_test.notify = handle_output_manager_test;
-    wl_signal_add(&server->output_manager->events.apply,
-                  &server->output_manager_test);
-    server->destroy_listener.output_manager.notify = handle_output_manager_destroy;
-    wl_signal_add(&server->output_manager->events.destroy,
-                  &server->destroy_listener.output_manager);
+    wl_signal_add(
+        &server->output_manager->events.apply, &server->output_manager_test
+    );
+    server->destroy_listener.output_manager.notify =
+        handle_output_manager_destroy;
+    wl_signal_add(
+        &server->output_manager->events.destroy,
+        &server->destroy_listener.output_manager
+    );
 
     // temporary random seed:
     srand(time(0));

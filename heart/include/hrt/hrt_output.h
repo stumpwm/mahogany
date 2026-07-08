@@ -53,8 +53,9 @@ struct hrt_output_callbacks {
  * @param config the configuration to use. To pick the default values,
  *   pass nullptr.
  **/
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config);
+bool hrt_output_init(
+    struct hrt_output *output, struct hrt_output_config *config
+);
 
 /**
  * Get the effective output resolution of the output that can be used to

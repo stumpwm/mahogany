@@ -16,22 +16,24 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
-static size_t seat_translate_keysyms(struct hrt_seat *seat,
-                                     xkb_keycode_t keycode,
-                                     const xkb_keysym_t **keysyms,
-                                     uint32_t *modifiers) {
+static size_t seat_translate_keysyms(
+    struct hrt_seat *seat, xkb_keycode_t keycode, const xkb_keysym_t **keysyms,
+    uint32_t *modifiers
+) {
     struct wlr_keyboard *keyboard = &seat->keyboard_group->keyboard;
     *modifiers                    = wlr_keyboard_get_modifiers(keyboard);
     xkb_mod_mask_t consumed       = xkb_state_key_get_consumed_mods2(
-        keyboard->xkb_state, keycode, XKB_CONSUMED_MODE_XKB);
+        keyboard->xkb_state, keycode, XKB_CONSUMED_MODE_XKB
+    );
     *modifiers = *modifiers & ~consumed;
 
     return xkb_state_key_get_syms(keyboard->xkb_state, keycode, keysyms);
 }
 
-static bool execute_hardcoded_bindings(struct hrt_server *server,
-                                       const xkb_keysym_t *pressed_keysyms,
-                                       uint32_t modifiers, size_t keysyms_len) {
+static bool execute_hardcoded_bindings(
+    struct hrt_server *server, const xkb_keysym_t *pressed_keysyms,
+    uint32_t modifiers, size_t keysyms_len
+) {
     for (size_t i = 0; i < keysyms_len; ++i) {
         xkb_keysym_t keysym = pressed_keysyms[i];
 
@@ -64,7 +66,8 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
         const xkb_keysym_t *translated_keysyms;
         uint32_t translated_modifiers;
         size_t translated_keysyms_len = seat_translate_keysyms(
-            seat, keycode, &translated_keysyms, &translated_modifiers);
+            seat, keycode, &translated_keysyms, &translated_modifiers
+        );
 
         struct hrt_keypress_info key_info = {
             .keysyms      = translated_keysyms,
@@ -75,16 +78,20 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
         handled = seat->callbacks->keyboard_keypress_event(seat, &key_info);
 
         if (!handled) {
-            handled = execute_hardcoded_bindings(server, translated_keysyms,
-                                                 translated_modifiers,
-                                                 translated_keysyms_len);
+            handled = execute_hardcoded_bindings(
+                server,
+                translated_keysyms,
+                translated_modifiers,
+                translated_keysyms_len
+            );
         }
     }
 
     // TODO: I don't know if this condition is correct
     if (!handled) {
-        wlr_seat_keyboard_notify_key(seat->seat, event->time_msec,
-                                     event->keycode, event->state);
+        wlr_seat_keyboard_notify_key(
+            seat->seat, event->time_msec, event->keycode, event->state
+        );
     } else {
         wlr_log(WLR_DEBUG, "Keypress handled by keybinding");
     }
@@ -95,7 +102,8 @@ static void seat_handle_modifiers(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_modifiers);
 
     wlr_seat_keyboard_notify_modifiers(
-        seat->seat, &seat->keyboard_group->keyboard.modifiers);
+        seat->seat, &seat->keyboard_group->keyboard.modifiers
+    );
 }
 
 static void handle_keyboard_destroy(struct wl_listener *listener, void *data) {
@@ -116,7 +124,8 @@ void hrt_keyboard_init(struct hrt_seat *seat) {
     struct xkb_rule_names rules = {0};
     seat->xkb_context           = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     struct xkb_keymap *keymap   = xkb_map_new_from_names(
-        seat->xkb_context, &rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
+        seat->xkb_context, &rules, XKB_KEYMAP_COMPILE_NO_FLAGS
+    );
     wlr_keyboard_set_keymap(kb, keymap);
     xkb_keymap_unref(keymap);
 

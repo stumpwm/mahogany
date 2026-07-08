@@ -31,11 +31,9 @@ struct hrt_message_theme {
     int margin_y;
 };
 
-bool hrt_toast_message(struct hrt_server *server,
-                       struct hrt_output *output,
-                       const char *text,
-                       enum window_gravity gravity,
-                       struct hrt_message_theme *theme,
-                       int ms_delay);
+bool hrt_toast_message(
+    struct hrt_server *server, struct hrt_output *output, const char *text,
+    enum window_gravity gravity, struct hrt_message_theme *theme, int ms_delay
+);
 
 #endif

@@ -15,10 +15,10 @@ static void cairo_buffer_destroy(struct wlr_buffer *wlr_buffer) {
     free(buffer);
 }
 
-static bool cairo_buffer_begin_data_ptr_access(struct wlr_buffer *wlr_buffer,
-                                               uint32_t flags, void **data,
-                                               uint32_t *format,
-                                               size_t *stride) {
+static bool cairo_buffer_begin_data_ptr_access(
+    struct wlr_buffer *wlr_buffer, uint32_t flags, void **data,
+    uint32_t *format, size_t *stride
+) {
     struct hrt_cairo_buffer *buffer = wl_container_of(wlr_buffer, buffer, base);
     if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE)
         return false;

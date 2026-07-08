@@ -42,16 +42,22 @@ void hrt_border_box_style_ref(struct hrt_border_box_style *style) {
     atomic_fetch_add_explicit(&style->refcount, 1, memory_order_relaxed);
 }
 
-static bool draw_box(struct hrt_border_box_style *style,
-                     cairo_surface_t *surface, const double width,
-                     const double height, const double scale) {
+static bool draw_box(
+    struct hrt_border_box_style *style, cairo_surface_t *surface,
+    const double width, const double height, const double scale
+) {
     cairo_t *cairo = cairo_create(surface);
     if (!cairo) {
         wlr_log(WLR_ERROR, "Cannot create cairo surface context for border");
         return false;
     }
-    cairo_set_source_rgba(cairo, style->stroke_color[0], style->stroke_color[1],
-                          style->stroke_color[2], style->stroke_color[3]);
+    cairo_set_source_rgba(
+        cairo,
+        style->stroke_color[0],
+        style->stroke_color[1],
+        style->stroke_color[2],
+        style->stroke_color[3]
+    );
 
     const double scaled_line = style->line_width * scale;
     cairo_set_line_width(cairo, scaled_line);
@@ -64,8 +70,13 @@ static bool draw_box(struct hrt_border_box_style *style,
     // within the buffer.
     const double coordinate_offset = scaled_line == 1 ? 1.5 : (scaled_line / 2);
     const double dim_offset        = scaled_line == 1 ? 3 : scaled_line;
-    cairo_rectangle(cairo, coordinate_offset, coordinate_offset,
-                    width - dim_offset, height - dim_offset);
+    cairo_rectangle(
+        cairo,
+        coordinate_offset,
+        coordinate_offset,
+        width - dim_offset,
+        height - dim_offset
+    );
     cairo_stroke(cairo);
 
     cairo_destroy(cairo);
@@ -73,8 +84,9 @@ static bool draw_box(struct hrt_border_box_style *style,
     return true;
 }
 
-struct hrt_cairo_buffer *draw_box_surface(struct hrt_border_box_style *style,
-                                      int width, int height, float scale) {
+struct hrt_cairo_buffer *draw_box_surface(
+    struct hrt_border_box_style *style, int width, int height, float scale
+) {
     struct hrt_cairo_buffer *buffer = hrt_cairo_buffer_create(width, height);
     if (!buffer) {
         wlr_log(WLR_ERROR, "%s: cannot get pango layout", __func__);
@@ -89,8 +101,8 @@ struct hrt_cairo_buffer *draw_box_surface(struct hrt_border_box_style *style,
     return buffer;
 }
 
-static bool set_box_scale(struct hrt_border_box *box, int width, int height,
-                          double scale) {
+static bool
+set_box_scale(struct hrt_border_box *box, int width, int height, double scale) {
     struct wlr_box border_box;
     if (!compute_scaled_box(width, height, scale, &border_box)) {
         return false;
@@ -103,8 +115,8 @@ static bool set_box_scale(struct hrt_border_box *box, int width, int height,
     return true;
 }
 
-static void hrt_border_box_handle_destroy(struct wl_listener *listener,
-                                          void *data) {
+static void
+hrt_border_box_handle_destroy(struct wl_listener *listener, void *data) {
     struct hrt_border_box *box =
         wl_container_of(listener, box, listeners.destroy);
 
@@ -118,11 +130,11 @@ static void hrt_border_box_handle_destroy(struct wl_listener *listener,
     free(box);
 }
 
-static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
-                                  int height);
+static void
+hrt_border_box_redraw(struct hrt_border_box *box, int width, int height);
 
-static void border_box_handle_outputs_update(struct wl_listener *listener,
-                                             void *data) {
+static void
+border_box_handle_outputs_update(struct wl_listener *listener, void *data) {
     struct hrt_border_box *box =
         wl_container_of(listener, box, listeners.outputs_update);
     // struct wlr_scene_outputs_update_event *event = data;
@@ -138,15 +150,16 @@ static void border_box_handle_outputs_update(struct wl_listener *listener,
     }
 }
 
-static bool buffer_accepts_input_p(struct wlr_scene_buffer *buffer, double *sx,
-                                   double *sy) {
+static bool buffer_accepts_input_p(
+    struct wlr_scene_buffer *buffer, double *sx, double *sy
+) {
     return false;
 }
 
-struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
-                                             struct hrt_border_box_style *style,
-                                             int x, int y, int width,
-                                             int height) {
+struct hrt_border_box *hrt_border_box_create(
+    struct hrt_scene_layer *parent, struct hrt_border_box_style *style, int x,
+    int y, int width, int height
+) {
     struct hrt_border_box *box = calloc(1, sizeof(*box));
     if (!box) {
         wlr_log(WLR_ERROR, "Cannot alloc box");
@@ -185,15 +198,15 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
             return nullptr;
         }
 
-
         if (!set_box_scale(box, width, height, scale)) {
-          wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
-          goto error_scene;
+            wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
+            goto error_scene;
         }
     }
 
-    if (!scene_descriptor_assign(&box->scene_buffer->node,
-                                 HRT_SCENE_DESC_NON_INTERACTIVE, box)) {
+    if (!scene_descriptor_assign(
+            &box->scene_buffer->node, HRT_SCENE_DESC_NON_INTERACTIVE, box
+        )) {
         wlr_log(WLR_ERROR, "Failed to build scene descriptor");
         goto error;
     }
@@ -201,11 +214,14 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
     wlr_scene_node_set_enabled(&box->scene_buffer->node, true);
 
     box->listeners.destroy.notify = &hrt_border_box_handle_destroy;
-    wl_signal_add(&box->scene_buffer->node.events.destroy,
-                  &box->listeners.destroy);
+    wl_signal_add(
+        &box->scene_buffer->node.events.destroy, &box->listeners.destroy
+    );
     box->listeners.outputs_update.notify = border_box_handle_outputs_update;
-    wl_signal_add(&box->scene_buffer->events.outputs_update,
-                  &box->listeners.outputs_update);
+    wl_signal_add(
+        &box->scene_buffer->events.outputs_update,
+        &box->listeners.outputs_update
+    );
 
     wl_list_insert(&style->boxes, &box->link);
     hrt_border_box_style_ref(style);
@@ -213,8 +229,9 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
     return box;
 
 error_scene:
-    scene_descriptor_destroy(&box->scene_buffer->node,
-                             HRT_SCENE_DESC_NON_INTERACTIVE);
+    scene_descriptor_destroy(
+        &box->scene_buffer->node, HRT_SCENE_DESC_NON_INTERACTIVE
+    );
 error:
     wlr_buffer_drop(&box->buffer->base);
     free(box);
@@ -226,8 +243,8 @@ void hrt_border_box_destroy(struct hrt_border_box *box) {
     wlr_scene_node_destroy(&box->scene_buffer->node);
 }
 
-static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
-                                  int height) {
+static void
+hrt_border_box_redraw(struct hrt_border_box *box, int width, int height) {
     struct hrt_cairo_buffer *buffer =
         draw_box_surface(box->style, width, height, box->scale);
     if (!buffer) {
@@ -254,22 +271,23 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
     wlr_buffer_drop(&old->base);
 }
 
-void hrt_border_box_set_size(struct hrt_border_box *box, int width,
-                             int height) {
+void hrt_border_box_set_size(
+    struct hrt_border_box *box, int width, int height
+) {
     const struct wlr_buffer *const buff = &box->buffer->base;
     if (buff->width != width || buff->height != height) {
         hrt_border_box_redraw(box, width, height);
     }
 }
 
-void hrt_border_box_set_style(struct hrt_border_box *box,
-                              struct hrt_border_box_style *style) {
+void hrt_border_box_set_style(
+    struct hrt_border_box *box, struct hrt_border_box_style *style
+) {
     hrt_border_box_style_unref(box->style);
     hrt_border_box_style_ref(style);
-    box->style = style;
+    box->style                          = style;
     const struct wlr_buffer *const buff = &box->buffer->base;
-    hrt_border_box_redraw(box, buff->width,
-                          buff->height);
+    hrt_border_box_redraw(box, buff->width, buff->height);
 }
 
 void hrt_border_box_set_relative(struct hrt_border_box *box, int x, int y) {
@@ -280,17 +298,18 @@ void hrt_border_box_set_enabled(struct hrt_border_box *box, bool enabled) {
     wlr_scene_node_set_enabled(&box->scene_buffer->node, enabled);
 }
 
-static void box_style_update(struct hrt_border_box_style *style,
-                             enum hrt_border_style border, float color[4],
-                             double line_width) {
+static void box_style_update(
+    struct hrt_border_box_style *style, enum hrt_border_style border,
+    float color[4], double line_width
+) {
     style->border_style = border;
     memcpy(style->stroke_color, color, 4 * sizeof(float));
     style->line_width = line_width;
 }
 
-struct hrt_border_box_style *
-hrt_border_box_style_create(enum hrt_border_style border, float color[4],
-                            double line_width) {
+struct hrt_border_box_style *hrt_border_box_style_create(
+    enum hrt_border_style border, float color[4], double line_width
+) {
     struct hrt_border_box_style *style = calloc(1, sizeof(*style));
     box_style_update(style, border, color, line_width);
     atomic_init(&style->refcount, 1);
@@ -313,13 +332,17 @@ void hrt_border_box_style_unref(struct hrt_border_box_style *style) {
     }
 }
 
-void hrt_border_box_style_update(struct hrt_border_box_style *style,
-                                 enum hrt_border_style border, float color[4],
-                                 double line_width) {
+void hrt_border_box_style_update(
+    struct hrt_border_box_style *style, enum hrt_border_style border,
+    float color[4], double line_width
+) {
     box_style_update(style, border, color, line_width);
     struct hrt_border_box *border_box;
     wl_list_for_each(border_box, &style->boxes, link) {
-        hrt_border_box_redraw(border_box, border_box->buffer->base.width,
-                              border_box->buffer->base.height);
+        hrt_border_box_redraw(
+            border_box,
+            border_box->buffer->base.width,
+            border_box->buffer->base.height
+        );
     }
 }

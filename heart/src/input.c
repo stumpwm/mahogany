@@ -27,8 +27,8 @@ static void add_new_pointer(struct hrt_input *input, struct hrt_seat *seat) {
     wlr_cursor_attach_input_device(seat->cursor, input->wlr_input_device);
 }
 
-static uint32_t find_input_caps(struct hrt_seat *seat,
-                                struct hrt_input *input) {
+static uint32_t
+find_input_caps(struct hrt_seat *seat, struct hrt_input *input) {
     uint32_t caps = 0;
     wl_list_for_each(input, &seat->inputs, link) {
         switch (input->wlr_input_device->type) {
@@ -92,20 +92,21 @@ static void new_input_notify(struct wl_listener *listener, void *data) {
     wlr_seat_set_capabilities(seat->seat, caps);
 }
 
-static void handle_request_set_cursor(struct wl_listener *listener,
-                                      void *data) {
+static void
+handle_request_set_cursor(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, request_cursor);
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
 
     struct wlr_seat_client *focused = seat->seat->pointer_state.focused_client;
     if (focused == event->seat_client) {
-        wlr_cursor_set_surface(seat->cursor, event->surface, event->hotspot_x,
-                               event->hotspot_y);
+        wlr_cursor_set_surface(
+            seat->cursor, event->surface, event->hotspot_x, event->hotspot_y
+        );
     }
 }
 
-static void handle_request_set_selection(struct wl_listener *listener,
-                                      void *data) {
+static void
+handle_request_set_selection(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, request_selection);
 
     struct wlr_seat_request_set_selection_event *event = data;
@@ -113,21 +114,23 @@ static void handle_request_set_selection(struct wl_listener *listener,
     wlr_seat_set_selection(seat->seat, event->source, event->serial);
 }
 
-static void handle_request_set_primary_selection(struct wl_listener *listener,
-                                      void *data) {
-    struct hrt_seat *seat = wl_container_of(listener, seat, request_primary_selection);
+static void
+handle_request_set_primary_selection(struct wl_listener *listener, void *data) {
+    struct hrt_seat *seat =
+        wl_container_of(listener, seat, request_primary_selection);
 
-	struct wlr_seat_request_set_primary_selection_event *event = data;
-	wlr_seat_set_primary_selection(seat->seat, event->source, event->serial);
+    struct wlr_seat_request_set_primary_selection_event *event = data;
+    wlr_seat_set_primary_selection(seat->seat, event->source, event->serial);
 }
 
-static void handle_request_start_drag(struct wl_listener *listener,
-                                      void *data) {
+static void
+handle_request_start_drag(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, request_start_drag);
     struct wlr_seat_request_start_drag_event *event = data;
 
-    if (wlr_seat_validate_pointer_grab_serial(seat->seat, event->origin,
-                                              event->serial))
+    if (wlr_seat_validate_pointer_grab_serial(
+            seat->seat, event->origin, event->serial
+        ))
         wlr_seat_start_pointer_drag(seat->seat, event->drag, event->serial);
     else
         wlr_data_source_destroy(event->drag->source);
@@ -139,9 +142,8 @@ static void check_callbacks(const struct hrt_seat_callbacks *callbacks) {
     assert(callbacks->keyboard_keypress_event != nullptr);
 }
 
-static void handle_destroy_drag_icon(struct wl_listener *listener,
-                                     void *data) {
-	struct hrt_drag *hrt_drag = wl_container_of(listener, hrt_drag, destroy);
+static void handle_destroy_drag_icon(struct wl_listener *listener, void *data) {
+    struct hrt_drag *hrt_drag = wl_container_of(listener, hrt_drag, destroy);
 
     if (hrt_drag->icon_tree)
         wlr_scene_node_destroy(&hrt_drag->icon_tree->node);
@@ -154,35 +156,37 @@ static void handle_destroy_drag_icon(struct wl_listener *listener,
     free(hrt_drag);
 }
 
-static void handle_drag_motion(struct wl_listener *listener,
-                              void *data) {
-	struct hrt_drag *drag = wl_container_of(listener, drag, motion);
+static void handle_drag_motion(struct wl_listener *listener, void *data) {
+    struct hrt_drag *drag = wl_container_of(listener, drag, motion);
 
-    wlr_scene_node_set_position(&drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y);
+    wlr_scene_node_set_position(
+        &drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y
+    );
 }
 
-static void handle_start_drag(struct wl_listener *listener,
-                              void *data) {
-	struct hrt_seat *seat = wl_container_of(listener, seat, start_drag);
+static void handle_start_drag(struct wl_listener *listener, void *data) {
+    struct hrt_seat *seat = wl_container_of(listener, seat, start_drag);
 
-	struct wlr_drag *wlr_drag = data;
+    struct wlr_drag *wlr_drag = data;
 
     struct wlr_drag_icon *wlr_drag_icon = wlr_drag->icon;
     if (!wlr_drag_icon)
         return;
 
-    struct hrt_drag *drag = calloc (1, sizeof (struct hrt_drag));
+    struct hrt_drag *drag = calloc(1, sizeof(struct hrt_drag));
 
     if (drag == NULL) {
         wlr_log(WLR_DEBUG, "hrt_drag allocation issue");
         return;
     }
 
-    drag->seat = seat;
-    drag->drag = wlr_drag;
+    drag->seat     = seat;
+    drag->drag     = wlr_drag;
     wlr_drag->data = drag;
 
-    struct wlr_scene_tree *icon_tree = wlr_scene_drag_icon_create(seat->server->scene_root->overlay, wlr_drag_icon);
+    struct wlr_scene_tree *icon_tree = wlr_scene_drag_icon_create(
+        seat->server->scene_root->overlay, wlr_drag_icon
+    );
 
     if (!icon_tree) {
         wlr_log(WLR_DEBUG, "Failed to allocate drag icon scene tree");
@@ -197,7 +201,9 @@ static void handle_start_drag(struct wl_listener *listener,
     drag->destroy.notify = handle_destroy_drag_icon;
     wl_signal_add(&wlr_drag->events.destroy, &drag->destroy);
 
-    wlr_scene_node_set_position(&drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y);
+    wlr_scene_node_set_position(
+        &drag->icon_tree->node, drag->seat->cursor->x, drag->seat->cursor->y
+    );
 }
 
 static void handle_seat_destroy(struct wl_listener *listener, void *data) {
@@ -217,8 +223,10 @@ static void handle_seat_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&seat->destroy.seat.link);
 }
 
-bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
-                   const struct hrt_seat_callbacks *callbacks) {
+bool hrt_seat_init(
+    struct hrt_seat *seat, struct hrt_server *server,
+    const struct hrt_seat_callbacks *callbacks
+) {
     check_callbacks(callbacks);
     seat->callbacks        = callbacks;
     seat->server           = server;
@@ -232,8 +240,9 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     wl_list_init(&seat->inputs);
 
     seat->request_cursor.notify = handle_request_set_cursor;
-    wl_signal_add(&seat->seat->events.request_set_cursor,
-                  &seat->request_cursor);
+    wl_signal_add(
+        &seat->seat->events.request_set_cursor, &seat->request_cursor
+    );
 
     if (!hrt_cursor_init(seat, server)) {
         return false;
@@ -242,20 +251,24 @@ bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
     hrt_keyboard_init(seat);
 
     seat->request_selection.notify = handle_request_set_selection;
-    wl_signal_add(&seat->seat->events.request_set_selection,
-                  &seat->request_selection);
+    wl_signal_add(
+        &seat->seat->events.request_set_selection, &seat->request_selection
+    );
 
-    seat->request_primary_selection.notify = handle_request_set_primary_selection;
-    wl_signal_add(&seat->seat->events.request_set_primary_selection,
-                  &seat->request_primary_selection);
+    seat->request_primary_selection.notify =
+        handle_request_set_primary_selection;
+    wl_signal_add(
+        &seat->seat->events.request_set_primary_selection,
+        &seat->request_primary_selection
+    );
 
     seat->request_start_drag.notify = handle_request_start_drag;
-    wl_signal_add(&seat->seat->events.request_start_drag,
-                  &seat->request_start_drag);
+    wl_signal_add(
+        &seat->seat->events.request_start_drag, &seat->request_start_drag
+    );
 
     seat->start_drag.notify = handle_start_drag;
-    wl_signal_add(&seat->seat->events.start_drag,
-                  &seat->start_drag);
+    wl_signal_add(&seat->seat->events.start_drag, &seat->start_drag);
 
     seat->destroy.seat.notify = handle_seat_destroy;
     wl_signal_add(&seat->seat->events.destroy, &seat->destroy.seat);

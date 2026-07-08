@@ -14,9 +14,9 @@ struct hrt_view;
 typedef void (*view_destroy_handler)(struct hrt_view *view);
 typedef void (*view_commit_handler)(struct hrt_view *view);
 typedef void (*view_mapped_handler)(struct hrt_view *view);
-typedef bool (*view_request_fullscreen)(struct hrt_view *view,
-                                        struct hrt_output *output,
-                                        bool fullscreen);
+typedef bool (*view_request_fullscreen)(
+    struct hrt_view *view, struct hrt_output *output, bool fullscreen
+);
 
 struct hrt_view_callbacks {
     /**
