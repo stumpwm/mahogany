@@ -55,9 +55,9 @@ struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene);
 
 void hrt_scene_output_destroy(struct hrt_scene_output *output);
 
-struct wlr_scene_tree *hrt_scene_output_get_layer(
-    struct hrt_scene_output *output, enum zwlr_layer_shell_v1_layer layer_type
-);
+struct wlr_scene_tree *
+hrt_scene_output_get_layer(struct hrt_scene_output *output,
+                           enum zwlr_layer_shell_v1_layer layer_type);
 
 void hrt_scene_group_destroy(struct hrt_scene_group *group);
 
@@ -67,17 +67,15 @@ struct hrt_scene_layer *hrt_scene_layer_create(struct hrt_scene_group *group);
 
 void hrt_scene_layer_destroy(struct hrt_scene_layer *layer);
 
-void hrt_scene_layer_add_view(
-    struct hrt_scene_layer *layer, struct hrt_view *view
-);
+void hrt_scene_layer_add_view(struct hrt_scene_layer *layer,
+                              struct hrt_view *view);
 
 /**
  * Transfer all of the views in the source layer to the
  * destination layer
  **/
-void hrt_scene_layer_transfer(
-    struct hrt_scene_layer *source, struct hrt_scene_layer *destination
-);
+void hrt_scene_layer_transfer(struct hrt_scene_layer *source,
+                              struct hrt_scene_layer *destination);
 
 struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);
 
@@ -87,14 +85,14 @@ struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);
  * Create a hrt_scene_fullscreen_layer with a black bacground of the given size.
  * Mode the hrt_view inside the node, removing it from where ever it was in the scene tree.
  **/
-struct hrt_scene_fullscreen_node *hrt_scene_create_fullscreen_node(
-    struct hrt_scene_layer *layer, struct hrt_view *view,
-    struct hrt_output *output
-);
+struct hrt_scene_fullscreen_node *
+hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
+                                 struct hrt_view *view,
+                                 struct hrt_output *output);
 
-struct hrt_view *hrt_scene_fullscreen_swap(
-    struct hrt_scene_fullscreen_node *node, struct hrt_view *view
-);
+struct hrt_view *hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
+                               struct hrt_view *view);
+
 
 /**
  * Destroy the given background node, moving the struct hrt_view to the
@@ -104,16 +102,13 @@ struct hrt_view *hrt_scene_fullscreen_swap(
 struct hrt_view *
 hrt_scene_fullscreen_node_destroy(struct hrt_scene_fullscreen_node *node);
 
-uint32_t hrt_scene_node_set_dimensions(
-    struct hrt_scene_fullscreen_node *node, int width, int height
-);
+uint32_t hrt_scene_node_set_dimensions(struct hrt_scene_fullscreen_node *node,
+                                       int width, int height);
 
-void hrt_scene_node_set_position(
-    struct hrt_scene_fullscreen_node *node, int x, int y
-);
+void hrt_scene_node_set_position(struct hrt_scene_fullscreen_node *node, int x,
+                                 int y);
 
-uint32_t hrt_scene_fullscreen_configure(
-    struct hrt_scene_fullscreen_node *group, struct hrt_output *output
-);
+uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_node *group,
+                                        struct hrt_output *output);
 
 #endif

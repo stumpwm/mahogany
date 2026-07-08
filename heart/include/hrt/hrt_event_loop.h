@@ -15,10 +15,10 @@ enum hrt_event_mask {
 
 typedef wl_event_loop_fd_func_t hrt_event_loop_fd_func_t;
 
-struct wl_event_source *hrt_event_loop_add_fd(
-    struct hrt_server *server, int fd, uint32_t mask,
-    hrt_event_loop_fd_func_t callback, void *data
-);
+struct wl_event_source *hrt_event_loop_add_fd(struct hrt_server *server, int fd,
+                                              uint32_t mask,
+                                              hrt_event_loop_fd_func_t callback,
+                                              void *data);
 
 void hrt_event_loop_remove(struct wl_event_source *source);
 
@@ -31,16 +31,15 @@ struct hrt_fd_semaphore {
  * Create a semaphore fd (via eventfd(2)), and call the provided function
  * whenever the semaphore is non-zero.
  **/
-struct hrt_fd_semaphore *hrt_event_loop_semaphore_add(
-    struct hrt_server *server, int initval, hrt_event_loop_fd_func_t callback
-);
+struct hrt_fd_semaphore *
+hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
+                             hrt_event_loop_fd_func_t callback);
 
 /**
  * Increment the given semaphore by the given value.
  **/
-bool hrt_event_loop_semaphore_increment(
-    struct hrt_fd_semaphore *fd, uint64_t increment
-);
+bool hrt_event_loop_semaphore_increment(struct hrt_fd_semaphore *fd,
+                                        uint64_t increment);
 
 /**
  * Decrement the semaphore by 1

@@ -69,8 +69,7 @@ bool hrt_server_init(
     const struct hrt_seat_callbacks *seat_callbacks,
     const struct hrt_view_callbacks *view_callbacks,
     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
-    enum wlr_log_importance log_level
-);
+    enum wlr_log_importance log_level);
 
 bool hrt_server_start(struct hrt_server *server);
 

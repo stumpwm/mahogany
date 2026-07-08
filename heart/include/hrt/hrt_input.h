@@ -62,23 +62,20 @@ struct hrt_keypress_info {
 
 struct hrt_seat_callbacks {
     // TODO: these probably need more parameters
-    void (*button_event)(
-        struct hrt_seat *seat, struct wlr_pointer_button_event *event
-    );
+    void (*button_event)(struct hrt_seat *seat,
+                         struct wlr_pointer_button_event *event);
     /**
      * This event triggers when the mouse wheel moves in any direction,
      * including left and right:
      **/
-    void (*wheel_event)(
-        struct hrt_seat *seat, struct wlr_pointer_axis_event *event
-    );
+    void (*wheel_event)(struct hrt_seat *seat,
+                        struct wlr_pointer_axis_event *event);
     /**
      * This callback is called whenever a non-modifier key is pressed (not
      * released)
      **/
-    bool (*keyboard_keypress_event)(
-        struct hrt_seat *seat, struct hrt_keypress_info *info
-    );
+    bool (*keyboard_keypress_event)(struct hrt_seat *seat,
+                                    struct hrt_keypress_info *info);
 };
 
 struct hrt_input {
@@ -105,18 +102,14 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat);
  */
 void hrt_seat_set_cursor_img(struct hrt_seat *seat, char *img_name);
 
-void hrt_seat_notify_button(
-    struct hrt_seat *seat, struct wlr_pointer_button_event *event
-);
+void hrt_seat_notify_button(struct hrt_seat *seat,
+                            struct wlr_pointer_button_event *event);
 
-void hrt_seat_notify_axis(
-    struct hrt_seat *seat, struct wlr_pointer_axis_event *event
-);
+void hrt_seat_notify_axis(struct hrt_seat *seat,
+                          struct wlr_pointer_axis_event *event);
 
-bool hrt_seat_set_keymap(
-    struct hrt_seat *seat, struct xkb_rule_names *rules,
-    enum xkb_keymap_compile_flags flags
-);
+bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
+                         enum xkb_keymap_compile_flags flags);
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 

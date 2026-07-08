@@ -12,9 +12,8 @@
 #include <hrt/hrt_server.h>
 #include "render/scale_util.h"
 
-static PangoLayout *get_pango_layout(
-    PangoContext *context, const char *font, double scale, const char *text
-) {
+static PangoLayout *get_pango_layout(PangoContext *context, const char *font,
+                                     double scale, const char *text) {
     PangoLayout *layout        = pango_layout_new(context);
     PangoFontDescription *desc = pango_font_description_from_string(font);
     PangoAttrList *attrs;
@@ -41,22 +40,20 @@ static cairo_font_options_t *get_font_options() {
     cairo_font_options_t *font_options = cairo_font_options_create();
     cairo_font_options_set_hint_style(font_options, CAIRO_HINT_STYLE_FULL);
     cairo_font_options_set_antialias(font_options, CAIRO_ANTIALIAS_SUBPIXEL);
-    cairo_font_options_set_subpixel_order(
-        font_options, CAIRO_SUBPIXEL_ORDER_RGB
-    );
+    cairo_font_options_set_subpixel_order(font_options,
+                                          CAIRO_SUBPIXEL_ORDER_RGB);
 
     return font_options;
 }
 
-static struct hrt_cairo_buffer *render_message(
-    const char *text, double scale, struct hrt_message_theme *theme
-) {
+static struct hrt_cairo_buffer *render_message(const char *text, double scale,
+                                           struct hrt_message_theme *theme) {
     /* TODO: configurable options: font (name/size), bg/fg color, border, per-output scale */
     char *font         = theme->font;
     int border_padding = theme->message_padding;
     int border_width   = theme->message_border_width;
 
-    struct hrt_cairo_buffer *message   = NULL;
+    struct hrt_cairo_buffer *message       = NULL;
     PangoContext *pango_context        = NULL;
     cairo_font_options_t *font_options = NULL;
     PangoLayout *pango_layout          = NULL;
@@ -82,12 +79,8 @@ static struct hrt_cairo_buffer *render_message(
 
     message = hrt_cairo_buffer_create(total_width, total_height);
     if (!message) {
-        wlr_log(
-            WLR_ERROR,
-            "%s: cannot allocate message: %s",
-            __func__,
-            strerror(errno)
-        );
+        wlr_log(WLR_ERROR, "%s: cannot allocate message: %s", __func__,
+                strerror(errno));
         goto out;
     }
 
@@ -104,41 +97,25 @@ static struct hrt_cairo_buffer *render_message(
     /* clear background */
     cairo_set_operator(c, CAIRO_OPERATOR_SOURCE);
     cairo_set_source_rgba(
-        c,
-        theme->background_color[0],
-        theme->background_color[1],
-        theme->background_color[2],
-        theme->background_color[3]
-    );
+        c, theme->background_color[0], theme->background_color[1],
+        theme->background_color[2], theme->background_color[3]);
     cairo_paint(c);
 
     /* draw border */
     cairo_set_operator(c, CAIRO_OPERATOR_OVER);
-    cairo_set_source_rgba(
-        c,
-        theme->border_color[0],
-        theme->border_color[1],
-        theme->border_color[2],
-        theme->border_color[3]
-    );
+    cairo_set_source_rgba(c, theme->border_color[0], theme->border_color[1],
+                          theme->border_color[2], theme->border_color[3]);
     cairo_set_line_width(c, border_width);
     double inset = border_width / 2.0;
-    cairo_rectangle(
-        c, inset, inset, total_width - border_width, total_height - border_width
-    );
+    cairo_rectangle(c, inset, inset, total_width - border_width,
+                    total_height - border_width);
     cairo_stroke(c);
 
     /* draw text */
-    cairo_set_source_rgba(
-        c,
-        theme->font_color[0],
-        theme->font_color[1],
-        theme->font_color[2],
-        theme->font_color[3]
-    );
-    cairo_move_to(
-        c, border_width + border_padding, border_width + border_padding
-    );
+    cairo_set_source_rgba(c, theme->font_color[0], theme->font_color[1],
+                          theme->font_color[2], theme->font_color[3]);
+    cairo_move_to(c, border_width + border_padding,
+                  border_width + border_padding);
     pango_cairo_update_layout(c, pango_layout);
     pango_cairo_show_layout(c, pango_layout);
     cairo_destroy(c);
@@ -154,10 +131,8 @@ out:
     return message;
 }
 
-static bool margin_box(
-    struct wlr_box *src, int margin_x, int margin_y, double scale,
-    struct wlr_box *dst
-) {
+static bool margin_box(struct wlr_box *src, int margin_x, int margin_y,
+                       double scale, struct wlr_box *dst) {
     if (!src || !dst)
         return false;
 
@@ -177,30 +152,21 @@ static bool margin_box(
 }
 
 /* completes message_box's x/y coordinates for gravity placement within output_box */
-static bool gravity_coords(
-    enum window_gravity gravity, struct wlr_box *output_box,
-    struct wlr_box *message_box
-) {
+static bool gravity_coords(enum window_gravity gravity,
+                           struct wlr_box *output_box,
+                           struct wlr_box *message_box) {
     if (!message_box || !output_box || gravity < GRAVITY_TOP_RIGHT ||
         gravity > GRAVITY_MAX) {
         wlr_log(WLR_ERROR, "%s: invalid parameter", __func__);
         return false;
     }
 
-    wlr_log(
-        WLR_DEBUG,
-        "gravity=%u, message_box=(x=%d, y=%d, w=%d, h=%d), "
-        "output_box=(x=%d, y=%d, w=%d, h=%d)",
-        gravity,
-        message_box->x,
-        message_box->y,
-        message_box->width,
-        message_box->height,
-        output_box->x,
-        output_box->y,
-        output_box->width,
-        output_box->height
-    );
+    wlr_log(WLR_DEBUG,
+            "gravity=%u, message_box=(x=%d, y=%d, w=%d, h=%d), "
+            "output_box=(x=%d, y=%d, w=%d, h=%d)",
+            gravity, message_box->x, message_box->y, message_box->width,
+            message_box->height, output_box->x, output_box->y,
+            output_box->width, output_box->height);
 
     if (!wlr_box_contains_box(output_box, message_box)) {
         wlr_log(WLR_ERROR, "%s: message box out of bounds", __func__);
@@ -257,17 +223,15 @@ static bool gravity_coords(
             break;
     }
 
-    wlr_log(
-        WLR_DEBUG, "-> coords=(x=%d, y=%d)", message_box->x, message_box->y
-    );
+    wlr_log(WLR_DEBUG, "-> coords=(x=%d, y=%d)", message_box->x,
+            message_box->y);
 
     return true;
 }
 
-bool hrt_toast_message(
-    struct hrt_server *server, struct hrt_output *output, const char *text,
-    enum window_gravity gravity, struct hrt_message_theme *theme, int ms_delay
-) {
+bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
+                       const char *text, enum window_gravity gravity,
+                       struct hrt_message_theme *theme, int ms_delay) {
     /* cancel any previously running timeout */
     wl_event_source_timer_update(server->message_timer_source, 0);
 
@@ -278,23 +242,15 @@ bool hrt_toast_message(
     }
 
     struct wlr_box output_box;
-    wlr_output_layout_get_box(
-        server->output_layout, output->wlr_output, &output_box
-    );
-    wlr_log(
-        WLR_DEBUG,
-        "output_box=(x=%d, y=%d, w=%d, h=%d)",
-        output_box.x,
-        output_box.y,
-        output_box.width,
-        output_box.height
-    );
+    wlr_output_layout_get_box(server->output_layout, output->wlr_output,
+                              &output_box);
+    wlr_log(WLR_DEBUG, "output_box=(x=%d, y=%d, w=%d, h=%d)", output_box.x,
+            output_box.y, output_box.width, output_box.height);
 
     double scale = output->wlr_output->scale;
     struct wlr_box framed_box;
-    if (!margin_box(
-            &output_box, theme->margin_x, theme->margin_y, scale, &framed_box
-        ))
+    if (!margin_box(&output_box, theme->margin_x, theme->margin_y, scale,
+                    &framed_box))
         return false;
 
     struct hrt_cairo_buffer *message = render_message(text, scale, theme);
@@ -302,9 +258,8 @@ bool hrt_toast_message(
         return false;
 
     struct wlr_box message_box;
-    if (!compute_scaled_box(
-            message->base.width, message->base.height, scale, &message_box
-        )) {
+    if (!compute_scaled_box(message->base.width, message->base.height, scale,
+                            &message_box)) {
         wlr_buffer_drop(&message->base);
         return false;
     }
@@ -330,21 +285,18 @@ bool hrt_toast_message(
     enum wlr_scale_filter_mode scale_filter =
         compute_scale_filter(&message->base, &message_box, scale);
     wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
-    wlr_scene_buffer_set_dest_size(
-        scene_buffer, message_box.width, message_box.height
-    );
+    wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width,
+                                   message_box.height);
 
     pixman_region32_t opaque;
     pixman_region32_init(&opaque);
     // From what I can see, we need the scaled size:
-    pixman_region32_union_rect(
-        &opaque, &opaque, 0, 0, message_box.width, message_box.height
-    );
+    pixman_region32_union_rect(&opaque, &opaque, 0, 0, message_box.width,
+                               message_box.height);
     wlr_scene_buffer_set_opaque_region(scene_buffer, &opaque);
 
-    wlr_scene_node_set_position(
-        &scene_buffer->node, message_box.x, message_box.y
-    );
+    wlr_scene_node_set_position(&scene_buffer->node, message_box.x,
+                                message_box.y);
     wlr_scene_node_set_enabled(&scene_buffer->node, true);
 
     server->message_buffer = scene_buffer;

@@ -6,8 +6,7 @@ void hrt_output_resolution(struct hrt_output *output, int *width, int *height) {
 
 void hrt_output_position(struct hrt_output *output, int *x, int *y) {
     struct wlr_output_layout_output *l_output = wlr_output_layout_get(
-        output->server->output_layout, output->wlr_output
-    );
+        output->server->output_layout, output->wlr_output);
     *x = l_output->x;
     *y = l_output->y;
 }

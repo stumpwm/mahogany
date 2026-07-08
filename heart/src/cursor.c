@@ -9,10 +9,9 @@
 #include <hrt/hrt_input.h>
 
 // This function is shamelessly ripped from the tinywl implementation:
-static void *find_view_at(
-    struct hrt_server *server, double lx, double ly,
-    struct wlr_surface **surface, double *sx, double *sy
-) {
+static void *find_view_at(struct hrt_server *server, double lx,
+                                     double ly, struct wlr_surface **surface,
+                                     double *sx, double *sy) {
     /* This returns the topmost node in the scene at the given layout coords.
      * We only care about surface nodes as we are specifically looking for a
      * surface in the surface tree of a tinywl_toplevel. */
@@ -35,7 +34,7 @@ static void *find_view_at(
     while (tree != NULL && tree->node.data == NULL) {
         tree = tree->node.parent;
     }
-    if (tree) {
+    if(tree) {
         return tree->node.data;
     } else {
         return NULL;
@@ -45,13 +44,12 @@ static void *find_view_at(
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {
     double sx, sy;
     struct wlr_surface *found_surface = NULL;
-    void *view                        = find_view_at(
-        seat->server, seat->cursor->x, seat->cursor->y, &found_surface, &sx, &sy
-    );
-    if (!view) {
-        wlr_cursor_set_xcursor(
-            seat->cursor, seat->xcursor_manager, seat->cursor_image
-        );
+    void *view =
+        find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
+                     &found_surface, &sx, &sy);
+	if (!view) {
+        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                               seat->cursor_image);
     }
     if (found_surface) {
         wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
@@ -63,13 +61,12 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat) {
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
     double sx, sy;
     struct wlr_surface *found_surface = NULL;
-    void *view                        = find_view_at(
-        seat->server, seat->cursor->x, seat->cursor->y, &found_surface, &sx, &sy
-    );
+    void *view =
+        find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
+                     &found_surface, &sx, &sy);
     if (!view) {
-        wlr_cursor_set_xcursor(
-            seat->cursor, seat->xcursor_manager, seat->cursor_image
-        );
+        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                               seat->cursor_image);
     }
     if (found_surface) {
         wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
@@ -131,9 +128,8 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
     seat->motion.notify = seat_motion;
     wl_signal_add(&seat->cursor->events.motion, &seat->motion);
     seat->motion_absolute.notify = seat_motion_absolute;
-    wl_signal_add(
-        &seat->cursor->events.motion_absolute, &seat->motion_absolute
-    );
+    wl_signal_add(&seat->cursor->events.motion_absolute,
+                  &seat->motion_absolute);
     seat->button.notify = seat_button;
     wl_signal_add(&seat->cursor->events.button, &seat->button);
     seat->axis.notify = seat_axis;

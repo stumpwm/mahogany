@@ -46,28 +46,24 @@ struct hrt_output *
 hrt_layer_surface_output(struct hrt_layer_shell_surface *layer_shell);
 
 void hrt_layer_shell_surface_set_output(
-    struct hrt_layer_shell_surface *layer_shell, struct hrt_output *output
-);
+    struct hrt_layer_shell_surface *layer_shell, struct hrt_output *output);
 
 /**
  * Place a freshly-initialized surface in an output. Should only be called once during
  * intial placement.
  */
-void hrt_layer_shell_surface_place(
-    struct hrt_layer_shell_surface *surface, struct hrt_output *output
-);
+void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
+                                   struct hrt_output *output);
 
 /**
  * Finish initializing the layer shell object
  */
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface);
 
-void hrt_layer_surface_focus(
-    struct hrt_layer_shell_surface *surface, struct hrt_seat *seat
-);
+void hrt_layer_surface_focus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat);
 
-void hrt_layer_surface_unfocus(
-    struct hrt_layer_shell_surface *surface, struct hrt_seat *seat
-);
+void hrt_layer_surface_unfocus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat);
 
 #endif

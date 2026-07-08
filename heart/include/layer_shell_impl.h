@@ -16,9 +16,8 @@ struct hrt_layer_shell_popup {
     struct wl_listener reposition;
 };
 
-bool hrt_layer_shell_init(
-    struct hrt_server *server, const struct hrt_layer_shell_callbacks *callbacks
-);
+bool hrt_layer_shell_init(struct hrt_server *server,
+                          const struct hrt_layer_shell_callbacks *callbacks);
 
 void hrt_layer_shell_arrange_layers(struct hrt_output *output, bool emit_event);
 

@@ -20,9 +20,9 @@
 
 #include <hrt/hrt_server.h>
 
-static struct hrt_layer_shell_surface *hrt_layer_shell_surface_create(
-    struct wlr_layer_surface_v1 *surface, struct hrt_server *server
-) {
+static struct hrt_layer_shell_surface *
+hrt_layer_shell_surface_create(struct wlr_layer_surface_v1 *surface,
+                               struct hrt_server *server) {
     struct hrt_layer_shell_surface *shell_surface =
         calloc(1, sizeof(struct hrt_layer_shell_surface));
 
@@ -49,9 +49,8 @@ static void handle_new_layer_surface(struct wl_listener *listener, void *data) {
     server->layer_shell_callbacks->new_layer_surface(surface);
 }
 
-void hrt_layer_shell_surface_place(
-    struct hrt_layer_shell_surface *surface, struct hrt_output *output
-) {
+void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
+                                   struct hrt_output *output) {
     enum zwlr_layer_shell_v1_layer layer_type =
         surface->layer_surface->pending.layer;
     struct wlr_scene_tree *output_layer =
@@ -66,11 +65,8 @@ void hrt_layer_shell_surface_place(
     // Set this so we can reference it in the arrange_surface function
     // FIXME: This pointer is used for other things; it may be good to
     // try wlr_addons to store this data instead.
-    if (!scene_descriptor_assign(
-            &surface->scene_surface->tree->node,
-            HRT_SCENE_DESC_LAYER_SHELL,
-            surface
-        )) {
+    if (!scene_descriptor_assign(&surface->scene_surface->tree->node,
+                                 HRT_SCENE_DESC_LAYER_SHELL, surface)) {
         wlr_log(WLR_ERROR, "Could not allocate scene descriptor");
         wlr_layer_surface_v1_destroy(surface->layer_surface);
         return;
@@ -81,8 +77,7 @@ void hrt_layer_shell_surface_place(
 }
 
 void hrt_layer_shell_surface_set_output(
-    struct hrt_layer_shell_surface *layer_shell, struct hrt_output *output
-) {
+    struct hrt_layer_shell_surface *layer_shell, struct hrt_output *output) {
     layer_shell->layer_surface->output = output->wlr_output;
 }
 
@@ -101,9 +96,8 @@ static void check_callbacks(const struct hrt_layer_shell_callbacks *callbacks) {
     assert(callbacks->layers_reconfigured != nullptr);
 }
 
-bool hrt_layer_shell_init(
-    struct hrt_server *server, const struct hrt_layer_shell_callbacks *callbacks
-) {
+bool hrt_layer_shell_init(struct hrt_server *server,
+                          const struct hrt_layer_shell_callbacks *callbacks) {
     check_callbacks(callbacks);
 
     struct wlr_layer_shell_v1 *shell =
@@ -118,17 +112,15 @@ bool hrt_layer_shell_init(
     wl_signal_add(&shell->events.new_surface, &server->new_layer_shell);
 
     server->destroy_listener.layer_shell.notify = hrt_layer_shell_destroy;
-    wl_signal_add(
-        &shell->events.destroy, &server->destroy_listener.layer_shell
-    );
+    wl_signal_add(&shell->events.destroy,
+                  &server->destroy_listener.layer_shell);
 
     return true;
 }
 
-static void arrange_surface(
-    const struct wlr_box *full_area, struct wlr_box *usable_area,
-    struct wlr_scene_tree *tree, bool exclusive
-) {
+static void arrange_surface(const struct wlr_box *full_area,
+                            struct wlr_box *usable_area,
+                            struct wlr_scene_tree *tree, bool exclusive) {
     struct wlr_scene_node *node;
     wl_list_for_each(node, &tree->children, link) {
         // this should work assuming that the only children of the given tree are
@@ -152,21 +144,18 @@ static void arrange_surface(
         }
 
         wlr_log(WLR_DEBUG, "Sending configure");
-        wlr_scene_layer_surface_v1_configure(
-            surface->scene_surface, full_area, usable_area
-        );
+        wlr_scene_layer_surface_v1_configure(surface->scene_surface, full_area,
+                                             usable_area);
     }
 }
 
-void hrt_layer_shell_arrange_layers(
-    struct hrt_output *output, bool emit_event
-) {
+void hrt_layer_shell_arrange_layers(struct hrt_output *output,
+                                    bool emit_event) {
     struct hrt_scene_output *scene_output = output->scene;
     struct wlr_box usable_area            = {0};
     hrt_output_position(output, &usable_area.x, &usable_area.y);
-    wlr_output_effective_resolution(
-        output->wlr_output, &usable_area.width, &usable_area.height
-    );
+    wlr_output_effective_resolution(output->wlr_output, &usable_area.width,
+                                    &usable_area.height);
     const struct wlr_box full_area = usable_area;
 
     arrange_surface(&full_area, &usable_area, scene_output->overlay, true);
@@ -202,9 +191,8 @@ static void handle_surface_commit(struct wl_listener *listener, void *data) {
             layer_surface->current.layer;
         struct wlr_scene_tree *output_layer =
             hrt_scene_output_get_layer(surface->output->scene, layer_type);
-        wlr_scene_node_reparent(
-            &surface->scene_surface->tree->node, output_layer
-        );
+        wlr_scene_node_reparent(&surface->scene_surface->tree->node,
+                                output_layer);
     }
 
     if (layer_surface->initial_commit || committed ||
@@ -241,14 +229,12 @@ static void popup_unconstrain(struct hrt_layer_shell_popup *popup) {
     }
 
     int lx, ly;
-    wlr_scene_node_coords(
-        &popup->toplevel->scene_surface->tree->node, &lx, &ly
-    );
+    wlr_scene_node_coords(&popup->toplevel->scene_surface->tree->node, &lx,
+                          &ly);
 
     struct wlr_box output_box;
-    wlr_output_layout_get_box(
-        output->server->output_layout, output->wlr_output, &output_box
-    );
+    wlr_output_layout_get_box(output->server->output_layout, output->wlr_output,
+                              &output_box);
     // the output box expressed in the coordinate system of the toplevel parent
     // of the popup
     struct wlr_box output_toplevel_sx_box = {
@@ -292,10 +278,10 @@ static void popup_handle_destroy(struct wl_listener *listener, void *data) {
 
 static void popup_handle_new_popup(struct wl_listener *listener, void *data);
 
-static struct hrt_layer_shell_popup *create_popup(
-    struct wlr_xdg_popup *wlr_popup, struct hrt_layer_shell_surface *toplevel,
-    struct wlr_scene_tree *parent
-) {
+static struct hrt_layer_shell_popup *
+create_popup(struct wlr_xdg_popup *wlr_popup,
+             struct hrt_layer_shell_surface *toplevel,
+             struct wlr_scene_tree *parent) {
     wlr_log(WLR_DEBUG, "New Layer Shell popup");
     struct hrt_layer_shell_popup *popup = calloc(1, sizeof(*popup));
     if (popup == NULL) {
@@ -330,9 +316,8 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_popup *sway_layer_popup =
         wl_container_of(listener, sway_layer_popup, new_popup);
     struct wlr_xdg_popup *wlr_popup = data;
-    create_popup(
-        wlr_popup, sway_layer_popup->toplevel, sway_layer_popup->scene
-    );
+    create_popup(wlr_popup, sway_layer_popup->toplevel,
+                 sway_layer_popup->scene);
 }
 
 static void handle_new_popup(struct wl_listener *listener, void *data) {
@@ -364,23 +349,19 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
     struct wlr_layer_surface_v1 *const layer_surface = surface->layer_surface;
     surface->events.commit.notify                    = handle_surface_commit;
-    wl_signal_add(
-        &layer_surface->surface->events.commit, &surface->events.commit
-    );
+    wl_signal_add(&layer_surface->surface->events.commit,
+                  &surface->events.commit);
     surface->events.map.notify = handle_map;
     wl_signal_add(&layer_surface->surface->events.map, &surface->events.map);
     surface->events.unmap.notify = handle_unmap;
-    wl_signal_add(
-        &layer_surface->surface->events.unmap, &surface->events.unmap
-    );
+    wl_signal_add(&layer_surface->surface->events.unmap,
+                  &surface->events.unmap);
     surface->events.new_popup.notify = handle_new_popup;
     wl_signal_add(&layer_surface->events.new_popup, &surface->events.new_popup);
 
     surface->events.scene_destroy.notify = handle_node_destroy;
-    wl_signal_add(
-        &surface->scene_surface->layer_surface->events.destroy,
-        &surface->events.scene_destroy
-    );
+    wl_signal_add(&surface->scene_surface->layer_surface->events.destroy,
+                  &surface->events.scene_destroy);
 }
 
 struct hrt_output *
@@ -388,18 +369,15 @@ hrt_layer_surface_output(struct hrt_layer_shell_surface *layer_shell) {
     return (struct hrt_output *)layer_shell->layer_surface->data;
 }
 
-void hrt_layer_surface_focus(
-    struct hrt_layer_shell_surface *surface, struct hrt_seat *seat
-) {
+void hrt_layer_surface_focus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat) {
 
     struct wlr_surface *wlr_surface = surface->layer_surface->surface;
     hrt_seat_keyboard_focus_surface(seat, wlr_surface);
 }
 
-void hrt_layer_surface_unfocus(
-    struct hrt_layer_shell_surface *surface, struct hrt_seat *seat
-) {
-    hrt_seat_keyboard_focus_surface_clear(
-        seat, surface->layer_surface->surface
-    );
+void hrt_layer_surface_unfocus(struct hrt_layer_shell_surface *surface,
+                               struct hrt_seat *seat) {
+    hrt_seat_keyboard_focus_surface_clear(seat,
+                                          surface->layer_surface->surface);
 }

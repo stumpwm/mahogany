@@ -33,7 +33,7 @@ static bool add_output(struct wlr_backend *backend) {
 static void multi_bakend_callback(struct wlr_backend *backend, void *data) {
     struct multi_backend_data *thing = data;
     if (!thing->added) {
-        thing->added = add_output(backend);
+      thing->added = add_output(backend);
     }
 }
 
@@ -47,7 +47,7 @@ bool hrt_add_output(const struct hrt_server *server) {
 
         wlr_multi_for_each_backend(backend, multi_bakend_callback, &data);
         if (data.added) {
-            return true;
+          return true;
         }
     }
 
