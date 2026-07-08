@@ -101,14 +101,13 @@ bool hrt_server_init(
 
     server->scene         = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
-    server->scene_root = hrt_scene_root_create(&server->scene->tree);
+    server->scene_root    = hrt_scene_root_create(&server->scene->tree);
 
     server->view_callbacks = view_callbacks;
 
     struct wlr_output *fallback =
-      wlr_headless_add_output(server->headless_backend, 800, 800);
+        wlr_headless_add_output(server->headless_backend, 800, 800);
     server->fallback_output = hrt_output_create(server, fallback);
-
 
     if (!hrt_xdg_shell_init(server)) {
         return false;
@@ -196,7 +195,7 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 struct hrt_scene_group *hrt_server_group_create(struct hrt_server *server) {
-  return hrt_scene_group_create(server->scene_root);
+    return hrt_scene_group_create(server->scene_root);
 }
 
 size_t hrt_server_struct_size() {

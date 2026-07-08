@@ -48,11 +48,11 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
 
     hrt_scene_output_destroy(output->scene);
 
-    if(output != server->fallback_output) {
-      wl_list_remove(&output->frame.link);
-      wl_list_remove(&output->request_state.link);
+    if (output != server->fallback_output) {
+        wl_list_remove(&output->frame.link);
+        wl_list_remove(&output->request_state.link);
     } else {
-      server->fallback_output = nullptr;
+        server->fallback_output = nullptr;
     }
     wl_list_remove(&output->destroy.link);
 
@@ -70,7 +70,7 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
-    output->scene = hrt_scene_output_create(server->scene_root);
+    output->scene             = hrt_scene_output_create(server->scene_root);
 
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
@@ -356,7 +356,8 @@ bool hrt_server_output_init(struct hrt_server *server,
     server->output_manager_test.notify = handle_output_manager_test;
     wl_signal_add(&server->output_manager->events.apply,
                   &server->output_manager_test);
-    server->destroy_listener.output_manager.notify = handle_output_manager_destroy;
+    server->destroy_listener.output_manager.notify =
+        handle_output_manager_destroy;
     wl_signal_add(&server->output_manager->events.destroy,
                   &server->destroy_listener.output_manager);
 

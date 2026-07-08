@@ -64,6 +64,6 @@ void hrt_layer_surface_focus(struct hrt_layer_shell_surface *surface,
                              struct hrt_seat *seat);
 
 void hrt_layer_surface_unfocus(struct hrt_layer_shell_surface *surface,
-                             struct hrt_seat *seat);
+                               struct hrt_seat *seat);
 
 #endif

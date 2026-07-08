@@ -46,14 +46,15 @@ static cairo_font_options_t *get_font_options() {
     return font_options;
 }
 
-static struct hrt_cairo_buffer *render_message(const char *text, double scale,
-                                           struct hrt_message_theme *theme) {
+static struct hrt_cairo_buffer *
+render_message(const char *text, double scale,
+               struct hrt_message_theme *theme) {
     /* TODO: configurable options: font (name/size), bg/fg color, border, per-output scale */
     char *font         = theme->font;
     int border_padding = theme->message_padding;
     int border_width   = theme->message_border_width;
 
-    struct hrt_cairo_buffer *message       = NULL;
+    struct hrt_cairo_buffer *message   = NULL;
     PangoContext *pango_context        = NULL;
     cairo_font_options_t *font_options = NULL;
     PangoLayout *pango_layout          = NULL;

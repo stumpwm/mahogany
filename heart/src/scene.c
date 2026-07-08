@@ -78,7 +78,7 @@ hrt_scene_output_get_layer(struct hrt_scene_output *output,
         case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
             return output->overlay;
         default:
-          return NULL;
+            return NULL;
     }
 }
 
@@ -88,7 +88,7 @@ struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
         wlr_log(WLR_ERROR, "Could not allocate hrt_scene_layers");
         return NULL;
     }
-    group->layers      = wlr_scene_tree_create(parent->normal);
+    group->layers = wlr_scene_tree_create(parent->normal);
     if (!group->layers) {
         wlr_log(WLR_ERROR, "Could not create wlr_scene_tree for scene group");
         return nullptr;
@@ -128,8 +128,10 @@ struct hrt_scene_layer *hrt_scene_layer_create(struct hrt_scene_group *group) {
     struct hrt_scene_layer *layer = calloc(1, sizeof(*layer));
     layer->tree                   = wlr_scene_tree_create(group->layers);
     if (!layer->tree) {
-      wlr_log(WLR_ERROR, "Could not create scene tree for hrt_scene_layer (group %p)", group);
-      return nullptr;
+        wlr_log(WLR_ERROR,
+                "Could not create scene tree for hrt_scene_layer (group %p)",
+                group);
+        return nullptr;
     }
     return layer;
 }
@@ -191,15 +193,16 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
     return new_node;
 }
 
-struct hrt_view *hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
-			       struct hrt_view *view) {
-  struct hrt_view *v = node->view;
-  struct wlr_scene_tree *p = view->scene_tree->node.parent;
-  hrt_view_reparent(view, node->layer.tree);
-  hrt_view_reparent(node->view, p);
-  node->view = view;
-  hrt_view_fullscreen(view, true);
-  return v;
+struct hrt_view *
+hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
+                          struct hrt_view *view) {
+    struct hrt_view *v       = node->view;
+    struct wlr_scene_tree *p = view->scene_tree->node.parent;
+    hrt_view_reparent(view, node->layer.tree);
+    hrt_view_reparent(node->view, p);
+    node->view = view;
+    hrt_view_fullscreen(view, true);
+    return v;
 }
 
 struct hrt_view *

@@ -35,8 +35,8 @@ hrt_event_loop_semaphore_add(struct hrt_server *server, int initval,
         free(semaphore);
         return nullptr;
     }
-    semaphore->event_source = hrt_event_loop_add_fd(
-        server, fd, WL_EVENT_READABLE, callback, nullptr);
+    semaphore->event_source =
+        hrt_event_loop_add_fd(server, fd, WL_EVENT_READABLE, callback, nullptr);
 
     if (!semaphore->event_source) {
         close(fd);

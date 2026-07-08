@@ -108,10 +108,10 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
     if (toplevel->base->initial_commit) {
         view->callbacks->new_view(view);
     } else if (view->xdg_surface->surface->mapped) {
-      const uint32_t committed = toplevel->base->current.committed;
-      if(committed & WLR_XDG_SURFACE_STATE_WINDOW_GEOMETRY) {
-          view->callbacks->view_size_changed(view);
-      }
+        const uint32_t committed = toplevel->base->current.committed;
+        if (committed & WLR_XDG_SURFACE_STATE_WINDOW_GEOMETRY) {
+            view->callbacks->view_size_changed(view);
+        }
     }
 }
 
@@ -123,8 +123,8 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     struct hrt_view *view = calloc(1, sizeof(struct hrt_view));
     if (!view) {
         wlr_log(WLR_ERROR, "Failed to allocate hrt_view object for toplevel %p",
-               xdg_toplevel);
-      return nullptr;
+                xdg_toplevel);
+        return nullptr;
     }
     view->xdg_toplevel                  = xdg_toplevel;
     struct wlr_xdg_surface *xdg_surface = xdg_toplevel->base;
@@ -190,13 +190,12 @@ static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
                                           struct wlr_scene_tree *parent) {
     struct hrt_xdg_popup *popup = calloc(1, sizeof(*popup));
     if (!popup) {
-      wlr_log(WLR_ERROR, "Failed to allocated hrt_xdg_popup");
-      return nullptr;
+        wlr_log(WLR_ERROR, "Failed to allocated hrt_xdg_popup");
+        return nullptr;
     }
-    popup->view                 = view;
-    popup->xdg_popup            = xdg_popup;
-    popup->scene =
-      wlr_scene_xdg_surface_create(parent, xdg_popup->base);
+    popup->view      = view;
+    popup->xdg_popup = xdg_popup;
+    popup->scene     = wlr_scene_xdg_surface_create(parent, xdg_popup->base);
     xdg_popup->base->data = popup->scene;
 
     popup->commit.notify = handle_xdg_popup_commit;

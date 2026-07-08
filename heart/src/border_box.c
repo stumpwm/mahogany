@@ -74,7 +74,7 @@ static bool draw_box(struct hrt_border_box_style *style,
 }
 
 struct hrt_cairo_buffer *draw_box_surface(struct hrt_border_box_style *style,
-                                      int width, int height, float scale) {
+                                          int width, int height, float scale) {
     struct hrt_cairo_buffer *buffer = hrt_cairo_buffer_create(width, height);
     if (!buffer) {
         wlr_log(WLR_ERROR, "%s: cannot get pango layout", __func__);
@@ -185,10 +185,9 @@ struct hrt_border_box *hrt_border_box_create(struct hrt_scene_layer *parent,
             return nullptr;
         }
 
-
         if (!set_box_scale(box, width, height, scale)) {
-          wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
-          goto error_scene;
+            wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
+            goto error_scene;
         }
     }
 
@@ -266,10 +265,9 @@ void hrt_border_box_set_style(struct hrt_border_box *box,
                               struct hrt_border_box_style *style) {
     hrt_border_box_style_unref(box->style);
     hrt_border_box_style_ref(style);
-    box->style = style;
+    box->style                          = style;
     const struct wlr_buffer *const buff = &box->buffer->base;
-    hrt_border_box_redraw(box, buff->width,
-                          buff->height);
+    hrt_border_box_redraw(box, buff->width, buff->height);
 }
 
 void hrt_border_box_set_relative(struct hrt_border_box *box, int x, int y) {

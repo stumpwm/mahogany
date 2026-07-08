@@ -7,7 +7,8 @@
 /**
  * Use the given width and height to populate given box at the given scale
  **/
-bool compute_scaled_box(int width, int height, double scale, struct wlr_box *box);
+bool compute_scaled_box(int width, int height, double scale,
+                        struct wlr_box *box);
 
 /**
  * Compute the appropriate scale filter to use for the given buffer and

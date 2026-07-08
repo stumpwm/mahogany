@@ -90,9 +90,9 @@ hrt_scene_create_fullscreen_node(struct hrt_scene_layer *layer,
                                  struct hrt_view *view,
                                  struct hrt_output *output);
 
-struct hrt_view *hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
-                               struct hrt_view *view);
-
+struct hrt_view *
+hrt_scene_fullscreen_swap(struct hrt_scene_fullscreen_node *node,
+                          struct hrt_view *view);
 
 /**
  * Destroy the given background node, moving the struct hrt_view to the

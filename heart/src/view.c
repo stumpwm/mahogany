@@ -51,11 +51,11 @@ uint32_t hrt_view_set_size(struct hrt_view *view, int width, int height) {
 }
 
 bool hrt_view_mapped(struct hrt_view *view) {
-  if(view->xdg_surface && view->xdg_surface->surface) {
-      return view->xdg_surface->surface->mapped;
-  } else {
-      return false;
-  }
+    if (view->xdg_surface && view->xdg_surface->surface) {
+        return view->xdg_surface->surface->mapped;
+    } else {
+        return false;
+    }
 }
 
 void hrt_view_set_relative(struct hrt_view *view, int x, int y) {
@@ -102,9 +102,9 @@ void hrt_view_send_configure(struct hrt_view *view) {
 }
 
 uint32_t hrt_view_fullscreen(struct hrt_view *view, bool fullscreen) {
-  return wlr_xdg_toplevel_set_fullscreen(view->xdg_toplevel, fullscreen);
+    return wlr_xdg_toplevel_set_fullscreen(view->xdg_toplevel, fullscreen);
 }
 
 bool hrt_view_fullscreened(struct hrt_view *view) {
-  return view->xdg_toplevel->current.fullscreen;
+    return view->xdg_toplevel->current.fullscreen;
 }
