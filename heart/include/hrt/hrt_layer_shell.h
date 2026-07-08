@@ -7,6 +7,7 @@
 #include <wlr/types/wlr_output.h>
 
 #include <hrt/hrt_scene.h>
+#include <hrt/hrt_input.h>
 
 struct hrt_output;
 struct hrt_layer_shell_callbacks;
@@ -58,5 +59,11 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
  * Finish initializing the layer shell object
  */
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface);
+
+void hrt_layer_surface_focus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat);
+
+void hrt_layer_surface_unfocus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat);
 
 #endif

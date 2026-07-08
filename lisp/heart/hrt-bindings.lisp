@@ -589,6 +589,18 @@ intial placement."
   "Finish initializing the layer shell object"
   (surface (:pointer (:struct hrt-layer-shell-surface))))
 
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-focus))
+(cffi:defcfun ("hrt_layer_surface_focus" hrt-layer-surface-focus) :void
+  (surface (:pointer (:struct hrt-layer-shell-surface)))
+  (seat (:pointer (:struct hrt-seat))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-unfocus))
+(cffi:defcfun ("hrt_layer_surface_unfocus" hrt-layer-surface-unfocus) :void
+  (surface (:pointer (:struct hrt-layer-shell-surface)))
+  (seat (:pointer (:struct hrt-seat))))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
