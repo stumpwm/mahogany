@@ -4,10 +4,10 @@
 
 #include "hrt/hrt_layer_shell.h"
 #include "layer_shell_impl.h"
+#include "seat_impl.h"
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
 #include "scene_descriptor.h"
-#include "types/wlr_xdg_shell.h"
 #include "wlr/util/box.h"
 #include "wlr/util/log.h"
 
@@ -367,4 +367,17 @@ void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
 struct hrt_output *
 hrt_layer_surface_output(struct hrt_layer_shell_surface *layer_shell) {
     return (struct hrt_output *)layer_shell->layer_surface->data;
+}
+
+void hrt_layer_surface_focus(struct hrt_layer_shell_surface *surface,
+                             struct hrt_seat *seat) {
+
+    struct wlr_surface *wlr_surface = surface->layer_surface->surface;
+    hrt_seat_keyboard_focus_surface(seat, wlr_surface);
+}
+
+void hrt_layer_surface_unfocus(struct hrt_layer_shell_surface *surface,
+                               struct hrt_seat *seat) {
+    hrt_seat_keyboard_focus_surface_clear(seat,
+                                          surface->layer_surface->surface);
 }

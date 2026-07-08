@@ -6,6 +6,7 @@
 
 #include "hrt/hrt_input.h"
 #include "hrt/hrt_view.h"
+#include "seat_impl.h"
 #include "wlr/util/log.h"
 
 void hrt_view_info(struct hrt_view *view) {
@@ -63,35 +64,23 @@ void hrt_view_set_relative(struct hrt_view *view, int x, int y) {
 
 void hrt_view_focus(struct hrt_view *view, struct hrt_seat *seat) {
     wlr_log(WLR_DEBUG, "view focused!");
-    struct wlr_seat *wlr_seat        = seat->seat;
-    struct wlr_surface *prev_surface = wlr_seat->keyboard_state.focused_surface;
+
     struct wlr_xdg_toplevel *toplevel = view->xdg_toplevel;
-
-    if (prev_surface == toplevel->base->surface) {
-        // Don't re-focus an already focused surface:
-        return;
-    }
-    struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(wlr_seat);
-
-    wlr_xdg_toplevel_set_activated(toplevel, true);
-
-    if (keyboard != NULL) {
-        wlr_log(WLR_DEBUG, "Keyboard enter!");
-        wlr_seat_keyboard_notify_enter(
-            wlr_seat, toplevel->base->surface, keyboard->keycodes,
-            keyboard->num_keycodes, &keyboard->modifiers);
+    if (hrt_seat_keyboard_focus_surface(seat, toplevel->base->surface)) {
+        wlr_xdg_toplevel_set_activated(toplevel, true);
     }
 }
 
 void hrt_view_unfocus(struct hrt_view *view, struct hrt_seat *seat) {
     struct wlr_xdg_toplevel *toplevel = view->xdg_toplevel;
-    wlr_xdg_toplevel_set_activated(toplevel, false);
-    wlr_seat_keyboard_notify_clear_focus(seat->seat);
+    if (hrt_seat_keyboard_focus_surface_clear(seat, toplevel->base->surface)) {
+        wlr_xdg_toplevel_set_activated(toplevel, false);
+    }
 }
 
 bool hrt_view_focused(struct hrt_view *view) {
-  // FIXME: Should we be checking the pending or current state here?
-  return view->xdg_toplevel->current.activated;
+    // FIXME: Should we be checking the pending or current state here?
+    return view->xdg_toplevel->current.activated;
 }
 
 void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
