@@ -65,9 +65,14 @@
                              (:file "transaction" :depends-on ("server"))))
                (:module keyboard
                 :depends-on ("util")
+                :serial t
                 :components ((:file "package")
                              (:file "keytrans")
                              (:file "key")
+                             ;; hashing tested on 64 bit SBCL,
+                             ;; needs testing on 32 bit SBCL:
+                             #+(and sbcl 64-bit)
+                             (:file "key-hash")
                              (:file "kmap")))
                (:module tree
                 :depends-on ("log" "util" "interfaces" "heart")

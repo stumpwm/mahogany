@@ -5,25 +5,20 @@
   command)
 
 (defstruct kmap
-  ;; TODO: Maybe this should just be a hash table instead?
-  (bindings (make-array 0 :element-type 'binding :adjustable t :fill-pointer t)
-            :type (vector binding)
-            :read-only t))
+  (bindings
+   ;; Using a custom hash function yeilds a small performance improvement
+   ;; on SBCL, but not on CCL. Clasp hasn't been tested yet.
+   #+sbcl
+   (make-hash-table :test #'key-equal
+                    :hash-function #'sxhash-key)
+   #-sbcl
+   (make-hash-table :test 'equalp)
+   :read-only t :type hash-table))
 
 (defun define-key (map key cmd)
-  "Add a binding from the given key to the given command in the keymap. If the command
-is nil, remove the binding for the given key."
-  (declare (type kmap map)
-           (type key key))
-  (let ((bindings (kmap-bindings map))
-        (new-binding (make-binding key cmd)))
-    (dotimes (i (length bindings))
-      (let ((val (binding-key (aref bindings i))))
-        (when (equalp val key)
-          (setf (aref bindings i) new-binding)
-          (return-from define-key new-binding))))
-    (vector-push-extend new-binding bindings 1))
-  map)
+  (if cmd
+      (setf (gethash key (kmap-bindings map)) cmd)
+      (remhash key (kmap-bindings map))))
 
 (defun %build-define-list (map body)
   (let* ((map-var (gensym "kmap")))
@@ -68,10 +63,9 @@ Example:
 (defun kmap-lookup (keymap key)
   "Find the command associated with the given key in the keymap"
   (declare (type key key)
-           (type kmap keymap))
-  (let ((ret (find key (kmap-bindings keymap) :key 'binding-key :test 'key-equal)))
-    (when ret
-      (binding-command ret))))
+           (type kmap keymap)
+           (optimize (speed 3) (safety 1)))
+  (gethash key (kmap-bindings keymap)))
 
 (defun pprint-kmap (map &optional (stream *standard-output*))
   "Pretty-print a `kmap' human-readably."
@@ -80,9 +74,9 @@ Example:
   (pprint-logical-block (stream nil :prefix "(" :suffix ")")
     (pprint-indent :current 2 stream)
     (write (type-of map) :stream stream)
-    (loop :for binding :across (kmap-bindings map)
-          :for key := (binding-key binding)
-          :for command := (binding-command binding)
+    (loop :for key :being :the :hash-keys
+          :in (kmap-bindings map)
+          :using (hash-value command)
           :do (pprint-newline :mandatory stream)
               (pprint-key key stream)
               (write-string " -> " stream)
