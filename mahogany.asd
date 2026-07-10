@@ -94,7 +94,7 @@
                (:file "command" :depends-on ("input-methods" "globals" "message"))
                (:file "objects" :depends-on ("package" "ring-list"))
                (:file "output-config" :depends-on ("heart" "package"))
-               (:file "message" :depends-on ("heart" "config"))
+               (:file "message" :depends-on ("heart" "config" "objects"))
                (:file "group" :depends-on ("objects" "heart" "globals"))
                (:file "state" :depends-on ("objects" "keyboard" "heart" "group" "output-config"))
                (:file "globals" :depends-on ("objects" "system"))
