@@ -51,11 +51,15 @@
       (group-previous-hidden group))))
 
 (defcommand next-frame (seat)
+  (:documentation
+   "Set the current frame to the next one in the frame graph")
   (:method (seat)
     (let ((group (state-current-group *compositor-state*)))
       (group-next-frame group seat))))
 
 (defcommand prev-frame (seat)
+  (:documentation
+   "Set the current frame to the previous one in the frame graph")
   (:method (seat)
     (let ((group (state-current-group *compositor-state*)))
       (group-prev-frame group seat))))
