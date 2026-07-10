@@ -16,14 +16,14 @@
 (defcommand split-frame-h ()
   (:documentation "Split the current frame horizontally")
   (:method ()
-    (let ((frame (mahogany-current-frame *compositor-state*)))
+    (let ((frame (state-current-frame *compositor-state*)))
       (when frame
         (tree:split-frame-h frame :direction :right)))))
 
 (defcommand split-frame-v ()
   (:documentation "Split the current frame horizontally")
   (:method ()
-    (let ((frame (mahogany-current-frame *compositor-state*)))
+    (let ((frame (state-current-frame *compositor-state*)))
       (when frame
         (tree:split-frame-v frame :direction :bottom)))))
 
@@ -34,35 +34,33 @@
 
 (defcommand close-current-view ()
   (:method ()
-    (let ((frame (mahogany-current-frame *compositor-state*)))
+    (let ((frame (state-current-frame *compositor-state*)))
       (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
         (hrt:view-request-close view)))))
 
 (defcommand next-view ()
   (:documentation "Raise the next hidden view in the current group")
   (:method ()
-    (let ((group (state-current-group *compositor-state*)))
-      (group-next-hidden group))))
+    (state-next-hidden-frame *compositor-state*)))
 
 (defcommand previous-view ()
   (:documentation "Raise the next hidden view in the current group")
   (:method ()
-    (let ((group (state-current-group *compositor-state*)))
-      (group-previous-hidden group))))
+    (state-next-hidden-frame *compositor-state*)))
 
 (defcommand next-frame (seat)
   (:documentation
    "Set the current frame to the next one in the frame graph")
   (:method (seat)
-    (let ((group (state-current-group *compositor-state*)))
-      (group-next-frame group seat))))
+    (let ((cur-frame (state-current-frame *compositor-state*)))
+      (state-focus-frame *compositor-state* (tree:frame-next cur-frame) seat))))
 
 (defcommand prev-frame (seat)
   (:documentation
    "Set the current frame to the previous one in the frame graph")
   (:method (seat)
-    (let ((group (state-current-group *compositor-state*)))
-      (group-prev-frame group seat))))
+    (let ((cur-frame (state-current-frame *compositor-state*)))
+      (state-focus-frame *compositor-state* (tree:frame-prev cur-frame) seat))))
 
 (defcommand gnew ()
   (:method ()
