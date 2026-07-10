@@ -19,6 +19,7 @@
   (server nil :type (or null cffi:foreign-pointer))
   (key-state (make-key-state nil):type key-state)
   (%current-group nil :type (or null mahogany-group))
+  (%current-frame nil)
   (%keybindings nil :type list)
   (active-kmap-modes nil :type list)
   (%prefix-key (kbd "C-t") :type key)
@@ -40,6 +41,11 @@
 (defun state-current-group (state)
   (declare (type mahogany-state state))
   (state-%current-group state))
+
+(declaim (inline state-current-frame))
+(defun state-current-frame (state)
+  (declare (type mahogany-state state))
+  (state-%current-frame state))
 
 (declaim (inline state-keybindings))
 (defun state-keybindings (state)

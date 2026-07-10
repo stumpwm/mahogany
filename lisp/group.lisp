@@ -44,26 +44,40 @@
     (hrt:view-set-hidden popped nil)
     popped))
 
-(defun group-suspend (group seat)
+(defun group-unfocus (group seat)
+  "Unfocus the group, but don't stop displaying it"
   (declare (type mahogany-group group))
-  (with-accessors ((focused-frame mahogany-group-current-frame)
-                   (hrt-group mahogany-group-hrt-group))
+  (with-accessors ((focused-frame mahogany-group-current-frame))
+      group
+    (when focused-frame
+      (tree:unmark-frame-focused focused-frame seat))))
+
+(defun group-focus (group seat)
+  "Focus the group, but don't stop displaying it"
+  (declare (type mahogany-group group))
+  (with-accessors ((focused-frame mahogany-group-current-frame))
+      group
+    (when focused-frame
+      (tree:mark-frame-focused focused-frame seat))))
+
+(defun group-suspend (group seat)
+  "Stop displaying the group"
+  (declare (type mahogany-group group))
+  (with-accessors ((hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Suspending group ~A" (mahogany-group-name group))
+    (group-unfocus group seat)
     (setf (mahogany-group-active-p group) nil)
-    (when focused-frame
-      (tree:unmark-frame-focused focused-frame seat))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)))
 
 (defun group-wakeup (group seat)
+  "Start displaying the group"
   (declare (type mahogany-group group))
-  (with-accessors ((focused-frame mahogany-group-current-frame)
-                   (hrt-group mahogany-group-hrt-group))
+  (with-accessors ((hrt-group mahogany-group-hrt-group))
       group
     (log-string :debug "Waking up group ~A" (mahogany-group-name group))
+    (group-focus group seat)
     (setf (mahogany-group-active-p group) nil)
-    (when focused-frame
-      (tree:mark-frame-focused focused-frame seat))
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
 (defun group-transfer-views (group to-transfer)
@@ -92,7 +106,7 @@
     (tree:unmark-frame-focused frame seat)
     (setf current-frame nil)))
 
-(defun group-add-output (group output seat)
+(defun group-add-output (group output)
   (declare (type hrt:output output)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
@@ -104,10 +118,11 @@
       (setf (gethash (hrt:output-full-name output) output-map) new-tree)
       (when (not current-frame)
         (let ((first-leaf (tree:find-first-leaf new-tree)))
-          (group-focus-frame group first-leaf seat)
+          (setf current-frame first-leaf)
           (alexandria:when-let ((spare (%pop-hidden-item hidden-views)))
-            (setf (tree:frame-view first-leaf) spare)))))
-    (log-string :trace "Group map: ~S" output-map)))
+            (setf (tree:frame-view first-leaf) spare))))
+      (log-string :trace "Group map: ~S" output-map)
+      new-tree)))
 
 (defun group-rearrange-output (group output)
   (declare (type mahogany-group group)
@@ -148,7 +163,8 @@ to match."
   (declare (type hrt:output output)
            (type mahogany-group group))
   (with-accessors ((output-map mahogany-group-output-map)
-                   (hidden-views mahogany-group-hidden-views))
+                   (hidden-views mahogany-group-hidden-views)
+                   (cur-frame mahogany-group-current-frame))
       group
     (let* ((output-name (hrt:output-full-name output))
            (tree (gethash output-name output-map)))
@@ -156,11 +172,9 @@ to match."
       (when (equalp output (group-current-output group))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat)
         (alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
-          (group-focus-frame group (tree:find-first-leaf other-tree) seat)))
-      (when (and (mahogany-group-current-frame group) (= 0 (hash-table-count output-map)))
-        (group-unfocus-frame group (mahogany-group-current-frame group) seat))
+          (setf cur-frame (tree:find-first-leaf other-tree))))
       (tree:remove-frame tree (lambda (x) (alexandria:when-let ((v (tree:frame-view x)))
-				            (%add-hidden hidden-views v)))))))
+				                            (%add-hidden hidden-views v)))))))
 
 (defun group-add-initialize-view (group view-ptr)
   (declare (type mahogany-group group)
@@ -233,8 +247,7 @@ to match."
                   (when (and to-replace
                              (not (tree:frame-view to-focus)))
                     (setf (tree:frame-view to-focus) (%pop-hidden-item hidden)))
-                  (setf (mahogany-group-current-frame group) to-focus)
-                  (tree:mark-frame-focused to-focus (server-seat *compositor-state*)))))))
+                  (setf (mahogany-group-current-frame group) to-focus))))))
           (tree:view-frame
            (setf (tree:frame-view f) nil)
            (when (> (ring-list:ring-list-size hidden) 0)
@@ -329,7 +342,6 @@ currently focused frame"
       ;; view:
       (when (eq (%group-current-output-node group)
                 output-node)
-        (tree:mark-frame-focused output-node (server-seat *compositor-state*))
         (setf (mahogany-group-current-frame group) output-node)))
     ;; Frame isn't visible; allow the view to be fullscreened and we will deal with it
     ;; when it becomes visible:
@@ -392,7 +404,6 @@ After this function is ran, the current frame needs to be set and focused."
             (prev-fullscreen (tree:set-fullscreen cur-output view)))
        (unless prev-fullscreen
          (%hide-views-under-fullscreen group cur-output #'ring-list:add-item))
-       (tree:mark-frame-focused cur-output (server-seat *compositor-state*))
        (setf (mahogany-group-current-frame group) cur-output)))
     (t
      (let ((hidden-data (gethash view (mahogany-group-hidden-view-map group))))
@@ -406,8 +417,7 @@ After this function is ran, the current frame needs to be set and focused."
              (log-string :trace "Hidden view is visible under fullscreen view")
              ;; The view should be visible, focus its frame:
              (let ((to-focus (%hidden-view-info-frame hidden-data)))
-               (setf (mahogany-group-current-frame group) to-focus)
-               (tree:mark-frame-focused to-focus (server-seat *compositor-state*))))
+               (setf (mahogany-group-current-frame group) to-focus)))
             (t
              (let ((to-focus (tree:find-focused-frame current-frame)))
                (setf (mahogany-group-current-frame group) to-focus)
@@ -443,18 +453,6 @@ After this function is ran, the current frame needs to be set and focused."
         (setf next-view (%swap-prev-hidden hidden-views view))
         (setf next-view (%pop-hidden-item hidden-views)))
       (%swap-view-into-frame group current-frame next-view))))
-
-(defun group-next-frame (group seat)
-  (declare (type mahogany-group group))
-  (let* ((current-frame (mahogany-group-current-frame group))
-         (next-frame (tree:frame-next current-frame)))
-    (group-focus-frame group next-frame seat)))
-
-(defun group-prev-frame (group seat)
-  (declare (type mahogany-group group))
-  (let* ((current-frame (mahogany-group-current-frame group))
-         (prev-frame (tree:frame-prev current-frame)))
-    (group-focus-frame group prev-frame seat)))
 
 (defun group-maximize-view (group view)
   (declare (type mahogany-group group)

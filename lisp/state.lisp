@@ -51,6 +51,8 @@
   (hrt:hrt-server-stop (state-server state)))
 
 (defun (setf state-current-group) (group state)
+  (declare (type mahogany-state state)
+           (type mahogany-group group))
   (with-accessors ((hidden-groups state-hidden-groups)
                    (server state-server))
       state
@@ -60,7 +62,18 @@
       (group-suspend (state-current-group state) (hrt:hrt-server-seat server)))
     (setf (state-%current-group state) group)
     (group-wakeup group (hrt:hrt-server-seat server))
+    (alexandria:when-let ((group-frame (mahogany-group-current-frame group)))
+      (state-focus-frame state group-frame (server-seat state)))
     (hrt:dirty-view-transaction)))
+
+(defun state-focus-frame (state new-frame seat)
+  "Focus the given frame. The frame must either be a member of
+the current group or a layer shell frame"
+  (with-accessors ((cur-frame state-%current-frame)
+                   (cur-group state-current-group))
+      state
+    (group-focus-frame cur-group new-frame seat)
+    (setf cur-frame new-frame)))
 
 (defun server-keystate-reset (state)
   (setf (state-key-state state)
@@ -90,7 +103,11 @@
                              nil)))
       (vector-push-extend mh-output outputs)
       (loop for g across groups
-            do (group-add-output g mh-output (server-seat state))))))
+            do (group-add-output g mh-output))
+      (unless (state-%current-frame state)
+        (let ((cur-group (state-current-group state)))
+          (group-focus cur-group (server-seat state))
+        (setf (state-%current-frame state) (mahogany-group-current-frame cur-group)))))))
 
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)
@@ -101,7 +118,8 @@
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs state-outputs)
-                   (groups state-groups))
+                   (groups state-groups)
+                   (cur-frame state-%current-frame))
       state
     (let ((mh-output (%find-output hrt-output state)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
@@ -109,7 +127,11 @@
             do (group-remove-output g mh-output (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
       (setf outputs (delete mh-output outputs :test #'equalp))
-      (hrt:destroy-output mh-output))))
+      (hrt:destroy-output mh-output))
+    (setf cur-frame (mahogany-group-current-frame
+                     (state-current-group state)))
+    (when (and cur-frame (> (length outputs) 0))
+      (tree:mark-frame-focused cur-frame (server-seat state)))))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (let ((index (+ 1 (length (state-groups state)))))
@@ -121,7 +143,7 @@
                        (state-outputs state-outputs))
           state
         (loop for o across state-outputs
-              do (group-add-output new-group o (server-seat state)))
+              do (group-add-output new-group o))
         (cond
           (make-current
            (ring-list:add-item hidden-groups current-group)
@@ -202,6 +224,13 @@
         (remhash (cffi:pointer-address view-ptr) views))
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
+(defun %cur-frame-set-from-group (state group)
+  (declare (type mahogany-state state)
+           (type mahogany-group group))
+  (let ((cur-frame (mahogany-group-current-frame group)))
+    (setf (state-%current-frame state) cur-frame)
+    (tree:mark-frame-focused cur-frame (server-seat state))))
+
 (defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)
 	       (type hrt:view view))
@@ -209,19 +238,24 @@
     (log-string :debug
                 "~@<Fullscreen requested (~:[no~;yes~]):~I ~:_view ~S ~:_on output ~S~:>"
                 set-fullscreen view output)
-	(group-set-fullscreen group view output set-fullscreen)))
+	(group-set-fullscreen group view output set-fullscreen)
+    (%cur-frame-set-from-group state group)))
 
 (defun mahogany-state-view-map (state view)
   (declare (type mahogany-state state)
            (type hrt:view view))
   (%with-found-group state (group view)
-    (group-map-view group view)))
+    (group-map-view group view)
+    ;; Mapping the view can cause focus to change:
+    (%cur-frame-set-from-group state group)))
 
 (defun mahogany-state-view-unmap (state view)
   (declare (type mahogany-state state)
            (type hrt:view view))
   (%with-found-group state (group view)
-    (group-unmap-view group view)))
+    (group-unmap-view group view)
+    ;; Unmapping the view can cause focus to change:
+    (%cur-frame-set-from-group state group)))
 
 (defun mahogany-state-view-size-changed (state view)
   (declare (type mahogany-state state)
@@ -249,6 +283,16 @@
         (group-minimize-view group view)
         (hrt:view-configure view))))
 
+(defun state-next-hidden-frame (state)
+  (let ((group (state-current-group *compositor-state*)))
+    (group-next-hidden group)
+    (%cur-frame-set-from-group state group)))
+
+(defun state-prev-hidden-frame (state)
+  (let ((group (state-current-group *compositor-state*)))
+    (group-previous-hidden group)
+    (%cur-frame-set-from-group state group)))
+
 (defun state-next-hidden-group (state)
   (declare (type mahogany-state state))
   (let ((current-group (state-current-group state))
@@ -263,9 +307,6 @@
         (hidden-groups (state-hidden-groups state)))
     (when (> (ring-list:ring-list-size hidden-groups) 0)
       (setf (state-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
-
-(defun mahogany-current-frame (state)
-  (mahogany-group-current-frame (state-current-group state)))
 
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   "Set the xkb keymap using the provided rules and flags. Signals a
