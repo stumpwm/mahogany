@@ -7,6 +7,15 @@
      (completions cl-interactive:database))
   (cl-interactive:database-strings completions))
 
+(defmethod prepare-completions-for-input-method
+    ((im rofi-input-method)
+     (completions list))
+  (if (every #'stringp completions)
+      completions
+      (error 'cl-interactive:unknown-completions-error
+	         :input-method im
+	         :completions completions)))
+
 (defmethod input-method-read
     ((im rofi-input-method) (prompt string)
      &key completions require-match initial-input
