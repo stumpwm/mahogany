@@ -114,15 +114,15 @@ should not be directly instantiated; inherit from it instead."))
            :type (or null tree-parent)
            :accessor frame-parent)
    (output :initarg :output
-           :type (not null)
+           :type output-container
            :reader output-node-output)
    (fullscreen :initform nil
                :type (or null %fullscreen-data)
                :accessor output-node-fullscreen)
    (focused :initarg :focused
-         :reader frame-focused
-         :initform nil
-         :type boolean))
+            :reader frame-focused
+            :initform nil
+            :type boolean))
   (:documentation
    "A node in the frame tree that contains the tiled frames tied to
 a specific output."))
@@ -223,6 +223,12 @@ a view assigned to it."))
     (log-string :trace "frame unfocused")
     (setf (slot-value frame 'focused) nil)))
 
+(defgeneric frame-position (frame)
+  (:documentation "Returns the (X, Y) position of the frame as
+multiple values.")
+  (:method ((frame frame))
+    (values (frame-x frame) (frame-y frame))))
+
 ;; helper functions:
 
 (defgeneric root-frame-p (frame)
@@ -251,9 +257,12 @@ a view assigned to it."))
   (do ((cur-frame frame (frame-parent cur-frame)))
     ((typep cur-frame 'layer-container) cur-frame)))
 
-(defun tree-output-add (layer-container output)
+(defun tree-output-add (layer-container output-container
+                        &aux (output (output-container-output
+                                      output-container)))
   "Add a new output node to the layer container. Returns (output-node new-view-frame)."
-  (declare (type layer-container layer-container))
+  (declare (type layer-container layer-container)
+           (type output-container output-container))
   (multiple-value-bind (x y)
       (hrt:output-position output)
     (multiple-value-bind (width height)
@@ -261,7 +270,7 @@ a view assigned to it."))
       (with-accessors ((container-children tree-children)) layer-container
         (let* ((new-output (make-instance 'output-node
                                           :parent layer-container
-                                          :output output))
+                                          :output output-container))
                (new-tree (make-instance 'view-frame :x x :y y
                                                     :width width :height height
                                                     :parent new-output))

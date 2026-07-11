@@ -26,8 +26,9 @@ view, if there was one."
           (%frame-prev next) output-node))
   (log-string :trace "~@<Making output node fullscreen:~I ~:_~S ~:_on layer ~S~:>"
               output-node (layer-container-layer (frame-parent output-node)))
-  (let ((output (output-node-output output-node))
-        (fullscreen (output-node-fullscreen output-node)))
+  (let* ((container (output-node-output output-node))
+         (output (output-container-output container))
+         (fullscreen (output-node-fullscreen output-node)))
     (alexandria:if-let ((fullscreen-data fullscreen))
       ;; There's already a fullscreen item, swap the new one in:
       (let ((fullscreen-node (%fullscreen-data-node fullscreen-data))
@@ -87,7 +88,8 @@ view, if there was one."
 (defmethod in-frame-p ((parent output-node) x y)
   ;; Use the dimensions and position of the output:
   (declare (type real x y))
-  (let ((output (output-node-output parent)))
+  (let* ((container (output-node-output parent))
+         (output (output-container-output container)))
     (multiple-value-bind (frame-width frame-height) (hrt:output-resolution output)
       (multiple-value-bind (frame-x frame-y) (hrt:output-position output)
         (and (<= frame-x x)
@@ -99,9 +101,22 @@ view, if there was one."
   ;; If there is a fullscreen window, return this node:
   (if (output-node-fullscreen parent)
       parent
-      ;; output nodes have exactly 1 child:
-      (let ((f (car (tree-children parent))))
-        (frame-at f x y))))
+      (progn
+        (alexandria:when-let
+            ((layer-frame (output-container-search-top
+                           (output-node-output parent)
+                           x y)))
+          (return-from frame-at layer-frame))
+        ;; output nodes have exactly 1 child:
+        (alexandria:when-let*
+            ((f (car (tree-children parent)))
+             (found (frame-at f x y)))
+          (return-from frame-at found))
+        ;; Note that unless a bottom surface requests an exclusive
+        ;; zone, none of the layers underneath the tiling layer
+        ;; will be accessable.
+        (output-container-search-bottom
+         (output-node-output parent) x y))))
 
 (defmethod find-view-frame ((node output-node) view)
   (alexandria:if-let ((data (output-node-fullscreen node)))

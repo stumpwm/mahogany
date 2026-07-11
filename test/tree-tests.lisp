@@ -15,7 +15,9 @@
                      (output)
                      (declare (ignore output))
                      (values width height)))
-    (tree:tree-output-add container (make-mock-output))))
+    (tree:tree-output-add container (make-instance 'tree:output-container
+                                                   :output
+                                                   (make-mock-output)))))
 
 (defun make-tree-for-tests (&key (x 0) (y 0) (width 100) (height 100))
   (let ((container (make-instance 'tree:layer-container

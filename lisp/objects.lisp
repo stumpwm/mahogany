@@ -8,7 +8,8 @@
   (hrt-group (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (tiled-container nil :type tree:layer-container :read-only t)
   (output-map (make-hash-table :test 'equal) :type hash-table :read-only t)
-  (current-frame nil :type (or tree:frame tree:output-node null))
+  (current-frame nil ;; :type (or tree:frame tree:output-node null)
+   )
   (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)
   ;; Map that contains views hidden by fullscreen windows.
   ;; view -> %hidden-view-info
@@ -23,9 +24,11 @@
   (%keybindings nil :type list)
   (active-kmap-modes nil :type list)
   (%prefix-key (kbd "C-t") :type key)
-  (outputs (make-array 0 :element-type 'hrt:output :adjustable t :fill-pointer t)
-   :type (vector hrt:output *))
-  (groups (make-array 0 :element-type 'mahogany-group :adjustable t :fill-pointer t)
+  (outputs (make-array 0 :element-type 'tree::output-container
+                         :adjustable t :fill-pointer t)
+   :type (vector tree::output-container *))
+  (groups (make-array 0 :element-type 'mahogany-group
+                        :adjustable t :fill-pointer t)
    :type (vector mahogany-group *))
   (hidden-groups (ring-list:make-ring-list)
    :type ring-list:ring-list
