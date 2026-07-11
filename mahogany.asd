@@ -78,8 +78,13 @@
                 :depends-on ("log" "util" "interfaces" "heart")
                 :components ((:file "package")
                              (:file "tree-interface")
+                             (:file "layer-shell"
+                              :depends-on ("package"))
+                             (:file "output-container"
+                              :depends-on ("tree-interface" "layer-shell"))
                              (:file "tree-parent" :depends-on ("tree-interface"))
-                             (:file "output-node" :depends-on ("tree-interface"))
+                             (:file "output-node"
+                              :depends-on ("tree-interface" "output-container"))
                              (:file "frame" :depends-on ("tree-interface"))
                              (:file "view" :depends-on ("tree-interface"))))
                (:module input-methods

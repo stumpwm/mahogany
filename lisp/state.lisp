@@ -37,6 +37,9 @@
   (with-accessors ((groups state-groups)
                    (server state-server))
       state
+    ;; Clear the current frame so that subsequent cleanup code
+    ;; doesn't try to switch focus to an invalid frame:
+    (setf (state-%current-frame state) nil)
     (let ((scene-tree (hrt:hrt-server-scene-tree server))
           (seat (hrt:hrt-server-seat server)))
       (loop for g across groups
@@ -66,14 +69,31 @@
       (state-focus-frame state group-frame (server-seat state)))
     (hrt:dirty-view-transaction)))
 
+(defun group-frame-p (frame)
+  ;; TODO: It might be better to start storing the
+  ;; group that a frame is in, so we can use that
+  ;; instead of just relying on the type. It would
+  ;; also make it possible to pass arbitrary frames
+  ;; to state-focus-frame
+  (not (typep frame 'tree::layer-shell-frame)))
+
 (defun state-focus-frame (state new-frame seat)
   "Focus the given frame. The frame must either be a member of
 the current group or a layer shell frame"
   (with-accessors ((cur-frame state-%current-frame)
                    (cur-group state-current-group))
       state
-    (group-focus-frame cur-group new-frame seat)
-    (setf cur-frame new-frame)))
+    (unless (eql cur-frame new-frame)
+      ;; Determine if the frame is in a group:
+      (let ((cur-in-group (group-frame-p cur-frame))
+            (next-in-group (group-frame-p new-frame)))
+        (if next-in-group
+            (group-focus-frame cur-group new-frame seat)
+            (progn
+              (when cur-in-group
+                (group-unfocus cur-group seat))
+              (tree:mark-frame-focused new-frame seat))))
+      (setf cur-frame new-frame))))
 
 (defun server-keystate-reset (state)
   (setf (state-key-state state)
@@ -93,7 +113,8 @@ the current group or a layer shell frame"
                    (groups state-groups)
                    (scene mahogany-state-scene))
       state
-    (let ((mh-output (hrt:make-output hrt-output)))
+    (let* ((mh-output (hrt:make-output hrt-output))
+           (output-container (tree::make-output-container mh-output)))
       (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
       ;; (mahogany/output-config::
       (hrt:output-init mh-output
@@ -101,9 +122,9 @@ the current group or a layer shell frame"
                          (if output-match-data
                              (mahogany/output-config::output-match-data-config output-match-data)
                              nil)))
-      (vector-push-extend mh-output outputs)
+      (vector-push-extend output-container outputs)
       (loop for g across groups
-            do (group-add-output g mh-output))
+            do (group-add-output g output-container))
       (unless (state-%current-frame state)
         (let ((cur-group (state-current-group state)))
           (group-focus cur-group (server-seat state))
@@ -113,7 +134,7 @@ the current group or a layer shell frame"
 (defun %find-output (hrt-output state)
   (declare (type mahogany-state state))
   (find hrt-output (state-outputs state)
-        :key #'hrt:output-hrt-output
+        :key #'tree::output-container-output-ptr
         :test #'cffi:pointer-eq))
 
 (defun mahogany-state-output-remove (state hrt-output)
@@ -121,12 +142,13 @@ the current group or a layer shell frame"
                    (groups state-groups)
                    (cur-frame state-%current-frame))
       state
-    (let ((mh-output (%find-output hrt-output state)))
+    (let* ((output-container (%find-output hrt-output state))
+          (mh-output (tree::output-container-output output-container)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
       (loop for g across groups
-            do (group-remove-output g mh-output (server-seat state)))
+            do (group-remove-output g output-container (server-seat state)))
       ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
-      (setf outputs (delete mh-output outputs :test #'equalp))
+      (setf outputs (delete output-container outputs :test #'equalp))
       (hrt:destroy-output mh-output))
     (setf cur-frame (mahogany-group-current-frame
                      (state-current-group state)))
@@ -187,12 +209,13 @@ the current group or a layer shell frame"
 
 (defun mahogany-state-layers-arrange (state output)
   (declare (type mahogany-state state))
-  (log-string :debug "layer shell layers re-arranged on output ~S"
-              (hrt:output-full-name output))
-  (hrt:with-view-transaction ()
-    (with-accessors ((groups state-groups)) state
-      (loop for g across groups
-            do (group-rearrange-output g output)))))
+  (let ((hrt-output (tree:output-container-output output)))
+    (log-string :debug "layer shell layers re-arranged on output ~S"
+              (hrt:output-full-name hrt-output))
+    (hrt:with-view-transaction ()
+      (with-accessors ((groups state-groups)) state
+        (loop for g across groups
+              do (group-rearrange-output g hrt-output))))))
 
 (defun mahogany-state-view-add (state view-ptr)
   (declare (type mahogany-state state)
@@ -319,10 +342,11 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       ;; Either that, or just turn this into a warning or return a boolean?
       (error 'xkb:keymap-creation-error))))
 
+(declaim (ftype (function (mahogany-state cffi:foreign-pointer) hrt:output)))
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((hrt-output (hrt:hrt-layer-surface-output hrt-layer-shell)))
-    (the (or hrt:output null) (%find-output hrt-output state))
+    (tree:output-container-output (%find-output hrt-output state))
     (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
       (unless current-output
@@ -330,13 +354,14 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 	    (return-from %get-or-autoassign-output nil))
       (hrt:hrt-layer-shell-surface-set-output hrt-layer-shell
                                               (hrt:output-hrt-output current-output))
-      (the hrt:output current-output))))
+      current-output)))
 
 (defun mahogany-state-layer-shell-handle (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
     (progn
-      (hrt:hrt-layer-shell-surface-place hrt-layer-shell (hrt:output-hrt-output output))
+      (hrt:layer-shell-surface-place hrt-layer-shell
+                                     output)
       (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
     (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
 
@@ -344,16 +369,39 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
   (declare (type mahogany-state state))
   (let* ((surfaces (state-layer-surfaces state))
          (new-surface (hrt:make-layer-surface hrt-layer-surface))
-         (output (%find-output (hrt:layer-surface-output new-surface) state)))
-    (setf (gethash hrt-layer-surface surfaces) new-surface)
+         (output-container (%find-output (hrt:layer-surface-output new-surface)
+                                         state))
+         (interactivity (hrt:layer-surface-keyboard-interactivity new-surface)))
+    (setf (gethash (cffi:pointer-address hrt-layer-surface) surfaces) new-surface)
     (log-string
      :info
      "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
-     output
+     (tree::output-container-output output-container)
      (hrt::layer-surface-layer new-surface)
-     (hrt:layer-surface-keyboard-interactivity new-surface))))
+     interactivity)
+    ;; If the surface can't be focused, don't do anything to place it.
+    ;; Otherwise, add it to the tree data structure so we can navigate
+    ;; to it by keyboard. The only difference between exclusive and
+    ;; "on demand" surfaces is that we focus exclusive surfaces when
+    ;; they appear.
+    ;; We need to do something different
+    ;; in the future for bottom or background surfaces.
+    (unless (eq :layer-shell-keyboard-none interactivity)
+      (let ((add-node (tree::output-container-add-layer-shell output-container new-surface)))
+        (when (eq :layer-shell-keyboard-exclusive interactivity)
+          (state-focus-frame state add-node (server-seat state)))))))
 
 (defun state-layer-surface-remove (state hrt-layer-surface)
   (declare (type mahogany-state state))
-  (let ((surfaces (state-layer-surfaces state)))
-    (remhash hrt-layer-surface surfaces)))
+  (let* ((surfaces (state-layer-surfaces state))
+         (surface-ptr (cffi:pointer-address hrt-layer-surface))
+         (surface (gethash surface-ptr surfaces))
+         (output-container (%find-output (hrt:layer-surface-output surface)
+                                         state))
+         (removed-frame (tree::output-container-remove-layer-shell
+                         output-container surface)))
+    (when (eq (state-current-frame state) removed-frame)
+      (state-focus-frame state (mahogany-group-current-frame
+                                (state-current-group state))
+                         (server-seat state)))
+    (remhash surface-ptr surfaces)))

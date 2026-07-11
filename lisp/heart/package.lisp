@@ -83,6 +83,8 @@
            #:output-removed
            #:output-layout-changed
            ;; output methods:
+           #:output-scene
+           #:output-scene-layer
            #:output-resolution
            #:output-position
            #:output-usable-area
