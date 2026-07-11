@@ -114,8 +114,8 @@ Values:
                                (hrt:hrt-seat-cursor-lx seat)
                                (hrt:hrt-seat-cursor-ly seat))))
     (if found
-      (group-focus-frame group found seat)
-      nil)))
+        (state-focus-frame *compositor-state* found seat)
+        nil)))
 
 (hrt:define-hrt-callback handle-mouse-wheel-event :void
     ((seat (:pointer (:struct hrt:hrt-seat)))
