@@ -115,7 +115,7 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
 (defun server-group-create (server)
   (declare (type cffi:foreign-pointer server))
   (let ((result (hrt-server-group-create server)))
-    (if result
+    (if (not (cffi:null-pointer-p result))
         result
         (error 'mahogany/util:mahogany-panic
                "Could not make hrt-server-group"))))
