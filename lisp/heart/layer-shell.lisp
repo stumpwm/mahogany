@@ -33,6 +33,14 @@
    (layer-surface-hrt-layer-surface layer-surface)))
 
 #-HRT-DEBUG
+(declaim (inline layer-shell-surface-place))
+(defun layer-shell-surface-place (hrt-layer-shell output)
+  (declare (type cffi:foreign-pointer hrt-layer-shell)
+           (type output output))
+  (hrt-layer-shell-surface-place hrt-layer-shell
+                                 (hrt:output-hrt-output output)))
+
+#-HRT-DEBUG
 (declaim (inline layer-surface-focus))
 (defun layer-surface-focus (layer-surface seat)
   (declare (type layer-surface layer-shell))

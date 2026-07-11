@@ -153,6 +153,7 @@
            ;; layer shell methods
            #:layer-surface-output
            #:hrt-layer-surface-output
+           #:layer-surface
            #:layer-surface-keyboard-interactivity
            #:layer-surface-position
            #:layer-surface-dimensions
@@ -160,5 +161,5 @@
            #:keyboard-interactivity-updated
            #:hrt-layer-shell-surface-set-output
            #:hrt-layer-shell-surface-abort
-           #:hrt-layer-shell-surface-place
+           #:layer-shell-surface-place
            #:hrt-layer-shell-finish-init))
