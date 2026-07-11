@@ -30,7 +30,7 @@
 
 (defun run-rofi (arguments input)
   "Run rofi syncronously."
-  (multiple-value-bind (o e s)
+  (multiple-value-bind (output error status)
       (uiop:run-program (cons "rofi" arguments)
                         :output '(:string :stripped t)
                         :input (make-string-input-stream
@@ -44,15 +44,21 @@
                                    (error "invalid input to rofi"))))
                         :ignore-error-status t
                         :force-shell nil)
-    (if (= s 0)
-        (values o e s)
-        (error "rofi exited badly with status ~D" s))))
+    (when (or (not (= status 0)) (not (string= "" error)))
+      (log-string
+       :trace
+       "Rofi Input method completed with error output (Status ~A): ~A"
+       status
+       error))
+    (case status
+      (0
+       (values output error status))
+      (1
+       (values nil error status))
+      (t
+       (error "rofi exited badly with status ~D" s)))))
+
 
 (defun run-simple-rofi (prompt input &optional lines)
-  "Run rofi instead. whoops"
-  (multiple-value-bind (output error status)
-      (run-rofi (list* "-dmenu" "-p" prompt (when lines (list "-l" "10")))
-                input)
-    (cond ((= status 0)
-           (values output nil 0 nil))
-          (t (values nil error status output)))))
+  (run-rofi (list* "-dmenu" "-i" "-p" prompt (when lines (list "-l" "10")))
+            input))
