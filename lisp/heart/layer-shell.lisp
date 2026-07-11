@@ -54,3 +54,12 @@
     (with-return-by-value ((x :int) (y :int))
       (hrt-layer-surface-position hrt-surface
                                   x y))))
+
+#-HRT-DEBUG
+(declaim (inline layer-surface-dimensions))
+(defun layer-surface-dimensions (layer-surface)
+  (declare (type layer-surface layer-shell))
+  (let ((hrt-surface (layer-surface-hrt-layer-surface layer-surface)))
+    (with-return-by-value ((width :int) (height :int))
+      (hrt-layer-surface-dimensions hrt-surface
+                                  width height))))

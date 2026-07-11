@@ -154,6 +154,8 @@
            #:layer-surface-output
            #:hrt-layer-surface-output
            #:layer-surface-keyboard-interactivity
+           #:layer-surface-position
+           #:layer-surface-dimensions
            #:layer-changed
            #:keyboard-interactivity-updated
            #:hrt-layer-shell-surface-set-output
