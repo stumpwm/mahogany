@@ -113,6 +113,9 @@ static void reparent_children(struct wlr_scene_tree *source,
     }
 }
 
+/**
+ * This is unused; should we remove it?
+ */
 void hrt_scene_layer_transfer(struct wlr_scene_tree *source,
                               struct wlr_scene_tree *destination) {
     reparent_children(source, destination);

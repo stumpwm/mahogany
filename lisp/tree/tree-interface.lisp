@@ -69,18 +69,40 @@ should not be directly instantiated; inherit from it instead."))
               :reader layer-container-layer))
   (:documentation "A class that contains a frame-tree layer"))
 
+(defmacro foreach-frame ((var frame) &body body)
+  (let ((stack-var (gensym "stack"))
+        (frame-var (gensym "frame")))
+    `(let* ((,frame-var ,frame)
+            (,stack-var (if (typep ,frame-var 'tree-parent)
+                            (tree-children ,frame-var)
+                            (list ,frame-var))))
+       (iter (for ,var = (pop ,stack-var))
+         (while ,var)
+         (when (typep ,var 'tree-parent)
+           (appendf ,stack-var (tree-children ,var)))
+         (progn ,@body)))))
+
 (defun make-layer-container (hrt-group)
   (let ((hrt-tiled-layer (hrt:scene-layer-create hrt-group)))
     (make-instance 'layer-container
 	           :hrt-layer hrt-tiled-layer)))
 
 (defun destroy-layer-container (layer-container)
+  ;; It would make sense call cleanup-frame on each of the
+  ;; view frames in the tree here, but there's nothing that relies
+  ;; on that behavior yet and it seems somewhat involved to get right
+  ;; due to output nodes. At least right now, any cleanup code should
+  ;; have been called prior to this object being destroyed.
   (hrt:hrt-scene-layer-destroy (layer-container-layer layer-container)))
 
 (defun layer-container-transfer (source destination)
-  (let ((source-layer (layer-container-layer source))
-        (dest-layer (layer-container-layer destination)))
-    (hrt:hrt-scene-layer-transfer source-layer dest-layer)))
+  (let ((dest-layer (layer-container-layer destination)))
+    (foreach-frame (f source)
+      (when (or (typep f 'output-node)
+                (typep f 'view-frame))
+        (alexandria:when-let ((view (frame-view f)))
+          (log-string :trace "Moving view ~S" view)
+          (hrt:scene-layer-add-view dest-layer view))))))
 
 (defstruct (%fullscreen-data (:constructor %make-fullscreen-data (view node)))
   (view nil :type hrt:view)
