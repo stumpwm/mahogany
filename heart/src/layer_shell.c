@@ -427,3 +427,9 @@ void hrt_layer_surface_position(struct hrt_layer_shell_surface *surface, int *x,
     *x = surface->tree->node.x;
     *y = surface->tree->node.y;
 }
+
+void hrt_layer_surface_dimensions(struct hrt_layer_shell_surface *surface,
+                                  int *width, int *height) {
+    *width = surface->layer_surface->surface->current.buffer_width;
+    *height = surface->layer_surface->surface->current.buffer_height;
+}

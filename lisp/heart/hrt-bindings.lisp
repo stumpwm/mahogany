@@ -622,6 +622,13 @@ intial placement."
   (x (:pointer :int))
   (y (:pointer :int)))
 
+#-HRT-DEBUG
+(declaim (inline hrt-layer-surface-dimensions))
+(cffi:defcfun ("hrt_layer_surface_dimensions" hrt-layer-surface-dimensions) :void
+  (surface (:pointer (:struct hrt-layer-shell-surface)))
+  (width (:pointer :int))
+  (height (:pointer :int)))
+
 ;; next section imported from file build/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
