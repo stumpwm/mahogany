@@ -88,7 +88,7 @@
                 ;; so that we could have a bunch of input methods
                 ;; but not have them loaded until needed:
                 :components ((:file "rofi-input-method")
-                             #+sbcl
+                             #+(and sbcl linux)
                              (:file "foot-input-method")))
                (:file "package")
                (:file "command" :depends-on ("input-methods" "globals" "message"))
