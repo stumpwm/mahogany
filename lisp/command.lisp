@@ -76,10 +76,15 @@ See the documentation for cl-interactive:define-command for more details.
                    seat
                    (cmd-line (:function read-command-name ": ")))
   (:method (sequence seat (exec string))
-    (let ((cmd (cl-interactive:find-command cl-interactive:*default-command-database*
-                                            exec)))
+    (let ((cmd (cl-interactive:find-command
+                cl-interactive:*default-command-database*
+                exec)))
       (if cmd
           (execute-command cmd sequence seat)
           (toast-message *compositor-state*
                          (format nil "Command not found: ~A" exec)
-                         :theme *message-error-theme*)))))
+                         :theme *message-error-theme*))))
+  (:method (sequence seat (exec null))
+    (toast-message *compositor-state*
+                   (format nil "Command Canceled." exec)
+                   :theme *message-error-theme*)))
