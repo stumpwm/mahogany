@@ -1,15 +1,15 @@
 (in-package #:mahogany)
 
 (setf cl-interactive:*default-input-method*
-      #+sbcl
+      #+(and sbcl linux)
       (make-instance 'foot-input-method)
-      #-sbcl
+      #-(and sbcl linux)
       (make-instance 'rofi-input-method))
 
 (defparameter *input-methods-available*
   (list
    'rofi-input-method
-   #+sbcl
+   #+(and sbcl linux)
    'foot-input-method))
 
 (defun interactively-read-string (com im arg prompt)
