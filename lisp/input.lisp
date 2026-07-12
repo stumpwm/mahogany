@@ -66,25 +66,26 @@ Values:
            (optimize (speed 3)))
   (when (not (key-modifier-key-p key))
     (let* ((handling-keybinding (key-state-active-p key-state)))
-      (log-string :trace "Already handling keybinding: ~A" handling-keybinding)
       (flet ((reset-state ()
                (log-string :trace "Reseting keyboard state")
+               (state-ungrab-seat *compositor-state*)
                (server-keystate-reset *compositor-state*)))
         (multiple-value-bind (matched result)
             (key-state-advance key key-state)
           (cond
             (;; A known keybinding was pressed:
              matched
-             (when result
-               (reset-state)
-               ;; Only consume the pressed key if we have a command
-               ;; and not a special keyword:
-               (if (eq :pass-through result)
-                   (return-from check-and-run-keybinding nil)
-                   (execute-command result
-		                    (key-state-sequence key-state) seat)))
-             ;; Consume the pressed key)
-	         t)
+             (cond
+               (result
+                (reset-state)
+                ;; Only consume the pressed key if we have a command
+                ;; and not a special keyword:
+                (if (eq :pass-through result)
+                    (return-from check-and-run-keybinding nil)
+                    (execute-command result
+		                             (key-state-sequence key-state) seat)))
+               (t (state-grab-seat *compositor-state*)
+                  t)))
             (;; No keybinding was pressed but we were expecting one.
              handling-keybinding
              (toast-message *compositor-state* (%unkown-keybinding-message key-state key))

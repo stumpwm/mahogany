@@ -62,6 +62,9 @@
            ;; Seat
            #:hrt-seat
            #:hrt-seat-reset-view-under
+           #:seat-grabbed-p
+           #:seat-grab
+           #:hrt-seat-ungrab
            #:hrt-seat-notify-button
            #:hrt-seat-notify-axis
            #:hrt-seat-cursor-lx

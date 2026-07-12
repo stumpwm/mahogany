@@ -331,6 +331,21 @@ the current group or a layer shell frame"
     (when (> (ring-list:ring-list-size hidden-groups) 0)
       (setf (state-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
 
+(defun state-grab-seat (state)
+  (declare (type mahogany-state state))
+  (let ((seat (server-seat state)))
+    (unless (hrt:seat-grabbed-p seat)
+      (tree:unmark-frame-focused (state-%current-frame state)
+                                 seat)
+      (hrt:seat-grab seat "help"))))
+
+(defun state-ungrab-seat (state)
+  (declare (type mahogany-state state))
+  (let ((seat (server-seat state)))
+    (hrt:hrt-seat-ungrab seat)
+    (tree:mark-frame-focused (state-%current-frame state)
+                               seat)))
+
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   "Set the xkb keymap using the provided rules and flags. Signals a
 KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
