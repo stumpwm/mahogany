@@ -47,15 +47,19 @@ Values:
                 :click)
                ((= *keyboard-focus-bits* 0)
                 :ignore)))))
-(config:defconfig *gimme-key-enable* t
+
+(config:defconfig *gimme-key-enable* nil
   boolean
   "Should we show a popup with key hints?")
 
 (config:defconfig *gimme-key-theme*
-    (mh/theme:make-theme
-     :font "monospace 17"
-     :background-color (colors:rgb 0.1 0.1 0.1)
-     :border-color (colors:rgb 0.3 0.3 0.3))
+    (mh/theme:augment-theme
+     *message-theme*
+     :font "monospace 10")
+    ;; (mh/theme:make-theme
+    ;;  :font "monospace"
+    ;;  :background-color (colors:rgb 0.1 0.1 0.1)
+    ;;  :border-color (colors:rgb 0.3 0.3 0.3))
   mh/theme:theme
   "Theme data for displaying gimme-key messages")
 
@@ -102,7 +106,6 @@ Values:
                   (when (and *gimme-key-enable* (not result))
                     (toast-message *compositor-state*
                                    (mahogany/keyboard:gimme-key-format key-state)
-                                   :gravity :gravity-bottom
                                    :ms-delay 0
                                    :theme *gimme-key-theme*))
                   t)))
