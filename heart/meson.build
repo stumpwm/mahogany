@@ -32,7 +32,7 @@ wayland_protos = dependency('wayland-protocols', version: '>=1.14')
 xkbcommon      = dependency('xkbcommon')
 xcb            = dependency('xcb', required: get_option('xwayland'))
 wlroots        = dependency(
-  ['wlroots-0.19', 'wlroots'],
+  ['wlroots-0.20', 'wlroots'],
   version: wlroots_version,
   required: false,
 )
