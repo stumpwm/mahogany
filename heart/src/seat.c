@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <hrt/hrt_input.h>
+#include <seat_impl.h>
 
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_pointer.h>
@@ -127,15 +128,13 @@ void hrt_seat_grab(struct hrt_seat *seat, char *img_name) {
     hrt_seat_set_cursor_img(seat, img_name);
     wlr_seat_keyboard_notify_clear_focus(seat->seat);
     wlr_seat_pointer_notify_clear_focus(seat->seat);
-    // To prevent input from being processed, we watch this flag.
-    // Considering this is on a hot path, could we do better
-    // by unregistering event listeners or similar? We would
-    // still need to listen to keyboard events...
+    hrt_seat_disable_cursor_events(seat);
     seat->grabbed = true;
 }
 
 void hrt_seat_ungrab(struct hrt_seat *seat) {
     seat->grabbed = false;
+    hrt_seat_enable_cursor_events(seat);
     hrt_seat_reset_cursor_img(seat);
     hrt_seat_reset_view_under(seat);
 }

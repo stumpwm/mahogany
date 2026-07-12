@@ -23,6 +23,9 @@ bool hrt_seat_keyboard_focus_surface(struct hrt_seat *seat,
 bool hrt_seat_keyboard_focus_surface_clear(struct hrt_seat *seat,
                                            struct wlr_surface *surface);
 
+void hrt_seat_enable_cursor_events(struct hrt_seat *seat);
+void hrt_seat_disable_cursor_events(struct hrt_seat *seat);
+
 void hrt_keyboard_init(struct hrt_seat *seat);
 void hrt_keyboard_destroy(struct hrt_seat *seat);
 
