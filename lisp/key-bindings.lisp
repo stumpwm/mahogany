@@ -87,34 +87,31 @@
         (log-string :info "Output added"))))
 
 #+:hrt-debug
-(defvar *debug-map*
-    (define-kmap
-      (kbd "a") #'add-output))
+(defvar-kmap *debug-map*
+  (kbd "a") #'add-output)
 
-(defvar *group-map*
-  (define-kmap
-    (kbd "c") #'gnew
-    (kbd "k") #'gkill
-    (kbd "n") #'gnext
-    (kbd "p") #'gprev))
+(defvar-kmap *group-map*
+  (kbd "c") #'gnew
+  (kbd "k") #'gkill
+  (kbd "n") #'gnext
+  (kbd "p") #'gprev)
 
-(defvar *root-map*
-  (define-kmap
-    (kbd "!") #'run-shell-command
-    (kbd ";") #'colon
-    (kbd "o") #'next-frame
-    (kbd "O") #'prev-frame
-    (kbd "q") #'handle-server-stop
-    (kbd "k") #'close-current-view
-    (kbd "c") #'open-terminal
-    (kbd "s") #'split-frame-v
-    (kbd "S") #'split-frame-h
-    (kbd "Q") #'maximize-current-frame
-    (kbd "n") #'next-view
-    (kbd "p") #'previous-view
-    (kbd "g") *group-map*))
+(defvar-kmap *root-map*
+  (kbd "!") #'run-shell-command
+  (kbd ";") #'colon
+  (kbd "o") #'next-frame
+  (kbd "O") #'prev-frame
+  (kbd "q") #'handle-server-stop
+  (kbd "k") #'close-current-view
+  (kbd "c") #'open-terminal
+  (kbd "s") #'split-frame-v
+  (kbd "S") #'split-frame-h
+  (kbd "Q") #'maximize-current-frame
+  (kbd "n") #'next-view
+  (kbd "p") #'previous-view
+  (kbd "g") *group-map*)
 
-(defvar *top-map* (define-kmap))
+(defvar-kmap *top-map*)
 
 #+:hrt-debug
 (progn

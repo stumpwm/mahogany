@@ -74,7 +74,7 @@ command to a key, you can bind another keymap:
 
 #+BEGIN_SRC lisp
   (add-to-kmap *root-map*
-    (kbd "j") (define-kmap
+    (kbd "j") (define-kmap nest-kmap
   			  (kbd "k") #'open-terminal))
 #+END_SRC
 

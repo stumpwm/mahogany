@@ -25,6 +25,7 @@
                     (#:colors #:cl-colors2)
                     (#:config #:config-system))
   (:export #:define-kmap
+           #:defvar-kmap
            #:kbd
            #:add-to-kmap
            #:*root-map*
