@@ -41,40 +41,36 @@ static void *find_view_at(struct hrt_server *server, double lx, double ly,
 }
 
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {
-    if (!seat->grabbed) {
-        double sx, sy;
-        struct wlr_surface *found_surface = NULL;
-        void *view = find_view_at(seat->server, seat->cursor->x,
-                                  seat->cursor->y, &found_surface, &sx, &sy);
+    double sx, sy;
+    struct wlr_surface *found_surface = NULL;
+    void *view = find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
+                              &found_surface, &sx, &sy);
 
-        if (!view) {
-            wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                                   seat->cursor_image);
-        }
-        if (found_surface) {
-            wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
-        } else {
-            wlr_seat_pointer_clear_focus(seat->seat);
-        }
+    if (!view) {
+        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                               seat->cursor_image);
+    }
+    if (found_surface) {
+        wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
+    } else {
+        wlr_seat_pointer_clear_focus(seat->seat);
     }
 }
 
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
-    if (!seat->grabbed) {
-        double sx, sy;
-        struct wlr_surface *found_surface = NULL;
-        void *view = find_view_at(seat->server, seat->cursor->x,
-                                  seat->cursor->y, &found_surface, &sx, &sy);
-        if (!view) {
-            wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
-                                   seat->cursor_image);
-        }
-        if (found_surface) {
-            wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
-            wlr_seat_pointer_notify_motion(seat->seat, time, sx, sy);
-        } else {
-            wlr_seat_pointer_clear_focus(seat->seat);
-        }
+    double sx, sy;
+    struct wlr_surface *found_surface = NULL;
+    void *view = find_view_at(seat->server, seat->cursor->x, seat->cursor->y,
+                              &found_surface, &sx, &sy);
+    if (!view) {
+        wlr_cursor_set_xcursor(seat->cursor, seat->xcursor_manager,
+                               seat->cursor_image);
+    }
+    if (found_surface) {
+        wlr_seat_pointer_notify_enter(seat->seat, found_surface, sx, sy);
+        wlr_seat_pointer_notify_motion(seat->seat, time, sx, sy);
+    } else {
+        wlr_seat_pointer_clear_focus(seat->seat);
     }
 }
 
@@ -96,25 +92,40 @@ static void seat_motion_absolute(struct wl_listener *listener, void *data) {
 
 static void seat_button(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, button);
-    if (!seat->grabbed) {
-        struct wlr_pointer_button_event *event = data;
+    struct wlr_pointer_button_event *event = data;
 
-        /* Notify the client with pointer focus that a button press has occurred */
-        seat->callbacks->button_event(seat, event);
-    }
+    /* Notify the client with pointer focus that a button press has occurred */
+    seat->callbacks->button_event(seat, event);
 }
 
 static void seat_axis(struct wl_listener *listener, void *data) {
-    struct hrt_seat *seat = wl_container_of(listener, seat, axis);
-    if (!seat->grabbed) {
-        struct wlr_pointer_axis_event *ev = data;
-        seat->callbacks->wheel_event(seat, ev);
-    }
+    struct hrt_seat *seat             = wl_container_of(listener, seat, axis);
+    struct wlr_pointer_axis_event *ev = data;
+    seat->callbacks->wheel_event(seat, ev);
 }
 
 static void seat_frame(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, frame);
     wlr_seat_pointer_notify_frame(seat->seat);
+}
+
+void hrt_seat_enable_cursor_events(struct hrt_seat *seat) {
+    wl_signal_add(&seat->cursor->events.motion, &seat->motion);
+    wl_signal_add(&seat->cursor->events.motion_absolute,
+                  &seat->motion_absolute);
+    wl_signal_add(&seat->cursor->events.button, &seat->button);
+    wl_signal_add(&seat->cursor->events.axis, &seat->axis);
+}
+
+void hrt_seat_disable_cursor_events(struct hrt_seat *seat) {
+    // Calling remove on the listeners puts them in an invalid state,
+    // so don't try to remove them again:
+    if (!seat->grabbed) {
+        wl_list_remove(&seat->axis.link);
+        wl_list_remove(&seat->button.link);
+        wl_list_remove(&seat->motion_absolute.link);
+        wl_list_remove(&seat->motion.link);
+    }
 }
 
 bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
@@ -130,15 +141,11 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
     }
     wlr_xcursor_manager_load(seat->xcursor_manager, 1);
 
-    seat->motion.notify = seat_motion;
-    wl_signal_add(&seat->cursor->events.motion, &seat->motion);
+    seat->motion.notify          = seat_motion;
     seat->motion_absolute.notify = seat_motion_absolute;
-    wl_signal_add(&seat->cursor->events.motion_absolute,
-                  &seat->motion_absolute);
-    seat->button.notify = seat_button;
-    wl_signal_add(&seat->cursor->events.button, &seat->button);
-    seat->axis.notify = seat_axis;
-    wl_signal_add(&seat->cursor->events.axis, &seat->axis);
+    seat->button.notify          = seat_button;
+    seat->axis.notify            = seat_axis;
+    hrt_seat_enable_cursor_events(seat);
     seat->frame.notify = seat_frame;
     wl_signal_add(&seat->cursor->events.frame, &seat->frame);
 
@@ -148,10 +155,7 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
 void hrt_cursor_destroy(struct hrt_seat *seat) {
     wlr_log(WLR_DEBUG, "hrt_cursor destroyed");
     wl_list_remove(&seat->frame.link);
-    wl_list_remove(&seat->axis.link);
-    wl_list_remove(&seat->button.link);
-    wl_list_remove(&seat->motion_absolute.link);
-    wl_list_remove(&seat->motion.link);
+    hrt_seat_disable_cursor_events(seat);
 
     wlr_xcursor_manager_destroy(seat->xcursor_manager);
     wlr_cursor_destroy(seat->cursor);
