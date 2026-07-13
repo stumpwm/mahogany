@@ -680,6 +680,7 @@ intial placement."
   (new-xdg-toplevel (:struct wl-listener))
   (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |#)
   (new-layer-shell (:struct wl-listener))
+  (ext-image-copy-capture-manager-v1 :pointer #| (:struct wlr-ext-image-copy-capture-manager-v1) |#)
   (destroy-listener (:struct hrt-server-destroy-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))

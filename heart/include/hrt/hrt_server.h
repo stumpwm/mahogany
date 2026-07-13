@@ -48,6 +48,9 @@ struct hrt_server {
     struct wlr_layer_shell_v1 *layer_shell;
     struct wl_listener new_layer_shell;
 
+    struct wlr_ext_image_copy_capture_manager_v1
+        *ext_image_copy_capture_manager_v1;
+
     struct {
         struct wl_listener backend;
         struct wl_listener headless;

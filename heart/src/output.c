@@ -13,6 +13,7 @@
 #include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/backend/headless.h>
+#include <wlr/types/wlr_xdg_output_v1.h>
 
 #include <hrt/hrt_output.h>
 
@@ -346,6 +347,7 @@ bool hrt_server_output_init(struct hrt_server *server,
                   &server->output_layout_changed);
 
     server->output_manager = wlr_output_manager_v1_create(server->wl_display);
+    wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
 
     if (!server->output_manager) {
         return false;
