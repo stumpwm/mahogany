@@ -21,6 +21,8 @@
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/types/wlr_viewporter.h>
+#include <wlr/types/wlr_ext_image_copy_capture_v1.h>
+#include <wlr/types/wlr_ext_image_capture_source_v1.h>
 
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
@@ -98,6 +100,9 @@ bool hrt_server_init(
     wlr_data_control_manager_v1_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
     wlr_primary_selection_v1_device_manager_create(server->wl_display);
+    server->ext_image_copy_capture_manager_v1 =
+        wlr_ext_image_copy_capture_manager_v1_create(server->wl_display, 1);
+    wlr_ext_output_image_capture_source_manager_v1_create(server->wl_display, 1);
 
     server->scene         = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
