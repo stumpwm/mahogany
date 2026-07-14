@@ -62,9 +62,20 @@
     (let ((cur-frame (state-current-frame *compositor-state*)))
       (state-focus-frame *compositor-state* (tree:frame-prev cur-frame) seat))))
 
-(defcommand gnew ()
-  (:method ()
-    (mahogany-state-group-add *compositor-state*)))
+(defcommand gnew
+    ((shell-command (:function interactively-read-string "Name: ")))
+  (:method ((name string))
+    (mahogany-state-group-add
+     *compositor-state*
+     :group-name (if (string= name "") nil name))))
+
+(defcommand gnewbg
+    ((shell-command (:function interactively-read-string "Name: ")))
+  (:method ((name string))
+    (mahogany-state-group-add
+     *compositor-state*
+     :group-name (if (string= name "") nil name)
+     :make-current nil)))
 
 (defcommand gkill ()
   (:method ()
