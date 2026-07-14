@@ -4,7 +4,8 @@
   (key nil :type key)
   command)
 
-(defstruct kmap
+(defstruct (kmap (:constructor %make-kmap (name)))
+  (name nil :type string :read-only t)
   (bindings
    ;; Using a custom hash function yeilds a small performance improvement
    ;; on SBCL, but not on CCL. Clasp hasn't been tested yet.
@@ -14,6 +15,9 @@
    #-sbcl
    (make-hash-table :test 'equalp)
    :read-only t :type hash-table))
+
+(defun make-kmap (name)
+  (%make-kmap (format nil "~S" name)))
 
 (defun define-key (map key cmd)
   (if cmd
@@ -31,14 +35,26 @@
            (push `(define-key ,map-var ,key ,binding) forms))
        ,map-var)))
 
-(defmacro define-kmap (&body body)
+(defmacro define-kmap (name &body body)
   "Create a keymap and add the given bindings to it.
 
 Example:
-   (define-kmap
+   (define-kmap example-kmap
      (kbd \"C-s\") 'foo
      (kbd \"M-;\") 'bar)"
-  (%build-define-list '(make-kmap) body))
+  (%build-define-list `(make-kmap (quote ,name)) body))
+
+(defmacro defvar-kmap (name &body body)
+  "Create a kmap and bind it to the special variable NAME.
+Uses the SYMBOL-NAME of NAME to name the kmap.
+
+Example:
+  (define-kmap-var *example-kmap*
+    (kdb \"C-s\"))"
+  (check-type name symbol)
+  `(defvar ,name
+     (define-kmap (symbol-name ,name)
+       ,@body)))
 
 (defmacro add-to-kmap (kmap &body bindings)
   "Add bindings to a keymap.
