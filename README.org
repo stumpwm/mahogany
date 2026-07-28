@@ -1,4 +1,7 @@
 * Mahogany
+  [[https://github.com/stumpwm/mahogany/actions/workflows/test.yml][https://github.com/stumpwm/mahogany/actions/workflows/test.yml/badge.svg]]
+  [[https://github.com/stumpwm/mahogany/actions/workflows/freebsd.yml][https://github.com/stumpwm/mahogany/actions/workflows/freebsd.yml/badge.svg]]
+
   Mahogany is a tiling window manager for Wayland modeled after
   StumpWM. While it is not a drop-in replacement for stumpwm, stumpwm
   users should be very comfortable with Mahogany. Its planned
