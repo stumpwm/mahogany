@@ -1,5 +1,4 @@
 #include "wlr/util/log.h"
-#include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <stdint.h>
 #include <unistd.h>

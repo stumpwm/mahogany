@@ -1,0 +1,39 @@
+name: Build and Test (FreeBSD)
+
+on:
+  push:
+    branches: master
+  pull_request:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    name: Build and test on FreeBSD
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+      - name: Build and test in a FreeBSD VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          # Cache the VM image once the packages are installed, so later runs
+          # restore it and skip the whole prepare step.
+          cache-after-prepare: true
+          # wlroots020 provides a wlroots in the 0.20.x range that heart
+          # accepts, so the bundled wlroots subproject is not built here.
+          prepare: |
+            pkg install -y \
+              curl git gmake meson ninja pkgconf sbcl \
+              wlroots020 wayland-protocols cairo pango
+          run: |
+            set -e
+            curl -o /tmp/quicklisp.lisp https://beta.quicklisp.org/quicklisp.lisp
+            sbcl --non-interactive --load /tmp/quicklisp.lisp \
+                 --eval "(quicklisp-quickstart:install)"
+            sbcl --non-interactive --load "$HOME/quicklisp/setup.lisp" \
+                 --eval "(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))"
+            chmod +x scripts/install-dependencies.lisp
+            yes | ./scripts/install-dependencies.lisp
+            gmake
+            gmake test
