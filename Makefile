@@ -19,30 +19,30 @@ MANUAL_ORG_FILES = $(shell find doc/manual -path "doc/devel" -prune -type f -o -
 
 .PHONY: doc run runNoExec clean test
 
-$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/lib64/libheart.so build-mahogany.lisp FORCE
+$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/libheart.so build-mahogany.lisp FORCE
 	$(call $(LISP), build-mahogany.lisp)
 
-lisp/heart/hrt-bindings.lisp: $(ROOT)/cffi/hrt-bindings.yml $(HRT_INCLUDES) $(BUILD_DIR)/heart/lib64/libheart.so
-	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b cffi/hrt-bindings.yml
+lisp/heart/hrt-bindings.lisp: $(ROOT)/cffi/hrt-bindings.yml $(HRT_INCLUDES) $(BUILD_DIR)/heart/libheart.so
+	PKG_CONFIG_PATH=$(BUILD_DIR)/heart/meson-uninstalled cl-bindgen b cffi/hrt-bindings.yml
 
-lisp/heart/wlr-bindings.lisp: $(ROOT)/cffi/wlr-bindings.yml $(BUILD_DIR)/heart/lib64/libheart.so
-	PKG_CONFIG_PATH=$(BUILD_DIR)/lib/pkgconfig cl-bindgen b cffi/wlr-bindings.yml
+lisp/heart/wlr-bindings.lisp: $(ROOT)/cffi/wlr-bindings.yml $(BUILD_DIR)/heart/libheart.so
+	PKG_CONFIG_PATH=$(BUILD_DIR)/heart/meson-uninstalled cl-bindgen b cffi/wlr-bindings.yml
 
-$(BUILD_DIR)/heart/lib64/libheart.so: $(CACHE)/wlroots-configured FORCE
+$(BUILD_DIR)/heart/libheart.so: $(CACHE)/wlroots-configured FORCE
 	ninja -C $(BUILD_DIR)/heart
-	# FIXME?: move the api headers into a separate directory and just use those instead of calling install:
-	ninja -C $(BUILD_DIR)/heart install > $(BUILD_DIR)/install_output.txt
+	# mkdir -p build/lib
+	# find build -path build/lib -prune -o -name "*.so" -exec cp {} build/lib/ \;
 
 $(CACHE)/wlroots-configured:
-	mkdir -p $(BUILD_DIR)/heart && meson setup $(BUILD_DIR)/heart heart/ -Dprefix=$(BUILD_DIR) -Dlibdir=lib
+	mkdir -p $(BUILD_DIR)/heart && meson setup $(BUILD_DIR)/heart heart/
 	mkdir -p $(CACHE)
 	touch $(CACHE)/wlroots-configured
 
 run: $(BUILD_DIR)/mahogany
-	LD_LIBRARY_PATH=build/lib/ ./build/mahogany -d
+	LD_LIBRARY_PATH=$(shell find build -name "*.so" | xargs -n 1 dirname | tr '\n' ':') ./build/mahogany -d
 
-runNoExec: $(BUILD_DIR)/heart/lib64/libheart.so
-	LD_LIBRARY_PATH=build/lib/ $(call $(LISP),run-main.lisp)
+runNoExec: $(BUILD_DIR)/heart/libheart.so
+	LD_LIBRARY_PATH=$(shell find build -name "*.so" | xargs -n 1 dirname | tr '\n' ':') $(call $(LISP),run-main.lisp)
 
 clean:
 	ninja -C $(BUILD_DIR)/heart clean
@@ -53,7 +53,7 @@ clean:
 	rm -rf $(BUILD_DIR)/asdf-cache/*
 	rm -rf $(BUILD_DIR)/doc
 
-test: $(BUILD_DIR)/heart/lib64/libheart.so
+test: $(BUILD_DIR)/heart/libheart.so
 	$(call $(LISP),run-tests.lisp)
 
 $(BUILD_DIR)/doc:
