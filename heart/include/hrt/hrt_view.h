@@ -62,11 +62,6 @@ struct hrt_view {
     const struct hrt_view_callbacks *callbacks;
 };
 
-/**
- * Fully initialize the view and place it in the given scene tree.
- **/
-void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree);
-
 void hrt_view_info(struct hrt_view *view);
 
 uint32_t hrt_view_fullscreen(struct hrt_view *view, bool fullscreen);

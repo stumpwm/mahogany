@@ -160,13 +160,6 @@ names."
   (callbacks (:pointer (:struct hrt-view-callbacks))))
 
 #-HRT-DEBUG
-(declaim (inline hrt-view-init))
-(cffi:defcfun ("hrt_view_init" hrt-view-init) :void
-  "Fully initialize the view and place it in the given scene tree."
-  (view (:pointer (:struct hrt-view)))
-  (tree :pointer #| (:struct wlr-scene-tree) |#))
-
-#-HRT-DEBUG
 (declaim (inline hrt-view-info))
 (cffi:defcfun ("hrt_view_info" hrt-view-info) :void
   (view (:pointer (:struct hrt-view))))
