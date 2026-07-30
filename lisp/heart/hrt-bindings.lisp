@@ -1,6 +1,6 @@
 (cl:in-package #:hrt)
 
-;; next section imported from file build/include/hrt/hrt_input.h
+;; next section imported from file heart/include/hrt/hrt_input.h
 
 (cffi:defcstruct hrt-server)
 
@@ -63,32 +63,17 @@ for what it is hovering over."
   (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
-(declaim (inline hrt-seat-set-cursor-img))
-(cffi:defcfun ("hrt_seat_set_cursor_img" hrt-seat-set-cursor-img) :void
-  "Set the seat's default cursor image to the given cursor name.
-
-Does not take ownership of the string.
-
-See themes section of man xcursor(3) to find where to find valid cursor
-names."
-  (seat (:pointer (:struct hrt-seat)))
-  (img-name (:pointer :char)))
-
-#-HRT-DEBUG
-(declaim (inline hrt-seat-reset-cursor-img))
-(cffi:defcfun ("hrt_seat_reset_cursor_img" hrt-seat-reset-cursor-img) :void
-  "Set the cursor image back to the default."
-  (seat (:pointer (:struct hrt-seat))))
-
-#-HRT-DEBUG
 (declaim (inline hrt-seat-grab))
 (cffi:defcfun ("hrt_seat_grab" hrt-seat-grab) :void
+  "Unfocus all clients and prevent input events from being emitted
+and set the cursor image to the given image name."
   (seat (:pointer (:struct hrt-seat)))
   (img-name (:pointer :char)))
 
 #-HRT-DEBUG
 (declaim (inline hrt-seat-ungrab))
 (cffi:defcfun ("hrt_seat_ungrab" hrt-seat-ungrab) :void
+  "Reactivate input events and return to normal cursor image behavior."
   (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
@@ -120,7 +105,7 @@ names."
 (cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
   (seat (:pointer (:struct hrt-seat))))
 
-;; next section imported from file build/include/hrt/hrt_view.h
+;; next section imported from file heart/include/hrt/hrt_view.h
 
 (cffi:defcstruct hrt-view)
 
@@ -240,7 +225,7 @@ well behaved ones should."
   "Send a configure event to the view"
   (view (:pointer (:struct hrt-view))))
 
-;; next section imported from file build/include/hrt/hrt_output.h
+;; next section imported from file heart/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-scene-output)
 
@@ -317,7 +302,7 @@ set the width and height of views."
 (cffi:defcfun ("hrt_output_serial" hrt-output-serial) :string
   (output (:pointer (:struct hrt-output))))
 
-;; next section imported from file build/include/hrt/hrt_scene.h
+;; next section imported from file heart/include/hrt/hrt_scene.h
 
 (cffi:defcstruct hrt-scene-root-listeners
   (scene-destroy (:struct wl-listener)))
@@ -450,7 +435,7 @@ Returns the view that was in the node."
   (group (:pointer (:struct hrt-scene-fullscreen-node)))
   (output (:pointer (:struct hrt-output))))
 
-;; next section imported from file build/include/hrt/hrt_message.h
+;; next section imported from file heart/include/hrt/hrt_message.h
 
 (cffi:defcenum window-gravity
   (:gravity-top-right 0)
@@ -484,7 +469,7 @@ Returns the view that was in the node."
   (theme (:pointer (:struct hrt-message-theme)))
   (ms-delay :int))
 
-;; next section imported from file build/include/hrt/hrt_event_loop.h
+;; next section imported from file heart/include/hrt/hrt_event_loop.h
 
 (cffi:defcenum hrt-event-mask
   (+hrt-event-readable+ 1)
@@ -540,7 +525,7 @@ whenever the semaphore is non-zero."
   "Close the semaphore fd and remove it from the event loop."
   (fd (:pointer (:struct hrt-fd-semaphore))))
 
-;; next section imported from file build/include/hrt/hrt_layer_shell.h
+;; next section imported from file heart/include/hrt/hrt_layer_shell.h
 
 (cffi:defcstruct hrt-layer-shell-callbacks)
 
@@ -583,7 +568,7 @@ whenever the semaphore is non-zero."
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))
-(cffi:defcfun ("hrt_layer_surface_output" %hrt-layer-surface-output) (:pointer (:struct hrt-output))
+(cffi:defcfun ("hrt_layer_surface_output" hrt-layer-surface-output) (:pointer (:struct hrt-output))
   (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
 
 #-HRT-DEBUG
@@ -642,7 +627,7 @@ intial placement."
   (width (:pointer :int))
   (height (:pointer :int)))
 
-;; next section imported from file build/include/hrt/hrt_server.h
+;; next section imported from file heart/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
   (backend (:struct wl-listener))
@@ -725,13 +710,13 @@ intial placement."
 (declaim (inline hrt-server-struct-size))
 (cffi:defcfun ("hrt_server_struct_size" hrt-server-struct-size) :size)
 
-;; next section imported from file build/include/hrt/hrt_theme.h
+;; next section imported from file heart/include/hrt/hrt_theme.h
 
 (cffi:defcenum hrt-border-style
   (:hrt-border-solid 0)
   (:hrt-border-dotted 1))
 
-;; next section imported from file build/include/hrt/hrt_border_box.h
+;; next section imported from file heart/include/hrt/hrt_border_box.h
 
 (cffi:defcstruct hrt-border-box-style)
 
