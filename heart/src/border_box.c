@@ -97,7 +97,7 @@ static bool set_box_scale(struct hrt_border_box *box, int width, int height,
     }
 
     enum wlr_scale_filter_mode scale_filter =
-        compute_scale_filter(box->scene_buffer->buffer, &border_box, scale);
+        compute_scale_filter(box->scene_buffer->buffer, scale);
     wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(box->scene_buffer, width, height);
     return true;

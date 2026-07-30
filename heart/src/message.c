@@ -284,7 +284,7 @@ bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
     }
 
     enum wlr_scale_filter_mode scale_filter =
-        compute_scale_filter(&message->base, &message_box, scale);
+        compute_scale_filter(&message->base, scale);
     wlr_scene_buffer_set_filter_mode(scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(scene_buffer, message_box.width,
                                    message_box.height);

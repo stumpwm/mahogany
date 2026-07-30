@@ -15,7 +15,6 @@ bool compute_scaled_box(int width, int height, double scale,
  * scaled box.
  **/
 enum wlr_scale_filter_mode compute_scale_filter(struct wlr_buffer *base,
-                                                struct wlr_box *message_box,
                                                 double scale);
 
 #endif
