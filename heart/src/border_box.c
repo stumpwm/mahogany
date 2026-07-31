@@ -96,10 +96,10 @@ static bool set_box_scale(struct hrt_border_box *box, int width, int height,
         return false;
     }
 
-    enum wlr_scale_filter_mode scale_filter =
-        compute_scale_filter(box->scene_buffer->buffer, scale);
-    wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
     wlr_scene_buffer_set_dest_size(box->scene_buffer, width, height);
+    wlr_log(WLR_DEBUG, "Box scaled dimensions: (%d, %d), normal: (%d, %d)",
+            border_box.width, border_box.height,
+            width, height);
     return true;
 }
 
@@ -132,7 +132,9 @@ static void border_box_handle_outputs_update(struct wl_listener *listener,
         if (box->scale != scale) {
             box->scale                          = scale;
             const struct wlr_buffer *const buff = &box->buffer->base;
-            set_box_scale(box, buff->width, buff->height, scale);
+            enum wlr_scale_filter_mode scale_filter =
+              compute_scale_filter(box->scene_buffer->buffer, scale);
+            wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
             hrt_border_box_redraw(box, buff->width, buff->height);
         }
     }
@@ -177,6 +179,10 @@ struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
     if (box->scene_buffer->primary_output) {
         const float scale = box->scene_buffer->primary_output->output->scale;
         box->scale        = scale;
+
+        enum wlr_scale_filter_mode scale_filter =
+          compute_scale_filter(box->scene_buffer->buffer, scale);
+        wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
 
         if (!draw_box(style, box->buffer->surface, width, height, scale)) {
             wlr_log(WLR_ERROR, "Failed to draw box");
