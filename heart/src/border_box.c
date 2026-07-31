@@ -177,13 +177,12 @@ struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
 
         if (!draw_box(style, box->buffer->surface, width, height, scale)) {
             wlr_log(WLR_ERROR, "Failed to draw box");
-            wlr_buffer_drop(&box->buffer->base);
-            return nullptr;
+            goto error;
         }
 
-        if (!set_box_scale(box, width, height, scale)) {
+        if (!box_check_scale(box)) {
             wlr_log(WLR_ERROR, "Invalid scale: %f", scale);
-            goto error_scene;
+            goto error;
         }
     }
 
@@ -207,9 +206,6 @@ struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
 
     return box;
 
-error_scene:
-    scene_descriptor_destroy(&box->scene_buffer->node,
-                             HRT_SCENE_DESC_NON_INTERACTIVE);
 error:
     wlr_buffer_drop(&box->buffer->base);
     free(box);
