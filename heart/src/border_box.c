@@ -89,18 +89,8 @@ struct hrt_cairo_buffer *draw_box_surface(struct hrt_border_box_style *style,
     return buffer;
 }
 
-static bool set_box_scale(struct hrt_border_box *box, int width, int height,
-                          double scale) {
-    struct wlr_box border_box;
-    if (!compute_scaled_box(width, height, scale, &border_box)) {
-        return false;
-    }
-
-    wlr_scene_buffer_set_dest_size(box->scene_buffer, width, height);
-    wlr_log(WLR_DEBUG, "Box scaled dimensions: (%d, %d), normal: (%d, %d)",
-            border_box.width, border_box.height,
-            width, height);
-    return true;
+static bool box_check_scale(struct hrt_border_box *box) {
+    return box->scale > 0;
 }
 
 static void hrt_border_box_handle_destroy(struct wl_listener *listener,
@@ -133,7 +123,7 @@ static void border_box_handle_outputs_update(struct wl_listener *listener,
             box->scale                          = scale;
             const struct wlr_buffer *const buff = &box->buffer->base;
             enum wlr_scale_filter_mode scale_filter =
-              compute_scale_filter(box->scene_buffer->buffer, scale);
+                compute_scale_filter(box->scene_buffer->buffer, scale);
             wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
             hrt_border_box_redraw(box, buff->width, buff->height);
         }
@@ -181,8 +171,9 @@ struct hrt_border_box *hrt_border_box_create(struct wlr_scene_tree *parent,
         box->scale        = scale;
 
         enum wlr_scale_filter_mode scale_filter =
-          compute_scale_filter(box->scene_buffer->buffer, scale);
+            compute_scale_filter(box->scene_buffer->buffer, scale);
         wlr_scene_buffer_set_filter_mode(box->scene_buffer, scale_filter);
+        wlr_scene_buffer_set_dest_size(box->scene_buffer, width, height);
 
         if (!draw_box(style, box->buffer->surface, width, height, scale)) {
             wlr_log(WLR_ERROR, "Failed to draw box");
@@ -232,6 +223,12 @@ void hrt_border_box_destroy(struct hrt_border_box *box) {
 
 static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
                                   int height) {
+    if (!box_check_scale(box)) {
+        wlr_log(WLR_DEBUG, "Not redrawing box due to invalid scale %f",
+                box->scale);
+        return;
+    }
+
     struct hrt_cairo_buffer *buffer =
         draw_box_surface(box->style, width, height, box->scale);
     if (!buffer) {
@@ -240,28 +237,16 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
         return;
     }
 
-    // Keep the old buffer so we can restore it if there's an issue and
-    // so we can drop it after we set the new buffer:
-    struct hrt_cairo_buffer *old = box->buffer;
-    wlr_scene_buffer_set_buffer(box->scene_buffer, &buffer->base);
+    wlr_buffer_drop(&box->buffer->base);
     box->buffer = buffer;
-
-    if (!set_box_scale(box, width, height, box->scale)) {
-        wlr_log(WLR_ERROR, "Invalid scale: %f", box->scale);
-        // Reset everything back to what it was:
-        wlr_scene_buffer_set_buffer(box->scene_buffer, &old->base);
-        box->buffer = old;
-        wlr_buffer_drop(&buffer->base);
-        return;
-    }
-
-    wlr_buffer_drop(&old->base);
+    wlr_scene_buffer_set_buffer(box->scene_buffer, &buffer->base);
 }
 
 void hrt_border_box_set_size(struct hrt_border_box *box, int width,
                              int height) {
     const struct wlr_buffer *const buff = &box->buffer->base;
     if (buff->width != width || buff->height != height) {
+        wlr_scene_buffer_set_dest_size(box->scene_buffer, width, height);
         hrt_border_box_redraw(box, width, height);
     }
 }
