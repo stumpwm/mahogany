@@ -34,23 +34,31 @@
        :custom-mode custom-mode)))))
 
 (defun %transfer-output-config (hrt-config config)
+  (declare (type output-config config))
   (cffi:with-foreign-slots
       ((scale custom-mode width height refresh-rate custom-position x y)
        hrt-config (:struct hrt-output-config))
     (setf scale (if (output-config-scale config)
                     (coerce (output-config-scale config) 'double-float)
                     0.0d0))
-    (alexandria:when-let ((dimensions (output-config-dimensions config)))
+    (alexandria:if-let ((dimensions (output-config-dimensions config)))
       (setf custom-mode (output-config-custom-mode config)
             refresh-rate (alexandria:if-let ((rate (output-config-refresh-rate config)))
                            (coerce rate 'single-float)
                            0.0)
             width (car dimensions)
-            height (cdr dimensions)))
-    (alexandria:when-let ((position (output-config-position config)))
+            height (cdr dimensions))
+      (setf custom-mode nil
+            refresh-rate 0.0
+            width 0
+            height 0))
+    (alexandria:if-let ((position (output-config-position config)))
       (setf custom-position t
             x (car position)
-            y (cdr position)))))
+            y (cdr position))
+      (setf custom-position nil
+            x 0
+            y 0))))
 
 (defmacro with-output-config ((var config) &body body)
   `(cffi:with-foreign-object (,var '(:struct hrt-output-config))
