@@ -1,6 +1,7 @@
 #ifndef HRT_HRT_INPUT_H
 #define HRT_HRT_INPUT_H
 
+#include <stdint.h>
 #include <wayland-server-protocol.h>
 #include <wayland-server.h>
 #include <wlr/types/wlr_input_device.h>
@@ -114,6 +115,12 @@ void hrt_seat_notify_axis(struct hrt_seat *seat,
 
 bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
                          enum xkb_keymap_compile_flags flags);
+
+/**
+ * Set the xcursor theme used by the cursor as well as the cursor size.
+ **/
+bool hrt_seat_cursor_set_theme(struct hrt_seat *seat, char *theme_name,
+                               uint32_t base_size);
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 

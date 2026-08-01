@@ -1,4 +1,5 @@
 #include "wlr/util/log.h"
+#include <stdint.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_cursor.h>
@@ -117,6 +118,39 @@ static void seat_frame(struct wl_listener *listener, void *data) {
     wlr_seat_pointer_notify_frame(seat->seat);
 }
 
+constexpr uint32_t xcursor_base_size = 24;
+
+bool hrt_seat_cursor_set_theme(struct hrt_seat *seat, char *theme_name,
+                               uint32_t base_size) {
+    if (base_size < 1) {
+        wlr_log(WLR_ERROR, "Cannot set cursor base size to zero.");
+    }
+    struct wlr_xcursor_manager *manager =
+        wlr_xcursor_manager_create(theme_name, base_size);
+    if (!manager) {
+        return false;
+    }
+
+    struct wlr_output_layout_output *output;
+    wl_list_for_each(output, &seat->server->output_layout->outputs, link) {
+        struct wlr_output *wlr_output = output->output;
+        const float scale             = wlr_output->scale;
+        if (!wlr_xcursor_manager_load(manager, scale)) {
+            wlr_log(WLR_ERROR, "Failed to load cursor theme for scale %f",
+                    scale);
+            goto error;
+        }
+    }
+    wlr_xcursor_manager_destroy(seat->xcursor_manager);
+    seat->xcursor_manager = manager;
+    hrt_seat_reset_view_under(seat);
+
+    return true;
+error:
+    wlr_xcursor_manager_destroy(manager);
+    return false;
+}
+
 bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
     seat->cursor = wlr_cursor_create();
     if (!seat->cursor) {
@@ -124,11 +158,10 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
     }
     wlr_cursor_attach_output_layout(seat->cursor, server->output_layout);
 
-    seat->xcursor_manager = wlr_xcursor_manager_create(NULL, 24);
+    seat->xcursor_manager = wlr_xcursor_manager_create(NULL, xcursor_base_size);
     if (!seat->xcursor_manager) {
         return false;
     }
-    wlr_xcursor_manager_load(seat->xcursor_manager, 1);
 
     seat->motion.notify = seat_motion;
     wl_signal_add(&seat->cursor->events.motion, &seat->motion);

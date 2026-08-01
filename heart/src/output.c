@@ -14,6 +14,7 @@
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/backend/headless.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
+#include <wlr/types/wlr_xcursor_manager.h>
 
 #include <hrt/hrt_output.h>
 
@@ -243,6 +244,11 @@ bool hrt_output_init(struct hrt_output *output,
         return false;
     }
     wlr_output_state_finish(&state);
+
+    if (!wlr_xcursor_manager_load(server->seat.xcursor_manager, state.scale)) {
+        wlr_log(WLR_ERROR, "Could not load xcursor theme for scale %f",
+                state.scale);
+    }
 
     struct wlr_output_layout_output *l_output;
     if (config && config->custom_position) {
