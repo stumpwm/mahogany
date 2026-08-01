@@ -64,6 +64,7 @@
            #:hrt-seat-reset-view-under
            #:seat-grabbed-p
            #:seat-grab
+           #:seat-cursor-set-theme
            #:hrt-seat-ungrab
            #:hrt-seat-notify-button
            #:hrt-seat-notify-axis

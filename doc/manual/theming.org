@@ -1,0 +1,46 @@
+* Customizing Mahogany's Appearance
+
+** Cursor Theming
+
+Mahogany uses xcursor themes to customize the appearance of the
+cursor. To set an xcursor theme, use the =mh::state-set-cursor-theme=
+function:
+
+#+BEGIN_SRC lisp
+  (mh::state-set-cursor-theme
+   mh::*compositor-state*
+   "mahogany_default")
+#+END_SRC
+
+When =nil= is passed as the name argument, the theme is set to the
+system's default theme.
+
+This function can also be used to set the size of the cursor, which is
+specified as an optional argument:
+
+#+BEGIN_SRC lisp
+  (mh::state-set-cursor-theme
+   mh::*compositor-state*
+   nil ; Use the default theme
+   24 ; This is the default size.
+   )
+#+END_SRC
+
+** Customizing the grab pointer
+
+When a keybinding is in the process of being entered, the pointer
+changes to signify that input is not being passed to clients. To
+change the cursor used, you can set the =mh::grab-pointer-cursor=
+configuration property:
+
+#+BEGIN_SRC lisp
+  (config-system:set-config mh::grab-pointer-cursor "mahogany_grab")
+#+END_SRC
+
+*** Adding custom grab pointer cursors
+
+You can use arbitrary images for the grab pointer by
+[[https://wiki.archlinux.org/title/Xcursorgen][adding a custom cursor theme]]. For the name of the cursor, use
+something like =mahogany_grab= to differentiate it from the other
+standardized cursor names. Activate that theme in mahogany, and
+set =mh::grab-pointer-cursor= to the name that you chose.

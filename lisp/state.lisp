@@ -331,20 +331,30 @@ the current group or a layer shell frame"
     (when (> (ring-list:ring-list-size hidden-groups) 0)
       (setf (state-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
 
+(config-system:defconfig grab-pointer-cursor "help"
+  string
+  "The cursor image to use for the grab pointer.")
+
 (defun state-grab-seat (state)
   (declare (type mahogany-state state))
   (let ((seat (server-seat state)))
     (unless (hrt:seat-grabbed-p seat)
       (tree:unmark-frame-focused (state-%current-frame state)
                                  seat)
-      (hrt:seat-grab seat "help"))))
+      (hrt:seat-grab seat grab-pointer-cursor))))
 
 (defun state-ungrab-seat (state)
   (declare (type mahogany-state state))
   (let ((seat (server-seat state)))
     (hrt:hrt-seat-ungrab seat)
     (tree:mark-frame-focused (state-%current-frame state)
-                               seat)))
+                             seat)))
+
+(defun state-set-cursor-theme (state theme-name &optional (cursor-size 24))
+  (declare (type mahogany-state state))
+  (hrt:seat-cursor-set-theme (server-seat state)
+									   theme-name
+                                       cursor-size))
 
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   "Set the xkb keymap using the provided rules and flags. Signals a

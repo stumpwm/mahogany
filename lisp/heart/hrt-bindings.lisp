@@ -96,6 +96,14 @@ and set the cursor image to the given image name."
   (flags xkb:keymap-compile-flags))
 
 #-HRT-DEBUG
+(declaim (inline hrt-seat-cursor-set-theme))
+(cffi:defcfun ("hrt_seat_cursor_set_theme" hrt-seat-cursor-set-theme) :bool
+  "Set the xcursor theme used by the cursor as well as the cursor's base size."
+  (seat (:pointer (:struct hrt-seat)))
+  (theme-name (:pointer :char))
+  (base-size :uint32))
+
+#-HRT-DEBUG
 (declaim (inline hrt-seat-cursor-lx))
 (cffi:defcfun ("hrt_seat_cursor_lx" hrt-seat-cursor-lx) :double
   (seat (:pointer (:struct hrt-seat))))
