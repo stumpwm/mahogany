@@ -137,5 +137,4 @@ void hrt_seat_grab(struct hrt_seat *seat, char *img_name) {
 void hrt_seat_ungrab(struct hrt_seat *seat) {
     seat->grabbed = false;
     hrt_seat_reset_cursor_img(seat);
-    hrt_seat_reset_view_under(seat);
 }
