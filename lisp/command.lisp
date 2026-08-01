@@ -85,6 +85,7 @@ See the documentation for cl-interactive:define-command for more details.
                          (format nil "Command not found: ~A" exec)
                          :theme *message-error-theme*))))
   (:method (sequence seat (exec null))
+    (declare (ignore sequence seat))
     (toast-message *compositor-state*
-                   (format nil "Command Canceled." exec)
+                   (format nil "Command Canceled.")
                    :theme *message-error-theme*)))
