@@ -160,57 +160,54 @@ Used to initially split all frames, regardless of type."
            (type (or number null) ratio)
            (type (member :right :left) direction)
            (type symbol parent-type))
-  (with-accessors ((old-width frame-width)
-                   (old-height frame-height)
-                   (old-x frame-x)
-                   (old-y frame-y))
-      frame
-    ;; OLD-WIDTH follows FRAME's width as it changes, so name the remainder
-    ;; before anything assigns to it.
-    (let* ((new-frame-width (round (* old-width ratio)))
-           (other-frame-width (- old-width new-frame-width))
-           (new-parent (make-instance parent-type
-                                      :split-direction :horizontal
-                                      :parent (frame-parent frame)
-                                      :width old-width
+  (let* ((old-width (frame-width frame))
+         (old-height (frame-height frame))
+         (old-x (frame-x frame))
+         (old-y (frame-y frame))
+         (new-frame-width (round (* old-width ratio)))
+         (other-frame-width (- old-width new-frame-width))
+         (new-parent (make-instance parent-type
+                                    :split-direction :horizontal
+                                    :parent (frame-parent frame)
+                                    :width old-width
+                                    :height old-height
+                                    :x old-x
+                                    :y old-y))
+         (new-frame))
+    ;; place the child frames:
+    (ecase direction
+      (:right
+       (setf new-frame (make-instance 'view-frame
+                                      :parent new-parent
+                                      :width new-frame-width
+                                      :height old-height
+                                      :x (+ old-x other-frame-width)
+                                      :y old-y))
+       (setf (frame-width frame) other-frame-width
+             (tree-children new-parent) (list frame new-frame))
+       (psetf (%frame-prev new-frame) frame
+              (%frame-next new-frame) (frame-next frame)
+              (%frame-next frame) new-frame
+              (%frame-prev (frame-next frame)) new-frame))
+      (:left
+       (setf new-frame (make-instance 'view-frame
+                                      :parent new-parent
+                                      :width other-frame-width
                                       :height old-height
                                       :x old-x
-                                      :y old-y)))
-      ;; place the child frames:
-      (let ((new-frame))
-        (ecase direction
-          (:right
-           (setf new-frame (make-instance 'view-frame
-                                          :parent new-parent
-                                          :width new-frame-width
-                                          :height old-height
-                                          :x (+ old-x other-frame-width)
-                                          :y old-y))
-           (setf (frame-width frame) other-frame-width
-                 (tree-children new-parent) (list frame new-frame))
-           (psetf (%frame-prev new-frame) frame
-                  (%frame-next new-frame) (frame-next frame)
-                  (%frame-next frame) new-frame
-                  (%frame-prev (frame-next frame)) new-frame))
-          (:left
-           (setf new-frame (make-instance 'view-frame
-                                          :parent new-parent
-                                          :width other-frame-width
-                                          :height old-height
-                                          :x old-x
-                                          :y old-y)
-                 (frame-width frame) new-frame-width
-                 (frame-x frame) (+ old-x other-frame-width)
-                 (tree-children new-parent) (list new-frame frame))
-           (psetf (%frame-prev new-frame) (frame-prev frame)
-                  (%frame-next new-frame) frame
-                  (%frame-prev frame) new-frame
-                  (%frame-next (frame-prev frame)) new-frame)))
-        (log-string :trace "frame split new: ~S old: ~S" frame new-frame)
-        ;; insert the new node into the tree:
-        (swap-in-parent frame new-parent)
-        (setf (frame-parent frame) new-parent)
-        (values new-frame new-parent)))))
+                                      :y old-y)
+             (frame-width frame) new-frame-width
+             (frame-x frame) (+ old-x other-frame-width)
+             (tree-children new-parent) (list new-frame frame))
+       (psetf (%frame-prev new-frame) (frame-prev frame)
+              (%frame-next new-frame) frame
+              (%frame-prev frame) new-frame
+              (%frame-next (frame-prev frame)) new-frame)))
+    (log-string :trace "frame split new: ~S old: ~S" frame new-frame)
+    ;; insert the new node into the tree:
+    (swap-in-parent frame new-parent)
+    (setf (frame-parent frame) new-parent)
+    (values new-frame new-parent)))
 
 (defun binary-split-v (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
@@ -219,56 +216,53 @@ Used to initially split all frames, regardless of type."
            (type (member :top :bottom) direction)
            (type number ratio)
            (type symbol parent-type))
-  (with-accessors ((old-width frame-width)
-                   (old-height frame-height)
-                   (old-x frame-x)
-                   (old-y frame-y))
-      frame
-    ;; OLD-HEIGHT follows FRAME's height as it changes, so name the remainder
-    ;; before anything assigns to it.
-    (let* ((new-frame-height (round (* old-height ratio)))
-           (other-frame-height (- old-height new-frame-height))
-           (new-parent (make-instance parent-type
-                                      :split-direction :vertical
-                                      :parent (frame-parent frame)
+  (let* ((old-width (frame-width frame))
+         (old-height (frame-height frame))
+         (old-x (frame-x frame))
+         (old-y (frame-y frame))
+         (new-frame-height (round (* old-height ratio)))
+         (other-frame-height (- old-height new-frame-height))
+         (new-parent (make-instance parent-type
+                                    :split-direction :vertical
+                                    :parent (frame-parent frame)
+                                    :width old-width
+                                    :height old-height
+                                    :x old-x
+                                    :y old-y))
+         (new-frame))
+    ;; place the child frames:
+    (ecase direction
+      (:top
+       (setf new-frame (make-instance 'view-frame
+                                      :parent new-parent
                                       :width old-width
-                                      :height old-height
+                                      :height new-frame-height
                                       :x old-x
-                                      :y old-y)))
-      ;; place the child frames:
-      (let ((new-frame))
-        (ecase direction
-          (:top
-           (setf new-frame (make-instance 'view-frame
-                                          :parent new-parent
-                                          :width old-width
-                                          :height new-frame-height
-                                          :x old-x
-                                          :y old-y))
-           (setf (frame-height frame) other-frame-height)
-           (setf (frame-y frame) (+ old-y new-frame-height))
-           (setf (tree-children new-parent) (list new-frame frame))
-           (psetf (%frame-prev new-frame) (frame-prev frame)
-                  (%frame-next new-frame) frame
-                  (%frame-prev frame) new-frame
-                  (%frame-next (frame-prev frame)) new-frame))
-          (:bottom
-           (setf new-frame (make-instance 'view-frame
-                                          :parent new-parent
-                                          :width old-width
-                                          :height other-frame-height
-                                          :x old-x
-                                          :y (+ old-y new-frame-height)))
-           (setf (frame-height frame) new-frame-height)
-           (setf (tree-children new-parent) (list frame new-frame))
-           (psetf (%frame-prev new-frame) frame
-                  (%frame-next new-frame) (frame-next frame)
-                  (%frame-next frame) new-frame
-                  (%frame-prev (frame-next frame)) new-frame)))
-        ;; insert the new node into the tree:
-        (swap-in-parent frame new-parent)
-        (setf (frame-parent frame) new-parent)
-        (values new-frame new-parent)))))
+                                      :y old-y))
+       (setf (frame-height frame) other-frame-height)
+       (setf (frame-y frame) (+ old-y new-frame-height))
+       (setf (tree-children new-parent) (list new-frame frame))
+       (psetf (%frame-prev new-frame) (frame-prev frame)
+              (%frame-next new-frame) frame
+              (%frame-prev frame) new-frame
+              (%frame-next (frame-prev frame)) new-frame))
+      (:bottom
+       (setf new-frame (make-instance 'view-frame
+                                      :parent new-parent
+                                      :width old-width
+                                      :height other-frame-height
+                                      :x old-x
+                                      :y (+ old-y new-frame-height)))
+       (setf (frame-height frame) new-frame-height)
+       (setf (tree-children new-parent) (list frame new-frame))
+       (psetf (%frame-prev new-frame) frame
+              (%frame-next new-frame) (frame-next frame)
+              (%frame-next frame) new-frame
+              (%frame-prev (frame-next frame)) new-frame)))
+    ;; insert the new node into the tree:
+    (swap-in-parent frame new-parent)
+    (setf (frame-parent frame) new-parent)
+    (values new-frame new-parent)))
 
 (defun poly-split-frame-h (frame ratio direction)
   "Add another child to a horizontally oriented poly-tree-frame"
