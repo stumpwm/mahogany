@@ -1,9 +1,6 @@
 (in-package #:mahogany)
 
 (setf cl-interactive:*default-input-method*
-      #+(and sbcl linux)
-      (make-instance 'foot-input-method)
-      #-(and sbcl linux)
       (make-instance 'rofi-input-method))
 
 (defparameter *input-methods-available*
