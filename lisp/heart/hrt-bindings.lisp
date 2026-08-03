@@ -206,6 +206,11 @@ it visible to the user."
   (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
+(declaim (inline hrt-view-focused))
+(cffi:defcfun ("hrt_view_focused" hrt-view-focused) :bool
+  (view (:pointer (:struct hrt-view))))
+
+#-HRT-DEBUG
 (declaim (inline hrt-view-set-hidden))
 (cffi:defcfun ("hrt_view_set_hidden" hrt-view-set-hidden) :void
   "Stop the given view from being displayed"
