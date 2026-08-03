@@ -168,4 +168,6 @@
            #:hrt-layer-shell-surface-set-output
            #:hrt-layer-shell-surface-abort
            #:layer-shell-surface-place
-           #:hrt-layer-shell-finish-init))
+           #:hrt-layer-shell-finish-init
+           #+HRT-DEBUG
+           #:hrt-add-output))
