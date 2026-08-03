@@ -576,7 +576,7 @@ whenever the semaphore is non-zero."
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))
-(cffi:defcfun ("hrt_layer_surface_output" hrt-layer-surface-output) (:pointer (:struct hrt-output))
+(cffi:defcfun ("hrt_layer_surface_output" %hrt-layer-surface-output) (:pointer (:struct hrt-output))
   (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
 
 #-HRT-DEBUG
