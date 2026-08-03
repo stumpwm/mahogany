@@ -43,21 +43,21 @@
 #-HRT-DEBUG
 (declaim (inline layer-surface-focus))
 (defun layer-surface-focus (layer-surface seat)
-  (declare (type layer-surface layer-shell))
+  (declare (type layer-surface layer-surface))
   (hrt-layer-surface-focus (layer-surface-hrt-layer-surface layer-surface)
                            seat))
 
 #-HRT-DEBUG
 (declaim (inline layer-surface-unfocus))
 (defun layer-surface-unfocus (layer-surface seat)
-  (declare (type layer-surface layer-shell))
+  (declare (type layer-surface layer-surface))
   (hrt-layer-surface-unfocus (layer-surface-hrt-layer-surface layer-surface)
                              seat))
 
 #-HRT-DEBUG
 (declaim (inline layer-surface-position))
 (defun layer-surface-position (layer-surface)
-  (declare (type layer-surface layer-shell))
+  (declare (type layer-surface layer-surface))
   (let ((hrt-surface (layer-surface-hrt-layer-surface layer-surface)))
     (with-return-by-value ((x :int) (y :int))
       (hrt-layer-surface-position hrt-surface
@@ -66,7 +66,7 @@
 #-HRT-DEBUG
 (declaim (inline layer-surface-dimensions))
 (defun layer-surface-dimensions (layer-surface)
-  (declare (type layer-surface layer-shell))
+  (declare (type layer-surface layer-surface))
   (let ((hrt-surface (layer-surface-hrt-layer-surface layer-surface)))
     (with-return-by-value ((width :int) (height :int))
       (hrt-layer-surface-dimensions hrt-surface

@@ -206,6 +206,11 @@ it visible to the user."
   (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
+(declaim (inline hrt-view-focused))
+(cffi:defcfun ("hrt_view_focused" hrt-view-focused) :bool
+  (view (:pointer (:struct hrt-view))))
+
+#-HRT-DEBUG
 (declaim (inline hrt-view-set-hidden))
 (cffi:defcfun ("hrt_view_set_hidden" hrt-view-set-hidden) :void
   "Stop the given view from being displayed"
@@ -576,7 +581,7 @@ whenever the semaphore is non-zero."
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))
-(cffi:defcfun ("hrt_layer_surface_output" hrt-layer-surface-output) (:pointer (:struct hrt-output))
+(cffi:defcfun ("hrt_layer_surface_output" %hrt-layer-surface-output) (:pointer (:struct hrt-output))
   (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
 
 #-HRT-DEBUG
