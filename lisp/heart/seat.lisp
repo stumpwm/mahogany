@@ -15,7 +15,7 @@
 (defun seat-cursor-set-theme (seat theme-name cursor-size)
   "Set the theme of the cursor to THEME-NAME. If THEME-NAME is NIL,
 use the system's default theme."
-  (declare (type (or string null) cursor-name))
+  (declare (type (or string null) theme-name))
   (if theme-name
       (progn
         (cffi:with-foreign-string (str theme-name)
