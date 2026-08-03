@@ -165,7 +165,10 @@ Used to initially split all frames, regardless of type."
                    (old-x frame-x)
                    (old-y frame-y))
       frame
+    ;; OLD-WIDTH follows FRAME's width as it changes, so name the remainder
+    ;; before anything assigns to it.
     (let* ((new-frame-width (round (* old-width ratio)))
+           (other-frame-width (- old-width new-frame-width))
            (new-parent (make-instance parent-type
                                       :split-direction :horizontal
                                       :parent (frame-parent frame)
@@ -181,9 +184,9 @@ Used to initially split all frames, regardless of type."
                                           :parent new-parent
                                           :width new-frame-width
                                           :height old-height
-                                          :x (+ old-x (- old-width new-frame-width))
+                                          :x (+ old-x other-frame-width)
                                           :y old-y))
-           (setf (frame-width frame) (- old-width new-frame-width)
+           (setf (frame-width frame) other-frame-width
                  (tree-children new-parent) (list frame new-frame))
            (psetf (%frame-prev new-frame) frame
                   (%frame-next new-frame) (frame-next frame)
@@ -192,12 +195,12 @@ Used to initially split all frames, regardless of type."
           (:left
            (setf new-frame (make-instance 'view-frame
                                           :parent new-parent
-                                          :width (- old-width new-frame-width)
+                                          :width other-frame-width
                                           :height old-height
                                           :x old-x
                                           :y old-y)
                  (frame-width frame) new-frame-width
-                 (frame-x frame) (+ old-x new-frame-width)
+                 (frame-x frame) (+ old-x other-frame-width)
                  (tree-children new-parent) (list new-frame frame))
            (psetf (%frame-prev new-frame) (frame-prev frame)
                   (%frame-next new-frame) frame
@@ -221,7 +224,10 @@ Used to initially split all frames, regardless of type."
                    (old-x frame-x)
                    (old-y frame-y))
       frame
+    ;; OLD-HEIGHT follows FRAME's height as it changes, so name the remainder
+    ;; before anything assigns to it.
     (let* ((new-frame-height (round (* old-height ratio)))
+           (other-frame-height (- old-height new-frame-height))
            (new-parent (make-instance parent-type
                                       :split-direction :vertical
                                       :parent (frame-parent frame)
@@ -239,7 +245,7 @@ Used to initially split all frames, regardless of type."
                                           :height new-frame-height
                                           :x old-x
                                           :y old-y))
-           (setf (frame-height frame) (- old-height new-frame-height))
+           (setf (frame-height frame) other-frame-height)
            (setf (frame-y frame) (+ old-y new-frame-height))
            (setf (tree-children new-parent) (list new-frame frame))
            (psetf (%frame-prev new-frame) (frame-prev frame)
@@ -250,9 +256,9 @@ Used to initially split all frames, regardless of type."
            (setf new-frame (make-instance 'view-frame
                                           :parent new-parent
                                           :width old-width
-                                          :height (- old-height new-frame-height)
+                                          :height other-frame-height
                                           :x old-x
-                                          :y (+ old-y (- old-height new-frame-height))))
+                                          :y (+ old-y new-frame-height)))
            (setf (frame-height frame) new-frame-height)
            (setf (tree-children new-parent) (list frame new-frame))
            (psetf (%frame-prev new-frame) frame

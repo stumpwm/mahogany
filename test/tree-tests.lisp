@@ -399,6 +399,22 @@
         (check-children-dimensions new-parent (list 128 127)
                                    #'tree:frame-height)))))
 
+(define-matrix binary-split-h-child-placement ((direction :left :right))
+  (with-border-box-mocks ()
+    (let ((tree (make-tree-for-tests :width 155 :height 255)))
+      (multiple-value-bind (new-frame new-parent) (tree:split-frame-h tree :direction direction)
+        (declare (ignore new-frame))
+        (check-children-dimensions new-parent (list 0 77)
+                                   #'tree:frame-x)))))
+
+(define-matrix binary-split-v-child-placement ((direction :top :bottom))
+  (with-border-box-mocks ()
+    (let ((tree (make-tree-for-tests :width 155 :height 255)))
+      (multiple-value-bind (new-frame new-parent) (tree:split-frame-v tree :direction direction)
+        (declare (ignore new-frame))
+        (check-children-dimensions new-parent (list 0 128)
+                                   #'tree:frame-y)))))
+
 (defun split-frame-times (frame times split-fn)
   (with-border-box-mocks ()
     (multiple-value-bind (new-frame parent) (funcall split-fn frame)
