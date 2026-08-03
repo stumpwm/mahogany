@@ -49,7 +49,7 @@ To see a full example of this process, see the
 [[https://github.com/stumpwm/mahogany/blob/master/.github/workflows/test.yml][CI workflow]].
 
 *** Backend Library Dependencies
-The backend library requires wlroots 0.19.x. If an appropriate
+The backend library requires wlroots 0.20.x. If an appropriate
 version is not available, it will be built locally. See the README in
 the submodule or consult the [[https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/0.19.2?ref_type=tags][project's git repo]] for information on how
 to build it. The following development dependencies are also needed:
@@ -95,6 +95,16 @@ make:
 It is possible to run mahogany in an X11 or Wayland session, and is
 the recommended method of testing at this time. If running outside of
 one of these sessions, do not enable the interactive CLI debugger.
+
+*** Additional Dependencies
+
+Mahogany requires a few external applications for some functionality.
+See the [[doc/manual/default-apps.org][default applications]] section in the manual for details on how
+to customize which applications are used.
+
++ A terminal emulator. Common ones are detected, but you may need to
+  set it in your config file.
++ [[https://github.com/davatorium/rofi][Rofi]], for reading input from the user.
 
 ** Getting Started
 
