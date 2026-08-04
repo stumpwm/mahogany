@@ -41,6 +41,27 @@ See the documentation for cl-interactive:define-command for more details.
   `(cl-interactive:define-command ,name ,args
      ,@impl))
 
+(defun %gather-and-run-cmd (function key-sequence seat)
+  (cl-interactive:with-gathered-args
+      ((sequence key-sequence)
+       (seat seat))
+      gathered
+    (multiple-value-bind (func arg-list)
+        (cl-interactive:gather-args-interactively
+         function
+         :already-gathered gathered)
+      (when func
+        (hrt:run-in-main-thread
+         (lambda ()
+           (log-string :debug "Calling command ~S with args:~%~4T~S"
+                       func arg-list)
+           (hrt:with-view-transaction ()
+             (handler-case
+                 (cl-interactive:call-command-with-argument-list func arg-list)
+               (invalid-operation (condition)
+                 (toast-message *compositor-state* (condition-text condition)
+                                :theme *message-error-theme*))))))))))
+
 (defun execute-command (function key-sequence seat)
   ;; If there are no interactive arguments,
   ;; we could just execute the command directly, but
@@ -49,25 +70,13 @@ See the documentation for cl-interactive:define-command for more details.
   ;; commands with and without interactive arguments.
   (bt2:make-thread
    (lambda ()
-     (cl-interactive:with-gathered-args
-           ((sequence key-sequence)
-            (seat seat))
-         gathered
-       (multiple-value-bind (func arg-list)
-           (cl-interactive:gather-args-interactively
-            function
-            :already-gathered gathered)
-         (when func
-           (hrt:run-in-main-thread
-            (lambda ()
-              (log-string :debug "Calling command ~S with args:~%~4T~S"
-                          func arg-list)
-              (hrt:with-view-transaction ()
-                (handler-case
-                    (cl-interactive:call-command-with-argument-list func arg-list)
-                  (invalid-operation (condition)
-                    (toast-message *compositor-state* (condition-text condition)
-                                   :theme *message-error-theme*))))))))))))
+     (handler-case
+         (%gather-and-run-cmd function key-sequence seat)
+       (cl-interactive:cancel-interactive-command (c)
+         (hrt:run-in-main-thread
+          (lambda ()
+            (toast-message *compositor-state* "Command canceled."
+                           :theme *message-error-theme*))))))))
 
 (defcommand colon (sequence
                    seat
@@ -80,9 +89,4 @@ See the documentation for cl-interactive:define-command for more details.
           (execute-command cmd sequence seat)
           (toast-message *compositor-state*
                          (format nil "Command not found: ~A" exec)
-                         :theme *message-error-theme*))))
-  (:method (sequence seat (exec null))
-    (declare (ignore sequence seat))
-    (toast-message *compositor-state*
-                   (format nil "Command Canceled.")
-                   :theme *message-error-theme*)))
+                         :theme *message-error-theme*)))))

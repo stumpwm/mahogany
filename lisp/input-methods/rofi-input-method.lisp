@@ -63,9 +63,10 @@
       (0
        (values output error status))
       (1
-       (values nil error status))
+       (error 'cl-interactive:cancel-interactive-command
+              :reason "Rofi canceled"))
       (t
-       (error "rofi exited badly with status ~D" s)))))
+       (error "rofi exited badly with status ~D" status)))))
 
 
 (defun run-simple-rofi (prompt input &optional lines)
