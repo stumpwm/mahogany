@@ -46,7 +46,10 @@
 (defmethod mark-frame-focused :after ((frame layer-shell-frame) seat)
   (hrt::layer-surface-focus (slot-value frame 'layer-shell) seat))
 
-(defmethod mark-frame-unfocused :after ((frame layer-shell-frame) seat)
+(defmethod unmark-frame-focused ((frame layer-shell-frame) seat)
+  (setf (slot-value frame 'focused) nil))
+
+(defmethod unmark-frame-focused :after ((frame layer-shell-frame) seat)
   (hrt::layer-surface-unfocus (slot-value frame 'layer-shell) seat))
 
 (defmethod frame-position ((frame layer-shell-frame))
