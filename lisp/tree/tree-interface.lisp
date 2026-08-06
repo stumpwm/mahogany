@@ -163,7 +163,7 @@ See *new-split-type* for more details"))
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
      the the size is split evenly between the other child frame(s)
-   DIRECTION: where the new frame is placed. Either :left or :right")
+   DIRECTION: where the new frame is placed. Either :top or :bottom")
   (:method ((node output-node) &key &allow-other-keys)
     (error 'mahogany/util:invalid-operation :text "Cannot split output node frames!")))
 
@@ -172,7 +172,7 @@ The parent tree is modified appropriately.
 The parent tree is modified appropriately.
    RATIO: the size of newly created frame compared to the given frame. If not given, then
      the the size is split evenly between the other child frame(s)
-   DIRECTION: where the new frame is placed. Either :top or :bottom")
+   DIRECTION: where the new frame is placed. Either :left or :right")
   (:method ((node output-node) &key &allow-other-keys)
     (error 'mahogany/util:invalid-operation :text "Cannot split output node frames!")))
 
