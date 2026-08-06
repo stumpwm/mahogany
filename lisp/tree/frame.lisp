@@ -346,7 +346,7 @@ Used to initially split all frames, regardless of type."
       ;; the parent frame dimensions while still being integers, put any remainder
       ;; into the new frame:
       (multiple-value-bind (result remainder)
-          (truncate (- parent-width new-frame-height)
+          (truncate (- parent-height new-frame-height)
                     parent-children-len)
         (setf other-children-height result
               new-frame-height (+ new-frame-height remainder)))
@@ -368,7 +368,7 @@ Used to initially split all frames, regardless of type."
           (:bottom
            (setf new-frame (make-new-frame (+ parent-y
                                               (- parent-height new-frame-height)))
-                 y-adjust (+ parent-x new-frame-height)
+                 y-adjust (+ parent-y new-frame-height)
                  ;; we can still use parent-children to access all frames
                  ;; that were already there, as we add to the front
                  ;; of the list:
