@@ -12,6 +12,24 @@ many other parts of the compositor.
 To skip loading the init file, you can pass =-q= or =--no-init-file=
 to Mahogany when starting it.
 
+*** Re-loading the Init File
+
+The init file can be loaded again without restarting Mahogany, using
+the =loadrc= command. It has no default keybinding, and is run from the
+=colon= prompt.
+
+Only the first load binds =mahogany::*initializing*= to true.
+Guard anything that should not run a second time with it,
+such as creating groups or launching startup programs:
+
+#+BEGIN_SRC lisp
+  (when mh::*initializing*
+    (uiop:launch-program "waybar"))
+#+END_SRC
+
+Re-loading adds and redefines, keybindings and commands that the init
+file no longer defines are still present until Mahogany is restarted.
+
 ** Authoring Init files
 
 Init files are composed of Common Lisp code, and should be formatted
