@@ -14,6 +14,7 @@
            #:kbd
            #:kbd-parse-error
            #:define-kmap
+           #:defvar-kmap
            #:add-to-kmap
            #:define-key
            #:kmap-p

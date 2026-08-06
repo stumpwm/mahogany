@@ -34,7 +34,7 @@ the KEYBINDINGS list."
   (declare (type kmap-mode kmap-mode)
            (type key prefix-key)
            (type list keybindings))
-  (let ((top-kmap (define-kmap
+  (let ((top-kmap (define-kmap prefix-map
                     prefix-key (kmap-mode-prefix-binding kmap-mode))))
     (setf (kmap-mode-top-kmap kmap-mode) top-kmap)
     (push top-kmap keybindings)
@@ -72,6 +72,16 @@ the KEYBINDINGS list."
       ((not (string-equal "-mode" (subseq name (- len 5))))
        (error must-end-msg)))))
 
+(defun %make-kmap-mode-kmap-symbol (name type)
+  (declare (type symbol name)
+           (type string type))
+  (string-upcase
+   (concatenate 'string
+                (symbol-name name)
+                "-"
+                type
+                "-map")))
+
 ;; TODO: Make it possible to redefine kmap-modes
 (defmacro define-kmap-mode (name &key
                                    documentation
@@ -79,19 +89,22 @@ the KEYBINDINGS list."
                                    prefix-binding)
 
   (%validate-kmap-mode-symbol name)
-  `(let ((kmap-mode (make-kmap-mode (quote ,name)
-                                    (or ,top-binding (make-kmap))
-                                    (or ,prefix-binding (make-kmap))
-                                    ,documentation)))
-     (pushnew kmap-mode *kmap-modes* :key #'kmap-mode-name)
-     (defun ,name (&optional (activate t))
-       (if activate
-           (kmap-mode-activate *compositor-state* kmap-mode)
-           (kmap-mode-deactivate *compositor-state* kmap-mode)))))
+  (let ((top-binding-name (%make-kmap-mode-kmap-symbol name "top"))
+        (prefix-binding-name (%make-kmap-mode-kmap-symbol name "prefix")))
+    `(let ((kmap-mode (make-kmap-mode (quote ,name)
+                                      (or ,top-binding (make-kmap
+                                                        ,top-binding-name))
+                                      (or ,prefix-binding (make-kmap
+                                                           ,prefix-binding-name))
+                                      ,documentation)))
+       (pushnew kmap-mode *kmap-modes* :key #'kmap-mode-name)
+       (defun ,name (&optional (activate t))
+         (if activate
+             (kmap-mode-activate *compositor-state* kmap-mode)
+             (kmap-mode-deactivate *compositor-state* kmap-mode))))))
 
-(defvar *prefix-passthrough-kmap*
-  (define-kmap
-    (state-prefix-key *compositor-state*) :pass-through))
+(defvar-kmap *prefix-passthrough-kmap*
+  (state-prefix-key *compositor-state*) :pass-through)
 
 (defun (setf state-prefix-key) (key state)
   (declare (type key key)
