@@ -37,6 +37,7 @@
            #:find-view-frame
            #:get-populated-frames
            #:root-frame-p
+           #:topmost-frame-p
            #:find-root-frame
            #:find-topmost-frame
            #:find-output
