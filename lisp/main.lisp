@@ -1,5 +1,9 @@
 (in-package #:mahogany)
 
+(defvar *initializing* nil
+  "Use this variable in your config file to run code that should only
+be executed once, when mahogany starts up and loads the config file.")
+
 (defun load-config-file (&optional (catch-errors nil))
   "Load the user's config file. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the config file that was
@@ -23,6 +27,19 @@ further up. "
         (progn
           (log-string :info "Did not find config file")
           (values t nil nil)))))
+
+(defcommand loadrc ()
+  (:documentation "Reload the config file")
+  (:method ()
+    (handler-case (load-config-file nil)
+      (error (c)
+        (log-string :error "Error loading config file: ~A" c)
+        (toast-message *compositor-state*
+                       (format nil "Error loading config file: ~A" c)
+                       :theme *message-error-theme*))
+      (:no-error (&rest args)
+        (declare (ignore args))
+        (toast-message *compositor-state* "config file loaded successfully.")))))
 
 (defun init-frame-border-styles ()
   (setf tree::*frame-focus-border-style*
@@ -95,7 +112,8 @@ further up. "
     (log-string :debug "Initialized mahogany state")
     (if (gethash 'no-init-file args)
         (log-string :info "Init file loading skipped")
-        (load-config-file))
+        (let ((*initializing* t))
+          (load-config-file)))
     (unwind-protect
          (hrt:server-start server)
       (log-string :debug "Cleaning up...")
