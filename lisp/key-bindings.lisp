@@ -44,9 +44,9 @@
     (state-next-hidden-frame *compositor-state*)))
 
 (defcommand previous-view ()
-  (:documentation "Raise the next hidden view in the current group")
+  (:documentation "Raise the previous hidden view in the current group")
   (:method ()
-    (state-next-hidden-frame *compositor-state*)))
+    (state-prev-hidden-frame *compositor-state*)))
 
 (defcommand next-frame (seat)
   (:documentation
