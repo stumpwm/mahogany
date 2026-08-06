@@ -14,6 +14,7 @@
 #include "view_impl.h"
 
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/util/edges.h>
 
 static void handle_xdg_toplevel_map(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "XDG Toplevel Mapped!");
@@ -106,6 +107,9 @@ static void handle_xdg_toplevel_commit(struct wl_listener *listener,
     struct hrt_view *view = wl_container_of(listener, view, commit);
     struct wlr_xdg_toplevel *const toplevel = view->xdg_toplevel;
     if (toplevel->base->initial_commit) {
+        wlr_xdg_toplevel_set_tiled(toplevel, WLR_EDGE_TOP | WLR_EDGE_BOTTOM |
+                                                 WLR_EDGE_LEFT |
+                                                 WLR_EDGE_RIGHT);
         view->callbacks->new_view(view);
     } else if (view->xdg_surface->surface->mapped) {
         const uint32_t committed = toplevel->base->current.committed;
