@@ -21,7 +21,7 @@
         (tree:split-frame-h frame :direction :right)))))
 
 (defcommand split-frame-v ()
-  (:documentation "Split the current frame horizontally")
+  (:documentation "Split the current frame vertically")
   (:method ()
     (let ((frame (state-current-frame *compositor-state*)))
       (when frame
