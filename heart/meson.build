@@ -48,7 +48,7 @@ if not wlroots.found()
   wlroots_conf = wlroots_proj.get_variable('conf_data')
   wlroots_has_xwayland = wlroots_conf.get('WLR_HAS_XWAYLAND') == 1
 else
-  wlroots_has_xwayland = wlroots.get_pkgconfig_variable('have_xwayland') == 'false'
+  wlroots_has_xwayland = wlroots.get_pkgconfig_variable('have_xwayland') == 'true'
 endif
 
 
