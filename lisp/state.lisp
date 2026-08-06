@@ -171,7 +171,7 @@ the current group or a layer shell frame"
            (ring-list:add-item hidden-groups current-group)
            (setf current-group new-group))
           (t
-           (ring-list:add-item hidden-groups current-group)))
+           (ring-list:add-item hidden-groups new-group)))
         (log-string :trace "Hidden groups: ~S" hidden-groups))
       new-group)))
 
