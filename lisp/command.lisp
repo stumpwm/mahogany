@@ -80,7 +80,7 @@ See the documentation for cl-interactive:define-command for more details.
 
 (defcommand colon (sequence
                    seat
-                   (cmd-line (:function read-command-name ": ")))
+                   (cmd-line (:function read-command-name :data ": ")))
   (:method (sequence seat (exec string))
     (let ((cmd (cl-interactive:find-command
                 cl-interactive:*default-command-database*

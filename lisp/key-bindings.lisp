@@ -1,7 +1,7 @@
 (in-package #:mahogany)
 
 (defcommand run-shell-command
-    ((shell-command (:function interactively-read-string "Exec: ")))
+    ((shell-command (:function interactively-read-string :data "Exec")))
   (:method ((exec string))
     (uiop:launch-program exec)))
 
@@ -63,14 +63,14 @@
       (state-focus-frame *compositor-state* (tree:frame-prev cur-frame) seat))))
 
 (defcommand gnew
-    ((name (:function interactively-read-string "Name")))
+    ((name (:function interactively-read-string :data "Name")))
   (:method ((name string))
     (mahogany-state-group-add
      *compositor-state*
      :group-name (if (string= name "") nil name))))
 
 (defcommand gnewbg
-    ((name (:function interactively-read-string "Name")))
+    ((name (:function interactively-read-string :data "Name")))
   (:method ((name string))
     (mahogany-state-group-add
      *compositor-state*
