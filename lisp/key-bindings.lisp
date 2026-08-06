@@ -88,7 +88,7 @@
 
 (defcommand gprev ()
   (:method ()
-    (state-next-hidden-group *compositor-state*)))
+    (state-prev-hidden-group *compositor-state*)))
 
 #+:hrt-debug
 (defcommand add-output ()
