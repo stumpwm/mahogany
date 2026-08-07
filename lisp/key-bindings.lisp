@@ -62,15 +62,21 @@
     (let ((cur-frame (state-current-frame *compositor-state*)))
       (state-focus-frame *compositor-state* (tree:frame-prev cur-frame) seat))))
 
+(defun interactively-read-new-group-name (com im arg prompt)
+  (declare (ignore com arg))
+  (let* ((next-name (state-next-group-name *compositor-state*))
+         (full-prompt (concatenate 'string prompt " (default: " next-name ")")))
+    (cl-interactive:input-method-read im full-prompt :require-match nil)))
+
 (defcommand gnew
-    ((name (:function interactively-read-string :data "Name")))
+    ((name (:function interactively-read-new-group-name :data "Name")))
   (:method ((name string))
     (mahogany-state-group-add
      *compositor-state*
      :group-name (if (string= name "") nil name))))
 
 (defcommand gnewbg
-    ((name (:function interactively-read-string :data "Name")))
+    ((name (:function interactively-read-new-group-name :data "Name")))
   (:method ((name string))
     (mahogany-state-group-add
      *compositor-state*

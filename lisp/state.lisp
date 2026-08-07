@@ -155,10 +155,17 @@ the current group or a layer shell frame"
     (when (and cur-frame (> (length outputs) 0))
       (tree:mark-frame-focused cur-frame (server-seat state)))))
 
+(defun %next-group-name (index)
+  (concatenate 'string "GROUP-" (write-to-string index)))
+
+(defun state-next-group-name (state)
+  (let ((index (+ 1 (length (state-groups state)))))
+    (%next-group-name index)))
+
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (let ((index (+ 1 (length (state-groups state)))))
     (unless group-name
-      (setf group-name (concatenate 'string "DEFAULT" "-" (write-to-string index))))
+      (setf group-name (%next-group-name index)))
     (let ((new-group (%add-group state group-name index)))
       (with-accessors ((current-group state-current-group)
                        (hidden-groups state-hidden-groups)
