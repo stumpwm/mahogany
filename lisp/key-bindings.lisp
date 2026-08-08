@@ -83,6 +83,23 @@
      :group-name (if (string= name "") nil name)
      :make-current nil)))
 
+(defun interactively-read-group (com im arg prompt)
+  (declare (ignore com arg))
+  (let* ((groups (state-groups *compositor-state*))
+         ;; It would be good to sort the list so that the current
+         ;; group is on the bottom, mark the current group with a `*`,
+         ;; or something similar to help user.
+         (group-name (cl-interactive:completing-read
+                      im prompt
+                      :completions (map 'list #'mahogany-group-name groups)
+                      :require-match t)))
+    (find group-name groups :key #'mahogany-group-name :test #'string=)))
+
+(defcommand grouplist
+    ((group (:function interactively-read-group :data "Group?")))
+  (:method (group)
+    (setf (state-current-group *compositor-state*) group)))
+
 (defcommand gkill ()
   (:method ()
     (let ((current-group (state-current-group *compositor-state*)))
@@ -113,6 +130,7 @@
     (kbd "c") #'gnew
     (kbd "k") #'gkill
     (kbd "n") #'gnext
+    (kbd "l") #'grouplist
     (kbd "p") #'gprev))
 
 (defvar *root-map*
