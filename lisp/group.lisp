@@ -171,7 +171,7 @@ to match."
     (let* ((output-name (hrt:output-full-name output))
            (tree (gethash output-name output-map)))
       (remhash output-name output-map)
-      (when (equalp output-container (group-current-output group))
+      (when (equalp output (group-current-output group))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat)
         (alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
           (setf cur-frame (tree:find-first-leaf other-tree))))
