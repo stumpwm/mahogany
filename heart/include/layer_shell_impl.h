@@ -21,4 +21,6 @@ bool hrt_layer_shell_init(struct hrt_server *server,
 
 void hrt_layer_shell_arrange_layers(struct hrt_output *output, bool emit_event);
 
+void hrt_layer_shell_output_destroy(struct hrt_output *output);
+
 #endif

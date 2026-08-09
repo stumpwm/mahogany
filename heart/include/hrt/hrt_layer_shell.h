@@ -17,6 +17,7 @@ struct hrt_layer_shell_surface {
     struct wlr_layer_surface_v1 *layer_surface;
     struct wlr_scene_layer_surface_v1 *scene_surface;
     struct hrt_output *output;
+    struct wl_list link;
     struct wlr_scene_tree *tree;
     bool mapped;
     const struct hrt_layer_shell_callbacks *callbacks;

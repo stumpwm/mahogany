@@ -32,6 +32,8 @@ struct hrt_output {
 
     struct wlr_box usable_area;
 
+    struct wl_list layer_surfaces;
+
     struct wl_listener request_state;
     struct wl_listener frame;
     struct wl_listener destroy;
