@@ -75,6 +75,14 @@
   (declare (type mahogany-state state))
   (hrt:hrt-server-stop (state-server state)))
 
+(config-system:defconfig *show-group-name* t
+  boolean
+  "Whether to name the group in a toast message when switching to it.")
+
+(config-system:defconfig *group-name-delay* 500
+  fixnum
+  "How long the group name is shown for, in milliseconds.")
+
 (defun (setf state-current-group) (group state)
   (declare (type mahogany-state state)
            (type mahogany-group group))
@@ -88,7 +96,10 @@
     (setf (state-%current-group state) group)
     (group-wakeup group (hrt:hrt-server-seat server))
     (alexandria:when-let ((group-frame (mahogany-group-current-frame group)))
-      (state-focus-frame state group-frame (server-seat state)))
+      (state-focus-frame state group-frame (server-seat state))
+      (when *show-group-name*
+        (toast-message state (mahogany-group-name group)
+                       :ms-delay *group-name-delay*)))
     (hrt:dirty-view-transaction)))
 
 (defun group-frame-p (frame)
