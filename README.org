@@ -113,9 +113,10 @@ milestones]]). In particular, touchscreen, menu, dialog, and systray do not
 work yet. But it has basic functionalities already.
 
 The list of available keybindings can be found in
-[[./lisp/keybindings.lisp][lisp/keybindings.lisp]]. You can also search the codebase for
-=defcommand= forms, which are used to define commands. =C-t c= will
-open a terminal, and =C-t q= will kill Mahogany.
+[[./lisp/key-bindings.lisp][lisp/key-bindings.lisp]].
+You can also search the codebase for =defcommand= forms, which are
+used to define commands. =C-t c= will open a terminal, and =C-t q=
+will kill Mahogany.
 
 Check out the [[./doc/manual/README.md][manual]] for how to customize the compositor's behavior. If
 you are new to Stumpwm or titling window managers in general, most
