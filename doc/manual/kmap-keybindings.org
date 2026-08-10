@@ -111,6 +111,6 @@ kmap, specify `:pass-through` instead:
 #+END_SRC
 
 By default, Mahogany activates the =prefix-passthrough-mode=
-[[kmap-modes.org][kmap mode]], which has a binding so that passing the prefix binding
-twice will cause the second one to be passed through to the underlying
-application.
+[[* Keymap modes][kmap mode]], which has a binding so that passing the
+prefix binding twice will cause the second one to be passed through to
+the underlying application.

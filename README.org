@@ -3,7 +3,7 @@
   [[https://github.com/stumpwm/mahogany/actions/workflows/freebsd.yml][https://github.com/stumpwm/mahogany/actions/workflows/freebsd.yml/badge.svg]]
 
   Mahogany is a tiling window manager for Wayland modeled after
-  StumpWM. While it is not a drop-in replacement for stumpwm, stumpwm
+  StumpWM. While it is not a drop-in replacement for StumpWM, StumpWM
   users should be very comfortable with Mahogany. Its planned
   features are:
   + Easy extensibility: through the use of different modes, users can
@@ -28,7 +28,7 @@ issue list for labels marked with
 In general, if it's in stumpwm and you want it, we will consider adding it. Create
 an issue for the issue tracker so we can plan on how to get it done.
 
-Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]]
+Before writing code, please look at [[CONTRIBUTING.md][CONTRIBUTING.md]].
 
 ** Building
    There are two parts to Mahogany: a backend library implemented in C, and
@@ -112,27 +112,16 @@ Mahogany is currently in a pre-alpha state. Help is needed (see [[https://github
 milestones]]). In particular, touchscreen, menu, dialog, and systray do not
 work yet. But it has basic functionalities already.
 
-Check the =./lisp/key-bindings.lisp= for what you can do. For example, =C-t c=
-should fire up a terminal for you, and =C-t q= will kill mahogany. You can
-customize your keybindings by writing =~/.config/mahogany/init.lisp=. For
-example, the following code lets you to open emacs by holding =super= and
-tapping on =e=.
-#+begin_src lisp
-  (in-package #:mahogany-user)
+The list of available keybindings can be found in
+[[./lisp/keybindings.lisp][lisp/keybindings.lisp]]. You can also search the codebase for
+=defcommand= forms, which are used to define commands. =C-t c= will
+open a terminal, and =C-t q= will kill Mahogany.
 
-  (defun open-firefox (sequence seat)
-    (declare (ignore sequence seat))
-    (uiop:launch-program "firefox"))
-  (defun open-emacs (sequence seat)
-    (declare (ignore sequence seat))
-    (uiop:launch-program "emacsclient -c || emacs"))
-  (add-to-kmap *top-map*
-    (kbd "s-e") #'open-emacs
-    (kbd "s-F") #'open-firefox)
-#+end_src
-
-To modify the keyboard layout with libxkb, see [[./doc/keyboard-layout.org][Doc: Keyboard Layout]].
-
+Check out the [[./doc/manual/README.md][manual]] for how to customize the compositor's behavior. If
+you are new to Stumpwm or titling window managers in general, most
+tutorials for StumpWM will be relatively useful where Mahogany has
+reached feature parity with StumpWM. I like [[https://www.youtube.com/watch?v=jlF1N0R24cA][this video by James McCabe]] in
+particular.
 
 ** License
 
