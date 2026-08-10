@@ -44,6 +44,10 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     struct hrt_server *server = output->server;
     wlr_log(WLR_DEBUG, "Output destroyed %s", output->wlr_output->name);
 
+    // close the layer surfaces raw pointers as well as the hrt_scene_output
+    // and the scene trees owned by it, while they are still valid.
+    hrt_layer_shell_output_destroy(output);
+
     if (output != server->fallback_output) {
         server->output_callback->output_removed(output);
     }
@@ -73,6 +77,7 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     output->wlr_output        = wlr_output;
     output->server            = server;
     output->scene             = hrt_scene_output_create(server->scene_root);
+    wl_list_init(&output->layer_surfaces);
 
     // temp background color:
     // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.

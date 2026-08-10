@@ -430,9 +430,10 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
          (surface (gethash surface-ptr surfaces))
          (output-container (%find-output (hrt:layer-surface-output surface)
                                          state))
-         (removed-frame (tree::output-container-remove-layer-shell
-                         output-container surface)))
-    (when (eq (state-current-frame state) removed-frame)
+         (removed-frame (when output-container
+                          (tree::output-container-remove-layer-shell
+                           output-container surface))))
+    (when (and removed-frame (eq (state-current-frame state) removed-frame))
       (state-focus-frame state (mahogany-group-current-frame
                                 (state-current-group state))
                          (server-seat state)))

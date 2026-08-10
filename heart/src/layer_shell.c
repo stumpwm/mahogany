@@ -29,6 +29,9 @@ hrt_layer_shell_surface_create(struct wlr_layer_surface_v1 *surface,
 
     shell_surface->layer_surface = surface;
     shell_surface->callbacks     = server->layer_shell_callbacks;
+    // even though they are not in an output yet, the links have to be safe to
+    // remove, a surface can be destroyed before its even placed.
+    wl_list_init(&shell_surface->link);
 
     return shell_surface;
 }
@@ -76,6 +79,7 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     surface->output                = output;
     surface->layer_surface->output = output->wlr_output;
     surface->tree                  = surface->scene_surface->tree;
+    wl_list_insert(&output->layer_surfaces, &surface->link);
 }
 
 void hrt_layer_shell_surface_set_output(
@@ -358,6 +362,7 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
         hrt_layer_shell_arrange_layers(surface->output, true);
     }
 
+    wl_list_remove(&surface->link);
     wl_list_remove(&surface->events.scene_destroy.link);
     wl_list_remove(&surface->events.new_popup.link);
     wl_list_remove(&surface->events.unmap.link);
@@ -365,6 +370,14 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&surface->events.commit.link);
 
     free(surface);
+}
+
+void hrt_layer_shell_output_destroy(struct hrt_output *output) {
+    struct hrt_layer_shell_surface *surface, *tmp;
+    wl_list_for_each_safe(surface, tmp, &output->layer_surfaces, link) {
+        // sends "closed" to the client and run unmap-then-destroy synchronously.
+        wlr_layer_surface_v1_destroy(surface->layer_surface);
+    }
 }
 
 void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
