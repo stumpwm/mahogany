@@ -4,6 +4,7 @@
    #:make-ring-list
    #:ring-list
    #:ring-list-size
+   #:clear-list
    #:add-item
    #:add-item-prev
    #:remove-item
@@ -27,6 +28,11 @@
 (defstruct (ring-list (:constructor make-ring-list ()))
   (size 0 :type fixnum)
   (head nil :type (or null ring-item)))
+
+(defun clear-list (ring-list)
+  (declare (type ring-list ring-list))
+  (setf (ring-list-size ring-list) 0
+        (ring-list-head ring-list) nil))
 
 (defun add-item (ring-list item)
   "Add the given item to the head of the list"
