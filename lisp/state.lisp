@@ -35,19 +35,41 @@
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
   (with-accessors ((groups state-groups)
-                   (server state-server))
+                   (server state-server)
+                   (hidden-groups state-hidden-groups)
+                   (views state-views)
+                   (layer-surfaces state-layer-surfaces))
       state
     ;; Clear the current frame so that subsequent cleanup code
     ;; doesn't try to switch focus to an invalid frame:
     (setf (state-%current-frame state) nil)
-    (let ((scene-tree (hrt:hrt-server-scene-tree server))
-          (seat (hrt:hrt-server-seat server)))
-      (loop for g across groups
-            :do (destroy-mahogany-group g scene-tree seat)))
-    (setf groups (adjust-array groups 0 :fill-pointer 0))
+    ;; This kicks off the destruction sequence, which
+    ;; calls the various output and seat removal callbacks. At the end, we
+    ;; are left in a state where all hrt and wlroots based objects
+    ;; are invalid.
     (hrt:server-finish server)
     ;; The actual scene object is freed during hrt-server-finish:
-    (setf server nil)))
+    (setf server nil)
+    ;; Since we don't listen to the callbacks that destroy the
+    ;; infrastructure needed for groups to work, we just clear them
+    ;; out here. Do a bit of checking and logging to make sure
+    ;; everything that needed to be cleaned up was.
+    (flet ((clear-toplevel-tbl (table type)
+             (declare (type hash-table table)
+                      (type string type))
+             (let ((lst (list)))
+               (maphash (lambda (k v)
+                          (declare (ignore k))
+                          (push v lst))
+                        table)
+               (when lst
+                 (log-string :error "~A were orphaned: ~A~%" type lst)))
+             (clrhash table)))
+      (clear-toplevel-tbl views "views")
+      (clear-toplevel-tbl layer-surfaces "layer surfaces"))
+    (ring-list:clear-list hidden-groups)
+    (setf (state-%current-group state) nil)
+    (setf groups (adjust-array groups 0 :fill-pointer 0))))
 
 (defun server-stop (state)
   (declare (type mahogany-state state))

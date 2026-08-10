@@ -109,8 +109,8 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
 (defun server-finish (server)
   (hrt-event-loop-semaphore-close *workqueue-semaphore*)
   (setf *workqueue-semaphore* nil)
-  (setf *hrt-server* nil)
-  (hrt-server-finish server))
+  (hrt-server-finish server)
+  (setf *hrt-server* nil))
 
 (defun server-group-create (server)
   (declare (type cffi:foreign-pointer server))
