@@ -1,0 +1,35 @@
+name: Build documentation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'doc/manual/**'
+      - 'doc/manual-intro.org'
+      - Makefile
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'doc/manual/**'
+      - 'doc/manual-intro.org'
+      - Makefile
+
+jobs:
+  build_documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y emacs texinfo texlive
+    - name: Checkout Code
+      uses: actions/checkout@v7
+    - name: Build
+      run: make doc
+    - name: Upload Manuals
+      uses: actions/upload-artifact@v7
+      with:
+        name: Mahogany Manuals
+        path: build/doc/
