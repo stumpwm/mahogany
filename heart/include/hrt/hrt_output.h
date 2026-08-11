@@ -37,9 +37,6 @@ struct hrt_output {
     struct wl_listener request_state;
     struct wl_listener frame;
     struct wl_listener destroy;
-
-    // temp background color
-    float color[4];
 };
 
 struct hrt_output_callbacks {
