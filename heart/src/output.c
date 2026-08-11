@@ -5,7 +5,6 @@
 #include "wlr/util/log.h"
 #include <assert.h>
 #include <limits.h>
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -66,11 +65,6 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     free(output);
 }
 
-// temp random float generator
-static float float_rand() {
-    return (float)(rand() / (double)RAND_MAX); /* [0, 1.0] */
-}
-
 struct hrt_output *hrt_output_create(struct hrt_server *server,
                                      struct wlr_output *wlr_output) {
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
@@ -78,16 +72,6 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     output->server            = server;
     output->scene             = hrt_scene_output_create(server->scene_root);
     wl_list_init(&output->layer_surfaces);
-
-    // temp background color:
-    // {0.730473, 0.554736, 0.665036, 1.000000} is really pretty.
-    output->color[0] = float_rand();
-    output->color[1] = float_rand();
-    output->color[2] = float_rand();
-    output->color[3] = 1.0;
-
-    printf("Output color: {%f, %f, %f, %f}\n", output->color[0],
-           output->color[1], output->color[2], output->color[3]);
 
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
@@ -373,9 +357,6 @@ bool hrt_server_output_init(struct hrt_server *server,
         handle_output_manager_destroy;
     wl_signal_add(&server->output_manager->events.destroy,
                   &server->destroy_listener.output_manager);
-
-    // temporary random seed:
-    srand(time(0));
 
     return true;
 }

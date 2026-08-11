@@ -260,8 +260,7 @@ well behaved ones should."
   (usable-area (:struct wlr-box))
   (request-state (:struct wl-listener))
   (frame (:struct wl-listener))
-  (destroy (:struct wl-listener))
-  (color :float :count 4))
+  (destroy (:struct wl-listener)))
 
 (cffi:defcstruct hrt-output-callbacks
   (output-added :pointer #| function ptr void (struct hrt_output *) |#)
