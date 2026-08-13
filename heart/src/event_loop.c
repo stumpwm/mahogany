@@ -78,3 +78,26 @@ void hrt_event_loop_semaphore_close(struct hrt_fd_semaphore *fd) {
     close(fd->fd);
     free(fd);
 }
+
+struct hrt_event_loop_timer *
+hrt_event_loop_timer_add(struct hrt_server *server,
+                         hrt_event_loop_timer_func_t callback) {
+  struct hrt_event_loop_timer *timer = calloc(1, sizeof(*timer));
+    if (!timer) {
+        return nullptr;
+    }
+    struct wl_event_loop *event_loop =
+        wl_display_get_event_loop(server->wl_display);
+    timer->event_source = wl_event_loop_add_timer(event_loop, callback, timer);
+    return timer;
+}
+
+int hrt_event_loop_timer_update(struct hrt_event_loop_timer *timer,
+                                int ms_delay) {
+    return wl_event_source_timer_update(timer->event_source, ms_delay);
+}
+
+void hrt_event_loop_timer_destroy(struct hrt_event_loop_timer *timer) {
+    hrt_event_loop_remove(timer->event_source);
+    free(timer);
+}

@@ -13,6 +13,16 @@ enum hrt_event_mask {
     HRT_EVENT_ERROR    = WL_EVENT_ERROR
 };
 
+struct hrt_fd_semaphore {
+    int fd;
+    struct wl_event_source *event_source;
+};
+
+struct hrt_event_loop_timer {
+    struct wl_event_source *event_source;
+};
+
+typedef wl_event_loop_timer_func_t hrt_event_loop_timer_func_t;
 typedef wl_event_loop_fd_func_t hrt_event_loop_fd_func_t;
 
 struct wl_event_source *hrt_event_loop_add_fd(struct hrt_server *server, int fd,
@@ -21,11 +31,6 @@ struct wl_event_source *hrt_event_loop_add_fd(struct hrt_server *server, int fd,
                                               void *data);
 
 void hrt_event_loop_remove(struct wl_event_source *source);
-
-struct hrt_fd_semaphore {
-    int fd;
-    struct wl_event_source *event_source;
-};
 
 /**
  * Create a semaphore fd (via eventfd(2)), and call the provided function
@@ -50,5 +55,14 @@ bool hrt_event_loop_semaphore_decrement(struct hrt_fd_semaphore *fd);
  * Close the semaphore fd and remove it from the event loop.
  **/
 void hrt_event_loop_semaphore_close(struct hrt_fd_semaphore *fd);
+
+struct hrt_event_loop_timer *
+hrt_event_loop_timer_add(struct hrt_server *server,
+                         hrt_event_loop_timer_func_t callback);
+
+int hrt_event_loop_timer_update(struct hrt_event_loop_timer *timer,
+                                 int ms_delay);
+
+void hrt_event_loop_timer_destroy(struct hrt_event_loop_timer *timer);
 
 #endif
