@@ -8,6 +8,7 @@ project(
     'warning_level=2',
     'werror=true',
   ],
+  meson_version: '>=1.1.0',
 )
 
 add_project_arguments(
@@ -26,10 +27,37 @@ wlroots_version = ['>=0.20.0', '<0.21.0']
 
 cairo          = dependency('cairo', required: true)
 pangocairo     = dependency('pangocairo', required: true)
-pixman         = dependency('pixman-1', required: true)
-wayland_server = dependency('wayland-server')
-wayland_protos = dependency('wayland-protocols', version: '>=1.14')
-xkbcommon      = dependency('xkbcommon')
+pixman         = dependency(
+  'pixman-1',
+  version: '>=0.43.0',
+  required: true
+)
+wayland_server = dependency(
+  'wayland-server',
+  version: '>=1.24',
+  fallback: 'wayland',
+  default_options: [
+    'tests=false',
+    'documentation=false'
+  ]
+)
+wayland_protos = dependency(
+  'wayland-protocols',
+  version: '>=1.47',
+  fallback: 'wayland-protocols',
+  default_options: ['tests=false'],
+)
+xkbcommon      = dependency(
+  'xkbcommon',
+  version: '>=1.8.0',
+  fallback: 'libxkbcommon',
+  default_options: [
+    'enable-tools=false',
+    'enable-x11=false',
+    'enable-docs=false',
+    'enable-xkbregistry=false'
+  ],
+)
 xcb            = dependency('xcb', required: get_option('xwayland'))
 wlroots        = dependency(
   ['wlroots-0.20', 'wlroots'],
@@ -48,7 +76,7 @@ if not wlroots.found()
   wlroots_conf = wlroots_proj.get_variable('conf_data')
   wlroots_has_xwayland = wlroots_conf.get('WLR_HAS_XWAYLAND') == 1
 else
-  wlroots_has_xwayland = wlroots.get_pkgconfig_variable('have_xwayland') == 'true'
+  wlroots_has_xwayland = wlroots.get_variable('have_xwayland') == 'true'
 endif
 
 
