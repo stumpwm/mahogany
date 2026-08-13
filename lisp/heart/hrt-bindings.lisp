@@ -490,7 +490,16 @@ Returns the view that was in the node."
   (+hrt-event-hangup+ 4)
   (+hrt-event-error+ 8))
 
-(cffi:defctype hrt-event-loop-fd-func-t :pointer)
+(cffi:defcstruct hrt-fd-semaphore
+  (fd :int)
+  (event-source :pointer #| (:struct wl-event-source) |#))
+
+(cffi:defcstruct hrt-event-loop-timer
+  (event-source :pointer #| (:struct wl-event-source) |#))
+
+(cffi:defctype hrt-event-loop-timer-func-t :pointer #| wl-event-loop-timer-func-t |#)
+
+(cffi:defctype hrt-event-loop-fd-func-t :pointer #| wl-event-loop-fd-func-t |#)
 
 #-HRT-DEBUG
 (declaim (inline hrt-event-loop-add-fd))
@@ -505,10 +514,6 @@ Returns the view that was in the node."
 (declaim (inline hrt-event-loop-remove))
 (cffi:defcfun ("hrt_event_loop_remove" hrt-event-loop-remove) :void
   (source :pointer #| (:struct wl-event-source) |#))
-
-(cffi:defcstruct hrt-fd-semaphore
-  (fd :int)
-  (event-source :pointer #| (:struct wl-event-source) |#))
 
 #-HRT-DEBUG
 (declaim (inline hrt-event-loop-semaphore-add))
@@ -537,6 +542,23 @@ whenever the semaphore is non-zero."
 (cffi:defcfun ("hrt_event_loop_semaphore_close" hrt-event-loop-semaphore-close) :void
   "Close the semaphore fd and remove it from the event loop."
   (fd (:pointer (:struct hrt-fd-semaphore))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-event-loop-timer-add))
+(cffi:defcfun ("hrt_event_loop_timer_add" hrt-event-loop-timer-add) (:pointer (:struct hrt-event-loop-timer))
+  (server (:pointer (:struct hrt-server)))
+  (callback hrt-event-loop-timer-func-t))
+
+#-HRT-DEBUG
+(declaim (inline hrt-event-loop-timer-update))
+(cffi:defcfun ("hrt_event_loop_timer_update" hrt-event-loop-timer-update) :int
+  (timer (:pointer (:struct hrt-event-loop-timer)))
+  (ms-delay :int))
+
+#-HRT-DEBUG
+(declaim (inline hrt-event-loop-timer-destroy))
+(cffi:defcfun ("hrt_event_loop_timer_destroy" hrt-event-loop-timer-destroy) :void
+  (timer (:pointer (:struct hrt-event-loop-timer))))
 
 ;; next section imported from file heart/include/hrt/hrt_layer_shell.h
 

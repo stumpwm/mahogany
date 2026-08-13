@@ -11,6 +11,10 @@ constructs that need a reference to it.")
 (declaim (type (or null cffi:foreign-pointer) *workqueue-semaphore*))
 (defparameter *workqueue-semaphore* nil)
 
+(declaim (type hash-table *timer-table*))
+(mahogany/util::defglobal *timer-table* (make-hash-table)
+    "Table holding the pending timers")
+
 #-ATOMICS-CAS-SPECIAL-VAR
 (error "Lisp implementation does not have support for required CAS operation")
 
@@ -40,6 +44,7 @@ constructs that need a reference to it.")
     ()
   (declare (ignore fd data))
   (flet ((run-with-restarts (func)
+           (declare (type function func))
            (restart-case (funcall func)
              (continue ()
                :report "Continue executing, ignoring the error"))))
@@ -74,6 +79,44 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   ;; get woken up too early:
   (cas-enque *work-queue* func)
   (hrt-event-loop-semaphore-increment *workqueue-semaphore* 1))
+
+(defstruct (timer-handle
+            (:constructor make-timer-handle (handle callback data)))
+  (handle nil :type cffi:foreign-pointer :read-only t)
+  (callback nil :type (function (timer-handle) t) :read-only t)
+  (data nil))
+
+(define-hrt-callback timer-callback :int
+    ((data :pointer))
+    ()
+  (declare (inline gethash))
+  (let ((handle (gethash (cffi:pointer-address data) *timer-table*)))
+    (declare (type timer-handle handle))
+    (mahogany/log:log-string :trace "timer callback called: ~S" handle)
+    (funcall (timer-handle-callback handle) handle)))
+
+(defun server-make-timer (server callback &optional data)
+  (let* ((timer
+           (hrt-event-loop-timer-add server (cffi:callback timer-callback)))
+         (handle (make-timer-handle timer callback data)))
+    (setf (gethash (cffi:pointer-address timer) *timer-table*)
+          handle)
+    handle))
+
+(defun timer-handle-update (handle msec-delay)
+  (declare (type timer-handle handle))
+  (let ((result
+          (hrt-event-loop-timer-update (timer-handle-handle handle)
+                                       msec-delay)))
+    (if (< 0 result)
+        t
+        nil)))
+
+(defun timer-handle-destroy (handle)
+  (declare (type timer-handle handle))
+  (let ((timer-handle (timer-handle-handle handle)))
+    (remhash (cffi:pointer-address timer-handle) *timer-table*)
+    (hrt-event-loop-timer-destroy timer-handle)))
 
 (declaim (inline %hrt-server))
 (defun %hrt-server ()
