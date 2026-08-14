@@ -71,6 +71,7 @@
            #:hrt-seat-cursor-lx
            #:hrt-seat-cursor-ly
            #:hrt-seat-set-keymap
+           #:hrt-seat-set-repeat-info
            ;; output symbols:
            #:output
            #:hrt-output

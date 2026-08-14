@@ -1,0 +1,19 @@
+* Key Repeat
+
+You can use =keyboard-repeat-rate= and =keyboard-repeat-delay=
+to configure the repeat rate and delay to start repeating key presses.
+
+  + =(config-system:set-config keyboard-repeat-rate rate)= :: How many
+    times per second a held key repeats, in Hz. Defaults to =25=. A
+    rate of =0= disables key repeat entirely.
+  + =(config-system:set-config keyboard-repeat-delay delay)= :: How
+    long a key must be held before it starts repeating, in
+    milliseconds. Defaults to =600=.
+
+  Both values must be between =0= and =2147483647=, because
+  =wl_keyboard.repeat_info= carries them as signed 32 bit integers.
+
+#+BEGIN_SRC lisp
+  (config-system:set-config keyboard-repeat-rate 40
+                            keyboard-repeat-delay 300)
+#+END_SRC
