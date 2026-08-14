@@ -35,6 +35,12 @@ bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
     }
 }
 
+void hrt_seat_set_repeat_info(struct hrt_seat *seat, int32_t rate_hz,
+                              int32_t delay_ms) {
+    wlr_keyboard_set_repeat_info(&seat->keyboard_group->keyboard, rate_hz,
+                                 delay_ms);
+}
+
 bool hrt_seat_keyboard_focus_surface(struct hrt_seat *seat,
                                      struct wlr_surface *surface) {
     struct wlr_seat *wlr_seat = seat->seat;

@@ -48,6 +48,39 @@ Values:
                ((= *keyboard-focus-bits* 0)
                 :ignore)))))
 
+;; wl_keyboard.repeat_info has two int32 and the protocol requires both to be non-negative.
+(deftype keyboard-repeat-value () '(unsigned-byte 31))
+
+(declaim (type keyboard-repeat-value *keyboard-repeat-rate* *keyboard-repeat-delay*))
+;; wlroots default, so we don't need to update at startup.
+(defglobal *keyboard-repeat-rate* 25)
+(defglobal *keyboard-repeat-delay* 600)
+
+(defun %apply-keyboard-repeat ()
+  "Push the current repeat settings to the seat."
+  (when (state-server *compositor-state*)
+    (hrt:hrt-seat-set-repeat-info (server-seat *compositor-state*)
+                                  *keyboard-repeat-rate*
+                                  *keyboard-repeat-delay*)))
+
+(config-system:define-setf-config
+    (keyboard-repeat-rate 25 :type keyboard-repeat-value)
+    "How many times a second a held key repeats, in Hz. 0 disables repeat."
+  (:setter (val)
+           (setf *keyboard-repeat-rate* val)
+           (%apply-keyboard-repeat)
+           val)
+  (:getter () *keyboard-repeat-rate*))
+
+(config-system:define-setf-config
+    (keyboard-repeat-delay 600 :type keyboard-repeat-value)
+    "How long a key must be held before it starts repeating, in milliseconds."
+  (:setter (val)
+           (setf *keyboard-repeat-delay* val)
+           (%apply-keyboard-repeat)
+           val)
+  (:getter () *keyboard-repeat-delay*))
+
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))
            (type key-state key-state)

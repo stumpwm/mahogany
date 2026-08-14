@@ -122,6 +122,13 @@ bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
 bool hrt_seat_cursor_set_theme(struct hrt_seat *seat, char *theme_name,
                                uint32_t base_size);
 
+/**
+ * RATE_HZ repeats per second after DELAY_MS milliseconds.
+ * A rate of 0 disables repeat.
+ **/
+void hrt_seat_set_repeat_info(struct hrt_seat *seat, int32_t rate_hz,
+                              int32_t delay_ms);
+
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 
 double hrt_seat_cursor_ly(struct hrt_seat *seat);
