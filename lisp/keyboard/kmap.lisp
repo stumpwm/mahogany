@@ -119,13 +119,13 @@ Returns:
                                     kmaps))
            (match (find-if-not #'null matching-values)))
       (cond
+        ((null match)
+         (values nil))
         ((kmap-or-kmap-symbol-p match)
          (push key key-seq)
          (setf (key-state-kmaps bindings-state) (delete-if-not 'kmap-or-kmap-symbol-p matching-values))
          (values t nil))
-        (match
-            (push key key-seq)
-          (setf (key-state-kmaps bindings-state) nil)
-          (values t match))
         (t
-         (values nil))))))
+         (push key key-seq)
+         (setf (key-state-kmaps bindings-state) nil)
+         (values t match))))))
