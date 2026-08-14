@@ -1,6 +1,7 @@
 (fiasco:define-test-package #:mahogany-tests/tree
   (:local-nicknames (#:tree #:mahogany/tree))
-  (:use #:mahogany/wm-interface
+  (:use #:mahogany/util
+        #:mahogany/wm-interface
         #:mahogany/test/util))
 
 (in-package #:mahogany-tests/tree)
@@ -554,3 +555,54 @@
       (let* ((new-frame (tree:split-frame-h frame :direction :left))
              (found (tree:find-first-leaf output-node)))
         (is (eq new-frame found))))))
+
+(fiasco:deftest binary-split-h-refuses-below-minimum ()
+  (with-border-box-mocks ()
+    (let* ((width (1- (* 2 tree::*minimum-frame-size*)))
+           (tree (make-tree-for-tests :width width :height 100)))
+      (signals invalid-operation (tree:split-frame-h tree :direction :right))
+      (is (= width (tree:frame-width tree))))))
+
+(fiasco:deftest binary-split-v-refuses-below-minimum ()
+  (with-border-box-mocks ()
+    (let* ((height (1- (* 2 tree::*minimum-frame-size*)))
+           (tree (make-tree-for-tests :width 100 :height height)))
+      (signals invalid-operation (tree:split-frame-v tree :direction :bottom))
+      (is (= height (tree:frame-height tree))))))
+
+(fiasco:deftest binary-split-h-allows-minimum ()
+  (with-border-box-mocks ()
+    (let* ((minimum tree::*minimum-frame-size*)
+           (tree (make-tree-for-tests :width (* 2 minimum) :height 100)))
+      (multiple-value-bind (new-frame parent)
+          (tree:split-frame-h tree :direction :right)
+        (declare (ignore new-frame))
+        (check-children-dimensions parent (list minimum minimum)
+                                   #'tree:frame-width)))))
+
+(fiasco:deftest binary-split-h-refuses-lopsided-ratio ()
+  "A frame with room to halve can still be too small to cut at 1/20."
+  (with-border-box-mocks ()
+    (let ((tree (make-tree-for-tests :width (* 5 tree::*minimum-frame-size*)
+                                     :height 100)))
+      (signals invalid-operation
+        (tree:split-frame-h tree :ratio 1/20 :direction :right)))))
+
+(fiasco:deftest binary-split-h-refuses-negative-ratio ()
+  (with-border-box-mocks ()
+    (let ((tree (make-tree-for-tests :width (* 5 tree::*minimum-frame-size*)
+                                     :height 100)))
+      (signals invalid-operation
+        (tree:split-frame-h tree :ratio -1/2 :direction :right)))))
+
+(fiasco:deftest poly-split-h-refuses-extra-child ()
+  (with-border-box-mocks ()
+    (let* ((tree:*new-split-type* :many)
+           (minimum tree::*minimum-frame-size*)
+           (parent (split-frame-times
+                    (make-tree-for-tests :width (* 3 minimum) :height 100) 2
+                    (lambda (x)
+                      (tree:split-frame-h x :direction :right)))))
+      (signals invalid-operation (tree:split-frame-h parent :direction :right))
+      (check-children-dimensions parent (list minimum minimum minimum)
+                                 #'tree:frame-width))))

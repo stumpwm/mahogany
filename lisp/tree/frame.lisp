@@ -153,6 +153,15 @@ of FRAME to those of ROOT."
   (set-dimensions frame (frame-width root) (frame-height root))
   (set-position frame (frame-x root) (frame-y root)))
 
+(defvar *minimum-frame-size* 20)
+
+(defun %check-split-sizes (dimension &rest sizes)
+  "Signal INVALID-OPERATION if any of SIZES is smaller than
+*MINIMUM-FRAME-SIZE*."
+  (when (some (lambda (size) (< size *minimum-frame-size*)) sizes)
+    (error 'invalid-operation
+           :text (format nil "Not enough ~(~A~) to split the frame" dimension))))
+
 (defun binary-split-h (frame ratio direction parent-type)
   "Split a frame in two, with the resulting parent frame of type parent-frame.
 Used to initially split all frames, regardless of type."
@@ -164,7 +173,7 @@ Used to initially split all frames, regardless of type."
          (old-height (frame-height frame))
          (old-x (frame-x frame))
          (old-y (frame-y frame))
-         (new-frame-width (round (* old-width ratio)))
+         (new-frame-width (round (* old-width (or ratio 1/2))))
          (other-frame-width (- old-width new-frame-width))
          (new-parent (make-instance parent-type
                                     :split-direction :horizontal
@@ -174,6 +183,7 @@ Used to initially split all frames, regardless of type."
                                     :x old-x
                                     :y old-y))
          (new-frame))
+    (%check-split-sizes :width new-frame-width other-frame-width)
     ;; place the child frames:
     (ecase direction
       (:right
@@ -214,13 +224,13 @@ Used to initially split all frames, regardless of type."
 Used to initially split all frames, regardless of type."
   (declare (type frame frame)
            (type (member :top :bottom) direction)
-           (type number ratio)
+           (type (or number null) ratio)
            (type symbol parent-type))
   (let* ((old-width (frame-width frame))
          (old-height (frame-height frame))
          (old-x (frame-x frame))
          (old-y (frame-y frame))
-         (new-frame-height (round (* old-height ratio)))
+         (new-frame-height (round (* old-height (or ratio 1/2))))
          (other-frame-height (- old-height new-frame-height))
          (new-parent (make-instance parent-type
                                     :split-direction :vertical
@@ -230,6 +240,7 @@ Used to initially split all frames, regardless of type."
                                     :x old-x
                                     :y old-y))
          (new-frame))
+    (%check-split-sizes :height new-frame-height other-frame-height)
     ;; place the child frames:
     (ecase direction
       (:top
@@ -291,6 +302,7 @@ Used to initially split all frames, regardless of type."
           (truncate (- parent-width new-frame-width) parent-children-len)
         (setf other-children-width result
               new-frame-width (+ new-frame-width remainder)))
+      (%check-split-sizes :width new-frame-width other-children-width)
       ;; create the new frame and add it to a new frame-list:
       (flet ((make-new-frame (x)
                (make-instance 'view-frame
@@ -326,7 +338,8 @@ Used to initially split all frames, regardless of type."
 (defun poly-split-frame-v (frame ratio direction)
   "Add another child to a horizontally oriented poly-tree-frame"
   (declare (type poly-tree-frame frame)
-           (type (member :top :bottom) direction))
+           (type (member :top :bottom) direction)
+           (type (or number null) ratio))
   (assert (eql (tree-split-direction frame) :vertical))
   ;; we alread have children, so add and re-adjust:
   (with-accessors ((parent-width frame-width)
@@ -350,6 +363,7 @@ Used to initially split all frames, regardless of type."
                     parent-children-len)
         (setf other-children-height result
               new-frame-height (+ new-frame-height remainder)))
+      (%check-split-sizes :height new-frame-height other-children-height)
       ;; create the new frame and add it to a new frame-list:
       (flet ((make-new-frame (y)
                (make-instance 'view-frame
