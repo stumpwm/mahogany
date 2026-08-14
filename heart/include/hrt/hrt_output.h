@@ -55,6 +55,9 @@ struct hrt_output_callbacks {
 bool hrt_output_init(struct hrt_output *output,
                      struct hrt_output_config *config);
 
+bool hrt_output_configure(struct hrt_output *output,
+                          struct hrt_output_config *config);
+
 /**
  * Get the effective output resolution of the output that can be used to
  * set the width and height of views.

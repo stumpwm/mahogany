@@ -280,6 +280,12 @@ the output will not be displayed.
   (config (:pointer (:struct hrt-output-config))))
 
 #-HRT-DEBUG
+(declaim (inline hrt-output-configure))
+(cffi:defcfun ("hrt_output_configure" hrt-output-configure) :bool
+  (output (:pointer (:struct hrt-output)))
+  (config (:pointer (:struct hrt-output-config))))
+
+#-HRT-DEBUG
 (declaim (inline hrt-output-resolution))
 (cffi:defcfun ("hrt_output_resolution" hrt-output-resolution) :void
   "Get the effective output resolution of the output that can be used to

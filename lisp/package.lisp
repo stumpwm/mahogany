@@ -3,6 +3,7 @@
   (:export #:find-output-configurations
            #:find-output-config
            #:define-output-config
+           #:output-match-data-config
            #:define-output-layout))
 
 (defpackage #:mahogany

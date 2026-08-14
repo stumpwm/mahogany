@@ -93,7 +93,8 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   (let ((handle (gethash (cffi:pointer-address data) *timer-table*)))
     (declare (type timer-handle handle))
     (mahogany/log:log-string :trace "timer callback called: ~S" handle)
-    (funcall (timer-handle-callback handle) handle)))
+    (funcall (timer-handle-callback handle) handle))
+  0)
 
 (defun server-make-timer (server callback &optional data)
   (let* ((timer

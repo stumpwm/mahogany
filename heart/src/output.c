@@ -262,6 +262,11 @@ bool hrt_output_init(struct hrt_output *output,
     return true;
 }
 
+bool hrt_output_configure(struct hrt_output *output,
+                          struct hrt_output_config *config) {
+  return false;
+}
+
 static void handle_new_output(struct wl_listener *listener, void *data) {
     struct hrt_server *server = wl_container_of(listener, server, new_output);
 

@@ -139,29 +139,100 @@ the current group or a layer shell frame"
   (unless (key-state-active-p (state-key-state state))
     (server-keystate-reset state)))
 
+(defglobal *output-debounce-msec* 1)
+
+(defstruct pending-output-changes
+  (added nil :type list)
+  (removed nil :type list))
+
+(defun %get-output-list (pending-changes cur-outputs)
+  (declare (type vector cur-outputs)
+           (type pending-output-changes pending-changes))
+  (let* ((added (pending-output-changes-added pending-changes))
+         (removed (pending-output-changes-removed pending-changes))
+         (all-outputs (append (map 'list
+                                   #'tree:output-container-output
+                                   cur-outputs)
+                              added))
+         (new-output-list (delete-if (lambda (x)
+                                       (member x removed
+                                               :test #'hrt:output=))
+                                     all-outputs)))
+    ;; It's highly unlikely, but we calculate the added and removed lists
+    ;; here so that if an output is added, then removed from
+    ;; the pending state before we pull the configuration,
+    ;; we aren't trying to add or remove anything that we shouldn't be
+    (values
+     new-output-list
+     ;; Added
+     (remove-if (lambda (x)
+                  (not (find x
+                             cur-outputs :test #'hrt:output=
+                                         :key #'tree:output-container-output)))
+                new-output-list)
+     ;; Removed
+     ;; (remove-if (lambda (x)
+     ;;              (not (member
+     ;;                    (tree:output-container-output x)
+     ;;                    new-output-list :test #'hrt:output=)))
+     ;;            cur-outputs)
+     )))
+
+(defun %add-output (state mh-output config)
+  (let ((outputs (state-outputs state))
+        (groups (state-groups state))
+        (scene (mahogany-state-scene state))
+        (output-container (tree::make-output-container mh-output)))
+    (hrt:output-init mh-output
+                     (let ((output-match-data (find-output-config mh-output)))
+                       (if output-match-data
+                           (mahogany/output-config::output-match-data-config output-match-data)
+                           nil)))
+    (vector-push-extend output-container outputs)
+    (loop for g across groups
+          do (group-add-output g output-container))
+    (unless (state-%current-frame state)
+      (let ((cur-group (state-current-group state)))
+        (group-focus cur-group (server-seat state))
+        (setf (state-%current-frame state) (mahogany-group-current-frame cur-group))))))
+
+(defun process-output-changes (timer)
+  (declare (type hrt:timer-handle timer))
+  (log-string :trace "output changes timer")
+  (hrt:timer-handle-destroy timer)
+  (setf (state-pending-output-timer *compositor-state*) timer)
+  (multiple-value-bind (full-list added)
+      (%get-output-list (hrt:timer-handle-data timer)
+                        (state-outputs *compositor-state*))
+    (let ((configuration (find-output-configurations full-list)))
+      ;; TODO: do removals:
+      ;; (map nil (lambda (x)
+      ;;            (mahogany-state-output-remove *compositor-state*
+      (maphash (lambda (output config)
+                 (let ((output-config
+                         (mahogany/output-config:output-match-data-config config)))
+                   (if (find output added :test #'hrt:output=)
+                       (%add-output *compositor-state* output
+                                    output-config)
+                       (hrt:output-configure output
+                                             output-config))))
+               configuration))))
+
 (defun mahogany-state-output-add (state hrt-output)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer hrt-output))
-  (with-accessors ((outputs state-outputs)
-                   (groups state-groups)
-                   (scene mahogany-state-scene))
-      state
-    (let* ((mh-output (hrt:make-output hrt-output))
-           (output-container (tree::make-output-container mh-output)))
-      (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
-      ;; (mahogany/output-config::
-      (hrt:output-init mh-output
-                       (let ((output-match-data (find-output-config mh-output)))
-                         (if output-match-data
-                             (mahogany/output-config::output-match-data-config output-match-data)
-                             nil)))
-      (vector-push-extend output-container outputs)
-      (loop for g across groups
-            do (group-add-output g output-container))
-      (unless (state-%current-frame state)
-        (let ((cur-group (state-current-group state)))
-          (group-focus cur-group (server-seat state))
-        (setf (state-%current-frame state) (mahogany-group-current-frame cur-group)))))))
+  (let* ((mh-output (hrt:make-output hrt-output)))
+    (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
+    (alexandria:if-let ((timer (state-pending-output-timer state)))
+      (let ((data (hrt:timer-handle-data timer)))
+        (hrt:timer-handle-update timer *output-debounce-msec*)
+        (push mh-output (pending-output-changes-added data)))
+      (let ((timer (hrt:server-make-timer (state-server state)
+                                          #'process-output-changes
+                                          (make-pending-output-changes
+                                           :added (list mh-output)))))
+        (hrt:timer-handle-update timer *output-debounce-msec*)
+        (setf (state-pending-output-timer state) timer)))))
 
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)
@@ -176,7 +247,7 @@ the current group or a layer shell frame"
                    (cur-frame state-%current-frame))
       state
     (let* ((output-container (%find-output hrt-output state))
-          (mh-output (tree::output-container-output output-container)))
+           (mh-output (tree::output-container-output output-container)))
       (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
       (loop for g across groups
             do (group-remove-output g output-container (server-seat state)))
