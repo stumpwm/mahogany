@@ -122,6 +122,11 @@
            #:server-start
            #:server-group-create
            #:hrt-server-stop
+           #:server-make-timer
+           #:timer-handle-update
+           #:timer-handle-destroy
+           #:timer-handle
+           #:timer-handle-data
            #:run-in-main-thread
            ;; Toast messages:
            #:toast-message
