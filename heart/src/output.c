@@ -43,6 +43,10 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     struct hrt_server *server = output->server;
     wlr_log(WLR_DEBUG, "Output destroyed %s", output->wlr_output->name);
 
+    // take the output out of the scene first so nothing can enter a surface on it
+    wlr_scene_output_destroy(output->wlr_scene);
+    output->wlr_scene = nullptr;
+
     // close the layer surfaces raw pointers as well as the hrt_scene_output
     // and the scene trees owned by it, while they are still valid.
     hrt_layer_shell_output_destroy(output);

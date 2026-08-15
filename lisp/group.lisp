@@ -150,9 +150,8 @@ to match."
       value)))
 
 (defun %group-current-output-node (group)
-  (let* ((cur-frame (mahogany-group-current-frame group))
-         (output-node (tree:find-root-frame cur-frame)))
-    output-node))
+  (alexandria:when-let ((cur-frame (mahogany-group-current-frame group)))
+    (tree:find-root-frame cur-frame)))
 
 (declaim (ftype (function (mahogany-group) (or null hrt:output)) group-current-output))
 (defun group-current-output (group)
