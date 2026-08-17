@@ -44,6 +44,8 @@ static void handle_auto_backend_destroyed(struct wl_listener *listener,
     wl_list_remove(&listener->link);
 }
 
+static char *prev_wayland_display;
+
 bool hrt_server_init(
     struct hrt_server *server,
     const struct hrt_output_callbacks *output_callbacks,
@@ -136,25 +138,24 @@ bool hrt_server_init(
         return false;
     }
 
-    return true;
-}
-
-static char *prev_wayland_display;
-
-bool hrt_server_start(struct hrt_server *server) {
     const char *socket = wl_display_add_socket_auto(server->wl_display);
 
     if (!socket) {
-        goto cleanup;
-    }
-
-    if (!wlr_backend_start(server->backend)) {
-        goto cleanup;
+        wlr_log(WLR_ERROR, "Could not create a Wayland socket");
+        return false;
     }
 
     prev_wayland_display = getenv("WAYLAND_DISPLAY");
     setenv("WAYLAND_DISPLAY", socket, true);
     wlr_log(WLR_INFO, "Running on Wayland socket: %s", socket);
+
+    return true;
+}
+
+bool hrt_server_start(struct hrt_server *server) {
+    if (!wlr_backend_start(server->backend)) {
+        goto cleanup;
+    }
 
     wl_display_run(server->wl_display);
     return true;
