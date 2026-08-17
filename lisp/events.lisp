@@ -119,8 +119,10 @@
 (hrt:define-hrt-callback handle-layer-shell-arrange :void
     ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()
-  (let ((output (%find-output output-ptr *compositor-state*)))
-    (mahogany-state-layers-arrange *compositor-state* output)))
+  (alexandria:if-let ((container (%find-output-container output-ptr
+                                                         *compositor-state*)))
+    (mahogany-state-layers-arrange *compositor-state* container)
+    (log-string :debug "Layers arranged on an output we don't track")))
 
 (hrt:define-hrt-callback handle-layer-shell-keyboard-interactivity :void
     ((surface :pointer))
