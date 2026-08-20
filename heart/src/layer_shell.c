@@ -357,7 +357,6 @@ static void handle_node_destroy(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.scene_destroy);
 
-    scene_descriptor_destroy(&surface->tree->node, HRT_SCENE_DESC_LAYER_SHELL);
     if (surface->output) {
         hrt_layer_shell_arrange_layers(surface->output, true);
     }
