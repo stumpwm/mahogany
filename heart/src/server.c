@@ -59,25 +59,26 @@ bool hrt_server_init(
         wl_display_get_event_loop(server->wl_display);
     server->backend = wlr_backend_autocreate(event_loop, &server->session);
 
-    server->destroy_listener.backend.notify = &handle_auto_backend_destroyed;
-    wl_signal_add(&server->backend->events.destroy,
-                  &server->destroy_listener.backend);
-
     if (!server->backend) {
         return false;
     }
 
+    server->destroy_listener.backend.notify = &handle_auto_backend_destroyed;
+    wl_signal_add(&server->backend->events.destroy,
+                  &server->destroy_listener.backend);
+
     server->headless_backend = wlr_headless_backend_create(event_loop);
+
+    if (!server->headless_backend) {
+        return false;
+    }
+
     server->destroy_listener.headless.notify =
         &handle_headless_backend_destroyed;
     wl_signal_add(&server->headless_backend->events.destroy,
                   &server->destroy_listener.headless);
 
-    if (!server->headless_backend) {
-        return false;
-    } else {
-        wlr_multi_backend_add(server->backend, server->headless_backend);
-    }
+    wlr_multi_backend_add(server->backend, server->headless_backend);
 
     server->renderer = wlr_renderer_autocreate(server->backend);
     if (!server->renderer) {
