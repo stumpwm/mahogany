@@ -233,6 +233,11 @@ static bool gravity_coords(enum window_gravity gravity,
 bool hrt_toast_message(struct hrt_server *server, struct hrt_output *output,
                        const char *text, enum window_gravity gravity,
                        struct hrt_message_theme *theme, int ms_delay) {
+    // The message system failed to initialize
+    if (!server->message_timer_source) {
+        return false;
+    }
+
     /* cancel any previously running timeout */
     wl_event_source_timer_update(server->message_timer_source, 0);
 
