@@ -7,6 +7,7 @@
 #include "message_impl.h"
 #include "layer_shell_impl.h"
 #include <stdlib.h>
+#include <string.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/backend/headless.h>
@@ -54,12 +55,15 @@ bool hrt_server_init(
     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
     enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
+    // So anything that fails to initialize is NULL
+    memset(server, 0, sizeof(*server));
     server->wl_display = wl_display_create();
     struct wl_event_loop *event_loop =
         wl_display_get_event_loop(server->wl_display);
     server->backend = wlr_backend_autocreate(event_loop, &server->session);
 
     if (!server->backend) {
+        wlr_log(WLR_ERROR, "Could not create a backend");
         return false;
     }
 
@@ -70,6 +74,7 @@ bool hrt_server_init(
     server->headless_backend = wlr_headless_backend_create(event_loop);
 
     if (!server->headless_backend) {
+        wlr_log(WLR_ERROR, "Could not create the headless backend");
         return false;
     }
 
@@ -82,6 +87,7 @@ bool hrt_server_init(
 
     server->renderer = wlr_renderer_autocreate(server->backend);
     if (!server->renderer) {
+        wlr_log(WLR_ERROR, "Could not create a renderer");
         return false;
     }
     wlr_renderer_init_wl_display(server->renderer, server->wl_display);
@@ -89,6 +95,7 @@ bool hrt_server_init(
     server->allocator =
         wlr_allocator_autocreate(server->backend, server->renderer);
     if (!server->allocator) {
+        wlr_log(WLR_ERROR, "Could not create an allocator");
         return false;
     }
 
@@ -118,25 +125,30 @@ bool hrt_server_init(
     server->fallback_output = hrt_output_create(server, fallback);
 
     if (!hrt_xdg_shell_init(server)) {
+        wlr_log(WLR_ERROR, "Could not initialize the xdg shell");
         return false;
     }
 
     if (!hrt_server_output_init(server, output_callbacks)) {
+        wlr_log(WLR_ERROR, "Could not initialize the outputs");
         return false;
     }
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
+        wlr_log(WLR_ERROR, "Could not initialize the seat");
         return false;
     }
     // Check if this arg was provided so we don't need to specify this for
     // test compositors.
     if (layer_shell_callbacks) {
         if (!hrt_layer_shell_init(server, layer_shell_callbacks)) {
-            return false;
+            wlr_log(WLR_ERROR, "Could not initialize the layer shell");
         }
     }
 
     if (!hrt_message_init(server)) {
-        return false;
+        wlr_log(WLR_ERROR,
+                "Could not initialize the message system, "
+                "mahogany can't show any messages");
     }
 
     const char *socket = wl_display_add_socket_auto(server->wl_display);

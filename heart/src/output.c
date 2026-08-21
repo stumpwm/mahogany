@@ -349,8 +349,12 @@ bool hrt_server_output_init(struct hrt_server *server,
     wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
 
     if (!server->output_manager) {
-        return false;
+        wlr_log(WLR_ERROR,
+                "Could not create the output manager, clients will not be "
+                "able to configure the output layout");
+        return true;
     }
+
     server->output_manager_apply.notify = handle_output_manager_apply;
     wl_signal_add(&server->output_manager->events.apply,
                   &server->output_manager_apply);
