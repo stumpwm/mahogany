@@ -54,6 +54,7 @@ bool hrt_server_init(
     const struct hrt_layer_shell_callbacks *layer_shell_callbacks,
     enum wlr_log_importance log_level) {
     wlr_log_init(log_level, NULL);
+    *server = (struct hrt_server){0};
     server->wl_display = wl_display_create();
     struct wl_event_loop *event_loop =
         wl_display_get_event_loop(server->wl_display);
@@ -122,20 +123,27 @@ bool hrt_server_init(
     }
 
     if (!hrt_server_output_init(server, output_callbacks)) {
+        wlr_log(WLR_ERROR, "Could not initialize the outputs");
         return false;
     }
+
     if (!hrt_seat_init(&server->seat, server, seat_callbacks)) {
+        wlr_log(WLR_ERROR, "Could not initialize the seat");
         return false;
     }
     // Check if this arg was provided so we don't need to specify this for
     // test compositors.
     if (layer_shell_callbacks) {
         if (!hrt_layer_shell_init(server, layer_shell_callbacks)) {
+            wlr_log(WLR_ERROR, "Could not initialize the layer shell");
             return false;
         }
     }
 
     if (!hrt_message_init(server)) {
+        wlr_log(WLR_ERROR,
+                "Could not initialize the message system, "
+                "mahogany can't show any messages");
         return false;
     }
 

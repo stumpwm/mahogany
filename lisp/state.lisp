@@ -25,10 +25,12 @@
 			  layer-shell-callbacks
                           &key (debug-level 3))
   (setf (state-server state) server)
-  (hrt:server-init server
-                       output-callbacks seat-callbacks view-callbacks
-		       layer-shell-callbacks
-                       debug-level)
+  (unless (hrt:server-init server
+                           output-callbacks seat-callbacks view-callbacks
+                           layer-shell-callbacks
+                           debug-level)
+    (error 'mahogany/util:mahogany-panic
+           :text "Could not initialize the compositor."))
   (let ((default-group (%add-group state *default-group-name* 1)))
     (setf (state-current-group state) default-group)))
 
