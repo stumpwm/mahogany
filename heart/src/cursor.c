@@ -160,6 +160,7 @@ bool hrt_cursor_init(struct hrt_seat *seat, struct hrt_server *server) {
 
     seat->xcursor_manager = wlr_xcursor_manager_create(NULL, xcursor_base_size);
     if (!seat->xcursor_manager) {
+        wlr_log(WLR_ERROR, "Could not create the xcursor manager");
         return false;
     }
 
