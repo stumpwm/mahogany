@@ -26,7 +26,7 @@ struct hrt_layer_shell_surface {
         struct wl_listener map;
         struct wl_listener unmap;
         struct wl_listener new_popup;
-        struct wl_listener scene_destroy;
+        struct wl_listener layer_surface_destroy;
     } events;
 };
 
