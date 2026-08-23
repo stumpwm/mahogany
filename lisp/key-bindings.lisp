@@ -35,8 +35,8 @@
 (defcommand close-current-view ()
   (:method ()
     (let ((frame (state-current-frame *compositor-state*)))
-      (alexandria:when-let ((view (mahogany/tree:frame-view frame)))
-        (hrt:view-request-close view)))))
+      (when frame
+        (tree:close-frame frame)))))
 
 (defcommand next-view ()
   (:documentation "Raise the next hidden view in the current group")

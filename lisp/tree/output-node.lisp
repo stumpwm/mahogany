@@ -85,6 +85,10 @@ view, if there was one."
   (alexandria:when-let ((data (output-node-fullscreen frame)))
     (%fullscreen-data-view data)))
 
+(defmethod close-frame ((frame output-node))
+  (alexandria:when-let ((view (frame-view frame)))
+    (hrt:view-request-close view)))
+
 (defmethod in-frame-p ((parent output-node) x y)
   ;; Use the dimensions and position of the output:
   (declare (type real x y))

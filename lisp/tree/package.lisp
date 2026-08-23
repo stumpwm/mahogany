@@ -30,6 +30,7 @@
            #:poly-tree-frame
            #:split-frame-v
            #:split-frame-h
+           #:close-frame
            #:remove-frame
            #:swap-positions
            #:find-empty-frame

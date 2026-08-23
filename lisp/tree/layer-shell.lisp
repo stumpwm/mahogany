@@ -19,6 +19,9 @@
             :type boolean))
   (:documentation "Frame tree node that contains a layer shell surface"))
 
+(defmethod close-frame ((frame layer-shell-frame))
+  (hrt:layer-surface-close (slot-value frame 'layer-shell)))
+
 (defmethod split-frame-h ((frame layer-shell-frame) &key &allow-other-keys)
   (declare (ignore frame))
   (error 'mahogany/util:invalid-operation

@@ -588,6 +588,15 @@ whenever the semaphore is non-zero."
   (surface (:pointer (:struct hrt-layer-shell-surface))))
 
 #-HRT-DEBUG
+(declaim (inline hrt-layer-surface-close))
+(cffi:defcfun ("hrt_layer_surface_close" hrt-layer-surface-close) :void
+  "Send the layer surface the `closed` event and take it down.
+`closed` means the surface will no longer be shown and further changes
+to it are ignored and the surface is unmapped and freed.
+The client wlr_layer_surface destroy is up for the client to handle once it sees the event."
+  (surface (:pointer (:struct hrt-layer-shell-surface))))
+
+#-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))
 (cffi:defcfun ("hrt_layer_surface_output" %hrt-layer-surface-output) (:pointer (:struct hrt-output))
   (layer-shell (:pointer (:struct hrt-layer-shell-surface))))
