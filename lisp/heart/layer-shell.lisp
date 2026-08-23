@@ -41,6 +41,12 @@
                                  (hrt:output-hrt-output output)))
 
 #-HRT-DEBUG
+(declaim (inline layer-surface-close))
+(defun layer-surface-close (layer-surface)
+  (declare (type layer-surface layer-surface))
+  (hrt-layer-surface-close (layer-surface-hrt-layer-surface layer-surface)))
+
+#-HRT-DEBUG
 (declaim (inline layer-surface-focus))
 (defun layer-surface-focus (layer-surface seat)
   (declare (type layer-surface layer-surface))

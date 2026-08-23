@@ -55,6 +55,14 @@ enum hrt_layer_shell_keyboard_interactivity {
  */
 void hrt_layer_shell_surface_abort(struct hrt_layer_shell_surface *surface);
 
+/**
+ * Send the layer surface the `closed` event and take it down.
+ * `closed` means the surface will no longer be shown and further changes
+ * to it are ignored, so the surface is unmapped and freed.
+ * The client wlr_layer_surface destroy is up for the client to handle once it sees the event.
+ */
+void hrt_layer_surface_close(struct hrt_layer_shell_surface *surface);
+
 struct hrt_output *
 hrt_layer_surface_output(struct hrt_layer_shell_surface *layer_shell);
 

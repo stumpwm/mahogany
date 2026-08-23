@@ -78,6 +78,10 @@ and position as the frame"
       (t
        (hrt:hrt-border-box-set-enabled border-box t)))))
 
+(defmethod close-frame ((frame view-frame))
+  (alexandria:when-let ((view (frame-view frame)))
+    (hrt:view-request-close view)))
+
 (defmethod mark-frame-focused :after ((frame view-frame) seat)
   (setf (slot-value frame 'seat) seat)
   (hrt:border-box-set-style (slot-value frame 'border-box) *frame-focus-border-style*)

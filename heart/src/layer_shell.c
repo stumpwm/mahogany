@@ -41,6 +41,10 @@ void hrt_layer_shell_surface_abort(struct hrt_layer_shell_surface *surface) {
     free(surface);
 }
 
+void hrt_layer_surface_close(struct hrt_layer_shell_surface *surface) {
+    wlr_layer_surface_v1_destroy(surface->layer_surface);
+}
+
 static void handle_new_layer_surface(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "New layer surface");
     struct wlr_layer_surface_v1 *layer_surface = data;
