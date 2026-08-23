@@ -19,6 +19,16 @@
             :type boolean))
   (:documentation "Frame tree node that contains a layer shell surface"))
 
+(defmethod split-frame-h ((frame layer-shell-frame) &key &allow-other-keys)
+  (declare (ignore frame))
+  (error 'mahogany/util:invalid-operation
+         :text "Cannot split layer shell frames!"))
+
+(defmethod split-frame-v ((frame layer-shell-frame) &key &allow-other-keys)
+  (declare (ignore frame))
+  (error 'mahogany/util:invalid-operation
+         :text "Cannot split layer shell frames!"))
+
 (defmethod in-frame-p ((frame layer-shell-frame) x y)
   (let ((shell (slot-value frame 'layer-shell)))
     (multiple-value-bind (frame-x frame-y)
