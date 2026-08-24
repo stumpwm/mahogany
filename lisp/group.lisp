@@ -275,20 +275,29 @@ to match."
                 (go :top)))))))
 
 (defun %maximize-frame (group frame)
+  "Maximize FRAME. Returns NIL if FRAME is already the topmost frame in its tree"
   (declare (type mahogany-group group))
+  (when (tree:topmost-frame-p frame)
+    (return-from %maximize-frame nil))
   (let ((topmost-frame (mahogany/tree:find-topmost-frame frame)))
     (flet ((hide-and-disable (view-frame)
              (alexandria:when-let ((view (tree:frame-view view-frame)))
                (%add-hidden (mahogany-group-hidden-views group) view))))
       (tree:replace-frame topmost-frame frame #'hide-and-disable)))
-  (hrt:dirty-view-transaction))
+  (hrt:dirty-view-transaction)
+  t)
 
 (defun group-maximize-current-frame (group)
   "Remove all of the splits in the current window tree and replae it with the
 currently focused frame"
   (declare (type mahogany-group group))
   (let ((current-frame (mahogany-group-current-frame group)))
-    (%maximize-frame group current-frame)))
+    (unless current-frame
+      (error 'mahogany/util:invalid-operation
+             :text "No frame to maximize!"))
+    (unless (%maximize-frame group current-frame)
+      (error 'mahogany/util:invalid-operation
+             :text "Frame is already maximized!"))))
 
 (defstruct (%hidden-view-info (:constructor %make-hidden-view-info (output frame)))
   (output nil :type tree:output-node :read-only t)
