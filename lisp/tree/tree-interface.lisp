@@ -241,6 +241,9 @@ multiple values.")
   (:method ((frame frame))
     nil))
 
+(defmethod root-frame-p ((frame layer-container))
+  t)
+
 (defun topmost-frame-p (frame)
   "Return T if the frame is a child of a root node."
   (root-frame-p (frame-parent frame)))
