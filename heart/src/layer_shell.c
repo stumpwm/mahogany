@@ -352,18 +352,18 @@ static void handle_new_popup(struct wl_listener *listener, void *data) {
     create_popup(wlr_popup, surface, surface->tree);
 }
 
-static void handle_node_destroy(struct wl_listener *listener, void *data) {
-    wlr_log(WLR_DEBUG, "layer shell surface node destroy");
+static void handle_layer_surface_destroy(struct wl_listener *listener,
+                                         void *data) {
+    wlr_log(WLR_DEBUG, "layer shell surface destroy");
     struct hrt_layer_shell_surface *surface =
-        wl_container_of(listener, surface, events.scene_destroy);
+        wl_container_of(listener, surface, events.layer_surface_destroy);
 
-    scene_descriptor_destroy(&surface->tree->node, HRT_SCENE_DESC_LAYER_SHELL);
     if (surface->output) {
         hrt_layer_shell_arrange_layers(surface->output, true);
     }
 
     wl_list_remove(&surface->link);
-    wl_list_remove(&surface->events.scene_destroy.link);
+    wl_list_remove(&surface->events.layer_surface_destroy.link);
     wl_list_remove(&surface->events.new_popup.link);
     wl_list_remove(&surface->events.unmap.link);
     wl_list_remove(&surface->events.map.link);
@@ -393,9 +393,9 @@ void hrt_layer_shell_finish_init(struct hrt_layer_shell_surface *surface) {
     surface->events.new_popup.notify = handle_new_popup;
     wl_signal_add(&layer_surface->events.new_popup, &surface->events.new_popup);
 
-    surface->events.scene_destroy.notify = handle_node_destroy;
-    wl_signal_add(&surface->scene_surface->layer_surface->events.destroy,
-                  &surface->events.scene_destroy);
+    surface->events.layer_surface_destroy.notify = handle_layer_surface_destroy;
+    wl_signal_add(&surface->layer_surface->events.destroy,
+                  &surface->events.layer_surface_destroy);
 }
 
 struct hrt_output *

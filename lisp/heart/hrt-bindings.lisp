@@ -554,7 +554,7 @@ whenever the semaphore is non-zero."
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (new-popup (:struct wl-listener))
-  (scene-destroy (:struct wl-listener)))
+  (layer-surface-destroy (:struct wl-listener)))
 
 (cffi:defcstruct hrt-layer-shell-surface
   (layer-surface :pointer #| (:struct wlr-layer-surface-v1) |#)
