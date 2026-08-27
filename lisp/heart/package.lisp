@@ -162,6 +162,7 @@
            #:hrt-layer-surface-output
            #:layer-surface
            #:layer-surface-keyboard-interactivity
+           #:layer-surface-close
            #:layer-surface-position
            #:layer-surface-dimensions
            #:layer-changed

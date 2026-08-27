@@ -41,6 +41,11 @@ of an already existing frame with the `set-split-frame-type` function")
             :type boolean))
   (:documentation "A frame that is positioned on an output"))
 
+(defgeneric close-frame (frame)
+  (:documentation "Close the surface held by this frame. Whether its a request
+depends on what the frame holds: an xdg toplevel is asked and can refuse,
+a layer shell surface cannot."))
+
 (defgeneric frame-prev (frame)
   (:documentation "Get the previous edge node in the tree from this node"))
 
@@ -235,6 +240,9 @@ multiple values.")
   (:documentation "Return if the frame can be considered a root of a tree")
   (:method ((frame frame))
     nil))
+
+(defmethod root-frame-p ((frame layer-container))
+  t)
 
 (defun topmost-frame-p (frame)
   "Return T if the frame is a child of a root node."
