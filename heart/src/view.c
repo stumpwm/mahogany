@@ -6,6 +6,7 @@
 
 #include "hrt/hrt_input.h"
 #include "hrt/hrt_view.h"
+#include "idle_impl.h"
 #include "seat_impl.h"
 #include "wlr/util/log.h"
 
@@ -85,10 +86,12 @@ bool hrt_view_focused(struct hrt_view *view) {
 
 void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
     wlr_scene_node_set_enabled(&view->scene_tree->node, !hidden);
+    hrt_idle_inhibit_update();
 }
 
 void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node) {
     wlr_scene_node_reparent(&view->scene_tree->node, node);
+    hrt_idle_inhibit_update();
 }
 
 void hrt_view_request_close(struct hrt_view *view) {
