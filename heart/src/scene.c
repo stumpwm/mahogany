@@ -1,6 +1,7 @@
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_view.h"
+#include "idle_impl.h"
 #include "wlr/util/log.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -103,6 +104,7 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group) {
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
     wlr_scene_node_set_enabled(&group->layers->node, enabled);
+    hrt_idle_inhibit_update();
 }
 
 static void reparent_children(struct wlr_scene_tree *source,

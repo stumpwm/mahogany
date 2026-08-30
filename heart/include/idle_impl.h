@@ -16,4 +16,13 @@ bool hrt_idle_init(struct hrt_server *server);
  */
 void hrt_idle_notify_activity(struct hrt_seat *seat);
 
+/**
+ * Checks if any surfaces on the screen are asking for inhibit,
+ * updating the inhibit notifier.
+ *
+ * It must be called by code that changes what is on the screen
+ * and by protocol handlers.
+ */
+void hrt_idle_inhibit_update(void);
+
 #endif
