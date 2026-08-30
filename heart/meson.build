@@ -26,6 +26,7 @@ cc = meson.get_compiler('c')
 wlroots_version = ['>=0.20.0', '<0.21.0']
 
 cairo          = dependency('cairo', required: true)
+libinput       = dependency('libinput', required: true)
 pangocairo     = dependency('pangocairo', required: true)
 pixman         = dependency(
   'pixman-1',
@@ -106,6 +107,7 @@ subdir('src')
 
 hrt_deps = [
   cairo,
+  libinput,
   pangocairo,
   pixman,
   server_protos,

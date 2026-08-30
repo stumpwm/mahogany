@@ -1,0 +1,29 @@
+* Touchpad
+
+Mahogany can configure touchpads through libinput.
+
+  + =(config-system:set-config touchpad-tap-to-click value)= :: Whether
+    tapping the touchpad is a click: one finger left, two right, three
+    middle. Many touchpads ship with this disabled.
+    - =:default= :: /Default/ Use libinput default for each device.
+    - =t= :: Enable tap-to-click.
+    - =nil= :: Disable tap-to-click.
+  + =(config-system:set-config touchpad-disable-while-typing value)= :: Whether
+    the touchpad stops responding while you are typing. Touchpads that
+    do not support this are left alone.
+    - =:default= :: /Default/ Use libinput default for each device.
+    - =t= :: Ignore the touchpad while typing.
+    - =nil= :: Always respond to the touchpad.
+  + =(config-system:set-config touchpad-accel-speed speed)= :: Pointer
+    speed, from =-1= (slowest) through =0= to =1= (fastest). Defaults
+    to =nil=, which leaves libinput's own default, the same as =0=.
+
+  Setting a value back to =:default= (or =nil= for accel-speed) restores
+  libinput default for each device, so a setting can be undone
+  without restarting the compositor.
+
+#+BEGIN_SRC lisp
+  (config-system:set-config touchpad-tap-to-click t
+                            touchpad-disable-while-typing t
+                            touchpad-accel-speed 0.3)
+#+END_SRC

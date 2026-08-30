@@ -72,6 +72,11 @@
            #:hrt-seat-cursor-ly
            #:hrt-seat-set-keymap
            #:hrt-seat-set-repeat-info
+           #:hrt-touchpad-state
+           #:hrt-seat-set-touchpad-tap
+           #:hrt-seat-set-touchpad-dwt
+           #:hrt-seat-set-touchpad-accel
+           #:hrt-seat-reset-touchpad-accel
            ;; output symbols:
            #:output
            #:hrt-output

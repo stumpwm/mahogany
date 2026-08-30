@@ -81,6 +81,62 @@ Values:
            val)
   (:getter () *keyboard-repeat-delay*))
 
+(defglobal *touchpad-tap-to-click* :default)
+(defglobal *touchpad-disable-while-typing* :default)
+(defglobal *touchpad-accel-speed* nil)
+
+(deftype touchpad-state () '(member :default t nil))
+
+(defun %touchpad-state (val)
+  (declare (type touchpad-state val))
+  (ecase val
+    (:default :hrt-touchpad-default)
+    ((t) :hrt-touchpad-enabled)
+    ((nil) :hrt-touchpad-disabled)))
+
+(config-system:define-setf-config
+    (touchpad-tap-to-click :default :type touchpad-state)
+    "Whether tapping the touchpad is a click: one finger left, two right,
+three middle.
+
+Applies to every tap-capable touchpad, and to any plugged in later. :default
+goes back to libinput default for each device."
+  (:setter (val)
+           (setf *touchpad-tap-to-click* val)
+           (when (state-server *compositor-state*)
+             (hrt:hrt-seat-set-touchpad-tap (server-seat *compositor-state*)
+                                            (%touchpad-state val)))
+           val)
+  (:getter () *touchpad-tap-to-click*))
+
+(config-system:define-setf-config
+    (touchpad-disable-while-typing :default :type touchpad-state)
+    "Whether the touchpad stops responding while you are typing.
+
+Applies to every touchpad that supports it, and to any plugged in later.
+:default goes back to libinput default for each device."
+  (:setter (val)
+           (setf *touchpad-disable-while-typing* val)
+           (when (state-server *compositor-state*)
+             (hrt:hrt-seat-set-touchpad-dwt (server-seat *compositor-state*)
+                                            (%touchpad-state val)))
+           val)
+  (:getter () *touchpad-disable-while-typing*))
+
+(config-system:define-setf-config
+    (touchpad-accel-speed nil :type (or null (real -1 1)))
+    "Pointer speed for the touchpad, from -1 (slowest) through 0 to 1 (fastest).
+NIL goes back to libinput's default, which is the same as 0."
+  (:setter (val)
+           (setf *touchpad-accel-speed* val)
+           (when (state-server *compositor-state*)
+             (let ((seat (server-seat *compositor-state*)))
+               (if val
+                   (hrt:hrt-seat-set-touchpad-accel seat (float val 1.0d0))
+                   (hrt:hrt-seat-reset-touchpad-accel seat))))
+           val)
+  (:getter () *touchpad-accel-speed*))
+
 (defun %unkown-keybinding-message (key-state last)
   (declare (optimize (speed 3) (safety 0))
            (type key-state key-state)
