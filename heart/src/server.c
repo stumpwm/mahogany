@@ -28,6 +28,8 @@
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
 
+#include "idle_impl.h"
+
 static void handle_headless_backend_destroyed(struct wl_listener *listener,
                                               void *data) {
     struct hrt_server *server =
@@ -107,6 +109,10 @@ bool hrt_server_init(
     server->ext_image_copy_capture_manager_v1 =
         wlr_ext_image_copy_capture_manager_v1_create(server->wl_display, 1);
     wlr_ext_output_image_capture_source_manager_v1_create(server->wl_display, 1);
+
+    if (!hrt_idle_init(server)) {
+        return false;
+    }
 
     server->scene         = wlr_scene_create();
     server->output_layout = wlr_output_layout_create(server->wl_display);
