@@ -14,6 +14,12 @@
 struct hrt_server;
 struct hrt_seat_callbacks;
 
+enum hrt_touchpad_state {
+    HRT_TOUCHPAD_DEFAULT  = 0,
+    HRT_TOUCHPAD_ENABLED  = 1,
+    HRT_TOUCHPAD_DISABLED = 2,
+};
+
 struct hrt_seat {
     struct hrt_server *server;
 
@@ -54,6 +60,13 @@ struct hrt_seat {
         struct wl_listener seat;
         struct wl_listener keyboard;
     } destroy;
+
+    struct {
+        enum hrt_touchpad_state tap;
+        enum hrt_touchpad_state dwt;
+        bool accel_set;
+        double accel;
+    } touchpad;
 };
 
 struct hrt_keypress_info {
@@ -128,6 +141,23 @@ bool hrt_seat_cursor_set_theme(struct hrt_seat *seat, char *theme_name,
  **/
 void hrt_seat_set_repeat_info(struct hrt_seat *seat, int32_t rate_hz,
                               int32_t delay_ms);
+
+void hrt_seat_set_touchpad_tap(struct hrt_seat *seat,
+                               enum hrt_touchpad_state state);
+
+void hrt_seat_set_touchpad_dwt(struct hrt_seat *seat,
+                               enum hrt_touchpad_state state);
+
+/**
+ * Pointer acceleration, from -1.0 (slowest) through 0.0 (libinput's default)
+ * to 1.0 (fastest).
+ **/
+void hrt_seat_set_touchpad_accel(struct hrt_seat *seat, double speed);
+
+/**
+ * Return the pointer acceleration to libinput's default for each device.
+ **/
+void hrt_seat_reset_touchpad_accel(struct hrt_seat *seat);
 
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 

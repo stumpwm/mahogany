@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "seat_impl.h"
 
+#include <wlr/backend/libinput.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_data_device.h>
@@ -24,8 +25,113 @@ static void add_new_keyboard(struct hrt_input *input, struct hrt_seat *seat) {
     }
 }
 
+static void log_config_status(struct libinput_device *ldev, const char *what,
+                              enum libinput_config_status status) {
+    if (status != LIBINPUT_CONFIG_STATUS_SUCCESS) {
+        wlr_log(WLR_ERROR, "Touchpad %s not applied to %s: %s", what,
+                libinput_device_get_name(ldev),
+                libinput_config_status_to_str(status));
+    }
+}
+
+static struct libinput_device *get_touchpad_device(struct wlr_input_device *dev) {
+    // Null for devices that don't come from libinput, headless, or nested.
+    if (!wlr_input_device_is_libinput(dev)) {
+        return nullptr;
+    }
+    struct libinput_device *ldev = wlr_libinput_get_device_handle(dev);
+    // libinput only configures tap on touchpads
+    // so this is null on a mouse or trackpoint
+    if (!ldev || libinput_device_config_tap_get_finger_count(ldev) == 0) {
+        return nullptr;
+    }
+    return ldev;
+}
+
+static enum libinput_config_tap_state tap_state(struct hrt_seat *seat,
+                                                struct libinput_device *ldev) {
+    switch (seat->touchpad.tap) {
+        case HRT_TOUCHPAD_ENABLED:
+            return LIBINPUT_CONFIG_TAP_ENABLED;
+        case HRT_TOUCHPAD_DISABLED:
+            return LIBINPUT_CONFIG_TAP_DISABLED;
+        case HRT_TOUCHPAD_DEFAULT:
+        default:
+            return libinput_device_config_tap_get_default_enabled(ldev);
+    }
+}
+
+static enum libinput_config_dwt_state dwt_state(struct hrt_seat *seat,
+                                                struct libinput_device *ldev) {
+    switch (seat->touchpad.dwt) {
+        case HRT_TOUCHPAD_ENABLED:
+            return LIBINPUT_CONFIG_DWT_ENABLED;
+        case HRT_TOUCHPAD_DISABLED:
+            return LIBINPUT_CONFIG_DWT_DISABLED;
+        case HRT_TOUCHPAD_DEFAULT:
+        default:
+            return libinput_device_config_dwt_get_default_enabled(ldev);
+    }
+}
+
+static void apply_touchpad_config(struct hrt_input *input) {
+    struct hrt_seat *seat        = input->seat;
+    struct libinput_device *ldev = get_touchpad_device(input->wlr_input_device);
+    if (!ldev) {
+        return;
+    }
+    log_config_status(ldev, "tap-to-click",
+                      libinput_device_config_tap_set_enabled(
+                          ldev, tap_state(seat, ldev)));
+    if (libinput_device_config_dwt_is_available(ldev)) {
+        log_config_status(ldev, "disable-while-typing",
+                          libinput_device_config_dwt_set_enabled(
+                              ldev, dwt_state(seat, ldev)));
+    }
+    if (libinput_device_config_accel_is_available(ldev)) {
+        double speed =
+            seat->touchpad.accel_set
+                ? seat->touchpad.accel
+                : libinput_device_config_accel_get_default_speed(ldev);
+        log_config_status(ldev, "acceleration",
+                          libinput_device_config_accel_set_speed(ldev, speed));
+    }
+}
+
+static void reapply_touchpad_config(struct hrt_seat *seat) {
+    struct hrt_input *input;
+    wl_list_for_each(input, &seat->inputs, link) {
+        apply_touchpad_config(input);
+    }
+}
+
+void hrt_seat_set_touchpad_tap(struct hrt_seat *seat,
+                               enum hrt_touchpad_state state) {
+    seat->touchpad.tap = state;
+    reapply_touchpad_config(seat);
+}
+
+void hrt_seat_set_touchpad_dwt(struct hrt_seat *seat,
+                               enum hrt_touchpad_state state) {
+    seat->touchpad.dwt = state;
+    reapply_touchpad_config(seat);
+}
+
+void hrt_seat_set_touchpad_accel(struct hrt_seat *seat, double speed) {
+    seat->touchpad.accel     = speed;
+    seat->touchpad.accel_set = true;
+    reapply_touchpad_config(seat);
+}
+
+void hrt_seat_reset_touchpad_accel(struct hrt_seat *seat) {
+    seat->touchpad.accel     = 0.0;
+    seat->touchpad.accel_set = false;
+    reapply_touchpad_config(seat);
+}
+
 static void add_new_pointer(struct hrt_input *input, struct hrt_seat *seat) {
     wlr_cursor_attach_input_device(seat->cursor, input->wlr_input_device);
+    apply_touchpad_config(input);
 }
 
 static uint32_t find_input_caps(struct hrt_seat *seat,

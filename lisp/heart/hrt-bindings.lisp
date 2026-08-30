@@ -6,9 +6,20 @@
 
 (cffi:defcstruct hrt-seat-callbacks)
 
+(cffi:defcenum hrt-touchpad-state
+  (:hrt-touchpad-default 0)
+  (:hrt-touchpad-enabled 1)
+  (:hrt-touchpad-disabled 2))
+
 (cffi:defcstruct hrt-seat-destroy
   (seat (:struct wl-listener))
   (keyboard (:struct wl-listener)))
+
+(cffi:defcstruct hrt-seat-touchpad
+  (tap hrt-touchpad-state)
+  (dwt hrt-touchpad-state)
+  (accel-set :bool)
+  (accel :double))
 
 (cffi:defcstruct hrt-seat
   (server (:pointer (:struct hrt-server)))
@@ -35,7 +46,8 @@
   (cursor-image (:pointer :char))
   (cursor-img-buf-len :size)
   (grabbed :bool)
-  (destroy (:struct hrt-seat-destroy)))
+  (destroy (:struct hrt-seat-destroy))
+  (touchpad (:struct hrt-seat-touchpad)))
 
 (cffi:defcstruct hrt-keypress-info
   (keysyms :pointer #| xkb-keysym-t |#)
@@ -101,6 +113,32 @@ and set the cursor image to the given image name."
   (seat (:pointer (:struct hrt-seat)))
   (rate-hz :int32)
   (delay-ms :int32))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-set-touchpad-tap))
+(cffi:defcfun ("hrt_seat_set_touchpad_tap" hrt-seat-set-touchpad-tap) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (state hrt-touchpad-state))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-set-touchpad-dwt))
+(cffi:defcfun ("hrt_seat_set_touchpad_dwt" hrt-seat-set-touchpad-dwt) :void
+  (seat (:pointer (:struct hrt-seat)))
+  (state hrt-touchpad-state))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-set-touchpad-accel))
+(cffi:defcfun ("hrt_seat_set_touchpad_accel" hrt-seat-set-touchpad-accel) :void
+  "Pointer acceleration, from -1.0 (slowest) through 0.0 (libinput's default)
+to 1.0 (fastest)."
+  (seat (:pointer (:struct hrt-seat)))
+  (speed :double))
+
+#-HRT-DEBUG
+(declaim (inline hrt-seat-reset-touchpad-accel))
+(cffi:defcfun ("hrt_seat_reset_touchpad_accel" hrt-seat-reset-touchpad-accel) :void
+  "Return the pointer acceleration to libinput's default for each device."
+  (seat (:pointer (:struct hrt-seat))))
 
 #-HRT-DEBUG
 (declaim (inline hrt-seat-cursor-set-theme))

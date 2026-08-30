@@ -28,6 +28,7 @@ enum-constants:
     - window-gravity
     - hrt-border-style
     - hrt-layer-shell-keyboard-interactivity
+    - hrt-touchpad-state
 make-inline:
   - include:
       match: "hrt.*"
