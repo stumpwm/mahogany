@@ -165,26 +165,38 @@ the current group or a layer shell frame"
           (group-focus cur-group (server-seat state))
         (setf (state-%current-frame state) (mahogany-group-current-frame cur-group)))))))
 
+(declaim (inline %find-output-container))
+(defun %find-output-container (hrt-output state)
+  "Return the output-container tracking HRT-OUTPUT, or NIL when STATE has none
+or HRT-OUTPUT is NIL or a null pointer."
+  (declare (type mahogany-state state)
+           (type (or null cffi:foreign-pointer) hrt-output))
+  (when (and hrt-output (not (cffi:null-pointer-p hrt-output)))
+    (find hrt-output (state-outputs state)
+          :key #'tree::output-container-output-ptr
+          :test #'cffi:pointer-eq)))
+
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)
+  "Return the output tracking HRT-OUTPUT, or NIL if STATE has none."
   (declare (type mahogany-state state))
-  (find hrt-output (state-outputs state)
-        :key #'tree::output-container-output-ptr
-        :test #'cffi:pointer-eq))
+  (alexandria:when-let ((container (%find-output-container hrt-output state)))
+    (tree:output-container-output container)))
 
 (defun mahogany-state-output-remove (state hrt-output)
   (with-accessors ((outputs state-outputs)
                    (groups state-groups)
                    (cur-frame state-%current-frame))
       state
-    (let* ((output-container (%find-output hrt-output state))
-          (mh-output (tree::output-container-output output-container)))
-      (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
-      (loop for g across groups
-            do (group-remove-output g output-container (server-seat state)))
-      ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
-      (setf outputs (delete output-container outputs :test #'equalp))
-      (hrt:destroy-output mh-output))
+    (alexandria:if-let ((output-container (%find-output-container hrt-output state)))
+      (let ((mh-output (tree::output-container-output output-container)))
+        (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
+        (loop for g across groups
+              do (group-remove-output g output-container (server-seat state)))
+        ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
+        (setf outputs (delete output-container outputs :test #'equalp))
+        (hrt:destroy-output mh-output))
+      (log-string :error "Removed an output that was never added"))
     (setf cur-frame (mahogany-group-current-frame
                      (state-current-group state)))
     (when (and cur-frame (> (length outputs) 0))
@@ -250,7 +262,8 @@ the current group or a layer shell frame"
             do (group-reconfigure-outputs g (state-outputs state))))))
 
 (defun mahogany-state-layers-arrange (state output)
-  (declare (type mahogany-state state))
+  (declare (type mahogany-state state)
+           (type tree:output-container output))
   (let ((hrt-output (tree:output-container-output output)))
     (log-string :debug "layer shell layers re-arranged on output ~S"
               (hrt:output-full-name hrt-output))
@@ -298,7 +311,8 @@ the current group or a layer shell frame"
 
 (defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)
-	       (type hrt:view view))
+         (type hrt:view view)
+         (type (or null hrt:output) output))
   (%with-found-group state (group view)
     (log-string :debug
                 "~@<Fullscreen requested (~:[no~;yes~]):~I ~:_view ~S ~:_on output ~S~:>"
@@ -409,11 +423,12 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       ;; Either that, or just turn this into a warning or return a boolean?
       (error 'xkb:keymap-creation-error))))
 
-(declaim (ftype (function (mahogany-state cffi:foreign-pointer) hrt:output)))
+(declaim (ftype (function (mahogany-state cffi:foreign-pointer) (or null hrt:output))
+                %get-or-autoassign-output))
 (defun %get-or-autoassign-output (state hrt-layer-shell)
   (declare (type mahogany-state state))
   (alexandria:if-let ((hrt-output (hrt:hrt-layer-surface-output hrt-layer-shell)))
-    (tree:output-container-output (%find-output hrt-output state))
+    (%find-output hrt-output state)
     (let ((current-output (group-current-output (state-current-group state))))
       ;; TODO: try to use the fallback output:
       (unless current-output
@@ -436,40 +451,45 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
   (declare (type mahogany-state state))
   (let* ((surfaces (state-layer-surfaces state))
          (new-surface (hrt:make-layer-surface hrt-layer-surface))
-         (output-container (%find-output (hrt:layer-surface-output new-surface)
-                                         state))
          (interactivity (hrt:layer-surface-keyboard-interactivity new-surface)))
     (setf (gethash (cffi:pointer-address hrt-layer-surface) surfaces) new-surface)
-    (log-string
-     :info
-     "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
-     (tree::output-container-output output-container)
-     (hrt::layer-surface-layer new-surface)
-     interactivity)
-    ;; If the surface can't be focused, don't do anything to place it.
-    ;; Otherwise, add it to the tree data structure so we can navigate
-    ;; to it by keyboard. The only difference between exclusive and
-    ;; "on demand" surfaces is that we focus exclusive surfaces when
-    ;; they appear.
-    ;; We need to do something different
-    ;; in the future for bottom or background surfaces.
-    (unless (eq :layer-shell-keyboard-none interactivity)
-      (let ((add-node (tree::output-container-add-layer-shell output-container new-surface)))
-        (when (eq :layer-shell-keyboard-exclusive interactivity)
-          (state-focus-frame state add-node (server-seat state)))))))
+    (alexandria:if-let ((output-container (%find-output-container
+                                           (hrt:layer-surface-output new-surface)
+                                           state)))
+      (progn
+        (log-string
+         :info
+         "New Layer surface on output ~S~%, layer ~S with keyboard ~S keyboard"
+         (tree::output-container-output output-container)
+         (hrt::layer-surface-layer new-surface)
+         interactivity)
+        ;; If the surface can't be focused, don't do anything to place it.
+        ;; Otherwise, add it to the tree data structure so we can navigate
+        ;; to it by keyboard. The only difference between exclusive and
+        ;; "on demand" surfaces is that we focus exclusive surfaces when
+        ;; they appear.
+        ;; We need to do something different
+        ;; in the future for bottom or background surfaces.
+        (unless (eq :layer-shell-keyboard-none interactivity)
+          (let ((add-node (tree::output-container-add-layer-shell output-container new-surface)))
+            (when (eq :layer-shell-keyboard-exclusive interactivity)
+              (state-focus-frame state add-node (server-seat state))))))
+      (log-string :debug "Layer surface mapped on an output we don't track"))))
 
 (defun state-layer-surface-remove (state hrt-layer-surface)
   (declare (type mahogany-state state))
-  (let* ((surfaces (state-layer-surfaces state))
-         (surface-ptr (cffi:pointer-address hrt-layer-surface))
-         (surface (gethash surface-ptr surfaces))
-         (output-container (%find-output (hrt:layer-surface-output surface)
-                                         state))
-         (removed-frame (when output-container
-                          (tree::output-container-remove-layer-shell
-                           output-container surface))))
-    (when (and removed-frame (eq (state-current-frame state) removed-frame))
-      (state-focus-frame state (mahogany-group-current-frame
-                                (state-current-group state))
-                         (server-seat state)))
-    (remhash surface-ptr surfaces)))
+  (let ((surfaces (state-layer-surfaces state))
+        (surface-ptr (cffi:pointer-address hrt-layer-surface)))
+    (alexandria:if-let ((surface (gethash surface-ptr surfaces)))
+      (let* ((output-container (%find-output-container
+                                (hrt:layer-surface-output surface)
+                                state))
+             (removed-frame (when output-container
+                              (tree::output-container-remove-layer-shell
+                               output-container surface))))
+        (when (and removed-frame (eq (state-current-frame state) removed-frame))
+          (state-focus-frame state (mahogany-group-current-frame
+                                    (state-current-group state))
+                             (server-seat state)))
+        (remhash surface-ptr surfaces))
+      (log-string :error "Unmapping layer surface that was never mapped"))))
