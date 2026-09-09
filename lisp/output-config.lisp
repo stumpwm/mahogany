@@ -163,7 +163,7 @@ should be configured and laid out.")
   (config nil :type output-match-data)
   (score 0 :type fixnum))
 
-(defun score-layout-configuration (outputs config)
+(defun %score-layout-configuration (outputs config)
   (declare (type output-layout-config config)
            ;; Make this code work with both arrays and lists;
            ;; it's an array right now, but that may change:
@@ -194,7 +194,7 @@ should be configured and laid out.")
            (push (make-%config-match cur c score) found)
            (setf remaining (remove cur remaining)))
           (t
-           (return-from score-layout-configuration nil)))))
+           (return-from %score-layout-configuration nil)))))
     found))
 
 (defun %filter-layout-matches-length (matches)
@@ -229,9 +229,11 @@ should be configured and laid out.")
       m0)))
 
 (defun find-output-layout-config (outputs)
+  "Find the output config for the give outputs, ignoring their default
+configurations"
   (let* ((matching
            (loop :for v :being :the :hash-value :of *output-layout-configurations*
-                 :nconcing (let ((scores (score-layout-configuration outputs v)))
+                 :nconcing (let ((scores (%score-layout-configuration outputs v)))
                              (if scores
                                  (list (cons v scores))
                                  nil))))
@@ -261,6 +263,7 @@ should be configured and laid out.")
           (cddr max-score))))))
 
 (defun find-output-configurations (outputs)
+  "Match the given outputs with their final configurations."
   (let ((layout (find-output-layout-config outputs))
         (configurations (make-hash-table :test 'equalp)))
     (dolist (o outputs)
