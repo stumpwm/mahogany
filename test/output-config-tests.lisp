@@ -221,6 +221,6 @@
 
 (define-layout-test find-output-configurations-no-layouts ()
   (with-output-properties ((output :name "output"))
-	(let* ((result (mh/output:find-output-configurations
+	(let* ((result (mh/output::find-output-configurations
 					(list output))))
 	  (is (= (hash-table-count result) 0)))))
