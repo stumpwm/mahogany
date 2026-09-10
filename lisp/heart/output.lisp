@@ -14,6 +14,13 @@
   ;; a cons of (x . y)
   (position nil :type (or cons null) :read-only t))
 
+(defun output-config= (a b)
+  (and (equal (output-config-scale a) (output-config-scale b))
+       (equal (output-config-refresh-rate a) (output-config-refresh-rate b))
+       (eq (output-config-custom-mode a) (output-config-custom-mode b))
+       (equalp (output-config-dimensions a) (output-config-dimensions b))
+       (equalp (output-config-position a) (output-config-position b))))
+
 (defun output-config-merge (base override)
   (macrolet ((override-val (accessor)
                  `(if (,accessor override)
@@ -25,13 +32,13 @@
       (when (output-config-dimensions override)
         (setf dimensions (output-config-dimensions override)
               refresh-rate (output-config-refresh-rate override)
-              custom-mode (output-config-custom-mode override))
+              custom-mode (output-config-custom-mode override)))
       (make-output-config
        :scale (override-val output-config-scale)
        :position (override-val output-config-position)
        :dimensions dimensions
        :refresh-rate refresh-rate
-       :custom-mode custom-mode)))))
+       :custom-mode custom-mode))))
 
 (defun %transfer-output-config (hrt-config config)
   (declare (type output-config config))
