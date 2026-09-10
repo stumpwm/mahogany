@@ -281,5 +281,8 @@ configurations"
                  (output-match-data-config base)))
           (from-layout
            (setf (gethash o configurations)
-                 from-layout)))))
+                 from-layout))
+          (t
+           (setf (gethash o configurations)
+                 nil)))))
     configurations))
