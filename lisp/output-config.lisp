@@ -270,14 +270,15 @@ configurations"
       (let ((base (find-output-config o))
             (from-layout (alexandria:when-let
                              ((l (find o layout :key '%config-match-output)))
-                           (%config-match-config l))))
+                           (output-match-data-config (%config-match-config l)))))
         (cond
           ((and base from-layout)
            (setf (gethash o configurations)
-                 (hrt:output-config-merge base from-layout)))
+                 (hrt:output-config-merge
+                  (output-match-data-config base) from-layout)))
           (base
            (setf (gethash o configurations)
-                 base))
+                 (output-match-data-config base)))
           (from-layout
            (setf (gethash o configurations)
                  from-layout)))))
