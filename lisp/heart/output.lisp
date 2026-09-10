@@ -89,13 +89,16 @@
     (%make-output hrt-output name)))
 
 (defun output-init (output config)
-  (if config
-      (with-output-config (hrt-config config)
-        (mahogany/log:log-string
-         :info "Appyling configuration to output ~S: ~S"
-         (output-full-name output) config)
-        (hrt-output-init (output-hrt-output output) hrt-config))
-      (hrt-output-init (output-hrt-output output) (cffi:null-pointer))))
+  (declare (type output output)
+           (type (or null output-config) config))
+  (let ((hrt-output (output-hrt-output output)))
+    (mahogany/log:log-string
+     :info "Initializing output ~S with config ~S"
+     (output-full-name output) config)
+    (if config
+        (with-output-config (hrt-config config)
+          (hrt-output-init hrt-output hrt-config))
+        (hrt-output-init hrt-output (cffi:null-pointer)))))
 
 (defun destroy-output (mh-output)
   (declare (ignore mh-output)))
