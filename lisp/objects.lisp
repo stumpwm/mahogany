@@ -26,7 +26,9 @@
   (%prefix-key (kbd "C-t") :type key)
   (outputs (make-array 0 :element-type 'tree::output-container
                          :adjustable t :fill-pointer t)
-   :type (vector tree::output-container *))
+           :type (vector tree::output-container *))
+  (pending-output-timer nil
+                        :type (or null hrt:timer-handle))
   (groups (make-array 0 :element-type 'mahogany-group
                         :adjustable t :fill-pointer t)
    :type (vector mahogany-group *))

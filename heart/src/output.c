@@ -203,10 +203,9 @@ static void set_mode(struct wlr_output *output,
     wlr_output_state_set_mode(pending, best);
 }
 
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config) {
-    struct hrt_server *server     = output->server;
-    struct wlr_output *wlr_output = output->wlr_output;
+static struct wlr_output_layout_output *
+output_configure(struct hrt_server *server, struct wlr_output *wlr_output,
+                 struct hrt_output_config *config) {
     struct wlr_output_state state;
     wlr_output_state_init(&state);
     wlr_output_state_set_enabled(&state, true);
@@ -222,7 +221,7 @@ bool hrt_output_init(struct hrt_output *output,
     set_transform(&state);
 
     if (config && config->scale > 0) {
-        // The factional-scale-v1 protocol uses increments of 120ths to send
+        // The fractional-scale-v1 protocol uses increments of 120ths to send
         // the scale factor to the client. Adjust the scale so that we use the
         // same value as the clients'.
         wlr_output_state_set_scale(&state, round(config->scale * 120) / 120);
@@ -234,7 +233,7 @@ bool hrt_output_init(struct hrt_output *output,
     if (!wlr_output_commit_state(wlr_output, &state)) {
         // FIXME: Actually do some error handling instead of just logging:
         wlr_log(WLR_ERROR, "Output state could not be committed");
-        return false;
+        return nullptr;
     }
     wlr_output_state_finish(&state);
 
@@ -251,7 +250,22 @@ bool hrt_output_init(struct hrt_output *output,
         l_output =
             wlr_output_layout_add_auto(server->output_layout, wlr_output);
     }
-    assert(l_output != nullptr);
+    return l_output;
+}
+
+bool hrt_output_init(struct hrt_output *output,
+                     struct hrt_output_config *config) {
+    struct hrt_server *server     = output->server;
+    struct wlr_output *wlr_output = output->wlr_output;
+
+    struct wlr_output_layout_output *l_output =
+        output_configure(server, wlr_output, config);
+
+    if (!l_output) {
+        wlr_log(WLR_ERROR,
+                "Could not initialize output due to configuration error");
+        return false;
+    }
     struct wlr_scene_output *scene_output =
         wlr_scene_output_create(server->scene, wlr_output);
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
@@ -263,6 +277,22 @@ bool hrt_output_init(struct hrt_output *output,
     output->request_state.notify = handle_request_state;
     wl_signal_add(&wlr_output->events.request_state, &output->request_state);
 
+    return true;
+}
+
+bool hrt_output_configure(struct hrt_output *output,
+                          struct hrt_output_config *config) {
+    struct hrt_server *server     = output->server;
+    struct wlr_output *wlr_output = output->wlr_output;
+
+    struct wlr_output_layout_output *l_output =
+        output_configure(server, wlr_output, config);
+
+    if (!l_output) {
+        wlr_log(WLR_ERROR,
+                "Could not initialize output due to configuration error");
+        return false;
+    }
     return true;
 }
 

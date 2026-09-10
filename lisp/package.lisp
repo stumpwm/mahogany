@@ -1,7 +1,6 @@
 (defpackage #:mahogany/output-config
   (:use #:cl)
   (:export #:find-output-configurations
-           #:find-output-config
            #:define-output-config
            #:define-output-layout))
 
@@ -14,7 +13,6 @@
         #:mahogany/keyboard)
   (:import-from #:mahogany/output-config
                 #:find-output-configurations
-                #:find-output-config
                 #:define-output-config
                 #:define-output-layout)
   (:import-from #:cl-interactive/input-method
