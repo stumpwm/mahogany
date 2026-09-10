@@ -5,20 +5,33 @@
 
 (in-package #:mahogany-tests/heart/output)
 
-(fiasco:deftest output-config-merge-handles-mode ()
-  (let* ((base (hrt:make-output-config
-                :scale 2
-                :refresh-rate 60
-                :custom-mode t
-                :dimensions (cons 600 600)
-                :position (cons 20 20)))
-         (override (hrt:make-output-config
-                    :dimensions (cons 1080 960)
-                    :refresh-rate 90))
-         (merged (hrt:output-config-merge base override)))
-    (is (equal (hrt::output-config-dimensions merged)
-               (cons 1080 960)))
-    (is (equal  (hrt::output-config-refresh-rate merged)
-                90))
-    (is (eq (hrt::output-config-custom-mode merged)
-            nil))))
+(defmacro define-output-config-merge-test (name default override expected)
+  (let ((def-symb (gensym "default"))
+        (override-symb (gensym "override"))
+        (expected-symb (gensym "expected")))
+    `(fiasco:deftest ,name ()
+       (let ((,def-symb (hrt:make-output-config ,@default))
+             (,override-symb (hrt:make-output-config ,@override))
+             (,expected-symb (hrt:make-output-config ,@expected)))
+         (let ((result (hrt:output-config-merge ,def-symb ,override-symb)))
+           (is (hrt::output-config= result ,expected-symb)))))))
+
+(define-output-config-merge-test output-config-merge-handles-mode
+	(:scale 2
+     :refresh-rate 60
+     :custom-mode t
+     :dimensions (cons 600 600)
+     :position (cons 20 20))
+  (:scale 1
+   :dimensions (cons 1080 960)
+   :refresh-rate 90)
+  (:scale 1
+   :dimensions (cons 1080 960)
+   :refresh-rate 90
+   :custom-mode nil
+   :position (cons 20 20)))
+
+(define-output-config-merge-test output-config-merge-basic
+    (:scale 1)
+  (:scale 2)
+  (:scale 2))
