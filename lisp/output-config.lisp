@@ -149,7 +149,8 @@ should be configured and laid out.")
               (when (> cur-score score)
                 (setf score cur-score
                       matching cur)))))
-        (values matching score)))))
+        (when (< 0 score)
+          (values matching score))))))
 
 (defun find-output-config (output)
   "Find an individual output configuration that matches the given output."

@@ -103,6 +103,13 @@
        (with-mock-configurations
          ,@body))))
 
+(define-layout-test find-output-config-only-matches-proper ()
+  (mh/output:define-output-config "default-wl-2"
+	"WL-2"
+    (:scale 2))
+  (with-output-properties ((output :name "WL-1"))
+    (is (null (mh/output::find-output-config output)))))
+
 (define-layout-test define-output-layout-sets-priority ()
   (let ((layout (mh/output:define-output-layout ("name" 5)
 				  ("output"))))
