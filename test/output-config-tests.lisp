@@ -224,7 +224,10 @@
   (with-output-properties ((output :name "output"))
 	(let* ((result (mh/output:find-output-configurations
 					(list output))))
-	  (is (= (hash-table-count result) 0)))))
+	  (is (= (hash-table-count result) 1))
+      (multiple-value-bind (output-result found) (gethash output result)
+        (is found)
+        (is (null output-result))))))
 
 (define-layout-test find-output-configurations-merges ()
   (mh/output:define-output-config "first"
