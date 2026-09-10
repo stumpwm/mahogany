@@ -141,29 +141,76 @@ the current group or a layer shell frame"
   (unless (key-state-active-p (state-key-state state))
     (server-keystate-reset state)))
 
+(defglobal *output-debounce-msec* 1)
+
+(defstruct pending-output-changes
+  (added nil :type list))
+
+(defun %get-output-list (pending-changes cur-outputs)
+  (declare (type vector cur-outputs)
+           (type pending-output-changes pending-changes))
+  (let* ((added (pending-output-changes-added pending-changes))
+         (all-outputs (append (map 'list
+                                   #'tree:output-container-output
+                                   cur-outputs)
+                              added)))
+    (values all-outputs added)))
+
+(defun %add-output (state mh-output output-config)
+  (let ((outputs (state-outputs state))
+        (groups (state-groups state))
+        (output-container (tree::make-output-container mh-output)))
+    (hrt:output-init mh-output output-config)
+    (vector-push-extend output-container outputs)
+    (loop for g across groups
+          do (group-add-output g output-container))))
+
+(defun process-output-changes (timer)
+  (declare (type hrt:timer-handle timer))
+  (hrt:timer-handle-destroy timer)
+  (setf (state-pending-output-timer *compositor-state*) nil)
+  (multiple-value-bind (full-list added)
+      (%get-output-list (hrt:timer-handle-data timer)
+                        (state-outputs *compositor-state*))
+    (log-string
+     :trace
+     "After configuration:~%~2TAdded: ~S~%~2T~%~2TAll: ~S"
+     added full-list)
+    (let ((configuration (find-output-configurations full-list)))
+      (maphash (lambda (output output-config)
+                 (if (find output added :test #'hrt:output=)
+                     (%add-output *compositor-state* output
+                                  output-config)
+                     (hrt:output-configure output
+                                           output-config)))
+               configuration))
+    (unless (state-%current-frame *compositor-state*)
+      (let ((cur-group (state-current-group *compositor-state*)))
+        (group-focus cur-group (server-seat *compositor-state*))
+        (setf (state-%current-frame *compositor-state*) (mahogany-group-current-frame cur-group))))))
+
+(defun %make-output-process-timer (state change-data)
+  (declare (type mahogany-state state))
+  (let ((timer (hrt:server-make-timer (state-server state)
+                                      #'process-output-changes
+                                      change-data)))
+    (hrt:timer-handle-update timer *output-debounce-msec*)
+    timer))
+
 (defun mahogany-state-output-add (state hrt-output)
   (declare (type mahogany-state state)
            (type cffi:foreign-pointer hrt-output))
-  (with-accessors ((outputs state-outputs)
-                   (groups state-groups)
-                   (scene mahogany-state-scene))
-      state
-    (let* ((mh-output (hrt:make-output hrt-output))
-           (output-container (tree::make-output-container mh-output)))
-      (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
-      ;; (mahogany/output-config::
-      (hrt:output-init mh-output
-                       (let ((output-match-data (find-output-config mh-output)))
-                         (if output-match-data
-                             (mahogany/output-config::output-match-data-config output-match-data)
-                             nil)))
-      (vector-push-extend output-container outputs)
-      (loop for g across groups
-            do (group-add-output g output-container))
-      (unless (state-%current-frame state)
-        (let ((cur-group (state-current-group state)))
-          (group-focus cur-group (server-seat state))
-        (setf (state-%current-frame state) (mahogany-group-current-frame cur-group)))))))
+  (let* ((mh-output (hrt:make-output hrt-output)))
+    (log-string :debug "New output added ~S" (hrt:output-full-name mh-output))
+    (alexandria:if-let ((timer (state-pending-output-timer state)))
+      (let ((data (hrt:timer-handle-data timer)))
+        (hrt:timer-handle-update timer *output-debounce-msec*)
+        (push mh-output (pending-output-changes-added data)))
+      (setf (state-pending-output-timer state)
+            (%make-output-process-timer
+             state
+             (make-pending-output-changes
+              :added (list mh-output)))))))
 
 (declaim (inline %find-output-container))
 (defun %find-output-container (hrt-output state)
@@ -188,19 +235,43 @@ or HRT-OUTPUT is NIL or a null pointer."
                    (groups state-groups)
                    (cur-frame state-%current-frame))
       state
+    ;; The output is now invalid, so remove it from the state.
+    ;; Leave the reconfiguring and re-arranging to the output configuration
+    ;; timer; as long as the output is destroyed, we can leave everything
+    ;; in place.
     (alexandria:if-let ((output-container (%find-output-container hrt-output state)))
       (let ((mh-output (tree::output-container-output output-container)))
         (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
         (loop for g across groups
               do (group-remove-output g output-container (server-seat state)))
-        ;; TODO: Is there a better way to remove an item from a vector when we could know the index?
         (setf outputs (delete output-container outputs :test #'equalp))
-        (hrt:destroy-output mh-output))
+        (hrt:destroy-output mh-output)
+        ;; We could have removed the current frame, so
+        ;; change it unless a non-titled frame is focused.
+        ;; TODO: do this in the output configuration timer handler
+        ;;  so that if multiple outputs are removed at once,
+        ;;  we don't do more work than needed.
+        (unless (typep cur-frame 'tree:layer-container)
+          (setf cur-frame (mahogany-group-current-frame
+                           (state-current-group state))))
+        (when (and cur-frame (> (length outputs) 0))
+          (tree:mark-frame-focused cur-frame (server-seat state))))
       (log-string :error "Removed an output that was never added"))
-    (setf cur-frame (mahogany-group-current-frame
-                     (state-current-group state)))
-    (when (and cur-frame (> (length outputs) 0))
-      (tree:mark-frame-focused cur-frame (server-seat state)))))
+    ;; Start the timer:
+    (alexandria:if-let ((timer (state-pending-output-timer state)))
+      (let ((data (hrt:timer-handle-data timer)))
+        (hrt:timer-handle-update timer *output-debounce-msec*)
+        ;; We really shouldn't be using pointer-eq here,
+        ;;  but it appears to be the best choice right now
+        (alexandria:deletef (pending-output-changes-added data)
+                            hrt-output
+                            :test #'cffi:pointer-eq
+                            :key #'hrt:output-hrt-output))
+      (setf (state-pending-output-timer state)
+            (%make-output-process-timer
+             state
+             (make-pending-output-changes
+              :added (list)))))))
 
 (defun %next-group-name (index)
   (concatenate 'string "GROUP-" (write-to-string index)))

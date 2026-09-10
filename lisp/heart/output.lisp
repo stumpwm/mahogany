@@ -5,6 +5,12 @@
   (hrt-output (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (full-name "" :type string :read-only t))
 
+(defun output= (output1 output2)
+  (declare (type output output1 output2))
+  (cffi:pointer-eq
+   (output-hrt-output output1)
+   (output-hrt-output output2)))
+
 (defstruct output-config
   (scale 1 :type (or number null) :read-only t)
   (refresh-rate nil :type (or number null) :read-only t)
@@ -99,6 +105,18 @@
         (with-output-config (hrt-config config)
           (hrt-output-init hrt-output hrt-config))
         (hrt-output-init hrt-output (cffi:null-pointer)))))
+
+(defun output-configure (output config)
+  (declare (type output output)
+           (type (or null output-config) config))
+  (let ((hrt-output (output-hrt-output output)))
+    (mahogany/log:log-string
+           :info "Appyling configuration to output ~S: ~S"
+           (output-full-name output) config)
+    (if config
+        (with-output-config (hrt-config config)
+          (hrt-output-configure hrt-output hrt-config))
+        (hrt-output-configure hrt-output (cffi:null-pointer)))))
 
 (defun destroy-output (mh-output)
   (declare (ignore mh-output)))

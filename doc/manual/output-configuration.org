@@ -55,9 +55,6 @@ configuration without that property.
 
 ** Configuring Output Layouts
 
-**Note: the functionality in this section is partially
-implemented and will not work as described.**
-
 When multiple outputs are present, you can use the
 =define-output-layout= macro to declare configurations that are only
 active when certain outputs are connected. This macro is similar to

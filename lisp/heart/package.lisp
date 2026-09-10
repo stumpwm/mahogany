@@ -81,6 +81,7 @@
            #:output-init
            #:make-output-config
            #:output-config
+           #:output-config=
            #:output-config-merge
            #:hrt-keypress-info
            ;; output callbacks
@@ -88,6 +89,8 @@
            #:output-removed
            #:output-layout-changed
            ;; output methods:
+           #:output=
+           #:output-configure
            #:output-scene
            #:output-scene-layer
            #:output-resolution
