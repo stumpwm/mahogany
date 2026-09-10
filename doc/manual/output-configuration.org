@@ -44,12 +44,12 @@ Note that screen mirroring and disabling outputs is not supported yet.
 
 *** Configuration Priority
 
-When there are mulitple configurations that could match the same
+When there are multiple configurations that could match the same
 output, the one with the most specificity is chosen. The order of
-precidence for outputs are =:name=, =:make=, =model=, and =serial=. A
-configuration with a property with higher precidence is picked over
-ones with less precidence, even if more properties match. For example,
-if a =serial= property matches, it will always have precidence over a
+precedence for outputs are =:name=, =:make=, =model=, and =serial=. A
+configuration with a property with higher precedence is picked over
+ones with less precedence, even if more properties match. For example,
+if a =serial= property matches, it will always have precedence over a
 configuration without that property.
 
 
@@ -79,7 +79,7 @@ there is a "theater" configuration, and a "desktop" configuration:
      (:enabled nil)))
 
   (mh::define-output-layout "desktop"
-    ;; An external moditor is connected that is 1080p:
+    ;; An external monitor is connected that is 1080p:
     ((:name "DP-1" :make "HP")
      (:position 0 0))
     ;; Put the built-in monitor to the right:
@@ -88,7 +88,7 @@ there is a "theater" configuration, and a "desktop" configuration:
 #+END_SRC
 
 In this setup, if an output with a make of ="visio"= is connected, the
-="theather"= configuration is applied. If an output with make of "HP" is
+="theater"= configuration is applied. If an output with make of "HP" is
 connected to the ="DP-1"= output, then the ="desktop"= configuration is
 applied.
 
