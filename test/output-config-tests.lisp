@@ -100,7 +100,8 @@
 (defmacro define-layout-test (name args &body body)
   `(fiasco:deftest ,name ,args
      (with-mock-layout
-       ,@body)))
+       (with-mock-configurations
+         ,@body))))
 
 (define-layout-test define-output-layout-sets-priority ()
   (let ((layout (mh/output:define-output-layout ("name" 5)
@@ -221,6 +222,49 @@
 
 (define-layout-test find-output-configurations-no-layouts ()
   (with-output-properties ((output :name "output"))
-	(let* ((result (mh/output::find-output-configurations
+	(let* ((result (mh/output:find-output-configurations
 					(list output))))
 	  (is (= (hash-table-count result) 0)))))
+
+(define-layout-test find-output-configurations-merges ()
+  (mh/output:define-output-config "first"
+	"first"
+    (:scale 1))
+  (mh/output:define-output-config "second"
+	"second"
+    (:scale 1))
+  (mh/output:define-output-layout "first-second"
+    ("first"
+     (:scale 2))
+    ("second"))
+  (with-output-properties ((output-1 :name "first")
+                           (output-2 :name "second"))
+    (let ((result (mh/output:find-output-configurations
+                   (list output-1 output-2))))
+      (let ((output-1-result (gethash output-1 result)))
+        (is (hrt::output-config=
+             (hrt:make-output-config :scale 2)
+             output-1-result)))
+      (let ((output-2-result (gethash output-2 result)))
+        (is (hrt::output-config=
+             (hrt:make-output-config :scale 1)
+             output-2-result))))))
+
+(define-layout-test find-output-configurations-without-merges ()
+  (mh/output:define-output-layout "first-second"
+    ("first"
+     (:scale 2))
+    ("second"
+     (:scale 3)))
+  (with-output-properties ((output-1 :name "first")
+                           (output-2 :name "second"))
+    (let ((result (mh/output:find-output-configurations
+                   (list output-1 output-2))))
+      (let ((output-1-result (gethash output-1 result)))
+        (is (hrt::output-config=
+             (hrt:make-output-config :scale 2)
+             output-1-result)))
+      (let ((output-2-result (gethash output-2 result)))
+        (is (hrt::output-config=
+             (hrt:make-output-config :scale 3)
+             output-2-result))))))
