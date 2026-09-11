@@ -100,14 +100,10 @@ should not be directly instantiated; inherit from it instead."))
   ;; have been called prior to this object being destroyed.
   (hrt:hrt-scene-layer-destroy (layer-container-layer layer-container)))
 
-(defun layer-container-transfer (source destination)
+(defun layer-container-transfer-view (destination view)
+  "Move the given view to the given layer"
   (let ((dest-layer (layer-container-layer destination)))
-    (foreach-frame (f source)
-      (when (or (typep f 'output-node)
-                (typep f 'view-frame))
-        (alexandria:when-let ((view (frame-view f)))
-          (log-string :trace "Moving view ~S" view)
-          (hrt:scene-layer-add-view dest-layer view))))))
+    (hrt:scene-layer-add-view dest-layer view)))
 
 (defstruct (%fullscreen-data (:constructor %make-fullscreen-data (view node)))
   (view nil :type hrt:view)
