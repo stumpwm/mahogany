@@ -34,9 +34,14 @@
 
 (defcommand close-current-view ()
   (:method ()
-    (let ((frame (state-current-frame *compositor-state*)))
-      (when frame
-        (tree:close-frame frame)))))
+    (alexandria:when-let*
+        ((frame (state-current-frame *compositor-state*))
+         (surface (tree:frame-surface frame)))
+      (typecase surface
+        (hrt:view
+         (hrt:view-request-close surface))
+        (hrt:layer-surface
+         (hrt:layer-surface-close surface))))))
 
 (defcommand next-view ()
   (:documentation "Raise the next hidden view in the current group")
