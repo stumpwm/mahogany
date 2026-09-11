@@ -1,3 +1,4 @@
+
 # This document serves as a stub to initialize org export settings.
 # It is intentionally left with just a title. See the org files in
 # ./manual/ for the rest of the document.
