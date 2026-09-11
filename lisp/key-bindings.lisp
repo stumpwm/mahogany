@@ -113,6 +113,12 @@
   (:method ()
     (state-prev-hidden-group *compositor-state*)))
 
+(defcommand grename
+    ((new-name (:function interactively-read-string :data "New Name")))
+  (:method (new-name)
+    (let ((current-group (state-current-group *compositor-state*)))
+      (setf (mahogany-group-name current-group) new-name))))
+
 #+:hrt-debug
 (defcommand add-output ()
   (:method ()
