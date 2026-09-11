@@ -43,10 +43,6 @@
              (<= frame-y y)
              (<  y (+ frame-y frame-height)))))))
 
-(defmethod frame-position ((frame layer-shell-frame))
-  (let ((shell (layer-shell-frame-shell frame)))
-    (hrt:layer-surface-position shell)))
-
 (defmethod (setf %frame-prev) (prev (frame layer-shell-frame))
   (setf (slot-value frame 'prev) prev))
 
