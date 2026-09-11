@@ -49,7 +49,7 @@
            #:reconfigure-node
            ;; View-frame functions / objects
            #:view-frame
-           #:frame-view
+           #:frame-surface
            #:frame-next
            #:frame-prev
            #:frame-find-layer

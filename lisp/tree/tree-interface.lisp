@@ -46,6 +46,9 @@ of an already existing frame with the `set-split-frame-type` function")
 depends on what the frame holds: an xdg toplevel is asked and can refuse,
 a layer shell surface cannot."))
 
+(defgeneric frame-surface (frame)
+  (:documentation "Get the client that is displayed within the frame"))
+
 (defgeneric frame-prev (frame)
   (:documentation "Get the previous edge node in the tree from this node"))
 

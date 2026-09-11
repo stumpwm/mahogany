@@ -2,6 +2,7 @@
 
 (defclass layer-shell-frame ()
   ((layer-shell :initarg :layer-shell
+                :reader frame-surface
                 :type hrt:layer-surface)
    (parent :initarg :parent
            :initform nil

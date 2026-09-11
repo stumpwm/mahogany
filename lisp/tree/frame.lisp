@@ -530,7 +530,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
 
 (defmethod find-empty-frame ((root frame))
   (foreach-leaf (frame root)
-    (unless (frame-view frame)
+    (unless (frame-surface frame)
       (return-from find-empty-frame frame))))
 
 (defun find-first-leaf (tree)
@@ -541,7 +541,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
   "Return a list of view-frames that contain views"
   (let ((populated nil))
     (foreach-leaf (l root)
-      (when (frame-view l)
+      (when (frame-surface l)
         (push l populated)))
     populated))
 
