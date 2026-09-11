@@ -80,18 +80,21 @@
     (setf (mahogany-group-active-p group) nil)
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
-(defun group-transfer-views (group to-transfer)
-  "Transfer the all views from to-transfer to group"
-  (declare (type mahogany-group group to-transfer))
-  (let ((group-tile-layer (mahogany-group-tiled-container group))
-        (to-transfer-layer (mahogany-group-tiled-container to-transfer))
-        (hidden-list (mahogany-group-hidden-views group)))
-    (tree:layer-container-transfer to-transfer-layer group-tile-layer)
-    (dolist (other-view (mahogany-group-views to-transfer))
-      (group-remove-view to-transfer other-view)
-      (push other-view (mahogany-group-views group))
-      (when (hrt:view-mapped-p other-view)
-        (%add-hidden hidden-list other-view)))))
+(defun group-move-view (source destination view)
+  (declare (type mahogany-group destination source))
+  (let ((dest-layer (mahogany-group-tiled-container destination))
+        (hidden-list (mahogany-group-hidden-views destination)))
+    (group-remove-view source view)
+    (tree:layer-container-transfer-view dest-layer view)
+    (push view (mahogany-group-views destination))
+    (when (hrt:view-mapped-p view)
+      (%add-hidden hidden-list view))))
+
+(defun group-transfer-views (destination source)
+  "Transfer the all views from the SOURCE group to the DESTINATION group"
+  (declare (type mahogany-group destination source))
+  (dolist (view (mahogany-group-views source))
+    (group-move-view source destination view)))
 
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
@@ -260,8 +263,15 @@ to match."
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
                    (output-map mahogany-group-output-map)
-                   (hidden mahogany-group-hidden-views))
+                   (hidden mahogany-group-hidden-views)
+                   (tiled-container mahogany-group-tiled-container))
       group
+    (when (hrt:view-mapped-p view)
+      ;; if the view is hidden, it won't be in a frame:
+      (or
+       (ring-list:remove-item hidden view)
+       (alexandria:when-let ((f (tree:find-view-frame tiled-container view)))
+         (setf (tree:frame-view f) nil))))
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))

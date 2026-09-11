@@ -19,7 +19,7 @@
            #:layer-container
            #:make-layer-container
            #:destroy-layer-container
-           #:layer-container-transfer
+           #:layer-container-transfer-view
            #:layer-container-layer
            #:tree-output-add
            #:root-tree
