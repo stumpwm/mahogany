@@ -2,6 +2,7 @@
 
 (defclass layer-shell-frame ()
   ((layer-shell :initarg :layer-shell
+                :reader frame-surface
                 :type hrt:layer-surface)
    (parent :initarg :parent
            :initform nil
@@ -18,9 +19,6 @@
             :initform nil
             :type boolean))
   (:documentation "Frame tree node that contains a layer shell surface"))
-
-(defmethod close-frame ((frame layer-shell-frame))
-  (hrt:layer-surface-close (slot-value frame 'layer-shell)))
 
 (defmethod split-frame-h ((frame layer-shell-frame) &key &allow-other-keys)
   (declare (ignore frame))

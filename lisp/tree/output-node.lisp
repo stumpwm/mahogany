@@ -81,12 +81,12 @@ view, if there was one."
     (log-string :trace "fullscreen frame unfocused ~S" frame)
     (hrt:unfocus-view (%fullscreen-data-view data) seat)))
 
-(defmethod frame-view ((frame output-node))
+(defmethod frame-surface ((frame output-node))
   (alexandria:when-let ((data (output-node-fullscreen frame)))
     (%fullscreen-data-view data)))
 
 (defmethod close-frame ((frame output-node))
-  (alexandria:when-let ((view (frame-view frame)))
+  (alexandria:when-let ((view (frame-surface frame)))
     (hrt:view-request-close view)))
 
 (defmethod in-frame-p ((parent output-node) x y)
