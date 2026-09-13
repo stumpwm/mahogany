@@ -232,6 +232,10 @@ NIL goes back to libinput's default, which is the same as 0."
   (declare (optimize (speed 3)))
   (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
                             info (:struct hrt:hrt-keypress-info))
+    ;; don't check for key commands if we are collecting args:
+    (when *collecting-args-p*
+      (log-string :trace "Not checking keybinding due to interactive command")
+      (return-from keyboard-callback nil))
     ;; I'm not sure why this is an array, but it's what tinywl does:
     (dotimes (i hrt:keysyms-len)
       (let ((key (make-key (cffi:mem-aref hrt:keysyms :uint32 i) hrt:modifiers)))
