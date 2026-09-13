@@ -124,6 +124,67 @@
     (let ((current-group (state-current-group *compositor-state*)))
       (setf (mahogany-group-name current-group) new-name))))
 
+(defun %prep-move-cur-view ()
+  (alexandria:when-let*
+      ((current-frame (state-current-frame *compositor-state*))
+       (surface (tree:frame-surface current-frame)))
+    (when (typep surface 'hrt:layer-surface)
+      (error 'mahogany/util:invalid-operation
+             :text "Cannot move layer shell surfaces"))
+    (let ((current-group (state-current-group *compositor-state*)))
+      (unless (eq (mahogany-group-current-frame current-group)
+                  current-frame)
+        (error 'mahogany/util:mahogany-panic
+               :text "Current tiled frame does not match current group"))
+      (return-from %prep-move-cur-view (values current-group surface))))
+  (error 'mahogany/util:invalid-operation
+         :text "No view to move."))
+
+(defun %move-current-surface (destination)
+  (multiple-value-bind (cur-group surface)
+      (%prep-move-cur-view)
+    (group-move-view cur-group destination surface)))
+
+(defcommand gmove
+    ((group (:function interactively-read-group :data "Group?")))
+  (:documentation "Move the currently focused view to the specified group")
+  (:method (destination)
+    (%move-current-surface destination)))
+
+(defcommand gmove-and-follow
+    ((group (:function interactively-read-group :data "Group?")))
+  (:documentation
+   "Move the currently focused view to the specified group and switch to it")
+  (:method (destination)
+    (%move-current-surface destination)
+    (setf (state-current-group *compositor-state*) destination)))
+
+(defcommand gnext-with-window
+    ()
+  (:documentation
+   "Cycle to the next group in the group list, taking the current window along.")
+  (:method ()
+    (multiple-value-bind (initial-group surface)
+        (%prep-move-cur-view)
+      (state-next-hidden-group *compositor-state*)
+      (group-move-view
+       initial-group
+       (state-current-group *compositor-state*)
+       surface))))
+
+(defcommand gprev-with-window
+    ()
+  (:documentation
+   "Cycle to the previous group in the group list, taking the current window along.")
+  (:method ()
+    (multiple-value-bind (initial-group surface)
+        (%prep-move-cur-view)
+      (state-prev-hidden-group *compositor-state*)
+      (group-move-view
+       initial-group
+       (state-current-group *compositor-state*)
+       surface))))
+
 #+:hrt-debug
 (defcommand add-output ()
   (:method ()
@@ -141,8 +202,12 @@
     (kbd "c") #'gnew
     (kbd "k") #'gkill
     (kbd "n") #'gnext
+    (kbd "N") #'gnext-with-window
     (kbd "l") #'grouplist
-    (kbd "p") #'gprev))
+    (kbd "p") #'gprev
+    (kbd "P") #'gprev-with-window
+    (kbd "m") #'gmove
+    (kbd "M") #'gmove-and-follow))
 
 (defvar *root-map*
   (define-kmap
