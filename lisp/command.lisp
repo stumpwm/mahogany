@@ -3,6 +3,11 @@
 (setf cl-interactive:*default-input-method*
       (make-instance 'rofi-input-method))
 
+(defglobal *collecting-args-p* nil
+    "Bound to T when a command is being executed. Reading / writing to this
+variable is undefined outside of the main thread. To check if a command was
+invoked interactively, use cl-interactive:*interactive*")
+
 (defparameter *input-methods-available*
   (list
    'rofi-input-method
@@ -53,6 +58,7 @@ See the documentation for cl-interactive:define-command for more details.
       (when func
         (hrt:run-in-main-thread
          (lambda ()
+           (setf *collecting-args-p* nil)
            (log-string :debug "Calling command ~S with args:~%~4T~S"
                        func arg-list)
            (hrt:with-view-transaction ()
@@ -68,6 +74,7 @@ See the documentation for cl-interactive:define-command for more details.
   ;; doing it in another thread allows for interactive
   ;; error handling and keeps the behavior consistent between
   ;; commands with and without interactive arguments.
+  (setf *collecting-args-p* t)
   (bt2:make-thread
    (lambda ()
      (handler-case
@@ -75,6 +82,7 @@ See the documentation for cl-interactive:define-command for more details.
        (cl-interactive:cancel-interactive-command (c)
          (hrt:run-in-main-thread
           (lambda ()
+            (setf *collecting-args-p* nil)
             (toast-message *compositor-state* "Command canceled."
                            :theme *message-error-theme*))))))))
 
