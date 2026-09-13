@@ -145,6 +145,13 @@
       (%prep-move-cur-view)
     (group-move-view cur-group destination surface)))
 
+(defcommand gmerge
+    ((from (:function interactively-read-group :data "From Group")))
+  (:documentation "Merge FROM into the current group. FROM is not deleted")
+  (:method (from)
+    (group-transfer-views (state-current-group *compositor-state*)
+                          from)))
+
 (defcommand gmove
     ((group (:function interactively-read-group :data "Group?")))
   (:documentation "Move the currently focused view to the specified group")
