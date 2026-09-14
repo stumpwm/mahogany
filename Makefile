@@ -1,6 +1,6 @@
-ccl = cat $(1) | ccl -b
+ccl = ccl --load $(1) -b --
 sbcl = sbcl --non-interactive --load $(1)
-clasp = clasp --non-interactive --load $(1)
+clasp = clasp --non-interactive --load $(1) --
 
 LISP=sbcl
 
@@ -19,8 +19,13 @@ MANUAL_ORG_FILES = $(shell find doc/manual -path "doc/devel" -prune -type f -o -
 
 .PHONY: doc run runNoExec clean test
 
-$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/libheart.so build-mahogany.lisp FORCE
+$(BUILD_DIR)/mahogany: $(BUILD_DIR)/heart/libheart.so build-mahogany.lisp build/internal/projectDependencies FORCE
 	$(call $(LISP), build-mahogany.lisp)
+
+build/internal/projectDependencies: mahogany.asd
+	yes | $(call $(LISP), scripts/install-dependencies.lisp) mahogany
+	mkdir -p $(@D)
+	touch $@
 
 lisp/heart/hrt-bindings.lisp: $(ROOT)/cffi/hrt-bindings.yml $(HRT_INCLUDES) $(BUILD_DIR)/heart/libheart.so
 	PKG_CONFIG_PATH=$(BUILD_DIR)/heart/meson-uninstalled cl-bindgen b cffi/hrt-bindings.yml
@@ -53,7 +58,13 @@ clean:
 	rm -rf $(BUILD_DIR)/asdf-cache/*
 	rm -rf $(BUILD_DIR)/doc
 
-test: $(BUILD_DIR)/heart/libheart.so
+
+build/internal/testDependencies: mahogany-test.asd
+	yes | $(call $(LISP), scripts/install-dependencies.lisp) mahogany-test
+	mkdir -p $(@D)
+	touch $@
+
+test: build/internal/testDependencies $(BUILD_DIR)/heart/libheart.so
 	$(call $(LISP),run-tests.lisp)
 
 $(BUILD_DIR)/doc:

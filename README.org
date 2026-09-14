@@ -58,19 +58,15 @@ to build it. The following development dependencies are also needed:
 
 *** Common Lisp Dependencies
 You will need a Common Lisp implementation. While it should run on any
-version that the CFFI library supports, SBCL, CCL and Clasp are
-tested frequently.
+version that the CFFI library supports, SBCL and CCL are tested
+frequently.
 
 The recommended way to install the dependencies is using
 Quicklisp. Follow the instructions at https://www.quicklisp.org/ to
 install it.
 
-Once downloaded, you can install the dependencies using the
-=install-dependencies.lisp= script:
-#+BEGIN_SRC sh
-chmod +x scripts/install-dependencies.lisp
-./scripts/install-dependencies.lisp
-#+END_SRC
+There is an automatic dependency install script that will be ran in
+the next step.
 
 *** Building And Running
 At this point, all of the dependencies should be installed. You can
@@ -81,7 +77,7 @@ backend and the mahogany executable.
   # if successful, run the program with interative debugging
   # enabled:
   make run
-  # Can also be ran directly:
+  # Can also be ran directly. The debugger will not be active:
   LD_LIBRARY_PATH=build/lib64:build/lib ./build/mahogany
 #+END_SRC
 

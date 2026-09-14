@@ -31,8 +31,7 @@ jobs:
                --eval "(progn (setf ql-util::*do-not-prompt* t)(ql:add-to-init-file))"
       - name: Install Dependencies
         run: |
-          chmod +x scripts/install-dependencies.lisp
-          yes | ./scripts/install-dependencies.lisp
+          make build/internal/projectDependencies
       - name: Build
         run: make
       - name: Test
