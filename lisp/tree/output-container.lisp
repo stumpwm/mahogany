@@ -137,10 +137,11 @@ of the same type as ITEMS."
       (let* ((sorted (sort seq #'%left-to-right))
              (first (elt sorted 0))
              (cur first))
-        (loop for elem being the elements of sorted
-              do (setf (%frame-next cur) elem
-                       (%frame-prev elem) cur
-                       cur elem))
+        (map nil (lambda (elem)
+                   (setf (%frame-next cur) elem
+                         (%frame-prev elem) cur
+                         cur elem))
+             sorted)
         (setf (%frame-next cur) first
               (%frame-prev first) cur)
         seq))
