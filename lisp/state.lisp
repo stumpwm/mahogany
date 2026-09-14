@@ -8,6 +8,15 @@
   (member :none :all :minimize :maximize)
   "The client window management events that the compositor listends to.")
 
+(config-system:defconfig *shutdown-timeout-msec* 1000
+  (signed-byte 32) ;; This goes to a a C int; unless this is running
+  ;; on a weird machine, it's going to big enough on all platforms.
+  "How long to wait for connected clients to disconnect after compositor
+sends a close event prior to exiting. Units are in milliseconds.")
+
+(declaim (type (or null hrt:timer-handle) *shutdown-timer*))
+(defglobal *shutdown-timer* nil)
+
 (defun %add-group (state name index)
   (declare (type mahogany-state state)
            (type string name)
@@ -76,6 +85,43 @@
 (defun server-stop (state)
   (declare (type mahogany-state state))
   (hrt:hrt-server-stop (state-server state)))
+
+(defun %handle-shutdown-timer (timer)
+  (declare (type hrt:timer-handle timer))
+  (let* ((state (hrt:timer-handle-data timer))
+        (num-views (hash-table-count (state-views state))))
+    (declare (type mahogany-state state))
+    (cond
+      ((> num-views 0)
+       (toast-message state
+                      (format nil "Waiting for ~A client~P to close."
+                              num-views num-views))
+       (hrt:timer-handle-update timer *shutdown-timeout-msec*))
+      (t
+       (server-stop state)))))
+
+(defun server-shutdown-gracefully (state)
+  (declare (type mahogany-state state))
+  (let ((num-views (hash-table-count (state-views state))))
+    (cond
+      ((> num-views 0)
+       (log-string :info "Shutdown: Waiting for clients to disconnect.")
+       (toast-message state
+                      (format nil "Shutting down ~A client~P."
+                              num-views num-views))
+       (maphash (lambda (_ view)
+                  (declare (ignore _))
+                  (hrt:view-request-close view))
+                (state-views state))
+       (unless *shutdown-timer*
+         (let ((timer (hrt:server-make-timer
+                       (state-server state)
+                       #'%handle-shutdown-timer state)))
+           (hrt:timer-handle-update timer *shutdown-timeout-msec*)
+           (setf *shutdown-timer* timer))))
+      (t
+       (log-string :info "Shutdown: No clients, exiting now.")
+       (server-stop state)))))
 
 (config-system:defconfig *show-group-name* t
   boolean
