@@ -1,5 +1,3 @@
-#!/usr/bin/env -S sbcl --load "${HOME}/quicklisp/setup.lisp" --script
-
 (require :asdf)
 
 (defun get-cur-filename ()
@@ -25,5 +23,11 @@
   (format *error-output* "Setting up environment...~%")
   (load path))
 
-(ql-install-dependencies "mahogany")
-(ql-install-dependencies "mahogany-test")
+(let ((args (uiop:command-line-arguments)))
+  (dolist (a args)
+    (ql-install-dependencies a))
+  (format t "~%Installation done.~%")
+  (uiop:quit))
+
+;; (ql-install-dependencies "mahogany")
+;; (ql-install-dependencies "mahogany-test")
