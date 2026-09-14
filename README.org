@@ -111,11 +111,12 @@ work yet. But it has basic functionalities already.
 The list of available keybindings can be found in
 [[./lisp/key-bindings.lisp][lisp/key-bindings.lisp]].
 You can also search the codebase for =defcommand= forms, which are
-used to define commands. =C-t c= will open a terminal, and =C-t q=
-will kill Mahogany.
+used to define commands. =C-t c= will open a terminal, and =C-t q q=
+will kill Mahogany. To select a list of commands to run, you can use
+the =C-t ;= keybinding.
 
 Check out the [[./doc/manual/README.md][manual]] for how to customize the compositor's behavior. If
-you are new to Stumpwm or titling window managers in general, most
+you are new to Stumpwm or tiling window managers in general, most
 tutorials for StumpWM will be relatively useful where Mahogany has
 reached feature parity with StumpWM. I like [[https://www.youtube.com/watch?v=jlF1N0R24cA][this video by James McCabe]] in
 particular.

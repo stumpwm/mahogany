@@ -9,6 +9,10 @@
   (:method ()
     (server-stop *compositor-state*)))
 
+(defcommand shutdown-gracefully ()
+  (:method ()
+    (server-shutdown-gracefully *compositor-state*)))
+
 (defcommand open-terminal ()
   (:method ()
     (mh-sys:open-terminal)))
@@ -204,6 +208,11 @@
     (define-kmap
       (kbd "a") #'add-output))
 
+(defvar *session-map*
+  (define-kmap
+    (kbd "q") #'shutdown-gracefully
+    (kbd "k") #'handle-server-stop))
+
 (defvar *group-map*
   (define-kmap
     (kbd "c") #'gnew
@@ -222,7 +231,7 @@
     (kbd ";") #'colon
     (kbd "o") #'next-frame
     (kbd "O") #'prev-frame
-    (kbd "q") #'handle-server-stop
+    (kbd "q") *session-map*
     (kbd "k") #'close-current-view
     (kbd "c") #'open-terminal
     (kbd "s") #'split-frame-v
