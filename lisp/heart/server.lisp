@@ -80,6 +80,9 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   (cas-enque *work-queue* func)
   (hrt-event-loop-semaphore-increment *workqueue-semaphore* 1))
 
+(defmacro with-main-thread (args &body body)
+  `(run-in-main-thread (lambda () ,@body)))
+
 (defstruct (timer-handle
             (:constructor make-timer-handle (handle callback data)))
   (handle nil :type cffi:foreign-pointer :read-only t)

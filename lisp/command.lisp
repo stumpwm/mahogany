@@ -56,8 +56,7 @@ See the documentation for cl-interactive:define-command for more details.
          function
          :already-gathered gathered)
       (when func
-        (hrt:run-in-main-thread
-         (lambda ()
+        (hrt:with-main-thread ()
            ;; Although this isn't needed to reset *collecting-args-p*,
            ;; here, (the calling function takes care of it), doing it here
            ;; means that it's when an error does not occur,
@@ -73,7 +72,7 @@ See the documentation for cl-interactive:define-command for more details.
                  (cl-interactive:call-command-with-argument-list func arg-list)
                (invalid-operation (condition)
                  (toast-message *compositor-state* (condition-text condition)
-                                :theme *message-error-theme*))))))))))
+                                :theme *message-error-theme*)))))))))
 
 (defun execute-command (function key-sequence seat)
   ;; If there are no interactive arguments,
@@ -87,14 +86,12 @@ See the documentation for cl-interactive:define-command for more details.
      (handler-case
          (unwind-protect
               (%gather-and-run-cmd function key-sequence seat)
-           (hrt:run-in-main-thread
-            (lambda ()
-              (setf *collecting-args-p* nil))))
+           (hrt:with-main-thread ()
+             (setf *collecting-args-p* nil)))
        (cl-interactive:cancel-interactive-command (c)
-         (hrt:run-in-main-thread
-          (lambda ()
-            (toast-message *compositor-state* "Command canceled."
-                           :theme *message-error-theme*))))))))
+         (hrt:with-main-thread ()
+           (toast-message *compositor-state* "Command canceled."
+                          :theme *message-error-theme*)))))))
 
 (defcommand colon (sequence
                    seat
