@@ -104,6 +104,17 @@
                       :require-match t)))
     (find group-name groups :key #'mahogany-group-name :test #'string=)))
 
+(defun read-group-windows (com im arg prompt)
+  (declare (ignore com arg))
+  (let* ((group (state-current-group *compositor-state*))
+         (views (remove-if (lambda (x) (not (hrt:view-mapped-p x)))
+                           (mahogany-group-views group)))
+         (idx-list (cl-interactive:input-method-read-index
+               im
+               (mapcar #'hrt::view-title views)
+               prompt :select-multiple t)))
+    (mapcar (lambda (x) (elt views x)) idx-list)))
+
 (defcommand grouplist
     ((group (:function interactively-read-group :data "Group?")))
   (:method (group)
@@ -161,6 +172,15 @@
   (:documentation "Move the currently focused view to the specified group")
   (:method (destination)
     (%move-current-surface destination)))
+
+(defcommand gmove-select
+    ((views (:function read-group-windows :data "To Move"))
+     (group (:function interactively-read-group :data "Destination")))
+  (:documentation "Move the selected windows to the specified group")
+  (:method (views destination)
+    (let ((cur-group (state-current-group *compositor-state*)))
+      (dolist (v views)
+        (group-move-view cur-group destination v)))))
 
 (defcommand gmove-and-follow
     ((group (:function interactively-read-group :data "Group?")))
