@@ -208,10 +208,15 @@
     (define-kmap
       (kbd "a") #'add-output))
 
-(defvar *session-map*
+(defvar *session-root-map*
   (define-kmap
-    (kbd "q") #'shutdown-gracefully
-    (kbd "k") #'handle-server-stop))
+    (kbd "q") (define-kmap
+                (kbd "q") #'shutdown-gracefully
+                (kbd "k") #'handle-server-stop)))
+
+(define-kmap-mode session-cmd-mode
+  :documentation "keybindings for quitting mahogany"
+  :prefix-binding *session-root-map*)
 
 (defvar *group-map*
   (define-kmap
@@ -231,7 +236,6 @@
     (kbd ";") #'colon
     (kbd "o") #'next-frame
     (kbd "O") #'prev-frame
-    (kbd "q") *session-map*
     (kbd "k") #'close-current-view
     (kbd "c") #'open-terminal
     (kbd "s") #'split-frame-v
@@ -261,3 +265,4 @@ send the prefix key to the focused client."
 
 (base-mode t)
 (prefix-passthrough-mode t)
+(session-cmd-mode t)
