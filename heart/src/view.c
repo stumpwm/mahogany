@@ -108,3 +108,7 @@ uint32_t hrt_view_fullscreen(struct hrt_view *view, bool fullscreen) {
 bool hrt_view_fullscreened(struct hrt_view *view) {
     return view->xdg_toplevel->current.fullscreen;
 }
+
+char *hrt_view_title(struct hrt_view *view) {
+    return view->xdg_toplevel->title;
+}

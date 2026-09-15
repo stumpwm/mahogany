@@ -283,6 +283,12 @@ well behaved ones should."
   "Send a configure event to the view"
   (view (:pointer (:struct hrt-view))))
 
+#-HRT-DEBUG
+(declaim (inline hrt-view-title))
+(cffi:defcfun ("hrt_view_title" hrt-view-title) :string
+  "Return the view's title."
+  (view (:pointer (:struct hrt-view))))
+
 ;; next section imported from file heart/include/hrt/hrt_output.h
 
 (cffi:defcstruct hrt-scene-output)
