@@ -138,6 +138,7 @@
            #:timer-handle
            #:timer-handle-data
            #:run-in-main-thread
+           #:with-main-thread
            ;; Toast messages:
            #:toast-message
            #:toast-message-gravity
