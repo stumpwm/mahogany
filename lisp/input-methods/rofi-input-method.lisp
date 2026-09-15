@@ -37,6 +37,19 @@
                 (go start))
                (t (return-from input-method-read res)))))))
 
+(defmethod cl-interactive/input-method::input-method-read-index
+    ((im rofi-input-method) sequence prompt &key select-multiple)
+  (let ((idx-str (run-rofi (list* "-dmenu" "-i" "-p" prompt
+                                  (when select-multiple "-multi-select")
+                                  (list "-format" "i"))
+                           sequence)))
+    (let ((idx 0))
+      (loop :while (< idx (length idx-str))
+            :collect (multiple-value-bind (num new-idx)
+                         (parse-integer idx-str :junk-allowed t :start idx)
+                       (setf idx new-idx)
+                       num)))))
+
 (defun run-rofi (arguments input)
   "Run rofi syncronously."
   (multiple-value-bind (output error status)
