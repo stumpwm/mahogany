@@ -114,4 +114,9 @@ void hrt_view_request_close(struct hrt_view *view);
  **/
 void hrt_view_send_configure(struct hrt_view *view);
 
+/**
+ * Return the view's title.
+ **/
+char *hrt_view_title(struct hrt_view *view);
+
 #endif

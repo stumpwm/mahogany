@@ -50,6 +50,7 @@
            #:request-fullscreen
            #:view-destroyed
            #:view-mapped-p
+           #:view-title
            ;; border box
            #:border-box-set-style
            #:border-box-style-create
