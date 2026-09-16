@@ -9,11 +9,8 @@ be executed once, when mahogany starts up and loads the config file.")
 rc files exist), the error if it didn't, and the config file that was
 loaded. When CATCH-ERRORS is nil, errors are left to be handled
 further up. "
-  (let* ((xdg-config
-          (probe-file (merge-pathnames #p"mahogany/init.lisp" (uiop:xdg-config-home))))
-         (fallback-config
-          (probe-file (merge-pathnames #p".config/mahogany/init.lisp" (user-homedir-pathname))))
-         (config-file (or xdg-config fallback-config)))
+  (let* ((config-location (uiop:xdg-config-home "mahogany" "init.lisp"))
+         (config-file (probe-file config-location)))
     (if config-file
         (progn
           (log-string :info "Found config file at ~a" config-file)
