@@ -77,10 +77,11 @@ further up. "
     (hrt:keyboard-interactivity-updated handle-layer-shell-keyboard-interactivity)
     (hrt:layer-changed handle-layer-shell-layer-changed)))
 
-(defun run-server (args)
+(defun run-server (args
+                   &aux (log-level (intern (gethash 'loglevel args) 'keyword)))
   (hrt:load-foreign-libraries)
   (init-frame-border-styles)
-  (log-init :level (intern (gethash 'loglevel args) 'keyword))
+  (log-init :level log-level)
   (when (gethash 'enable-debugger args)
     (log-string :info "Running with debugger enabled.")
     (enable-debugger))
@@ -105,7 +106,7 @@ further up. "
                        seat-callbacks
                        view-callbacks
                        layer-shell-callbacks
-                       :debug-level 3)
+                       :debug-level log-level)
     (log-string :debug "Initialized mahogany state")
     (if (gethash 'no-init-file args)
         (log-string :info "Init file loading skipped")

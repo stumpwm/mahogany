@@ -134,14 +134,23 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   #-hrt-debug
   *hrt-server*)
 
+(defun %translate-hrt-log-lvl (level)
+  (declare (type mahogany/log:log-level-specifier level))
+  (ecase level
+    (:trace 3)
+    ((:debug :info) 2)
+    ((:warn :error :fatal) 1)
+    (:ignore 0)))
+
 (defun server-init (server output-callbacks seat-callbacks view-callbacks
                     layer-shell-callbacks
                     debug-level)
+  (declare (type mahogany/log:log-level-specifier debug-level))
   (let ((initialized (hrt-server-init
                       server
                       output-callbacks seat-callbacks view-callbacks
                       layer-shell-callbacks
-                      debug-level)))
+                      (%translate-hrt-log-lvl debug-level))))
     (when initialized
       (setf *hrt-server* server)
       (setf *workqueue-semaphore*
