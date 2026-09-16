@@ -198,19 +198,29 @@ should be configured and laid out.")
            (return-from %score-layout-configuration nil)))))
     found))
 
+(defstruct (%output-score-pair
+            (:constructor make-%output-score-pair (outputs config)))
+  (outputs nil :type list)
+  (config nil :type output-layout-config))
+
 (defun %filter-layout-matches-length (matches)
-  (let ((max-length (apply #'max (mapcar (lambda (x)
-                                           (length (cdr x)))
-                                         matches))))
-    (loop :for v :in matches
-          :nconcing (when (= (length (cdr v)) max-length)
-                      (list v)))))
+  (let ((max-length (apply #'max
+                           (mapcar (lambda (x)
+                                     (length
+                                      (%output-score-pair-outputs x)))
+                                   matches))))
+    (remove-if-not (lambda (x)
+                     (= (length (%output-score-pair-outputs x))
+                        max-length))
+                   matches)))
 
 (defun %filter-layout-matches-priority (matches)
   (let ((priority-vals (list))
         (priority most-negative-fixnum))
     (dolist (match matches)
-      (let ((cur-priority (output-layout-config-priority (car match))))
+      (declare (type %output-score-pair match))
+      (let ((cur-priority (output-layout-config-priority
+                           (%output-score-pair-config match))))
         (cond
           ((= cur-priority priority)
            (push match priority-vals))
@@ -229,48 +239,54 @@ should be configured and laid out.")
             list)
       m0)))
 
+(declaim (ftype (function (t) (or null %output-score-pair))
+                find-output-layout-config))
 (defun find-output-layout-config (outputs)
   "Find the output config for the give outputs, ignoring their default
 configurations"
   (let* ((matching
-           (loop :for v :being :the :hash-value :of *output-layout-configurations*
-                 :nconcing (let ((scores (%score-layout-configuration outputs v)))
+           (loop :for config :being
+                   :the :hash-value :of *output-layout-configurations*
+                 :nconcing (let ((scores (%score-layout-configuration
+                                          outputs config)))
                              (if scores
-                                 (list (cons v scores))
+                                 (list (make-%output-score-pair scores config))
                                  nil))))
          (num-matching (length matching)))
     (when (= num-matching 0)
       (return-from find-output-layout-config nil))
     (when (= num-matching 1)
-      (return-from find-output-layout-config (cdr (car matching))))
+      (return-from find-output-layout-config (car matching)))
     ;; filter out the matches that match fewer outputs:
     (let ((remaining (%filter-layout-matches-length matching)))
       (when (= (length remaining) 1)
-        (return-from find-output-layout-config (cdr (car remaining))))
+        (return-from find-output-layout-config (car remaining)))
       ;; Now look at the configuration's priority:
       (let ((priority-vals (%filter-layout-matches-priority remaining)))
         (when (= (length priority-vals) 1)
-          (return-from find-output-layout-config (cdr (car priority-vals))))
+          (return-from find-output-layout-config (car priority-vals)))
         ;; Finally, take the sum of the scores and use that:
         (let* ((scores (mapcar (lambda (x)
                                  (cons
                                   (reduce (lambda (total y)
                                             (+ total (%config-match-score y)))
-                                          (cdr x)
+                                          (%output-score-pair-outputs x)
                                           :initial-value 0)
                                   x))
                                priority-vals))
                (max-score (maximum scores #'< #'car)))
-          (cddr max-score))))))
+          (cdr max-score))))))
 
 (defun find-output-configurations (outputs)
   "Match the given outputs with their final configurations."
-  (let ((layout (find-output-layout-config outputs))
-        (configurations (make-hash-table :test 'equalp)))
+  (let* ((layout (find-output-layout-config outputs))
+         (layout-outputs (if layout (%output-score-pair-outputs layout)))
+         (configurations (make-hash-table :test 'equalp)))
     (dolist (o outputs)
       (let ((base (find-output-config o))
             (from-layout (alexandria:when-let
-                             ((l (find o layout :key '%config-match-output)))
+                             ((l (find o layout-outputs
+                                       :key '%config-match-output)))
                            (output-match-data-config (%config-match-config l)))))
         (cond
           ((and base from-layout)
@@ -286,4 +302,4 @@ configurations"
           (t
            (setf (gethash o configurations)
                  nil)))))
-    configurations))
+    (values configurations (when layout (%output-score-pair-config layout)))))

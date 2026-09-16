@@ -210,6 +210,26 @@ the current group or a layer shell frame"
     (loop for g across groups
           do (group-add-output g output-container))))
 
+(defun %try-backup-configs (full-list)
+  (let ((config-map (make-hash-table :test 'equalp)))
+    (dolist (output full-list)
+      (setf (gethash output config-map) nil))
+    (unless (hrt::output-configure-atomic config-map)
+      (log-string :error "Backup default configuration modeset failed")
+      ;; Since that didn't work, try configuring the
+      ;; outputs individually to see if one of them works.
+      ;; This strategy is just a guess; I'm not sure
+      ;; why the above code would fail.
+      (let ((one-worked nil))
+        (dolist (output full-list)
+          (setf one-worked (or
+                            (hrt:output-configure output nil)
+                            one-worked)))
+        (unless one-worked
+          (error 'mahogany/util:mahogany-panic
+                 :text "Failed to set any configurations")))))
+  (log-string :info "Backup output configuration applied."))
+
 (defun process-output-changes (timer)
   (declare (type hrt:timer-handle timer))
   (hrt:timer-handle-destroy timer)
@@ -221,9 +241,15 @@ the current group or a layer shell frame"
      :trace
      "After configuration:~%~2TAdded: ~S~%~2T~%~2TAll: ~S"
      added full-list)
-    (let ((configuration (find-output-configurations full-list)))
-      ;; FIXME: ensure that the configuration actually worked:
-      (hrt::output-configure-atomic configuration))
+    (multiple-value-bind (config-map layout)
+        (find-output-configurations full-list)
+      (log-string :info "Applying output configuration ~S"
+                  (when layout
+                    (mahogany/output-config:output-layout-config-name layout)))
+      (unless (hrt::output-configure-atomic config-map)
+        (log-string :error "Failed to apply output configuration ~A"
+                    layout)
+        (%try-backup-configs full-list)))
     (dolist (new-output added)
       (%add-output *compositor-state* new-output))
     (unless (state-%current-frame *compositor-state*)
