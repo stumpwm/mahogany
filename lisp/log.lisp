@@ -3,6 +3,7 @@
 (defpackage #:mahogany/log
   (:use :cl #:cl-ansi-text)
   (:export #:log-level
+           #:log-level-specifier
            #:log-colored-p
            #:log-string
            #:log-stream
@@ -13,10 +14,9 @@
            #:*log-output-file*)
   (:local-nicknames (#:alex #:alexandria)))
 
-
 (in-package #:mahogany/log)
 
-(deftype debug-specifier ()
+(deftype log-level-specifier ()
   '(member :trace :debug :info :warn :error :fatal :ignore))
 
 (defvar *log-output-file* *standard-output*
@@ -37,7 +37,7 @@
 ;; be availabe at compile time:
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun get-log-level-data (level)
-    (declare (type debug-specifier level))
+    (declare (type log-level-specifier level))
     (ecase level
       ;; higher values mean less importance
       (:trace  (values 6 :white))
@@ -93,7 +93,7 @@
 (defun log-stream (log-lvl stream-fn)
   "Call the given function with *log-output-file* as its argument if the
  log level allows for logging"
-  (declare (type debug-specifier log-lvl)
+  (declare (type log-level-specifier log-lvl)
            (type (function (stream) (values &optional)) stream-fn))
   (unless (eql :ignore log-lvl)
     (multiple-value-bind (lvl color) (get-log-level-data log-lvl)
@@ -125,7 +125,7 @@ level is not high enough."
 
 (defun check-valid-log-level (level)
   ;; TODO: make this something with a use-value restart?
-  (check-type level debug-specifier))
+  (check-type level log-level-specifier))
 
 (defun log-level ()
   (values (readable-log-level *log-level*)))
