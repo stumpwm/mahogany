@@ -62,7 +62,7 @@ static void output_added_callback(struct hrt_output *output) {
         .refresh_rate = 0,
         .custom_position = false,
     };
-    hrt_output_init(output, &config);
+    hrt_output_configure(output, &config);
 
     struct example_output *o = calloc(1, sizeof(*o));
     o->output                = output;

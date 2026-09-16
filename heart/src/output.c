@@ -12,6 +12,7 @@
 #include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/backend/headless.h>
+#include <wlr/types/wlr_output_swapchain_manager.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
@@ -56,11 +57,10 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     }
 
     hrt_scene_output_destroy(output->scene);
+    wl_list_remove(&output->frame.link);
+    wl_list_remove(&output->request_state.link);
 
-    if (output != server->fallback_output) {
-        wl_list_remove(&output->frame.link);
-        wl_list_remove(&output->request_state.link);
-    } else {
+    if (output == server->fallback_output) {
         server->fallback_output = nullptr;
     }
     wl_list_remove(&output->destroy.link);
@@ -74,12 +74,18 @@ struct hrt_output *hrt_output_create(struct hrt_server *server,
     struct hrt_output *output = calloc(1, sizeof(struct hrt_output));
     output->wlr_output        = wlr_output;
     output->server            = server;
-    output->scene             = hrt_scene_output_create(server->scene_root);
+    output->wlr_scene = wlr_scene_output_create(server->scene, wlr_output);
+    output->scene     = hrt_scene_output_create(server->scene_root);
     wl_list_init(&output->layer_surfaces);
 
     output->destroy.notify = handle_output_destroy;
     wl_signal_add(&wlr_output->events.destroy, &output->destroy);
     wlr_output->data = output;
+
+    output->frame.notify = handle_frame_notify;
+    wl_signal_add(&wlr_output->events.frame, &output->frame);
+    output->request_state.notify = handle_request_state;
+    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
 
     return output;
 }
@@ -203,43 +209,43 @@ static void set_mode(struct wlr_output *output,
     wlr_output_state_set_mode(pending, best);
 }
 
-static struct wlr_output_layout_output *
-output_configure(struct hrt_server *server, struct wlr_output *wlr_output,
-                 struct hrt_output_config *config) {
-    struct wlr_output_state state;
-    wlr_output_state_init(&state);
-    wlr_output_state_set_enabled(&state, true);
+static void output_build_state(struct hrt_server *server,
+                               struct wlr_output *wlr_output,
+                               struct hrt_output_config *config,
+                               struct wlr_output_state *state) {
+    wlr_output_state_init(state);
+    wlr_output_state_set_enabled(state, true);
 
     if (config && (config->width > 0 && config->height > 0)) {
-        set_mode(wlr_output, &state, config->width, config->height,
+        set_mode(wlr_output, state, config->width, config->height,
                  config->refresh_rate, config->custom_mode);
     } else if (!wl_list_empty(&wlr_output->modes)) {
         struct wlr_output_mode *mode = wlr_output_preferred_mode(wlr_output);
-        wlr_output_state_set_mode(&state, mode);
+        wlr_output_state_set_mode(state, mode);
     }
 
-    set_transform(&state);
+    set_transform(state);
 
     if (config && config->scale > 0) {
         // The fractional-scale-v1 protocol uses increments of 120ths to send
         // the scale factor to the client. Adjust the scale so that we use the
         // same value as the clients'.
-        wlr_output_state_set_scale(&state, round(config->scale * 120) / 120);
+        wlr_output_state_set_scale(state, round(config->scale * 120) / 120);
     } else {
-        wlr_output_state_set_scale(&state,
-                                   compute_default_scale(wlr_output, &state));
+        wlr_output_state_set_scale(state,
+                                   compute_default_scale(wlr_output, state));
     }
+}
 
-    if (!wlr_output_commit_state(wlr_output, &state)) {
-        // FIXME: Actually do some error handling instead of just logging:
-        wlr_log(WLR_ERROR, "Output state could not be committed");
-        return nullptr;
-    }
-    wlr_output_state_finish(&state);
+static bool finish_configure(struct hrt_server *server,
+                             struct hrt_output *output,
+                             struct hrt_output_config *config) {
 
-    if (!wlr_xcursor_manager_load(server->seat.xcursor_manager, state.scale)) {
+    struct wlr_output *wlr_output = output->wlr_output;
+    if (!wlr_xcursor_manager_load(server->seat.xcursor_manager,
+                                  wlr_output->scale)) {
         wlr_log(WLR_ERROR, "Could not load xcursor theme for scale %f",
-                state.scale);
+                wlr_output->scale);
     }
 
     struct wlr_output_layout_output *l_output;
@@ -250,33 +256,12 @@ output_configure(struct hrt_server *server, struct wlr_output *wlr_output,
         l_output =
             wlr_output_layout_add_auto(server->output_layout, wlr_output);
     }
-    return l_output;
-}
-
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config) {
-    struct hrt_server *server     = output->server;
-    struct wlr_output *wlr_output = output->wlr_output;
-
-    struct wlr_output_layout_output *l_output =
-        output_configure(server, wlr_output, config);
-
     if (!l_output) {
-        wlr_log(WLR_ERROR,
-                "Could not initialize output due to configuration error");
+        wlr_log(WLR_ERROR, "Failed to add output to layout");
         return false;
     }
-    struct wlr_scene_output *scene_output =
-        wlr_scene_output_create(server->scene, wlr_output);
     wlr_scene_output_layout_add_output(server->scene_layout, l_output,
-                                       scene_output);
-    output->wlr_scene = scene_output;
-
-    output->frame.notify = handle_frame_notify;
-    wl_signal_add(&wlr_output->events.frame, &output->frame);
-    output->request_state.notify = handle_request_state;
-    wl_signal_add(&wlr_output->events.request_state, &output->request_state);
-
+                                       output->wlr_scene);
     return true;
 }
 
@@ -285,14 +270,100 @@ bool hrt_output_configure(struct hrt_output *output,
     struct hrt_server *server     = output->server;
     struct wlr_output *wlr_output = output->wlr_output;
 
-    struct wlr_output_layout_output *l_output =
-        output_configure(server, wlr_output, config);
-
-    if (!l_output) {
-        wlr_log(WLR_ERROR,
-                "Could not initialize output due to configuration error");
+    struct wlr_output_state state;
+    output_build_state(server, wlr_output, config, &state);
+    if (!wlr_output_commit_state(wlr_output, &state)) {
+        // FIXME: Actually do some error handling instead of just logging:
+        wlr_log(WLR_ERROR, "Output state could not be committed");
+        wlr_output_state_finish(&state);
         return false;
     }
+    wlr_output_state_finish(&state);
+
+    return finish_configure(server, output, config);
+}
+
+static bool atomic_modeset(struct hrt_output *outputs[],
+                           struct hrt_output_config configs[],
+                           const size_t length) {
+    struct hrt_server *server = outputs[0]->server;
+
+    struct wlr_backend_output_state *states = calloc(length, sizeof(*states));
+    for (size_t i = 0; i < length; ++i) {
+        struct wlr_backend_output_state *state = &states[i];
+        struct hrt_output_config *config       = &configs[i];
+        struct hrt_output *output              = outputs[i];
+        wlr_output_state_init(&state->base);
+        state->output = output->wlr_output;
+        output_build_state(server, output->wlr_output, config, &state->base);
+    }
+
+    struct wlr_output_swapchain_manager swapchain_mgr;
+    wlr_output_swapchain_manager_init(&swapchain_mgr, server->backend);
+
+    bool success = true;
+    bool ok =
+        wlr_output_swapchain_manager_prepare(&swapchain_mgr, states, length);
+    if (!ok) {
+        success = false;
+        wlr_log(WLR_ERROR,
+                "Atomic modeset: failed to prepare swapchain manager");
+        goto out;
+    }
+    wlr_log(WLR_DEBUG, "Atomic modeset: Sucessfully tested configuration");
+
+    for (size_t i = 0; i < length; ++i) {
+        struct wlr_backend_output_state *state     = &states[i];
+        struct hrt_output *output                  = outputs[i];
+        struct wlr_scene_output_state_options opts = {
+            .swapchain = wlr_output_swapchain_manager_get_swapchain(
+                &swapchain_mgr, state->output),
+        };
+        struct wlr_scene_output *scene_output = output->wlr_scene;
+        if (!wlr_scene_output_build_state(scene_output, &state->base, &opts)) {
+            wlr_log(WLR_ERROR,
+                    "Atomic modeset: Building output state for '%s' failed",
+                    state->output->name);
+            goto out;
+        }
+    }
+    ok = wlr_backend_commit(server->backend, states, length);
+    if (!ok) {
+        wlr_log(WLR_ERROR, "Atomic modeset: output commit failed.");
+        success = false;
+        goto out;
+    }
+    wlr_output_swapchain_manager_apply(&swapchain_mgr);
+    wlr_log(WLR_DEBUG, "Atomic modeset: Sucessfully applied configuration");
+
+out:
+    wlr_output_swapchain_manager_finish(&swapchain_mgr);
+    for (size_t idx = 0; idx < length; ++idx) {
+        struct wlr_backend_output_state *backend_state = &states[idx];
+        wlr_output_state_finish(&backend_state->base);
+    }
+    free(states);
+
+    // TODO: May need to do some resetting to get things working after we failed to do the commit:
+    return success;
+}
+
+bool hrt_output_configure_atomic(struct hrt_output *outputs[],
+                                 struct hrt_output_config configs[],
+                                 const size_t length) {
+    if (length < 1) {
+        return false;
+    }
+    if (!atomic_modeset(outputs, configs, length)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < length; ++i) {
+        struct hrt_output *output        = outputs[i];
+        struct hrt_output_config *config = &configs[i];
+        finish_configure(output->server, output, config);
+    }
+
     return true;
 }
 

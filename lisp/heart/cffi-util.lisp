@@ -31,3 +31,10 @@
         (cffi:mem-aref ptr :float 1) (coerce (colors:rgb-green color) 'single-float)
         (cffi:mem-aref ptr :float 2) (coerce (colors:rgb-blue color) 'single-float)
         (cffi:mem-aref ptr :float 3) 1.0))
+
+(declaim (inline clear-object))
+(defun clear-foreign-object (ptr type)
+  (let ((type-size (cffi:foreign-type-size type)))
+    (loop :for i
+          :from 0 :below type-size
+          :do (setf (cffi:mem-ref ptr :unsigned-char i) 0))))

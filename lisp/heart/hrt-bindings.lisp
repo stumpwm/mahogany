@@ -320,21 +320,17 @@ well behaved ones should."
   (output-layout-changed :pointer #| function ptr void () |#))
 
 #-HRT-DEBUG
-(declaim (inline hrt-output-init))
-(cffi:defcfun ("hrt_output_init" hrt-output-init) :bool
-  "Initialize the output with the given config. Without this call,
-the output will not be displayed.
-@param output the output to initalized
-@param config the configuration to use. To pick the default values,
-  pass nullptr."
-  (output (:pointer (:struct hrt-output)))
-  (config (:pointer (:struct hrt-output-config))))
-
-#-HRT-DEBUG
 (declaim (inline hrt-output-configure))
 (cffi:defcfun ("hrt_output_configure" hrt-output-configure) :bool
   (output (:pointer (:struct hrt-output)))
   (config (:pointer (:struct hrt-output-config))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-output-configure-atomic))
+(cffi:defcfun ("hrt_output_configure_atomic" hrt-output-configure-atomic) :bool
+  (outputs (:pointer (:pointer (:struct hrt-output)) #| array |#))
+  (configs (:pointer (:struct hrt-output-config) #| array |#))
+  (length :size))
 
 #-HRT-DEBUG
 (declaim (inline hrt-output-resolution))

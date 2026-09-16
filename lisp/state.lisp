@@ -202,11 +202,10 @@ the current group or a layer shell frame"
                               added)))
     (values all-outputs added)))
 
-(defun %add-output (state mh-output output-config)
+(defun %add-output (state mh-output)
   (let ((outputs (state-outputs state))
         (groups (state-groups state))
         (output-container (tree::make-output-container mh-output)))
-    (hrt:output-init mh-output output-config)
     (vector-push-extend output-container outputs)
     (loop for g across groups
           do (group-add-output g output-container))))
@@ -223,13 +222,10 @@ the current group or a layer shell frame"
      "After configuration:~%~2TAdded: ~S~%~2T~%~2TAll: ~S"
      added full-list)
     (let ((configuration (find-output-configurations full-list)))
-      (maphash (lambda (output output-config)
-                 (if (find output added :test #'hrt:output=)
-                     (%add-output *compositor-state* output
-                                  output-config)
-                     (hrt:output-configure output
-                                           output-config)))
-               configuration))
+      ;; FIXME: ensure that the configuration actually worked:
+      (hrt::output-configure-atomic configuration))
+    (dolist (new-output added)
+      (%add-output *compositor-state* new-output))
     (unless (state-%current-frame *compositor-state*)
       (let ((cur-group (state-current-group *compositor-state*)))
         (group-focus cur-group (server-seat *compositor-state*))
