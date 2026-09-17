@@ -143,8 +143,9 @@
 				  ("output"))))
     (with-output-properties ((output :name "output"))
 	  (let* ((result (mh/output::find-output-layout-config
-                     (list output)))
-            (entry (car result)))
+                      (list output)))
+             (outputs (mh/output::%output-score-pair-outputs result))
+            (entry (car outputs)))
         (is entry)
         (check-match-data
          entry
@@ -161,8 +162,9 @@
 							  :make "HP"
 							  :name "output")
 						     (o2 :make "HP"))
-      (let ((result (mh/output::find-output-layout-config
-	                 (list output o2))))
+      (let* ((found (mh/output::find-output-layout-config
+	                 (list output o2)))
+             (result (mh/output::%output-score-pair-outputs found)))
         (is result)
         (is (= (length result) 2))
         (check-match-data
@@ -189,8 +191,9 @@
 							  :make "HP"
 							  :name "output")
 						     (o2 :make "HP"))
-      (let ((result (mh/output::find-output-layout-config
-	                 (list output o2))))
+      (let* ((found (mh/output::find-output-layout-config
+	                (list output o2)))
+            (result (mh/output::%output-score-pair-outputs found)))
         (is result)
         (is (= (length result) 2))
         (check-match-data
@@ -217,8 +220,9 @@
 							  :make "HP"
 							  :name "output")
 						     (o2 :make "HP"))
-      (let ((result (mh/output::find-output-layout-config
-	                 (make-array 2 :initial-contents (list output o2)))))
+      (let* ((found (mh/output::find-output-layout-config
+	                  (make-array 2 :initial-contents (list output o2))))
+             (result (mh/output::%output-score-pair-outputs found)))
         (is result)
         (is (= (length result) 1))
         (check-match-data

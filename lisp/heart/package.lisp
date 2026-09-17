@@ -84,7 +84,6 @@
            #:output-hrt-output
            #:make-output
            #:destroy-output
-           #:output-init
            #:make-output-config
            #:output-config
            #:output-config=

@@ -94,17 +94,25 @@
   (let ((name (%get-output-full-name hrt-output)))
     (%make-output hrt-output name)))
 
-(defun output-init (output config)
-  (declare (type output output)
-           (type (or null output-config) config))
-  (let ((hrt-output (output-hrt-output output)))
-    (mahogany/log:log-string
-     :info "Initializing output ~S with config ~S"
-     (output-full-name output) config)
-    (if config
-        (with-output-config (hrt-config config)
-          (hrt-output-init hrt-output hrt-config))
-        (hrt-output-init hrt-output (cffi:null-pointer)))))
+(defun output-configure-atomic (config-map)
+  (declare (type hash-table config-map))
+  (let ((length (hash-table-count config-map)))
+    (cffi:with-foreign-object (configs '(:struct hrt-output-config)
+                               length)
+      (cffi:with-foreign-object (outputs :pointer
+                                 length)
+        (let ((idx 0))
+          (maphash
+           (lambda (output config)
+             (let ((config-ptr (cffi:mem-aptr configs '(:struct hrt-output-config) idx)))
+               (if config
+                   (%transfer-output-config config-ptr config)
+                   (clear-foreign-object config-ptr '(:struct hrt-output-config))))
+             (setf (cffi:mem-aref outputs :pointer idx)
+                   (output-hrt-output output))
+             (incf idx))
+           config-map))
+        (hrt-output-configure-atomic outputs configs length)))))
 
 (defun output-configure (output config)
   (declare (type output output)

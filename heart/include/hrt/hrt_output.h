@@ -45,18 +45,12 @@ struct hrt_output_callbacks {
     void (*output_layout_changed)();
 };
 
-/**
- * Initialize the output with the given config. Without this call,
- * the output will not be displayed.
- * @param output the output to initalized
- * @param config the configuration to use. To pick the default values,
- *   pass nullptr.
- **/
-bool hrt_output_init(struct hrt_output *output,
-                     struct hrt_output_config *config);
-
 bool hrt_output_configure(struct hrt_output *output,
                           struct hrt_output_config *config);
+
+bool hrt_output_configure_atomic(struct hrt_output *outputs[],
+                                 struct hrt_output_config configs[],
+                                 const size_t length);
 
 /**
  * Get the effective output resolution of the output that can be used to

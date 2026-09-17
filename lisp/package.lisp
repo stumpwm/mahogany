@@ -1,7 +1,9 @@
 (defpackage #:mahogany/output-config
   (:use #:cl)
+  (:nicknames #:mh/output-config)
   (:export #:find-output-configurations
            #:define-output-config
+           #:output-layout-config-name
            #:define-output-layout))
 
 (defpackage #:mahogany
