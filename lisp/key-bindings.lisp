@@ -216,6 +216,30 @@
        (state-current-group *compositor-state*)
        surface))))
 
+(defun interactively-read-valid-output-layout (com im arg prompt)
+  (declare (ignore com arg))
+  (let* ((outputs (map 'list #'tree:output-container-output
+                       (state-outputs *compositor-state*)))
+         (configs (mh/output-config:find-valid-output-layouts outputs))
+         (idx-list (cl-interactive:input-method-read-index
+                    im
+                    (mapcar #'mh/output-config:output-layout-config-name configs)
+                    prompt)))
+    (elt configs (car idx-list))))
+
+(defcommand output-layout-apply
+    ((config (:function interactively-read-valid-output-layout
+              :data "Configuration?")))
+  (:method (config)
+    (let ((success (state-use-output-layout *compositor-state* config)))
+      (unless success
+        (let ((config-name (mh/output-config:output-layout-config-name config)))
+          (toast-message *compositor-state*
+                         (format nil "Failed to apply configuration ~S"
+                                 config-name)
+                         :theme *message-error-theme*)))
+      success)))
+
 #+:hrt-debug
 (defcommand add-output ()
   (:method ()

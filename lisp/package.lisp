@@ -2,8 +2,11 @@
   (:use #:cl)
   (:nicknames #:mh/output-config)
   (:export #:find-output-configurations
+           #:get-configuration-map
+           #:find-valid-output-layouts
            #:define-output-config
            #:output-layout-config-name
+           #:output-layout-config
            #:define-output-layout))
 
 (defpackage #:mahogany
