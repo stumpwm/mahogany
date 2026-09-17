@@ -39,7 +39,8 @@
 
 (defmethod cl-interactive/input-method::input-method-read-index
     ((im rofi-input-method) sequence prompt &key select-multiple)
-  (let ((idx-str (run-rofi (list* "-dmenu" "-i" "-p" prompt
+  (let ((idx-str (run-rofi (list* "-dmenu" "-i" "-no-custom"
+                                  "-p" prompt
                                   (when select-multiple "-multi-select")
                                   (list "-format" "i"))
                            sequence)))
