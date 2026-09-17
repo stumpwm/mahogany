@@ -240,6 +240,18 @@
                          :theme *message-error-theme*)))
       success)))
 
+(defcommand output-layout-rescan ()
+  (:documentation
+   "Rescan the outputs and apply the most appropriate (default) output layout")
+  (:method ()
+    (let ((success (state-output-layouts-rescan *compositor-state*)))
+      (unless success
+        (toast-message *compositor-state*
+                       (format nil "Failed to apply scanned configuration"
+                               layout-name)
+                       :theme *message-error-theme*))
+      success)))
+
 #+:hrt-debug
 (defcommand add-output ()
   (:method ()
