@@ -457,9 +457,6 @@ After this function is ran, the current frame needs to be set and focused."
   (let ((current-frame (mahogany-group-current-frame group))
         (hidden-views (mahogany-group-hidden-views group))
         (next-view))
-    (unless (typep current-frame 'tree:view-frame)
-      (error 'mahogany/util:invalid-operation
-             :text "Not in a view frame."))
     (when (> (ring-list:ring-list-size hidden-views) 0)
       (alexandria:if-let ((view (tree:frame-surface current-frame)))
         (setf next-view (%swap-next-hidden hidden-views view))
@@ -471,9 +468,6 @@ After this function is ran, the current frame needs to be set and focused."
   (let ((current-frame (mahogany-group-current-frame group))
         (hidden-views (mahogany-group-hidden-views group))
         (next-view))
-    (unless (typep current-frame 'tree:view-frame)
-      (error 'mahogany/util:invalid-operation
-             :text "Not in a view frame."))
     (when (> (ring-list:ring-list-size hidden-views) 0)
       (alexandria:if-let ((view (tree:frame-surface current-frame)))
         (setf next-view (%swap-prev-hidden hidden-views view))
