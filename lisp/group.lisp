@@ -219,14 +219,6 @@ to match."
         (%add-hidden hidden to-hide))
       (%swap-view-into-frame group current-frame view))))
 
-(declaim (inline %find-view-frame))
-(defun %find-view-frame (group view fn)
-  (dolist (tree (tree:tree-children (mahogany-group-tiled-container group)))
-    ;; TODO: use foreach-leaf here:
-    (dolist (f (mahogany/tree:get-populated-frames tree))
-      (when (equalp (tree:frame-surface f) view)
-        (funcall fn f)))))
-
 (defun group-unmap-view (group view)
   (declare (type mahogany-group group))
   (with-accessors ((view-list mahogany-group-views)
