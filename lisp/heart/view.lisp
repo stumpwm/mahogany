@@ -1,7 +1,8 @@
 (in-package #:hrt)
 
 (defstruct (view (:constructor %make-view (hrt-view)))
-  (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t))
+  (hrt-view (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
+  (container nil))
 
 #-hrt-debug
 (declaim (inline init-view))

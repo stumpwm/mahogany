@@ -35,12 +35,16 @@ view, if there was one."
             (other-view (%fullscreen-data-view fullscreen-data)))
         (hrt:scene-fullscreen-swap fullscreen-node view)
         (hrt:scene-fullscreen-configure fullscreen-node output)
-        (setf (%fullscreen-data-view fullscreen-data) view)
+        (setf (%fullscreen-data-view fullscreen-data) view
+              (hrt::view-container other-view) nil
+              (hrt::view-container view) output-node)
         other-view)
+      ;; There is no fullscreen item:
       (let* ((hrt-layer (layer-container-layer (frame-parent output-node)))
              (fullscreen-node (hrt:scene-create-fullscreen-node hrt-layer view output)))
         (log-string :trace "Created new fullscreen node for output")
-        (setf (output-node-fullscreen output-node) (%make-fullscreen-data view fullscreen-node))
+        (setf (output-node-fullscreen output-node) (%make-fullscreen-data view fullscreen-node)
+              (hrt::view-container view) output-node)
         nil))))
 
 (defun %find-first-child (frame)
@@ -68,7 +72,8 @@ view, if there was one."
     (let ((node (%fullscreen-data-node data))
           (view (%fullscreen-data-view data)))
       (hrt:hrt-scene-fullscreen-node-destroy node)
-      (setf (output-node-fullscreen output-node) nil)
+      (setf (output-node-fullscreen output-node) nil
+            (hrt::view-container view) nil)
       view)))
 
 (defmethod mark-frame-focused :after ((frame output-node) seat)
@@ -135,6 +140,7 @@ view, if there was one."
   (print-unreadable-object (object stream :type t)
     (with-slots (children output fullscreen)
         object
-      (format stream
-              "~:_:output ~S ~:_:fullscreen ~S ~:_:children ~S"
-              output fullscreen children))))
+      (let ((*print-circle* t))
+        (format stream
+                "~:_:output ~S ~:_:fullscreen ~S ~:_:children ~S"
+                output fullscreen children)))))
