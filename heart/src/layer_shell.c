@@ -322,6 +322,7 @@ create_popup(struct wlr_xdg_popup *wlr_popup,
     popup->wlr_popup = wlr_popup;
     popup->scene     = wlr_scene_xdg_surface_create(parent, wlr_popup->base);
     if (!popup->scene) {
+        wlr_log(WLR_ERROR, "Failed to allocate XDG surface for popup");
         free(popup);
         return nullptr;
     }
