@@ -234,7 +234,7 @@ to match."
                    (hidden mahogany-group-hidden-views))
       group
     (log-string :trace "unmapping view ~S" view)
-    (alexandria:if-let ((f (tree:find-view-frame (mahogany-group-tiled-container group) view)))
+    (alexandria:if-let ((f (hrt::view-container view)))
       (hrt:with-view-transaction ()
         (etypecase f
           (tree:output-node
@@ -270,7 +270,7 @@ to match."
       ;; if the view is hidden, it won't be in a frame:
       (or
        (ring-list:remove-item hidden view)
-       (alexandria:when-let ((f (tree:find-view-frame tiled-container view)))
+       (alexandria:when-let ((f (hrt::view-container view)))
          (setf (tree:frame-surface f) nil))))
     (setf view-list (remove view view-list :test #'equalp))))
 
@@ -338,9 +338,7 @@ currently focused frame"
            (type hrt:view view)
            (type mahogany-group group))
   (hrt:view-set-fullscreen view t)
-  (alexandria:if-let ((frame (tree:find-view-frame
-			      (mahogany-group-tiled-container group)
-			      view)))
+  (alexandria:if-let ((frame (hrt::view-container view)))
     ;; The frame is visible, immediately fullscreen it:
     (let ((output-node (if output
 			   (gethash (hrt:output-full-name output)
@@ -392,9 +390,7 @@ After this function is ran, the current frame needs to be set and focused."
   (declare (type mahogany-group group)
            (type hrt:view view))
   (hrt:view-set-fullscreen view nil)
-  (alexandria:if-let ((frame (tree:find-view-frame
-                              (mahogany-group-tiled-container group)
-                              view)))
+  (alexandria:if-let ((frame (hrt::view-container view)))
     ;; The frame is visible, we need to do some cleanup:
     (cond
       ((typep frame 'tree:output-node)
@@ -478,10 +474,8 @@ After this function is ran, the current frame needs to be set and focused."
   (declare (type mahogany-group group)
            (type hrt:view view))
   ;; attempt to stop abuse by only listening when the
-  ;; frame requesting this info is focused:
-  (alexandria:if-let ((frame (tree:find-view-frame
-                              (mahogany-group-current-frame group)
-                              view)))
+  ;; frame requesting this info is visible:
+  (alexandria:if-let ((frame (hrt::view-container view)))
     (progn
       (log-string :trace "maximizing view ~S" view)
       (%maximize-frame group frame))

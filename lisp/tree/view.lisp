@@ -46,6 +46,14 @@
     (when view
       (hrt:hrt-border-box-set-enabled border-box nil))))
 
+(defmethod (setf frame-surface) :around (new-view (frame view-frame))
+  (let ((old-view (frame-surface frame)))
+    (call-next-method)
+    (when old-view
+      (setf (hrt::view-container old-view) nil))
+    (when new-view
+      (setf (hrt::view-container new-view) frame))))
+
 (defun cleanup-frame (frame)
   (log-string :trace "Cleaning up frame ~S" frame)
   (hrt:hrt-border-box-destroy (slot-value frame 'border-box))
@@ -96,8 +104,9 @@ and position as the frame"
   (print-unreadable-object (object stream :type t)
     (with-slots (width height x y view)
         object
-      (format stream ":w ~A :h ~A :x ~A :y ~A view: ~S"
-              (round width) (round height) (round x) (round y) view))))
+      (let ((*print-circle* t))
+        (format stream ":w ~A :h ~A :x ~A :y ~A view: ~S"
+                (round width) (round height) (round x) (round y) view)))))
 
 (defmethod (setf frame-x) :before (new-x (frame view-frame))
   (let ((round-x (round new-x))
