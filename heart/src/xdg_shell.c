@@ -200,6 +200,12 @@ static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
     popup->view      = view;
     popup->xdg_popup = xdg_popup;
     popup->scene     = wlr_scene_xdg_surface_create(parent, xdg_popup->base);
+
+    if (!popup->scene) {
+        wlr_log(WLR_ERROR, "Failed to allocate XDG surface for popup");
+        free(popup);
+        return nullptr;
+    }
     xdg_popup->base->data = popup->scene;
 
     popup->commit.notify = handle_xdg_popup_commit;
