@@ -165,6 +165,9 @@ should be configured and laid out.")
   (score 0 :type fixnum))
 
 (defun %score-layout-configuration (outputs config)
+  "Return a list of %config-match objects that represents how well the
+outputs match with the given configuration. If the config does not match,
+return nil."
   (declare (type output-layout-config config)
            ;; Make this code work with both arrays and lists;
            ;; it's an array right now, but that may change:
@@ -197,6 +200,44 @@ should be configured and laid out.")
           (t
            (return-from %score-layout-configuration nil)))))
     found))
+
+(defun %populate-config-map (outputs output-scores)
+  "Create a map of outputs to their combined configuration
+using a sequence of %config-match objects."
+  (declare (type list outputs)
+           (type sequence output-scores))
+  (let ((configurations (make-hash-table :test 'equalp)))
+    (dolist (o outputs)
+      (let ((base (find-output-config o))
+            (from-layout (alexandria:when-let
+                             ((l (find o output-scores
+                                       :key '%config-match-output)))
+                           (output-match-data-config (%config-match-config l)))))
+        (cond
+          ((and base from-layout)
+           (setf (gethash o configurations)
+                 (hrt:output-config-merge
+                  (output-match-data-config base) from-layout)))
+          (base
+           (setf (gethash o configurations)
+                 (output-match-data-config base)))
+          (from-layout
+           (setf (gethash o configurations)
+                 from-layout))
+          (t
+           (setf (gethash o configurations)
+                 nil)))))
+    configurations))
+
+(declaim (ftype (function (output-layout-config sequence)
+                          (or null hash-table))
+                get-configuration-map))
+(defun get-configuration-map (config outputs)
+  "Take the given output layout config, apply the default configurations,
+and bundle them into a table mapping outputs to their final config."
+  (let ((output-scores (%score-layout-configuration outputs config)))
+    (if output-scores
+        (%populate-config-map outputs output-scores))))
 
 (defstruct (%output-score-pair
             (:constructor make-%output-score-pair (outputs config)))
@@ -239,19 +280,25 @@ should be configured and laid out.")
             list)
       m0)))
 
+(defun %find-valid-output-layouts (outputs)
+  (loop :for config :being
+          :the :hash-value :of *output-layout-configurations*
+        :nconcing (let ((scores (%score-layout-configuration
+                                 outputs config)))
+                    (if scores
+                        (list (make-%output-score-pair scores config))
+                        nil))))
+
+(defun find-valid-output-layouts (outputs)
+  (let ((valid (%find-valid-output-layouts outputs)))
+    (map 'list #'%output-score-pair-config valid)))
+
 (declaim (ftype (function (t) (or null %output-score-pair))
                 find-output-layout-config))
 (defun find-output-layout-config (outputs)
   "Find the output config for the give outputs, ignoring their default
 configurations"
-  (let* ((matching
-           (loop :for config :being
-                   :the :hash-value :of *output-layout-configurations*
-                 :nconcing (let ((scores (%score-layout-configuration
-                                          outputs config)))
-                             (if scores
-                                 (list (make-%output-score-pair scores config))
-                                 nil))))
+  (let* ((matching (%find-valid-output-layouts outputs))
          (num-matching (length matching)))
     (when (= num-matching 0)
       (return-from find-output-layout-config nil))
@@ -281,25 +328,5 @@ configurations"
   "Match the given outputs with their final configurations."
   (let* ((layout (find-output-layout-config outputs))
          (layout-outputs (if layout (%output-score-pair-outputs layout)))
-         (configurations (make-hash-table :test 'equalp)))
-    (dolist (o outputs)
-      (let ((base (find-output-config o))
-            (from-layout (alexandria:when-let
-                             ((l (find o layout-outputs
-                                       :key '%config-match-output)))
-                           (output-match-data-config (%config-match-config l)))))
-        (cond
-          ((and base from-layout)
-           (setf (gethash o configurations)
-                 (hrt:output-config-merge
-                  (output-match-data-config base) from-layout)))
-          (base
-           (setf (gethash o configurations)
-                 (output-match-data-config base)))
-          (from-layout
-           (setf (gethash o configurations)
-                 from-layout))
-          (t
-           (setf (gethash o configurations)
-                 nil)))))
+         (configurations (%populate-config-map outputs layout-outputs)))
     (values configurations (when layout (%output-score-pair-config layout)))))

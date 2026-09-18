@@ -94,7 +94,7 @@
     :other (:name :make :model))
 
 (defmacro with-mock-layout (&body body)
-  `(let ((mh/output::*output-layout-configurations* (make-hash-table)))
+  `(let ((mh/output::*output-layout-configurations* (make-hash-table :test 'equalp)))
     ,@body))
 
 (defmacro define-layout-test (name args &body body)
@@ -282,3 +282,30 @@
         (is (hrt::output-config=
              (hrt:make-output-config :scale 3)
              output-2-result))))))
+
+(define-layout-test get-configuration-map--no-match ()
+  (let ((layout (mh/output:define-output-layout "present"
+                  ("first"
+                   (:scale 2)))))
+    (with-output-properties ((output-1 :name "bad"))
+      (let ((map (mh/output-config:get-configuration-map
+                  layout
+                  (list output-1))))
+        (is (null map))))))
+
+(define-layout-test get-configuration-map--matches ()
+  (let ((layout (mh/output:define-output-layout "present"
+                  ("good"
+                   (:scale 2)))))
+    (with-output-properties ((output-1 :name "good"))
+      (let ((expected (mh/output-config::output-match-data-config
+                       (first
+                        (mh/output-config::output-layout-config-outputs layout))))
+            (map (mh/output-config:get-configuration-map
+                  layout
+                  (list output-1))))
+        (is map)
+        (multiple-value-bind (config exists)
+            (gethash output-1 map)
+          (is exists)
+          (is (equalp config expected)))))))

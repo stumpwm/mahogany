@@ -1,6 +1,12 @@
 * Output Configuration
 
-** Configuring individual Outputs
+In Mahogany, display screens are called outputs. Where an output is
+located as well as its scale, resolution and refresh rate are
+configured through the use of /output configurations/ and /output
+layouts/. Output configurations apply to individual outputs, while
+output layouts can apply to one or more outputs at the same time.
+
+** Configuring Individual Outputs
 
 To configure the position, scale, resolution and refresh rate of an
 individual output, you can use the =define-output-config= macro:
@@ -125,7 +131,7 @@ if the following was also present in the configuration above, the
 
 *** Resolving Conflicts
 
-If multiple layouts could be applied with the current set of connected
+When multiple layouts could be applied with the current set of connected
 outputs, the following order is used to determine which one to use:
 1. The number of outputs matched; layouts with a higher number of
    outputs will be preferred over ones with less.
@@ -133,3 +139,16 @@ outputs, the following order is used to determine which one to use:
 3. The total specificity of the configuration of the individual output
    matchers as defined in the
    [[*Configuration Priority][configuration priority section]].
+
+*** Switching between configurations
+
+To switch between different output layout configurations, there are
+several commands available:
+
++ =output-layout-rescan= :: This looks up the most appropriate
+  configuration for the current set of outputs and applies it. Useful
+  if you updated a layout in your configuration file or want to set
+  the configuration to the best matching configuration.
++ =output-layout-apply= :: Allows you to select the output layout to
+  use. The selection list shown only contains the currently valid
+  configurations.

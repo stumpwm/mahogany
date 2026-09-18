@@ -226,9 +226,39 @@ the current group or a layer shell frame"
                             (hrt:output-configure output nil)
                             one-worked)))
         (unless one-worked
+          ;; FIXME: We should probably only panic if this
+          ;; is the initial modeset.
           (error 'mahogany/util:mahogany-panic
                  :text "Failed to set any configurations")))))
   (log-string :info "Backup output configuration applied."))
+
+(defun state-use-output-layout (state output-layout)
+  (declare (type mahogany-state state)
+           (type mh/output-config:output-layout-config output-layout))
+  (let ((config-map
+          (mh/output-config:get-configuration-map
+           output-layout
+           (map 'list #'tree:output-container-output (state-outputs state)))))
+    (if config-map
+        (hrt::output-configure-atomic config-map)
+        (let ((config-name (mh/output-config:output-layout-config-name output-layout)))
+          (error 'mahogany/util:invalid-operation
+                 :text (format nil
+                               "Output layout ~S is not applicable to the current set of connected outputs"
+                               config-name))))))
+
+(defun state-output-layouts-rescan (state)
+  (declare (type mahogany-state state))
+  (let ((outputs (map 'list #'tree:output-container-output (state-outputs state))))
+    (multiple-value-bind (config-map layout)
+        (find-output-configurations outputs)
+      ;; Because we presumably already have a valid mode,
+      ;; this is not a fatal error:
+      (let ((success (hrt::output-configure-atomic config-map)))
+        (unless success
+          (log-string :error "Failed to apply output configuration ~A"
+                      layout))
+        success))))
 
 (defun process-output-changes (timer)
   (declare (type hrt:timer-handle timer))
