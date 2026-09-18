@@ -230,6 +230,9 @@
 (defcommand output-layout-apply
     ((config (:function interactively-read-valid-output-layout
               :data "Configuration?")))
+  (:documentation
+   "Select an output layout to use from a list of the currently
+valid output layouts")
   (:method (config)
     (let ((success (state-use-output-layout *compositor-state* config)))
       (unless success
