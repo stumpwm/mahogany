@@ -20,6 +20,8 @@
                 #:find-output-configurations
                 #:define-output-config
                 #:define-output-layout)
+  (:import-from #:mahogany/util
+                #:silence-notes)
   (:import-from #:cl-interactive/input-method
                 #:input-method
                 #:prepare-completions-for-input-method

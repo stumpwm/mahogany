@@ -1,12 +1,5 @@
 (in-package #:mahogany)
 
-(defmacro silence-notes (&body body)
-  `(locally
-       (declare
-        #+sbcl
-        (sb-ext:muffle-conditions sb-ext:compiler-note))
-     ,@body))
-
 (defmacro %with-found-view (state (view-var view-ptr) &body body)
   ;; There might be a way to prevent SBCL from needing to box
   ;; the 64 bit pointers in order to hash them, but it's not obvious.

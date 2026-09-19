@@ -9,6 +9,7 @@
            #:disable-fpu-exceptions
            #:enable-debugger
            #:find-free-number
+           #:silence-notes
            #:rest-seq))
 
 (in-package #:mahogany/util)
@@ -39,6 +40,13 @@ When this error is signaled, the only appropriate thing to do is exit."))
   (sb-ext:enable-debugger)
   #+clasp
   (ext:enable-debugger))
+
+(defmacro silence-notes (&body body)
+  `(locally
+       (declare
+        #+sbcl
+        (sb-ext:muffle-conditions sb-ext:compiler-note))
+     ,@body))
 
 #+sbcl
 (declaim (sb-ext:maybe-inline rest-seq))
