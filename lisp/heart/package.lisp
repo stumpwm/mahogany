@@ -27,6 +27,8 @@
   (:local-nicknames (#:mh/interface #:mahogany/wm-interface)
                     (#:colors #:cl-colors2))
   (:nicknames #:hrt)
+  (:import-from #:mahogany/util
+                #:silence-notes)
   (:export #:define-hrt-callback
            #:hrt-output-callbacks
            #:hrt-seat-callbacks
