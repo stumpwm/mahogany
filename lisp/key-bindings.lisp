@@ -294,8 +294,7 @@ valid output layouts")
     (let ((success (state-output-layouts-rescan *compositor-state*)))
       (unless success
         (toast-message *compositor-state*
-                       (format nil "Failed to apply scanned configuration"
-                               layout-name)
+                       (format nil "Failed to apply scanned configuration")
                        :theme *message-error-theme*))
       success)))
 
