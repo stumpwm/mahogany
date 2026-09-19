@@ -8,6 +8,7 @@
            #:defglobal
            #:disable-fpu-exceptions
            #:enable-debugger
+           #:find-free-number
            #:rest-seq))
 
 (in-package #:mahogany/util)
@@ -58,3 +59,26 @@ When this error is signaled, the only appropriate thing to do is exit."))
                         :element-type (array-element-type seq)
                         :displaced-index-offset 1))
     (list (cdr seq))))
+
+(defun find-free-number (l &optional (min 0) dir)
+  (declare (type integer min))
+  "Return a number that is not in the list l. If dir is :negative then
+look for a free number in the negative direction. anything else means
+positive direction."
+  (let* ((dirfn (if (eq dir :negative) '> '<))
+         ;; sort it and crop numbers below/above min depending on dir
+         (nums (sort (remove-if (lambda (n)
+                                  (funcall dirfn n min))
+                                l) dirfn))
+         (max (car (last nums)))
+         (inc (if (eq dir :negative) -1 1))
+         (new-num (loop for n = min then (+ n inc)
+                        for i in nums
+                        when (/= n i)
+                        do (return n))))
+    (the integer (if new-num
+                     new-num
+                     ;; there was no space between the numbers, so use the max+inc
+                     (if max
+                         (+ inc max)
+                         min)))))
