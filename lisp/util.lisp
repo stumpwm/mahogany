@@ -51,17 +51,19 @@ When this error is signaled, the only appropriate thing to do is exit."))
 #+sbcl
 (declaim (sb-ext:maybe-inline rest-seq))
 (defun rest-seq (seq)
-  (declare (type sequence seq)
+  (declare (type (or list array) seq)
            (optimize (speed 3)))
   ;; SBCL complains about missed optimizations,
   ;; so break vector and simple-array types
   ;; into different cases, even though the code
   ;; is the same:
   (etypecase seq
-    (simple-array (make-array (- (length seq) 1)
-                              :displaced-to seq
-                              :element-type (array-element-type seq)
-                              :displaced-index-offset 1))
+    (simple-array
+     (let ((new-len (- (length seq) 1)))
+       (make-array new-len
+                   :displaced-to seq
+                   :element-type (array-element-type seq)
+                   :displaced-index-offset 1)))
     (vector (make-array (- (length seq) 1)
                         :displaced-to seq
                         :element-type (array-element-type seq)
