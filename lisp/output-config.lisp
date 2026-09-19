@@ -16,6 +16,7 @@
 
 (defun %output-config-from-clauses (clauses)
   (let ((found (make-hash-table))
+        (enabled t)
         scale refresh-rate custom-mode dimensions position)
     (dolist (c clauses)
       (when (not (listp c))
@@ -33,6 +34,8 @@
                         ,@body)))))
       (with-clause :scale (s)
         (setf scale s))
+      (with-clause :enabled (e)
+        (setf enabled e))
       (with-clause :position (x y)
         (setf position (cons x y)))
       (with-clause :mode (width height &key refresh custom)
@@ -45,7 +48,8 @@
                             :refresh-rate refresh-rate
                             :custom-mode custom-mode
                             :dimensions dimensions
-                            :position position)))
+                            :position position
+                            :enabled enabled)))
 
 (defun %output-match-data-from-clause (clause config)
   (etypecase clause

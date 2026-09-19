@@ -103,10 +103,11 @@
            #:output-position
            #:output-usable-area
            #:output-full-name
+           #:output-enabled
            #:output-name
-	   #:output-make
-	   #:output-model
-	   #:output-serial
+	       #:output-make
+	       #:output-model
+	       #:output-serial
            ;; view-methods
            #:view
            #:view-init

@@ -35,3 +35,8 @@
     (:scale 1)
   (:scale 2)
   (:scale 2))
+
+(define-output-config-merge-test output-config-merge-enabled
+    (:enabled t)
+  (:enabled nil)
+  (:enabled nil))
