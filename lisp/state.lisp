@@ -20,7 +20,8 @@ sends a close event prior to exiting. Units are in milliseconds.")
 (declaim (inline %next-group-index))
 (defun %next-group-index (state)
   (declare (type mahogany-state state))
-  (mahogany/util::find-free-number (map 'list #'mahogany-group-number (state-groups state)) 1))
+  (mahogany/util::find-free-number
+   (map 'list #'mahogany-group-number (state-groups state)) 1))
 
 (defun %add-group (state name index)
   (declare (type mahogany-state state)
