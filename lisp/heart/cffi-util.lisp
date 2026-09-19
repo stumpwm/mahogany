@@ -27,10 +27,13 @@
 (defun write-color-array (ptr color)
   (declare (type cl-colors2:rgb color)
            (type cffi:foreign-pointer ptr))
-  (setf (cffi:mem-aref ptr :float 0) (coerce (colors:rgb-red color) 'single-float)
-        (cffi:mem-aref ptr :float 1) (coerce (colors:rgb-green color) 'single-float)
-        (cffi:mem-aref ptr :float 2) (coerce (colors:rgb-blue color) 'single-float)
-        (cffi:mem-aref ptr :float 3) 1.0))
+  (macrolet ((convert (accessor)
+               `(silence-notes
+                  (coerce (,accessor color) 'single-float))))
+    (setf (cffi:mem-aref ptr :float 0) (convert colors:rgb-red)
+          (cffi:mem-aref ptr :float 1) (convert colors:rgb-green)
+          (cffi:mem-aref ptr :float 2) (convert colors:rgb-blue)
+          (cffi:mem-aref ptr :float 3) 1.0)))
 
 (declaim (inline clear-object))
 (defun clear-foreign-object (ptr type)

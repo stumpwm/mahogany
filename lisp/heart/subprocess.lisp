@@ -126,7 +126,7 @@
                             (:struct app-output-data))
     ;; The info object may have been removed when stdout  is closed or
     ;; has an error:
-    (alexandria:when-let ((info (gethash pid *subprocesses*)))
+    (alexandria:when-let ((info (silence-notes (gethash pid *subprocesses*))))
       (when (plusp (logand mask +hrt-event-readable+))
         (collect-app-slurp-stderr info)))
     ;; Even if the info object isn't here anymore, we still need to
@@ -147,13 +147,13 @@
   (declare (ignore fd))
   (cffi:with-foreign-slots ((pid stdout-source) data
                             (:struct app-output-data))
-    (let ((info (gethash pid *subprocesses*)))
+    (let ((info (silence-notes (gethash pid *subprocesses*))))
       (when (plusp (logand mask +hrt-event-readable+))
         (collect-app-slurp-stdout info))
       (when (or (plusp (logand mask +hrt-event-hangup+))
                 (plusp (logand mask +hrt-event-error+)))
         (hrt-event-loop-remove stdout-source)
-        (remhash pid *subprocesses*)
+        (silence-notes (remhash pid *subprocesses*))
         (unwind-protect
              (let ((result (collect-app-output-end info)))
                (funcall (collect-output-process-callback info) result))
@@ -203,8 +203,9 @@ STDIN: A string to pass to the standard input of the command"
               (stderr-fd (extract-stderr-fd info)))
           (setf data (foreign-struct-create ((:struct app-output-data))
                                             (pid (collect-output-process-pid info))))
-          (setf (gethash (collect-output-process-pid info) *subprocesses*)
-                info)
+          (silence-notes
+            (setf (gethash (collect-output-process-pid info) *subprocesses*)
+                  info))
           (cffi:with-foreign-slots ((stdout-source stderr-source) data (:struct app-output-data))
             (setf stdout-source (hrt-event-loop-add-fd
                                  server stdout-fd
