@@ -214,7 +214,13 @@ static void output_build_state(struct hrt_server *server,
                                struct hrt_output_config *config,
                                struct wlr_output_state *state) {
     wlr_output_state_init(state);
-    wlr_output_state_set_enabled(state, true);
+
+    bool enabled = !config || (config && config->enabled);
+    wlr_output_state_set_enabled(state, enabled);
+    if (!enabled) {
+        wlr_log(WLR_DEBUG, "Output %s disabled", wlr_output->name);
+        return;
+    }
 
     if (config && (config->width > 0 && config->height > 0)) {
         set_mode(wlr_output, state, config->width, config->height,
@@ -240,6 +246,16 @@ static void output_build_state(struct hrt_server *server,
 static bool finish_configure(struct hrt_server *server,
                              struct hrt_output *output,
                              struct hrt_output_config *config) {
+
+    if (config && !config->enabled) {
+        struct wlr_output_layout_output *cur_layout = wlr_output_layout_get(
+            output->server->output_layout, output->wlr_output);
+        if (cur_layout) {
+            wlr_output_layout_remove(output->server->output_layout,
+                                     output->wlr_output);
+        }
+        return true;
+    }
 
     struct wlr_output *wlr_output = output->wlr_output;
     if (!wlr_xcursor_manager_load(server->seat.xcursor_manager,

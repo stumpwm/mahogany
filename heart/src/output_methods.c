@@ -11,6 +11,10 @@ void hrt_output_position(struct hrt_output *output, int *x, int *y) {
     *y = l_output->y;
 }
 
+bool hrt_output_enabled(struct hrt_output *output) {
+    return output->wlr_output->enabled;
+}
+
 char *hrt_output_name(struct hrt_output *output) {
     return output->wlr_output->name;
 }
