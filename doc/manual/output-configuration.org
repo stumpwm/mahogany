@@ -42,11 +42,12 @@ The grammar for this macro is as follows:
        (:scale scale)
      | (:mode width height &key refresh custom)
      | (:position x y)
+     | (:enabled enabled)
      | (:mirror NAME-OR-DETAILS) ;; Not supported yet
-     | (:enabled enabled)        ;; Not supported yet
+
 #+END_SRC
 
-Note that screen mirroring and disabling outputs is not supported yet.
+Note that screen mirroring is not supported yet.
 
 *** Configuration Priority
 

@@ -263,7 +263,7 @@
 (defun interactively-read-valid-output-layout (com im arg prompt)
   (declare (ignore com arg))
   (let* ((outputs (map 'list #'tree:output-container-output
-                       (state-outputs *compositor-state*)))
+                       (state-cur-outputs *compositor-state*)))
          (configs (mh/output-config:find-valid-output-layouts outputs))
          (idx-list (cl-interactive:input-method-read-index
                     im

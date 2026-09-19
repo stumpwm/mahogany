@@ -17,6 +17,17 @@ sends a close event prior to exiting. Units are in milliseconds.")
 (declaim (type (or null hrt:timer-handle) *shutdown-timer*))
 (defglobal *shutdown-timer* nil)
 
+(declaim (inline %find-output-container))
+(defun %find-output-container (hrt-output state)
+  "Return the output-container tracking HRT-OUTPUT, or NIL when STATE has none
+or HRT-OUTPUT is NIL or a null pointer."
+  (declare (type mahogany-state state)
+           (type (or null cffi:foreign-pointer) hrt-output))
+  (when (and hrt-output (not (cffi:null-pointer-p hrt-output)))
+    (find hrt-output (state-cur-outputs state)
+          :key #'tree::output-container-output-ptr
+          :test #'cffi:pointer-eq)))
+
 (declaim (inline %next-group-index))
 (defun %next-group-index (state)
   (declare (type mahogany-state state))
@@ -216,45 +227,60 @@ the current group or a layer shell frame"
 (defstruct pending-output-changes
   (added nil :type list))
 
-(defun %get-output-list (pending-changes cur-outputs)
-  (declare (type vector cur-outputs)
+(defun %get-output-list (pending-changes outputs)
+  (declare (type vector outputs)
            (type pending-output-changes pending-changes))
   (let* ((added (pending-output-changes-added pending-changes))
-         (all-outputs (append (map 'list
-                                   #'tree:output-container-output
-                                   cur-outputs)
-                              added)))
+         (all-outputs (concatenate 'list outputs added)))
     (values all-outputs added)))
 
-(defun %add-output (state mh-output)
-  (let ((outputs (state-outputs state))
+(defun %add-output-container (state mh-output)
+  (declare (type mahogany-state state))
+  (let ((cur-outputs (state-cur-outputs state))
         (groups (state-groups state))
         (output-container (tree::make-output-container mh-output)))
-    (vector-push-extend output-container outputs)
+    (vector-push-extend output-container cur-outputs)
     (loop for g across groups
           do (group-add-output g output-container))))
 
+(defun %add-output (state mh-output)
+  (declare (type mahogany-state state))
+  (vector-push-extend mh-output (state-outputs state))
+  (when (hrt:output-enabled mh-output)
+    (%add-output-container state mh-output)))
+
+(defun %update-output-enabled (state mh-output)
+  (declare (type mahogany-state state)
+           (type hrt:output mh-output))
+  (if (hrt:output-enabled mh-output)
+      (unless (%find-output-container (hrt:output-hrt-output mh-output)
+                                      state)
+        (%add-output-container state mh-output))
+      (%remove-output-container state mh-output)))
+
 (defun %try-backup-configs (full-list)
   (let ((config-map (make-hash-table :test 'equalp)))
-    (dolist (output full-list)
-      (setf (gethash output config-map) nil))
-    (unless (hrt::output-configure-atomic config-map)
-      (log-string :error "Backup default configuration modeset failed")
-      ;; Since that didn't work, try configuring the
-      ;; outputs individually to see if one of them works.
-      ;; This strategy is just a guess; I'm not sure
-      ;; why the above code would fail.
-      (let ((one-worked nil))
-        (dolist (output full-list)
-          (setf one-worked (or
-                            (hrt:output-configure output nil)
-                            one-worked)))
-        (unless one-worked
-          ;; FIXME: We should probably only panic if this
-          ;; is the initial modeset.
-          (error 'mahogany/util:mahogany-panic
-                 :text "Failed to set any configurations")))))
-  (log-string :info "Backup output configuration applied."))
+	(map nil (lambda (output)
+			   (setf (gethash output config-map) nil))
+		 (state-outputs *compositor-state*))
+    (tagbody
+       (when (hrt::output-configure-atomic config-map)
+         (go :end))
+       (log-string :error "Backup default configuration modeset failed")
+       ;; Since that didn't work, try configuring the
+       ;; outputs individually to see if one of them works.
+       ;; This strategy is just a guess; I'm not sure
+       ;; why the above code would fail.
+       (dolist (output full-list)
+         (when (hrt:output-configure output nil)
+           (clrhash config-map)
+           (setf (gethash output config-map) nil)
+           (go :end)))
+       (error 'mahogany/util:mahogany-panic
+              :text "Failed to set any configurations")
+     :end
+       (log-string :info "Backup output configuration applied."))
+    config-map))
 
 (defun state-use-output-layout (state output-layout)
   (declare (type mahogany-state state)
@@ -262,7 +288,7 @@ the current group or a layer shell frame"
   (let ((config-map
           (mh/output-config:get-configuration-map
            output-layout
-           (map 'list #'tree:output-container-output (state-outputs state)))))
+           (map 'list #'tree:output-container-output (state-cur-outputs state)))))
     (if config-map
         (hrt::output-configure-atomic config-map)
         (let ((config-name (mh/output-config:output-layout-config-name output-layout)))
@@ -273,7 +299,7 @@ the current group or a layer shell frame"
 
 (defun state-output-layouts-rescan (state)
   (declare (type mahogany-state state))
-  (let ((outputs (map 'list #'tree:output-container-output (state-outputs state))))
+  (let ((outputs (map 'list #'tree:output-container-output (state-cur-outputs state))))
     (multiple-value-bind (config-map layout)
         (find-output-configurations outputs)
       ;; Because we presumably already have a valid mode,
@@ -297,15 +323,22 @@ the current group or a layer shell frame"
      added full-list)
     (multiple-value-bind (config-map layout)
         (find-output-configurations full-list)
-      (log-string :info "Applying output configuration ~S"
+      (log-string :info "Applying output configuration ~S:~%  ~S"
                   (when layout
-                    (mahogany/output-config:output-layout-config-name layout)))
+                    (mahogany/output-config:output-layout-config-name layout))
+                  (with-output-to-string (s)
+                    (maphash (lambda (x y) (format s "  (~S ~S)~%" x y)) config-map)))
       (unless (hrt::output-configure-atomic config-map)
         (log-string :error "Failed to apply output configuration ~A"
                     layout)
-        (%try-backup-configs full-list)))
-    (dolist (new-output added)
-      (%add-output *compositor-state* new-output))
+        (setf config-map (%try-backup-configs full-list)))
+      (dolist (new-output added)
+        (remhash new-output config-map)
+        (%add-output *compositor-state* new-output))
+      (maphash (lambda (output config)
+                 (declare (ignore config))
+                 (%update-output-enabled *compositor-state* output))
+               config-map))
     (unless (state-%current-frame *compositor-state*)
       (let ((cur-group (state-current-group *compositor-state*)))
         (group-focus cur-group (server-seat *compositor-state*))
@@ -334,16 +367,7 @@ the current group or a layer shell frame"
              (make-pending-output-changes
               :added (list mh-output)))))))
 
-(declaim (inline %find-output-container))
-(defun %find-output-container (hrt-output state)
-  "Return the output-container tracking HRT-OUTPUT, or NIL when STATE has none
-or HRT-OUTPUT is NIL or a null pointer."
-  (declare (type mahogany-state state)
-           (type (or null cffi:foreign-pointer) hrt-output))
-  (when (and hrt-output (not (cffi:null-pointer-p hrt-output)))
-    (find hrt-output (state-outputs state)
-          :key #'tree::output-container-output-ptr
-          :test #'cffi:pointer-eq)))
+
 
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)
@@ -352,22 +376,21 @@ or HRT-OUTPUT is NIL or a null pointer."
   (alexandria:when-let ((container (%find-output-container hrt-output state)))
     (tree:output-container-output container)))
 
-(defun mahogany-state-output-remove (state hrt-output)
-  (with-accessors ((outputs state-outputs)
-                   (groups state-groups)
-                   (cur-frame state-%current-frame))
+(defun %remove-output-container (state hrt-output)
+  (declare (type mahogany-state state)
+           (type hrt:output hrt-output))
+  (with-accessors ((cur-outputs state-cur-outputs)
+                   (cur-frame state-%current-frame)
+                   (groups state-groups))
       state
-    ;; The output is now invalid, so remove it from the state.
-    ;; Leave the reconfiguring and re-arranging to the output configuration
-    ;; timer; as long as the output is destroyed, we can leave everything
-    ;; in place.
-    (alexandria:if-let ((output-container (%find-output-container hrt-output state)))
+    (alexandria:if-let ((output-container (%find-output-container
+                          (hrt:output-hrt-output hrt-output)
+                          state)))
       (let ((mh-output (tree::output-container-output output-container)))
         (log-string :debug "Output removed ~S" (hrt:output-full-name mh-output))
         (loop for g across groups
               do (group-remove-output g output-container (server-seat state)))
-        (setf outputs (delete output-container outputs :test #'equalp))
-        (hrt:destroy-output mh-output)
+        (setf cur-outputs (delete output-container cur-outputs :test #'equalp))
         ;; We could have removed the current frame, so
         ;; change it unless a non-titled frame is focused.
         ;; TODO: do this in the output configuration timer handler
@@ -376,8 +399,28 @@ or HRT-OUTPUT is NIL or a null pointer."
         (unless (typep cur-frame 'tree:layer-container)
           (setf cur-frame (mahogany-group-current-frame
                            (state-current-group state))))
-        (when (and cur-frame (> (length outputs) 0))
+        (when (and cur-frame (> (length cur-outputs) 0))
           (tree:mark-frame-focused cur-frame (server-seat state))))
+      (log-string :error "Removed an output that was never added to a container"))))
+
+(defun mahogany-state-output-remove (state hrt-output)
+  (declare (type mahogany-state state)
+           (type cffi:foreign-pointer hrt-output))
+  (with-accessors ((outputs state-outputs))
+      state
+    ;; The output is now invalid, so remove it from the state.
+    ;; Leave the reconfiguring and re-arranging to the output configuration
+    ;; timer; as long as the output is destroyed, we can leave everything
+    ;; in place.
+    (alexandria:if-let ((mh-output (find hrt-output (state-outputs state)
+                                         :test #'cffi:pointer-eq
+                                         :key #'hrt:output-hrt-output)))
+      (progn
+        ;; Again, we just found the location of this thing. Do
+        ;; we really need to search it again?
+        (setf outputs (delete mh-output outputs :test #'equalp))
+        (%remove-output-container state mh-output)
+        (hrt:destroy-output mh-output))
       (log-string :error "Removed an output that was never added"))
     ;; Start the timer:
     (alexandria:if-let ((timer (state-pending-output-timer state)))
@@ -410,7 +453,7 @@ or HRT-OUTPUT is NIL or a null pointer."
     (let ((new-group (%add-group state group-name index)))
       (with-accessors ((current-group state-current-group)
                        (hidden-groups state-hidden-groups)
-                       (state-outputs state-outputs))
+                       (state-outputs state-cur-outputs))
           state
         (loop for o across state-outputs
               do (group-add-output new-group o))
@@ -453,7 +496,7 @@ or HRT-OUTPUT is NIL or a null pointer."
   (hrt:with-view-transaction ()
     (with-accessors ((groups state-groups)) state
       (loop for g across groups
-            do (group-reconfigure-outputs g (state-outputs state))))))
+            do (group-reconfigure-outputs g (state-cur-outputs state))))))
 
 (defun mahogany-state-layers-arrange (state output)
   (declare (type mahogany-state state)
