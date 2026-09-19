@@ -304,7 +304,8 @@ well behaved ones should."
   (refresh-rate :float)
   (custom-position :bool)
   (x :int)
-  (y :int))
+  (y :int)
+  (enabled :bool))
 
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |#)
@@ -350,6 +351,11 @@ set the width and height of views."
   (output (:pointer (:struct hrt-output)))
   (x (:pointer :int))
   (y (:pointer :int)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-output-enabled))
+(cffi:defcfun ("hrt_output_enabled" hrt-output-enabled) :bool
+  (output (:pointer (:struct hrt-output))))
 
 #-HRT-DEBUG
 (declaim (inline hrt-output-name))
