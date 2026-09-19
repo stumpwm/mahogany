@@ -17,6 +17,11 @@ sends a close event prior to exiting. Units are in milliseconds.")
 (declaim (type (or null hrt:timer-handle) *shutdown-timer*))
 (defglobal *shutdown-timer* nil)
 
+(declaim (inline %next-group-index))
+(defun %next-group-index (state)
+  (declare (type mahogany-state state))
+  (mahogany/util::find-free-number (map 'list #'mahogany-group-number (state-groups state)) 1))
+
 (defun %add-group (state name index)
   (declare (type mahogany-state state)
            (type string name)
@@ -40,7 +45,8 @@ sends a close event prior to exiting. Units are in milliseconds.")
                            debug-level)
     (error 'mahogany/util:mahogany-panic
            :text "Could not initialize the compositor."))
-  (let ((default-group (%add-group state *default-group-name* 1)))
+  (let ((default-group (%add-group state *default-group-name*
+                                   (%next-group-index state))))
     (setf (state-current-group state) default-group)))
 
 (defun server-state-reset (state)
@@ -375,11 +381,12 @@ or HRT-OUTPUT is NIL or a null pointer."
   (concatenate 'string "GROUP-" (write-to-string index)))
 
 (defun state-next-group-name (state)
-  (let ((index (+ 1 (length (state-groups state)))))
+  (let ((index (%next-group-index state)))
     (%next-group-name index)))
 
 (defun mahogany-state-group-add (state &key group-name (make-current t))
-  (let ((index (+ 1 (length (state-groups state)))))
+  (declare (type mahogany-state state))
+  (let ((index (%next-group-index state)))
     (unless group-name
       (setf group-name (%next-group-name index)))
     (let ((new-group (%add-group state group-name index)))
