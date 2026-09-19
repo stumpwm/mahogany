@@ -108,8 +108,18 @@ and set the cursor image to the given image name."
   (flags xkb:keymap-compile-flags))
 
 #-HRT-DEBUG
+(declaim (inline hrt-seat-cursor-set-theme))
+(cffi:defcfun ("hrt_seat_cursor_set_theme" hrt-seat-cursor-set-theme) :bool
+  "Set the xcursor theme used by the cursor as well as the cursor size."
+  (seat (:pointer (:struct hrt-seat)))
+  (theme-name (:pointer :char))
+  (base-size :uint32))
+
+#-HRT-DEBUG
 (declaim (inline hrt-seat-set-repeat-info))
 (cffi:defcfun ("hrt_seat_set_repeat_info" hrt-seat-set-repeat-info) :void
+  "RATE_HZ repeats per second after DELAY_MS milliseconds.
+A rate of 0 disables repeat."
   (seat (:pointer (:struct hrt-seat)))
   (rate-hz :int32)
   (delay-ms :int32))
@@ -139,14 +149,6 @@ to 1.0 (fastest)."
 (cffi:defcfun ("hrt_seat_reset_touchpad_accel" hrt-seat-reset-touchpad-accel) :void
   "Return the pointer acceleration to libinput's default for each device."
   (seat (:pointer (:struct hrt-seat))))
-
-#-HRT-DEBUG
-(declaim (inline hrt-seat-cursor-set-theme))
-(cffi:defcfun ("hrt_seat_cursor_set_theme" hrt-seat-cursor-set-theme) :bool
-  "Set the xcursor theme used by the cursor as well as the cursor's base size."
-  (seat (:pointer (:struct hrt-seat)))
-  (theme-name (:pointer :char))
-  (base-size :uint32))
 
 #-HRT-DEBUG
 (declaim (inline hrt-seat-cursor-lx))
@@ -661,7 +663,7 @@ whenever the semaphore is non-zero."
 (cffi:defcfun ("hrt_layer_surface_close" hrt-layer-surface-close) :void
   "Send the layer surface the `closed` event and take it down.
 `closed` means the surface will no longer be shown and further changes
-to it are ignored and the surface is unmapped and freed.
+to it are ignored, so the surface is unmapped and freed.
 The client wlr_layer_surface destroy is up for the client to handle once it sees the event."
   (surface (:pointer (:struct hrt-layer-shell-surface))))
 
