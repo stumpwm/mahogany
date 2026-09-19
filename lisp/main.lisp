@@ -66,7 +66,8 @@ further up. "
     (hrt:view-mapped handle-view-mapped)
     (hrt:view-unmapped handle-view-unmapped)
     (hrt:view-destroyed handle-view-destroyed-event)
-    (hrt:request-fullscreen handle-request-fullscreen)))
+    (hrt:request-fullscreen handle-request-fullscreen)
+    (hrt:get-view-output handle-get-view-output)))
 
 (defun init-layer-shell-callbacks (layer-shell-callbacks)
   (init-callback-struct layer-shell-callbacks (:struct hrt:hrt-layer-shell-callbacks)

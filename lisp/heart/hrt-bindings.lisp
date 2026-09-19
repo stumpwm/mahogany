@@ -178,7 +178,8 @@ to 1.0 (fastest)."
   (request-minimize view-mapped-handler)
   (request-maximize view-mapped-handler)
   (view-destroyed view-destroy-handler)
-  (request-fullscreen view-request-fullscreen))
+  (request-fullscreen view-request-fullscreen)
+  (get-view-output :pointer #| function ptr struct hrt_output *(struct hrt_view *) |#))
 
 (cffi:defcstruct hrt-view
   (width :int)

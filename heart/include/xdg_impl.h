@@ -13,6 +13,7 @@ struct hrt_xdg_popup {
     struct wl_listener new_popup;
     struct wl_listener destroy;
     struct wl_listener commit;
+    struct wl_listener reposition;
 };
 
 bool hrt_xdg_shell_init(struct hrt_server *server);
