@@ -157,6 +157,23 @@ sends a close event prior to exiting. Units are in milliseconds.")
                        :ms-delay *group-name-delay*)))
     (hrt:dirty-view-transaction)))
 
+(defun %state-select-group (state designator)
+  "Retrieve a group based on the given designator. If a number,
+the group with that number is returned"
+  (declare (type mahogany-state state))
+  (etypecase designator
+    (null nil)
+    (integer
+     (let ((groups (state-groups state)))
+       (find designator groups :key #'mahogany-group-number
+             :test #'=)))))
+
+(defun state-select-group (state designator)
+  (declare (type mahogany-state state))
+  (let ((group (%state-select-group state designator)))
+    (when group
+      (setf (state-current-group state) group))))
+
 (defun group-frame-p (frame)
   ;; TODO: It might be better to start storing the
   ;; group that a frame is in, so we can use that

@@ -216,6 +216,50 @@
        (state-current-group *compositor-state*)
        surface))))
 
+;; TODO: Stumpwm has a handy feature where instead
+;; of a symbol keymap you can use a command string.
+;; One that is implemented, we should have a `gselect`
+;; command that takes an argument, just like stumpwm.
+(defcommand group-select-1 ()
+  (:method ()
+    (state-select-group *compositor-state* 1)))
+
+(defcommand group-select-2 ()
+  (:method ()
+    (state-select-group *compositor-state* 2)))
+
+(defcommand group-select-3 ()
+  (:method ()
+    (state-select-group *compositor-state* 3)))
+
+(defcommand group-select-4 ()
+  (:method ()
+    (state-select-group *compositor-state* 4)))
+
+(defcommand group-select-5 ()
+  (:method ()
+    (state-select-group *compositor-state* 5)))
+
+(defcommand group-select-6 ()
+  (:method ()
+    (state-select-group *compositor-state* 6)))
+
+(defcommand group-select-7 ()
+  (:method ()
+    (state-select-group *compositor-state* 7)))
+
+(defcommand group-select-8 ()
+  (:method ()
+    (state-select-group *compositor-state* 8)))
+
+(defcommand group-select-9 ()
+  (:method ()
+    (state-select-group *compositor-state* 9)))
+
+(defcommand group-select-10 ()
+  (:method ()
+    (state-select-group *compositor-state* 10)))
+
 (defun interactively-read-valid-output-layout (com im arg prompt)
   (declare (ignore com arg))
   (let* ((outputs (map 'list #'tree:output-container-output
@@ -287,7 +331,17 @@ valid output layouts")
     (kbd "p") #'gprev
     (kbd "P") #'gprev-with-window
     (kbd "m") #'gmove
-    (kbd "M") #'gmove-and-follow))
+    (kbd "M") #'gmove-and-follow
+    (kbd "F1") #'group-select-1
+    (kbd "F2") #'group-select-2
+    (kbd "F3") #'group-select-3
+    (kbd "F4") #'group-select-4
+    (kbd "F5") #'group-select-5
+    (kbd "F6") #'group-select-6
+    (kbd "F7") #'group-select-7
+    (kbd "F8") #'group-select-8
+    (kbd "F9") #'group-select-9
+    (kbd "F10") #'group-select-10))
 
 (defvar *root-map*
   (define-kmap
@@ -302,7 +356,7 @@ valid output layouts")
     (kbd "Q") #'maximize-current-frame
     (kbd "n") #'next-view
     (kbd "p") #'previous-view
-    (kbd "g") *group-map*))
+    (kbd "g") '*group-map*))
 
 (defvar *top-map* (define-kmap))
 
