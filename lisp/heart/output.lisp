@@ -113,7 +113,11 @@
              (let ((config-ptr (cffi:mem-aptr configs '(:struct hrt-output-config) idx)))
                (if config
                    (%transfer-output-config config-ptr config)
-                   (clear-foreign-object config-ptr '(:struct hrt-output-config))))
+                   ;; Because we have an array of object instead
+                   ;; of an array of pointers, we need to
+                   ;; populate this with something:
+                   (%transfer-output-config config-ptr (hrt:make-output-config
+                                                        :enabled t))))
              (setf (cffi:mem-aref outputs :pointer idx)
                    (output-hrt-output output))
              (incf idx))
