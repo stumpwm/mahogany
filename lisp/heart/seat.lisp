@@ -7,7 +7,7 @@
     (hrt-seat-grab seat str)))
 
 #-HRT-DEBUG
-(declare (inline seat-grabbed-p))
+(declaim (inline seat-grabbed-p))
 (defun seat-grabbed-p (seat)
   (cffi:foreign-slot-value seat '(:struct hrt-seat)
                            'grabbed))
