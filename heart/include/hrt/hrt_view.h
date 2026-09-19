@@ -35,6 +35,7 @@ struct hrt_view_callbacks {
     view_destroy_handler view_destroyed;
 
     view_request_fullscreen request_fullscreen;
+    struct hrt_output *(*get_view_output)(struct hrt_view *);
 };
 
 struct hrt_view {

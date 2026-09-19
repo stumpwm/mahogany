@@ -78,6 +78,23 @@
     (%with-found-view *compositor-state* (view view-ptr)
       (mahogany-state-view-fullscreen *compositor-state* view output fullscreen))))
 
+(hrt:define-hrt-callback handle-get-view-output :pointer
+    ((view-ptr (:pointer (:struct hrt:hrt-view))))
+    (:error-val (silence-notes (cffi:null-pointer)))
+  (log-string :trace "Get view output called")
+  (%with-found-view *compositor-state* (view view-ptr)
+    (alexandria:if-let ((frame (hrt::view-container view)))
+      ;; How the heck are we going to get the output for floating frames?
+      ;; We probably need it for scaling anyways...
+      (let ((output-node (etypecase frame
+                           (tree:view-frame
+                            (tree:find-root-frame frame))
+                           (tree:output-node frame))))
+        (hrt:output-hrt-output
+         (tree:output-container-output
+          (tree:output-node-output output-node))))
+      (silence-notes (cffi:null-pointer)))))
+
 (hrt:define-hrt-callback handle-new-output :void
     ((output-ptr (:pointer (:struct hrt:hrt-output))))
     ()

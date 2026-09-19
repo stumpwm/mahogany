@@ -169,10 +169,41 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     return view;
 }
 
+static void popup_unconstrain(struct hrt_xdg_popup *popup) {
+    struct hrt_view *view           = popup->view;
+    struct wlr_xdg_popup *wlr_popup = popup->xdg_popup;
+
+    struct hrt_output *output = view->callbacks->get_view_output(view);
+    if (!output) {
+        wlr_log(WLR_ERROR, "Could not get output to unconstrain popup.");
+        return;
+    }
+    int x, y;
+    hrt_output_position(output, &x, &y);
+    int width, height;
+    hrt_output_resolution(output, &width, &height);
+
+    struct wlr_box output_toplevel_sx_box = {
+        .x      = x,
+        .y      = y,
+        .width  = width,
+        .height = height,
+    };
+
+    wlr_xdg_popup_unconstrain_from_box(wlr_popup, &output_toplevel_sx_box);
+}
+
+static void handle_xdg_popup_reposition(struct wl_listener *listener,
+                                        void *data) {
+    struct hrt_xdg_popup *popup = wl_container_of(listener, popup, reposition);
+    popup_unconstrain(popup);
+}
+
 static void handle_xdg_popup_commit(struct wl_listener *listener, void *data) {
     struct hrt_xdg_popup *popup = wl_container_of(listener, popup, commit);
     if (popup->xdg_popup->base->initial_commit) {
-        wlr_xdg_surface_schedule_configure(popup->xdg_popup->base);
+        // wlr_xdg_surface_schedule_configure(popup->xdg_popup->base);
+        popup_unconstrain(popup);
     }
 }
 
@@ -182,6 +213,8 @@ static void handle_xdg_popup_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&popup->destroy.link);
     wl_list_remove(&popup->commit.link);
     wl_list_remove(&popup->new_popup.link);
+    wl_list_remove(&popup->reposition.link);
+
 
     free(popup);
 }
@@ -216,6 +249,8 @@ static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
 
     popup->new_popup.notify = handle_popup_new_xdg_popup;
     wl_signal_add(&xdg_popup->base->events.new_popup, &popup->new_popup);
+    popup->reposition.notify = handle_xdg_popup_reposition;
+    wl_signal_add(&xdg_popup->events.reposition, &popup->reposition);
 
     return popup;
 }
@@ -254,6 +289,7 @@ static void check_callbacks(const struct hrt_view_callbacks *callbacks) {
     assert(callbacks->request_maximize != nullptr);
     assert(callbacks->view_destroyed != nullptr);
     assert(callbacks->request_fullscreen != nullptr);
+    assert(callbacks->get_view_output != nullptr);
 }
 
 bool hrt_xdg_shell_init(struct hrt_server *server) {
