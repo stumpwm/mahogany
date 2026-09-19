@@ -89,6 +89,7 @@ See the documentation for cl-interactive:define-command for more details.
            (hrt:with-main-thread ()
              (setf *collecting-args-p* nil)))
        (cl-interactive:cancel-interactive-command (c)
+         (declare (ignore c))
          (hrt:with-main-thread ()
            (toast-message *compositor-state* "Command canceled."
                           :theme *message-error-theme*)))))))
