@@ -81,6 +81,7 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
   (hrt-event-loop-semaphore-increment *workqueue-semaphore* 1))
 
 (defmacro with-main-thread (args &body body)
+  (declare (ignore args))
   `(run-in-main-thread (lambda () ,@body)))
 
 (defstruct (timer-handle
