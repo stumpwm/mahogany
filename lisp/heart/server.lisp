@@ -93,7 +93,8 @@ The order of execution is not guaranteed if multiple lambdas are added at the sa
 (define-hrt-callback timer-callback :int
     ((data :pointer))
     ()
-  (declare (inline gethash))
+  (declare #+sbcl
+           (sb-ext:muffle-conditions sb-ext:compiler-note))
   (let ((handle (gethash (cffi:pointer-address data) *timer-table*)))
     (declare (type timer-handle handle))
     (mahogany/log:log-string :trace "timer callback called: ~S" handle)

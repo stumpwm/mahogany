@@ -200,9 +200,10 @@ NIL goes back to libinput's default, which is the same as 0."
   (declare (optimize (speed 2)))
   (declare (type cffi:foreign-pointer seat))
   (let* ((group (state-current-group *compositor-state*))
-         (found (tree:frame-at (mahogany-group-tiled-container group)
-                               (hrt:hrt-seat-cursor-lx seat)
-                               (hrt:hrt-seat-cursor-ly seat))))
+         (found (silence-notes
+                  (tree:frame-at (mahogany-group-tiled-container group)
+                                 (hrt:hrt-seat-cursor-lx seat)
+                                 (hrt:hrt-seat-cursor-ly seat)))))
     (if found
         (state-focus-frame *compositor-state* found seat)
         nil)))
@@ -211,7 +212,9 @@ NIL goes back to libinput's default, which is the same as 0."
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3))
+           #+sbcl
+           (sb-ext:muffle-conditions sb-ext:compiler-note))
   (when (not (zerop (logand *keyboard-focus-bits* +wheel-mask+)))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
@@ -220,7 +223,9 @@ NIL goes back to libinput's default, which is the same as 0."
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (event :pointer))
     ()
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3))
+           #+sbcl
+           (sb-ext:muffle-conditions sb-ext:compiler-note))
   (when (not (zerop (logand *keyboard-focus-bits* +click-mask+)))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
@@ -229,7 +234,9 @@ NIL goes back to libinput's default, which is the same as 0."
     ((seat (:pointer (:struct hrt:hrt-seat)))
      (info (:pointer (:struct hrt:hrt-keypress-info))))
     ()
-  (declare (optimize (speed 3)))
+  (declare (optimize (speed 3))
+           #+sbcl
+           (sb-ext:muffle-conditions sb-ext:compiler-note))
   (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
                             info (:struct hrt:hrt-keypress-info))
     ;; don't check for key commands if we are collecting args:
