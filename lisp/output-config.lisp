@@ -321,7 +321,7 @@ configurations"
                                           :initial-value 0)
                                   x))
                                priority-vals))
-               (max-score (maximum scores #'< #'car)))
+               (max-score (maximum scores #'> #'car)))
           (cdr max-score))))))
 
 (defun find-output-configurations (outputs)
