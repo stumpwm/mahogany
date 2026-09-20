@@ -1,0 +1,62 @@
+name: Build and Push Docker images for CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+# permissions:
+#   contents: read
+#   packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest # Uses a hosted runner pre-configured with Docker
+
+    steps:
+      # 1. Fetch the application source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Buildx to unlock advanced build features and caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Authenticate securely against the Container Registry
+      - name: Log in to the Container Registry
+        if: github.event_name != 'pull_request' # Skips login for PRs from forks
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
+
+      # 4. Generate dynamic image tags based on git hashes and branch names
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ci
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha,format=short
+
+      # 5. Build the Dockerfile and push it to the registry if it is not a PR
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ id.meta.outputs.tags }}
+          labels: ${{ id.meta.outputs.labels }}
+          cache-from: type=gha # Leverages GitHub native caching for ultra-fast builds
+          cache-to: type=gha,mode=max
