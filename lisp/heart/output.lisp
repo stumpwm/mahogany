@@ -18,16 +18,20 @@
   ;; a cons of (width . height)
   (dimensions nil :type (or cons null) :read-only t)
   ;; a cons of (x . y)
-  (position nil :type (or cons null) :read-only t))
+  (position nil :type (or cons null) :read-only t)
+  (enabled t :type boolean))
 
 (defun output-config= (a b)
+  (declare (type output-config a a))
   (and (equal (output-config-scale a) (output-config-scale b))
        (equal (output-config-refresh-rate a) (output-config-refresh-rate b))
        (eq (output-config-custom-mode a) (output-config-custom-mode b))
        (equalp (output-config-dimensions a) (output-config-dimensions b))
-       (equalp (output-config-position a) (output-config-position b))))
+       (equalp (output-config-position a) (output-config-position b))
+       (eq (output-config-enabled a) (output-config-enabled b))))
 
 (defun output-config-merge (base override)
+  (declare (type output-config base override))
   (macrolet ((override-val (accessor)
                  `(if (,accessor override)
                       (,accessor override)
@@ -44,16 +48,18 @@
        :position (override-val output-config-position)
        :dimensions dimensions
        :refresh-rate refresh-rate
-       :custom-mode custom-mode))))
+       :custom-mode custom-mode
+       :enabled (output-config-enabled override)))))
 
 (defun %transfer-output-config (hrt-config config)
   (declare (type output-config config))
   (cffi:with-foreign-slots
-      ((scale custom-mode width height refresh-rate custom-position x y)
+      ((scale custom-mode width height refresh-rate custom-position x y enabled)
        hrt-config (:struct hrt-output-config))
     (setf scale (if (output-config-scale config)
                     (coerce (output-config-scale config) 'double-float)
-                    0.0d0))
+                    0.0d0)
+          enabled (output-config-enabled config))
     (alexandria:if-let ((dimensions (output-config-dimensions config)))
       (setf custom-mode (output-config-custom-mode config)
             refresh-rate (alexandria:if-let ((rate (output-config-refresh-rate config)))
@@ -107,7 +113,11 @@
              (let ((config-ptr (cffi:mem-aptr configs '(:struct hrt-output-config) idx)))
                (if config
                    (%transfer-output-config config-ptr config)
-                   (clear-foreign-object config-ptr '(:struct hrt-output-config))))
+                   ;; Because we have an array of object instead
+                   ;; of an array of pointers, we need to
+                   ;; populate this with something:
+                   (%transfer-output-config config-ptr (hrt:make-output-config
+                                                        :enabled t))))
              (setf (cffi:mem-aref outputs :pointer idx)
                    (output-hrt-output output))
              (incf idx))
@@ -150,7 +160,8 @@
       (values x y width height))))
 
 #-hrt-debug
-(declaim (inline output-name output-make output-model output-serial))
+(declaim (inline output-name output-make output-model
+                 output-serial output-enabled))
 (defun output-name (output)
   (declare (type output output))
   (hrt-output-name (output-hrt-output output)))
@@ -166,6 +177,10 @@
 (defun output-serial (output)
   (declare (type output output))
   (hrt-output-serial (output-hrt-output output)))
+
+(defun output-enabled (output)
+  (declare (type output output))
+  (hrt-output-enabled (output-hrt-output output)))
 
 (declaim (inline output-scene))
 (defun output-scene (output)

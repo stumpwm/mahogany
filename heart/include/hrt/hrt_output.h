@@ -22,6 +22,7 @@ struct hrt_output_config {
     bool custom_position;
     // These are in layout coordinates, not pixel coordinates:
     int x, y;
+    bool enabled;
 };
 
 struct hrt_output {
@@ -59,6 +60,8 @@ bool hrt_output_configure_atomic(struct hrt_output *outputs[],
 void hrt_output_resolution(struct hrt_output *output, int *width, int *height);
 
 void hrt_output_position(struct hrt_output *output, int *x, int *y);
+
+bool hrt_output_enabled(struct hrt_output *output);
 
 char *hrt_output_name(struct hrt_output *output);
 
