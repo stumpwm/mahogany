@@ -9,9 +9,10 @@
 
 (defstruct (output-layout-config
             (:constructor %make-output-layout-config
-                (name priority outputs)))
+                (name priority outputs exact)))
   (name nil :type string :read-only t)
   (priority 0 :type fixnum :read-only t)
+  (exact nil :type boolean :read-only t)
   (outputs nil :type list :read-only t))
 
 (defun %output-config-from-clauses (clauses)
@@ -70,7 +71,7 @@
             (if (output-match-data-name x) 1 0))))
     (> (%score-match-data a) (%score-match-data b))))
 
-(defun make-output-layout-config (name priority outputs)
+(defun make-output-layout-config (name priority outputs exact)
   (let ((settings nil))
     (dolist (o outputs)
       (let ((match-data (build-output-match-data o)))
@@ -78,7 +79,7 @@
     ;; Sort the configs now so that we don't need to
     ;; repeatedly do it when matching configurations:
     (setf settings (sort settings #'%compare-specificity))
-    (%make-output-layout-config name priority settings)))
+    (%make-output-layout-config name priority settings exact)))
 
 (defvar *output-configurations* (make-hash-table :test 'equalp)
   "Name output configurations that define how a single output should be configured.")
@@ -96,19 +97,20 @@ should be configured and laid out.")
 (defmacro define-output-layout (name-or-options &body outputs)
   (let* ((name-symb (gensym "name"))
          (priority-symb (gensym "priority")))
-    (multiple-value-bind (name-val priority-val)
+    (multiple-value-bind (name-val priority-val exact)
         (if (listp name-or-options)
-            (destructuring-bind (name-val priority-val)
+            (destructuring-bind (name-val &key (priority 0) (exact t))
                 name-or-options
-              (values name-val priority-val))
-            (values name-or-options 0))
+              (values name-val priority exact))
+            (values name-or-options 0 t))
       `(let ((,name-symb ,name-val)
              (,priority-symb ,priority-val))
          (setf (gethash ,name-symb *output-layout-configurations*)
                (make-output-layout-config
                 ,name-symb
                 ,priority-symb
-                (quote ,outputs)))))))
+                (quote ,outputs)
+                ,exact))))))
 
 (defun score-output-match-data-match (output match-data)
   (declare (type hrt:output output)
@@ -189,9 +191,9 @@ return nil."
              (score (score-output-match-data-match cur c)))
         (map nil (lambda (o)
                    (let ((cur-score (score-output-match-data-match o c)))
-                      (when (> cur-score score)
-                        (setf score cur-score
-                              cur o))))
+                     (when (> cur-score score)
+                       (setf score cur-score
+                             cur o))))
              (mahogany/util:rest-seq remaining))
         (cond
           ((> score 0)
@@ -199,7 +201,12 @@ return nil."
            (setf remaining (remove cur remaining)))
           (t
            (return-from %score-layout-configuration nil)))))
-    found))
+    (if (and found (output-layout-config-exact config))
+        (if (= (length found)
+               (length outputs))
+            found
+            nil)
+        found)))
 
 (defun %populate-config-map (outputs output-scores)
   "Create a map of outputs to their combined configuration

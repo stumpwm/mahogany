@@ -108,12 +108,21 @@ if the following was also present in the configuration above, the
     (:scale 2))
 #+END_SRC
 
+*** Matching configuration lenghts
+
+If there are more connected outputs than there is in an output layout,
+that layout is not considered a valid canidated unless the `exact`
+flag is unset in the configuration. For example, if there are three
+outputs connected and you have an output layout that contains only 2
+outputs, but both of them match, that layout will not match by
+default, but can be made to match if the `exact` flag is `nil`.
+
 *** Grammar
 
 #+BEGIN_SRC text
   (define-output-layout NAME-OR-OPTIONS OUTPUT-CLAUSES)
 
-  NAME-OR-OPTIONS : name | (name priority)
+  NAME-OR-OPTIONS : name | (name &key (priority 0) (exact t))
 
   OUTPUT-CLAUSES :
        (NAME-OR-DETAILS OUTPUT-PROPERTIES)

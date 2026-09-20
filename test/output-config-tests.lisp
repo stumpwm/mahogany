@@ -111,7 +111,7 @@
     (is (null (mh/output::find-output-config output)))))
 
 (define-layout-test define-output-layout-sets-priority ()
-  (let ((layout (mh/output:define-output-layout ("name" 5)
+  (let ((layout (mh/output:define-output-layout ("name" :priority 5)
 				  ("output"))))
     (is (= (mh/output::output-layout-config-priority layout) 5))))
 
@@ -210,10 +210,10 @@
 (define-layout-test find-output-layout-config-total-score ()
   ;; This one matches, has the same number of outputs,
   ;; same priority, but a higher total score:
-  (mh/output:define-output-layout ("single" 10)
+  (mh/output:define-output-layout ("single" :priority 10)
     ((:name "output" :make "HP")
      (:position 20 20)))
-  (let* ((layout (mh/output:define-output-layout ("name" 10)
+  (let* ((layout (mh/output:define-output-layout ("name" :priority 10)
 				   ((:name "output" :make "HP" :model "model")
 				    (:position 10 10)))))
     (with-output-properties ((output
@@ -280,6 +280,42 @@
         (is (hrt::output-config=
              (hrt:make-output-config :scale 3)
              output-2-result))))))
+
+(define-layout-test find-output-configurations--exact-extra-outputs ()
+  (mh/output:define-output-layout ("first-second" :exact t)
+    ("first"
+     (:scale 2))
+    ("second"
+     (:scale 3)))
+  (with-output-properties ((output-1 :name "first")
+                           (output-2 :name "second")
+                           (output-3 :name "third"))
+    (let ((outputs (list output-1 output-2 output-3)))
+      (multiple-value-bind (config layout)
+          (mh/output:find-output-configurations
+           outputs)
+        ;; Since there were extra outputs, this shouldn't match:
+        (is (null layout))
+        (is (= (hash-table-count config) 3))
+        (dolist (o outputs)
+          (is (null (gethash o config))))))))
+
+(define-layout-test find-output-configurations--not-exact-extra-outputs ()
+  (mh/output:define-output-layout ("first-second" :exact nil)
+    ("first"
+     (:scale 2))
+    ("second"
+     (:scale 3)))
+  (with-output-properties ((output-1 :name "first")
+                           (output-2 :name "second")
+                           (output-3 :name "third"))
+    (let ((outputs (list output-1 output-2 output-3)))
+      (multiple-value-bind (config layout)
+          (mh/output:find-output-configurations
+           outputs)
+        ;; Since there were extra outputs, this shouldn't match:
+        (is layout)
+        (is (= (hash-table-count config) 3))))))
 
 (define-layout-test get-configuration-map--no-match ()
   (let ((layout (mh/output:define-output-layout "present"
