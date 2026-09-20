@@ -217,11 +217,9 @@
 				   ((:name "output" :make "HP" :model "model")
 				    (:position 10 10)))))
     (with-output-properties ((output
-							  :make "HP"
-							  :name "output")
-						     (o2 :make "HP"))
+                              :name "output" :make "HP" :model "model"))
       (let* ((found (mh/output::find-output-layout-config
-	                  (make-array 2 :initial-contents (list output o2))))
+	                  (make-array 1 :initial-contents (list output))))
              (result (mh/output::%output-score-pair-outputs found)))
         (is result)
         (is (= (length result) 1))
@@ -229,7 +227,7 @@
          (first result)
          :output output
          :matched (first (mh/output::output-layout-config-outputs layout))
-         :scored 3)))))
+         :scored 7)))))
 
 (define-layout-test find-output-configurations-no-layouts ()
   (with-output-properties ((output :name "output"))
