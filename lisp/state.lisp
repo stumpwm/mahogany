@@ -394,15 +394,21 @@ the current group or a layer shell frame"
         (loop for g across groups
               do (group-remove-output g output-container (server-seat state)))
         (setf cur-outputs (delete output-container cur-outputs :test #'equalp))
-        ;; We could have removed the current frame, so
-        ;; change it unless a non-titled frame is focused.
-        ;; TODO: do this in the output configuration timer handler
-        ;;  so that if multiple outputs are removed at once,
-        ;;  we don't do more work than needed.
-        (unless (typep cur-frame 'tree:layer-container)
-          (setf cur-frame (mahogany-group-current-frame
-                           (state-current-group state))))
-        (when (and cur-frame (> (length cur-outputs) 0))
+        ;; We could have removed the current frame,
+        ;; so switch our focus around to keep us in a valid state.
+        ;; Leave the rest of the output shuffling for the
+        ;; configuration timer handler
+        (typecase cur-frame
+          (tree:layer-container
+           (let ((container (tree:frame-parent cur-frame)))
+             (when (hrt:output= (tree:output-container-output container)
+                                hrt-output)
+               (setf cur-frame (mahogany-group-current-frame
+                            (state-current-group state))))))
+          (t
+           (setf cur-frame (mahogany-group-current-frame
+                            (state-current-group state)))))
+        (when cur-frame
           (tree:mark-frame-focused cur-frame (server-seat state))))
       (log-string :error "Removed an output that was never added to a container"))))
 
@@ -412,9 +418,6 @@ the current group or a layer shell frame"
   (with-accessors ((outputs state-outputs))
       state
     ;; The output is now invalid, so remove it from the state.
-    ;; Leave the reconfiguring and re-arranging to the output configuration
-    ;; timer; as long as the output is destroyed, we can leave everything
-    ;; in place.
     (alexandria:if-let ((mh-output (find hrt-output (state-outputs state)
                                          :test #'cffi:pointer-eq
                                          :key #'hrt:output-hrt-output)))
