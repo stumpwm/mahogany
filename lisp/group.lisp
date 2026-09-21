@@ -193,12 +193,14 @@ to match."
     (alexandria:if-let ((focused-frame (mahogany-group-current-frame group)))
       (etypecase focused-frame
         (tree:output-node
-         (let* ((focused-underneath (tree:find-focused-frame focused-frame))
-                (w (tree:frame-width focused-underneath))
-                (h (tree:frame-height focused-underneath)))
-           (set-dimensions view w h)))
+         (let ((focused-underneath (tree:find-focused-frame focused-frame)))
+           (multiple-value-bind (w h)
+               (tree::frame-view-dimensions focused-underneath)
+           (set-dimensions view w h))))
         (tree:frame
-         (set-dimensions view (tree:frame-width focused-frame) (tree:frame-height focused-frame))))
+         (multiple-value-bind (w h)
+               (tree::frame-view-dimensions focused-frame)
+         (set-dimensions view w h))))
       ;; There's no focused frame, we have no information:
       (set-dimensions view 0 0))
     view))

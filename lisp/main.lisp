@@ -40,13 +40,19 @@ further up. "
 
 (defun init-frame-border-styles ()
   (setf tree::*frame-focus-border-style*
+        ;; Keep these the same width to avoid weird
+        ;; frame resizing issues
         (hrt:border-box-style-create
          :hrt-border-solid (cl-colors2:as-rgb "#ACE1AF") ; 9900a4
-         1.5d0)
+         2.0d0)
         tree::*frame-unfocus-border-style*
         (hrt:border-box-style-create
+         :hrt-border-solid (cl-colors2:as-rgb "000000") ; 9900a4
+         2.0d0)
+        tree::*frame-unfocus-empty-border-style*
+        (hrt:border-box-style-create
          :hrt-border-dotted (cl-colors2:as-rgb "cccccc")
-         1.0d0)))
+         2.0d0)))
 
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
