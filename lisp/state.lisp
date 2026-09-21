@@ -321,24 +321,27 @@ the current group or a layer shell frame"
      :trace
      "After configuration:~%~2TAdded: ~S~%~2T~%~2TAll: ~S"
      added full-list)
-    (multiple-value-bind (config-map layout)
-        (find-output-configurations full-list)
-      (log-string :info "Applying output configuration ~S:~%  ~S"
-                  (when layout
-                    (mahogany/output-config:output-layout-config-name layout))
-                  (with-output-to-string (s)
-                    (maphash (lambda (x y) (format s "  (~S ~S)~%" x y)) config-map)))
-      (unless (hrt::output-configure-atomic config-map)
-        (log-string :error "Failed to apply output configuration ~A"
-                    layout)
-        (setf config-map (%try-backup-configs full-list)))
-      (dolist (new-output added)
-        (remhash new-output config-map)
-        (%add-output *compositor-state* new-output))
-      (maphash (lambda (output config)
-                 (declare (ignore config))
-                 (%update-output-enabled *compositor-state* output))
-               config-map))
+    ;; If there aren't any outputs,
+    ;; configuration will always fail.
+    (when (> (length full-list) 0)
+      (multiple-value-bind (config-map layout)
+          (find-output-configurations full-list)
+        (log-string :info "Applying output configuration ~S:~%  ~S"
+                    (when layout
+                      (mahogany/output-config:output-layout-config-name layout))
+                    (with-output-to-string (s)
+                      (maphash (lambda (x y) (format s "  (~S ~S)~%" x y)) config-map)))
+        (unless (hrt::output-configure-atomic config-map)
+          (log-string :error "Failed to apply output configuration ~A"
+                      layout)
+          (setf config-map (%try-backup-configs full-list)))
+        (dolist (new-output added)
+          (remhash new-output config-map)
+          (%add-output *compositor-state* new-output))
+        (maphash (lambda (output config)
+                   (declare (ignore config))
+                   (%update-output-enabled *compositor-state* output))
+                 config-map)))
     (unless (state-%current-frame *compositor-state*)
       (let ((cur-group (state-current-group *compositor-state*)))
         (group-focus cur-group (server-seat *compositor-state*))
