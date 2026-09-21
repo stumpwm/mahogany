@@ -57,7 +57,9 @@
 (defun cleanup-frame (frame)
   (log-string :trace "Cleaning up frame ~S" frame)
   (hrt:hrt-border-box-destroy (slot-value frame 'border-box))
-  (setf (slot-value frame 'border-box) nil))
+  (setf (slot-value frame 'border-box) nil)
+  (alexandria:when-let ((view (frame-surface frame)))
+    (setf (hrt::view-container view) nil)))
 
 (defmethod replace-frame ((root view-frame) frame &optional (cleanup-func #'identity))
   (unless (eql root frame)
