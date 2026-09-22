@@ -894,3 +894,13 @@ intial placement."
 (cffi:defcfun ("hrt_border_box_set_style" hrt-border-box-set-style) :void
   (box (:pointer (:struct hrt-border-box)))
   (style (:pointer (:struct hrt-border-box-style))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-border-box-raise-to-top))
+(cffi:defcfun ("hrt_border_box_raise_to_top" hrt-border-box-raise-to-top) :void
+  (box (:pointer (:struct hrt-border-box))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-border-box-lower-to-bottom))
+(cffi:defcfun ("hrt_border_box_lower_to_bottom" hrt-border-box-lower-to-bottom) :void
+  (box (:pointer (:struct hrt-border-box))))

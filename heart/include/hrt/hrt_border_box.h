@@ -35,4 +35,8 @@ void hrt_border_box_set_enabled(struct hrt_border_box *box, bool enabled);
 void hrt_border_box_set_style(struct hrt_border_box *box,
                               struct hrt_border_box_style *style);
 
+void hrt_border_box_raise_to_top(struct hrt_border_box *box);
+
+void hrt_border_box_lower_to_bottom(struct hrt_border_box *box);
+
 #endif
