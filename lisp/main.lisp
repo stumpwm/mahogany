@@ -38,27 +38,11 @@ further up. "
         (declare (ignore args))
         (toast-message *compositor-state* "config file loaded successfully.")))))
 
-(defun init-frame-border-styles ()
-  (setf tree::*frame-focus-border-style*
-        ;; Keep these the same width to avoid weird
-        ;; frame resizing issues
-        (hrt:border-box-style-create
-         :hrt-border-solid (cl-colors2:as-rgb "#ACE1AF") ; 9900a4
-         2.0d0)
-        tree::*frame-unfocus-border-style*
-        (hrt:border-box-style-create
-         :hrt-border-solid (cl-colors2:as-rgb "000000") ; 9900a4
-         2.0d0)
-        tree::*frame-unfocus-empty-border-style*
-        (hrt:border-box-style-create
-         :hrt-border-dotted (cl-colors2:as-rgb "cccccc")
-         2.0d0)))
-
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
     `(cffi:with-foreign-slots (,vars ,variable ,type)
        (setf ,@(loop for pair in sets
-                     append (list (car pair)
+                    append (list (car pair)
                                   (if (cadr pair)
                                       `(cffi:callback ,(cadr pair))
                                       (cffi:null-pointer))))))))
@@ -87,7 +71,7 @@ further up. "
 (defun run-server (args
                    &aux (log-level (intern (gethash 'loglevel args) 'keyword)))
   (hrt:load-foreign-libraries)
-  (init-frame-border-styles)
+  (tree::init-frame-border-styles)
   (log-init :level log-level)
   (when (gethash 'enable-debugger args)
     (log-string :info "Running with debugger enabled.")

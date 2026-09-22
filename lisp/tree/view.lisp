@@ -1,5 +1,9 @@
 (in-package :mahogany/tree)
 
+;; Since these hold forgein objects, we can't dump them to the image;
+;; they need to be set before any frame is created.
+;; Once present, they can be updated as needed using the
+;; hrt:border-box-style-update function.
 (defparameter *frame-focus-border-style*
   nil
   "Border of empty frames that are focused")
@@ -11,6 +15,33 @@
 (defparameter *frame-unfocus-empty-border-style*
   nil
   "Border of empty frames that are not focused")
+
+;; Let's keep the border width a fixnum
+;; to avoid half pixels:
+(declaim (type fixnum *frame-border-width*))
+(defglobal *frame-border-width* 1)
+
+(defun init-frame-border-styles ()
+  ;; For border collapsing to work, all borders need to be the same
+  ;; width:
+  (let ((width (coerce *frame-border-width* 'double-float)))
+    (setf *frame-focus-border-style*
+          ;; Keep these the same width to avoid weird
+          ;; frame resizing issues
+          (hrt:border-box-style-create
+           :hrt-border-solid (cl-colors2:as-rgb "#ACE1AF") ; 9900a4
+           width)
+          *frame-unfocus-border-style*
+          (hrt:border-box-style-create
+           :hrt-border-solid (cl-colors2:as-rgb "000000") ; 9900a4
+           (* width 2)) ; Add width to hide any gaps from rounded corners
+          *frame-unfocus-empty-border-style*
+          (hrt:border-box-style-create
+           :hrt-border-dotted (cl-colors2:as-rgb "cccccc")
+           ;; Note: As long as the width isn't greater than the
+           ;; declared width, we are fine, especially
+           ;; for empty frames:
+          width))))
 
 (defclass view-frame (frame)
   ((view :initarg :view
@@ -30,21 +61,76 @@
                :type (or null cffi:foreign-pointer))
    (seat :initform nil)))
 
+(defun %view-frame-get-dimensions (frame adjust width height)
+  (let* ((w-adjust (- width (if (frame-bordered-left frame)
+								adjust
+								(+ adjust adjust))))
+         (h-adjust (- height (if (frame-bordered-top frame)
+								 adjust
+								 (+ adjust adjust)))))
+    (values w-adjust h-adjust)))
+
+(defun %view-frame-get-position (frame adjust x y)
+  (let* ((x-adjust (+ x (if (frame-bordered-left frame)
+							0
+							adjust)))
+         (y-adjust (+ y (if (frame-bordered-top frame)
+							0
+							adjust))))
+    (values x-adjust y-adjust)))
+
+(defun %border-box-get-dimensions (frame adjust width height)
+  (let ((w-adjust (+ width (if (frame-bordered-left frame)
+							   adjust
+							   0)))
+		(h-adjust (+ height (if (frame-bordered-top frame)
+								adjust
+								0))))
+    (values w-adjust h-adjust)))
+
+(defun %border-box-get-position (frame adjust x y)
+  (let* ((x-adjust (- x (if (frame-bordered-left frame)
+							adjust
+							0)))
+         (y-adjust (- y (if (frame-bordered-top frame)
+							adjust
+							0))))
+	(values x-adjust y-adjust)))
+
 (defmethod initialize-instance :after ((frame view-frame)
                                        &key focused view
-                                       &allow-other-keys)
+                                         &allow-other-keys)
   (with-slots (border-box) frame
-    (let ((layer-container (frame-find-layer frame))
-          (box-style (if focused *frame-focus-border-style*
-                         *frame-unfocus-border-style*)))
-      (setf border-box (hrt:border-box-create
-                        (layer-container-layer layer-container)
-                        box-style
-                        (round (frame-x frame)) (round (frame-y frame))
-                        (round (frame-width frame))
-                        (round (frame-height frame)))))
-    (when view
-      (hrt:hrt-border-box-set-enabled border-box nil))))
+    (let* ((rounded-x (round (frame-x frame)))
+           (rounded-y (round (frame-y frame)))
+           (rounded-width (round (frame-width frame)))
+           (rounded-height (round (frame-height frame)))
+           (box-style (if focused
+                          *frame-focus-border-style*
+                          (if view
+                              *frame-unfocus-border-style*
+                              *frame-unfocus-empty-border-style*)))
+           (adjust *frame-border-width*))
+      (let* ((layer-container (frame-find-layer frame)))
+        (multiple-value-bind (x y)
+            (%border-box-get-position frame adjust rounded-x rounded-y)
+          (multiple-value-bind (width height)
+              (%border-box-get-dimensions frame adjust rounded-width rounded-height)
+            (setf border-box (hrt:border-box-create
+                              (layer-container-layer layer-container)
+                              box-style
+                              x
+                              y
+                              width
+                              height)))))
+      (hrt:hrt-border-box-lower-to-bottom border-box)
+      (when view
+        (multiple-value-bind (width height)
+            (%view-frame-get-dimensions frame adjust rounded-width rounded-height)
+          (set-dimensions view width height))
+        (multiple-value-bind (x y)
+            (%view-frame-get-position frame adjust rounded-x rounded-y)
+          (set-position view x y))))))
 
 (defmethod (setf frame-surface) :around (new-view (frame view-frame))
   (let ((old-view (frame-surface frame)))
@@ -74,22 +160,34 @@
   (setf (slot-value frame 'next) next))
 
 (defun frame-view-dimensions (frame)
-  (let* ((total-border-width (round (* 2 2)))
-         (w-adjust (- (frame-width frame) total-border-width))
-         (h-adjust (- (frame-height frame) total-border-width)))
-    (values w-adjust h-adjust)))
+  (let ((adjust *frame-border-width*))
+    (%view-frame-get-dimensions frame adjust
+                                (round (frame-width frame))
+                                (round (frame-height frame)))))
 
-(defun %view-frame-set-dimensions (view width height)
-  (let* ((total-border-width (round (* 2 2)))
-         (w-adjust (- width total-border-width))
-         (h-adjust (- height total-border-width)))
-    (set-dimensions view w-adjust h-adjust)))
+(defun %view-frame-set-dimensions (frame adjust width height)
+  (multiple-value-call
+      #'set-dimensions
+    (frame-surface frame)
+    (%view-frame-get-dimensions frame adjust width height)))
 
-(defun %view-frame-set-position (view x y)
-  (let* ((adjust 2)
-         (x-adjust (+ x adjust))
-         (y-adjust (+ y adjust)))
-    (set-position view x-adjust y-adjust)))
+(defun %view-frame-set-position (frame adjust x y)
+  (multiple-value-call
+      #'set-position
+    (frame-surface frame)
+   (%view-frame-get-position frame adjust x y)))
+
+(defun %border-box-set-position (frame adjust x y)
+  (multiple-value-call
+      #'hrt:hrt-border-box-set-relative
+    (slot-value frame 'border-box)
+    (%border-box-get-position frame adjust x y)))
+
+(defun %border-box-set-dimensions (frame adjust width height)
+  (multiple-value-call
+      #'hrt:hrt-border-box-set-size
+    (slot-value frame 'border-box)
+    (%border-box-get-dimensions frame adjust width height)))
 
 (defmethod (setf frame-surface) :after (view (frame view-frame))
   "Place the view in the frame and make it have the same dimensions
@@ -98,12 +196,21 @@ and position as the frame"
     (cond
       (view
        (unless focused
-         ;; (hrt:hrt-border-box-set-enabled border-box nil))
          (hrt:border-box-set-style (slot-value frame 'border-box)
                                    *frame-unfocus-border-style*))
        (hrt:with-view-transaction ()
-         (%view-frame-set-position view (round (frame-x frame)) (round (frame-y frame)))
-         (%view-frame-set-dimensions view (round (frame-width frame)) (round (frame-height frame)))
+         (let ((adjust *frame-border-width*))
+           (multiple-value-bind (width height)
+               (%view-frame-get-dimensions
+                frame adjust
+                (round (frame-width frame)) (round (frame-height frame)))
+             (set-dimensions view width height))
+           (multiple-value-bind (x y)
+               (%view-frame-get-position
+                frame adjust
+                (round (frame-x frame))
+                (round (frame-y frame)))
+             (set-position view x y)))
          (when (frame-focused frame)
            (hrt:focus-view view (slot-value frame 'seat)))))
       (t
@@ -113,6 +220,7 @@ and position as the frame"
 
 (defmethod mark-frame-focused :after ((frame view-frame) seat)
   (setf (slot-value frame 'seat) seat)
+  (hrt:hrt-border-box-raise-to-top (slot-value frame 'border-box))
   (hrt:border-box-set-style (slot-value frame 'border-box) *frame-focus-border-style*)
   (alexandria:when-let ((hrt-view (frame-surface frame)))
     (log-string :trace "view frame focused")
@@ -124,6 +232,7 @@ and position as the frame"
     (progn
       (log-string :trace "view frame unfocused")
       (hrt:unfocus-view hrt-view seat)
+      (hrt:hrt-border-box-lower-to-bottom (slot-value frame 'border-box))
       (hrt:border-box-set-style (slot-value frame 'border-box)
                                 *frame-unfocus-border-style*))
     (hrt:border-box-set-style (slot-value frame 'border-box)
@@ -140,51 +249,54 @@ and position as the frame"
 
 (defmethod (setf frame-x) :before (new-x (frame view-frame))
   (let ((round-x (round new-x))
-        (round-y (round (frame-y frame))))
+        (round-y (round (frame-y frame)))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-position (frame-surface frame) round-x round-y))
-    (hrt:hrt-border-box-set-relative (slot-value frame 'border-box)
-                                     round-x round-y)))
+      (%view-frame-set-position frame adjust
+                                round-x round-y))
+    (%border-box-set-position frame adjust round-x round-y)))
 
 (defmethod (setf frame-y) :before (new-y (frame view-frame))
   (let ((round-y (round new-y))
-        (round-x (round (frame-x frame))))
+        (round-x (round (frame-x frame)))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-position (frame-surface frame) round-x round-y))
-    (hrt:hrt-border-box-set-relative (slot-value frame 'border-box)
-                                     round-x round-y)))
+      (%view-frame-set-position frame adjust round-x round-y))
+    (%border-box-set-position frame adjust round-x round-y)))
 
 (defmethod set-dimensions :before ((frame view-frame) width height)
   (let ((w-adjusted (round width))
-        (h-adjusted (round height)))
+        (h-adjusted (round height))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-dimensions (frame-surface frame) w-adjusted h-adjusted))
-    (hrt:hrt-border-box-set-size (slot-value frame 'border-box)
-                                 w-adjusted h-adjusted)))
+      (%view-frame-set-dimensions frame adjust w-adjusted h-adjusted))
+    (%border-box-set-dimensions frame adjust
+                                w-adjusted h-adjusted)))
 
 (defmethod set-position :before ((frame view-frame) x y)
   (let ((round-x (round x))
-        (round-y (round y)))
+        (round-y (round y))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-position (frame-surface frame) round-x round-y))
-    (hrt:hrt-border-box-set-relative (slot-value frame 'border-box)
-                                     round-x round-y)))
+      (%view-frame-set-position frame adjust round-x round-y))
+    (%border-box-set-position frame adjust round-x round-y)))
 
 (defmethod (setf frame-width) :before (new-width (frame view-frame))
   (let ((round-width (round new-width))
-        (round-height (round (frame-height frame))))
+        (round-height (round (frame-height frame)))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-dimensions (frame-surface frame) round-width round-height))
-    (hrt:hrt-border-box-set-size (slot-value frame 'border-box)
-                                 round-width round-height)))
+      (%view-frame-set-dimensions frame adjust round-width round-height))
+    (%border-box-set-dimensions frame adjust
+                                round-width round-height)))
 
 (defmethod (setf frame-height) :before (new-height (frame view-frame))
   (let ((round-width (round (frame-width frame)))
-        (round-height (round new-height)))
+        (round-height (round new-height))
+        (adjust *frame-border-width*))
     (when (frame-surface frame)
-      (%view-frame-set-dimensions (frame-surface frame) round-width round-height))
-    (hrt:hrt-border-box-set-size (slot-value frame 'border-box)
-                                 round-width round-height)))
+      (%view-frame-set-dimensions frame adjust round-width round-height))
+    (%border-box-set-dimensions frame adjust round-width round-height)))
 
 (defmethod find-view-frame ((frame view-frame) view)
   (when (equal (frame-surface frame) view)

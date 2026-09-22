@@ -140,7 +140,8 @@
 of FRAME to those of ROOT."
   ;; check to see if we are replacing the topmost node in a tree
   ;; and the output node we are associated with has no siblings
-  (if (and (topmost-frame-p root) (not (cdr (tree-children (frame-parent (frame-parent root))))))
+  (if (and (topmost-frame-p root)
+           (not (cdr (tree-children (frame-parent (frame-parent root))))))
       (setf (%frame-next frame) frame
             (%frame-prev frame) frame)
       (psetf (%frame-next (frame-prev root)) frame
@@ -149,6 +150,9 @@ of FRAME to those of ROOT."
              (%frame-next frame) (frame-next root)))
   (swap-in-parent root frame)
   (setf (frame-parent frame) (frame-parent root))
+  ;; Update adjacency
+  (setf (frame-bordered-left frame) (frame-bordered-left root)
+        (frame-bordered-top frame) (frame-bordered-top root))
   ;; don't bother with an if-statement to see which values to change:
   (set-dimensions frame (frame-width root) (frame-height root))
   (set-position frame (frame-x root) (frame-y root)))
@@ -181,7 +185,9 @@ Used to initially split all frames, regardless of type."
                                     :width old-width
                                     :height old-height
                                     :x old-x
-                                    :y old-y))
+                                    :y old-y
+                                    :bordered-top (frame-bordered-top frame)
+                                    :bordered-left (frame-bordered-left frame)))
          (new-frame))
     (%check-split-sizes :width new-frame-width other-frame-width)
     ;; place the child frames:
@@ -192,7 +198,9 @@ Used to initially split all frames, regardless of type."
                                       :width new-frame-width
                                       :height old-height
                                       :x (+ old-x other-frame-width)
-                                      :y old-y))
+                                      :y old-y
+                                      :bordered-top (frame-bordered-top frame)
+                                      :bordered-left t))
        (setf (frame-width frame) other-frame-width
              (tree-children new-parent) (list frame new-frame))
        (psetf (%frame-prev new-frame) frame
@@ -205,7 +213,9 @@ Used to initially split all frames, regardless of type."
                                       :width other-frame-width
                                       :height old-height
                                       :x old-x
-                                      :y old-y)
+                                      :y old-y
+                                      :bordered-top (frame-bordered-top frame)
+                                      :bordered-left (frame-bordered-left frame))
              (frame-width frame) new-frame-width
              (frame-x frame) (+ old-x other-frame-width)
              (tree-children new-parent) (list new-frame frame))
@@ -238,7 +248,9 @@ Used to initially split all frames, regardless of type."
                                     :width old-width
                                     :height old-height
                                     :x old-x
-                                    :y old-y))
+                                    :y old-y
+                                    :bordered-top (frame-bordered-top frame)
+                                    :bordered-left (frame-bordered-left frame)))
          (new-frame))
     (%check-split-sizes :height new-frame-height other-frame-height)
     ;; place the child frames:
@@ -249,7 +261,9 @@ Used to initially split all frames, regardless of type."
                                       :width old-width
                                       :height new-frame-height
                                       :x old-x
-                                      :y old-y))
+                                      :y old-y
+                                      :bordered-top (frame-bordered-top frame)
+                                      :bordered-left (frame-bordered-left frame)))
        (setf (frame-height frame) other-frame-height)
        (setf (frame-y frame) (+ old-y new-frame-height))
        (setf (tree-children new-parent) (list new-frame frame))
@@ -263,7 +277,9 @@ Used to initially split all frames, regardless of type."
                                       :width old-width
                                       :height other-frame-height
                                       :x old-x
-                                      :y (+ old-y new-frame-height)))
+                                      :y (+ old-y new-frame-height)
+                                      :bordered-top t
+                                      :bordered-left (frame-bordered-left frame)))
        (setf (frame-height frame) new-frame-height)
        (setf (tree-children new-parent) (list frame new-frame))
        (psetf (%frame-prev new-frame) frame
@@ -304,17 +320,20 @@ Used to initially split all frames, regardless of type."
               new-frame-width (+ new-frame-width remainder)))
       (%check-split-sizes :width new-frame-width other-children-width)
       ;; create the new frame and add it to a new frame-list:
-      (flet ((make-new-frame (x)
+      (flet ((make-new-frame (x &key bordered-left)
                (make-instance 'view-frame
                               :parent frame
                               :width new-frame-width
                               :height (frame-height frame)
                               :x x
-                              :y parent-y)))
+                              :y parent-y
+                              :bordered-top (frame-bordered-top frame)
+                              :bordered-left bordered-left)))
         (ecase direction
           (:right
            (setf new-frame (make-new-frame (+ parent-x
-                                              (- parent-width new-frame-width)))
+                                              (- parent-width new-frame-width))
+                                           :bordered-left t)
                  x-adjust 0
                  ;; adding to the back, create new list so
                  ;; parent-children is unchanged:
@@ -326,7 +345,9 @@ Used to initially split all frames, regardless of type."
                    (%frame-prev next-frame) new-frame
                    (%frame-next prev-frame) new-frame)))
           (:left
-           (setf new-frame (make-new-frame parent-x)
+           (setf new-frame (make-new-frame parent-x
+                                           :bordered-left
+                                           (frame-bordered-left frame))
                  x-adjust (+ parent-x new-frame-width)
                  ;; we can still use parent-children to access
                  ;; all frames that were already there,
@@ -378,16 +399,20 @@ Used to initially split all frames, regardless of type."
               new-frame-height (+ new-frame-height remainder)))
       (%check-split-sizes :height new-frame-height other-children-height)
       ;; create the new frame and add it to a new frame-list:
-      (flet ((make-new-frame (y)
+      (flet ((make-new-frame (y &key bordered-top)
                (make-instance 'view-frame
                               :parent frame
                               :width parent-width
                               :height new-frame-height
                               :x parent-x
-                              :y y)))
+                              :y y
+                              :bordered-top bordered-top
+                              :bordered-left (frame-bordered-left frame))))
         (ecase direction
           (:top
-           (setf new-frame (make-new-frame parent-y)
+           (setf new-frame (make-new-frame parent-y
+                                           :bordered-top
+                                           (frame-bordered-top frame))
                  y-adjust 0
                  ;; adding to the back, create new list so parent-children
                  ;; is unchanged:
@@ -400,7 +425,8 @@ Used to initially split all frames, regardless of type."
                    (%frame-next prev-frame) new-frame)))
           (:bottom
            (setf new-frame (make-new-frame (+ parent-y
-                                              (- parent-height new-frame-height)))
+                                              (- parent-height new-frame-height))
+                                           :bordered-top t)
                  y-adjust (+ parent-y new-frame-height)
                  ;; we can still use parent-children to access all frames
                  ;; that were already there, as we add to the front
@@ -498,13 +524,19 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                         (dolist (child (tree-children parent))
                           (setf (frame-width child) new-child-width
                                 (frame-x child) new-x)
-                          (setf new-x (+ new-x new-child-width)))))
+                          (setf new-x (+ new-x new-child-width))))
+          (let ((first-child (car (tree-children parent))))
+            (setf (frame-bordered-left first-child)
+                  (frame-bordered-left parent))))
          (:vertical  (let ((new-child-height (/ (frame-height parent) new-num-children))
                            (new-y (frame-y parent)))
                        (dolist (child (tree-children parent))
                          (setf (frame-height child) new-child-height
                                (frame-y child) new-y)
-                         (setf new-y (+ new-y new-child-height))))))))))
+                         (setf new-y (+ new-y new-child-height))))
+          (let ((first-child (car (tree-children parent))))
+            (setf (frame-bordered-top first-child)
+                  (frame-bordere-top parent)))))))))
 
 (defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
   (declare (ignore cleanup-func))
@@ -534,10 +566,6 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                (cleanup-frame child)
                (funcall cleanup-func child))))))
   (%replace-frame root frame))
-
-;; (defgeneric replace-frame ((frame frame) frame &optional (cleanup-func #'identity))
-;;   (%replace-frame root frame)
-;;   (funcall cleanup-func frame))
 
 (defmethod print-object ((object frame) stream)
   (print-unreadable-object (object stream :type t)

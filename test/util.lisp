@@ -4,7 +4,8 @@
            #:mock-output
            #:make-mock-output
            #:mock-view
-           #:make-mock-view))
+           #:make-mock-view
+           #:with-stubbed-functions))
 
 (in-package #:mahogany/test/util)
 
@@ -50,3 +51,13 @@
                        ,def)))
         (push def instances)))
     `(progn ,@instances)))
+
+(defmacro with-stubbed-functions (functions &body body)
+  (let ((deflet-args nil))
+    (dolist (spec functions)
+      (push `(,@(subseq spec 0 2)
+              (declare (ignore ,@(second spec)))
+              ,@(if (third spec) (list (third spec))))
+            deflet-args))
+    `(cl-mock:dflet ,deflet-args
+       ,@body)))
