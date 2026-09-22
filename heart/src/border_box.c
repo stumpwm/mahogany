@@ -264,6 +264,14 @@ void hrt_border_box_set_enabled(struct hrt_border_box *box, bool enabled) {
     wlr_scene_node_set_enabled(&box->scene_buffer->node, enabled);
 }
 
+void hrt_border_box_raise_to_top(struct hrt_border_box *box) {
+    wlr_scene_node_raise_to_top(&box->scene_buffer->node);
+}
+
+void hrt_border_box_lower_to_bottom(struct hrt_border_box *box) {
+    wlr_scene_node_lower_to_bottom(&box->scene_buffer->node);
+}
+
 static void box_style_update(struct hrt_border_box_style *style,
                              enum hrt_border_style border, float color[4],
                              double line_width) {

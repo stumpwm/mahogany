@@ -63,6 +63,8 @@
            #:hrt-border-box-set-size
            #:hrt-border-box-set-relative
            #:hrt-border-box-set-enabled
+           #:hrt-border-box-raise-to-top
+           #:hrt-border-box-lower-to-bottom
            ;; Seat
            #:hrt-seat
            #:hrt-seat-reset-view-under
