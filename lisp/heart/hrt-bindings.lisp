@@ -749,6 +749,95 @@ intial placement."
   (width (:pointer :int))
   (height (:pointer :int)))
 
+;; next section imported from file heart/include/hrt/hrt_workspace.h
+
+(cffi:defcstruct hrt-workspace-callbacks
+  (create-workspace :pointer #| function ptr void (char *, void *) |#)
+  (activate-workspace :pointer #| function ptr void (void *) |#)
+  (decativate-workspace :pointer #| function ptr void (void *) |#)
+  (assign-workspace :pointer #| function ptr void (void *, void *) |#)
+  (remove-workspace :pointer #| function ptr void (void *) |#))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-init))
+(cffi:defcfun ("hrt_workspace_init" hrt-workspace-init) :bool
+  (sever (:pointer (:struct hrt-server)))
+  (callbacks (:pointer (:struct hrt-workspace-callbacks))))
+
+(cffi:defctype hrt-workspace-group-handle :void #| (:struct wlr-ext-workspace-group-handle-v1) |# )
+
+(cffi:defctype hrt-workspace-handle :void #| (:struct wlr-ext-workspace-handle-v1 |#)
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-group-handle-create))
+(cffi:defcfun ("hrt_workspace_group_handle_create" hrt-workspace-group-handle-create) (:pointer hrt-workspace-group-handle)
+  (server (:pointer (:struct hrt-server))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-group-handle-v1-destroy))
+(cffi:defcfun ("hrt_workspace_group_handle_v1_destroy" hrt-workspace-group-handle-v1-destroy) :void
+  (group (:pointer hrt-workspace-group-handle)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-group-add-output))
+(cffi:defcfun ("hrt_workspace_group_add_output" hrt-workspace-group-add-output) :void
+  (group (:pointer hrt-workspace-group-handle))
+  (output (:pointer (:struct hrt-output))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-group-handle-output-leave))
+(cffi:defcfun ("hrt_workspace_group_handle_output_leave" hrt-workspace-group-handle-output-leave) :void
+  (group (:pointer hrt-workspace-group-handle))
+  (output (:pointer (:struct hrt-output))))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-create))
+(cffi:defcfun ("hrt_workspace_handle_create" hrt-workspace-handle-create) (:pointer hrt-workspace-handle)
+  (server (:pointer (:struct hrt-server)))
+  (id (:pointer :char)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-destroy))
+(cffi:defcfun ("hrt_workspace_handle_destroy" hrt-workspace-handle-destroy) :void
+  (workspace (:pointer hrt-workspace-handle)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-group))
+(cffi:defcfun ("hrt_workspace_handle_set_group" hrt-workspace-handle-set-group) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (group (:pointer hrt-workspace-group-handle)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-name))
+(cffi:defcfun ("hrt_workspace_handle_set_name" hrt-workspace-handle-set-name) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (name (:pointer :char)))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-coordinates))
+(cffi:defcfun ("hrt_workspace_handle_set_coordinates" hrt-workspace-handle-set-coordinates) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (coords :pointer #| :uint32 |#)
+  (coords-len :size))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-active))
+(cffi:defcfun ("hrt_workspace_handle_set_active" hrt-workspace-handle-set-active) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (enabled :bool))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-urgent))
+(cffi:defcfun ("hrt_workspace_handle_set_urgent" hrt-workspace-handle-set-urgent) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (enabled :bool))
+
+#-HRT-DEBUG
+(declaim (inline hrt-workspace-handle-set-hidden))
+(cffi:defcfun ("hrt_workspace_handle_set_hidden" hrt-workspace-handle-set-hidden) :void
+  (workspace (:pointer hrt-workspace-handle))
+  (enabled :bool))
+
 ;; next section imported from file heart/include/hrt/hrt_server.h
 
 (cffi:defcstruct hrt-server-destroy-listener
@@ -756,7 +845,8 @@ intial placement."
   (headless (:struct wl-listener))
   (output-manager (:struct wl-listener))
   (layer-shell (:struct wl-listener))
-  (idle-inhibit-manager (:struct wl-listener)))
+  (idle-inhibit-manager (:struct wl-listener))
+  (workspace-manager (:struct wl-listener)))
 
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
@@ -768,6 +858,9 @@ intial placement."
   (allocator :pointer #| (:struct wlr-allocator) |#)
   (scene :pointer #| (:struct wlr-scene) |#)
   (scene-layout :pointer #| (:struct wlr-scene-output-layout) |#)
+  (workspace-manager :pointer #| (:struct wlr-ext-workspace-manager-v1) |#)
+  (workspace-commit (:struct wl-listener))
+  (workspace-callbacks (:pointer (:struct hrt-workspace-callbacks)))
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |#)
   (output-layout :pointer #| (:struct wlr-output-layout) |#)
