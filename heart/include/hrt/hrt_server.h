@@ -31,6 +31,10 @@ struct hrt_server {
 
     struct wlr_scene *scene;
     struct wlr_scene_output_layout *scene_layout;
+
+    struct wlr_ext_workspace_manager_v1 *workspace_manager;
+    struct wl_listener workspace_commit;
+
     struct wl_listener new_output;
     struct wlr_output_manager_v1 *output_manager;
     struct wlr_output_layout *output_layout;
@@ -56,6 +60,7 @@ struct hrt_server {
         struct wl_listener headless;
         struct wl_listener output_manager;
         struct wl_listener layer_shell;
+        struct wl_listener workspace_manager;
     } destroy_listener;
 
     const struct hrt_output_callbacks *output_callback;
