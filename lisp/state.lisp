@@ -34,7 +34,7 @@ or HRT-OUTPUT is NIL or a null pointer."
   (mahogany/util::find-free-number
    (map 'list #'mahogany-group-number (state-groups state)) 1))
 
-(defun %add-group (state name index)
+(defun %add-group (state name id index)
   (declare (type mahogany-state state)
            (type string name)
            (type fixnum index))
@@ -42,7 +42,7 @@ or HRT-OUTPUT is NIL or a null pointer."
                    (current-group state-current-group)
                    (server state-server))
       state
-    (let* ((default-group (make-mahogany-group name index server)))
+    (let* ((default-group (make-mahogany-group name index id server)))
       (setf (mahogany-group-active-p default-group) t)
       (vector-push-extend default-group groups)
       default-group)))
@@ -58,6 +58,7 @@ or HRT-OUTPUT is NIL or a null pointer."
     (error 'mahogany/util:mahogany-panic
            :text "Could not initialize the compositor."))
   (let ((default-group (%add-group state *default-group-name*
+                                   "mh-default"
                                    (%next-group-index state))))
     (setf (state-current-group state) default-group)))
 
@@ -451,12 +452,12 @@ the current group or a layer shell frame"
   (let ((index (%next-group-index state)))
     (%next-group-name index)))
 
-(defun mahogany-state-group-add (state &key group-name (make-current t))
+(defun mahogany-state-group-add (state &key group-name (make-current t) id)
   (declare (type mahogany-state state))
   (let ((index (%next-group-index state)))
     (unless group-name
       (setf group-name (%next-group-name index)))
-    (let ((new-group (%add-group state group-name index)))
+    (let ((new-group (%add-group state group-name id index)))
       (with-accessors ((current-group state-current-group)
                        (hidden-groups state-hidden-groups)
                        (state-outputs state-cur-outputs))

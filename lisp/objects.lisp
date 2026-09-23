@@ -1,9 +1,12 @@
 (in-package #:mahogany)
 
 (defstruct (mahogany-group (:constructor %make-mahogany-group
-                               (name number hrt-group tiled-container)))
+                               (name number id hrt-group tiled-container)))
   (name "" :type string)
   (number 1 :type fixnum :read-only t)
+  ;; The ext-workspace manager protocol expects
+  ;; permanent workspaces to have a persistent id:
+  (id nil :type (or null string) :read-only t)
   (active-p nil :type boolean)
   (hrt-group (cffi:null-pointer) :type cffi:foreign-pointer :read-only t)
   (tiled-container nil :type tree:layer-container :read-only t)

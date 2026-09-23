@@ -1,11 +1,11 @@
 (in-package #:mahogany)
 
-(defun make-mahogany-group (name number hrt-server)
+(defun make-mahogany-group (name number id hrt-server)
   (let* ((hrt-group (hrt:server-group-create hrt-server))
         (tiled-layer (tree:make-layer-container hrt-group)))
     (hrt:hrt-scene-group-set-enabled hrt-group nil)
     (log-string :debug "Created group ~A" name)
-    (%make-mahogany-group name number hrt-group tiled-layer)))
+    (%make-mahogany-group name number id hrt-group tiled-layer)))
 
 (defun destroy-mahogany-group (group scene-tree seat)
   (group-suspend group seat)
