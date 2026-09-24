@@ -565,3 +565,37 @@
     (signals invalid-operation (tree:split-frame-h parent :direction :right))
     (check-children-dimensions parent (list minimum minimum minimum)
                                #'tree:frame-width)))
+
+(defun run-poly-split-left-top-test (function direction)
+  (let* ((tree:*new-split-type* :many)
+         (first-frame (make-tree-for-tests)))
+    (multiple-value-bind (second-frame parent)
+        (funcall function first-frame :direction direction)
+      (let ((third-frame (funcall function parent :direction direction)))
+        (is (eq (tree:frame-next third-frame) second-frame))
+        (is (eq (tree:frame-prev second-frame) third-frame))
+        (is (eq (tree:frame-prev third-frame) first-frame))
+        (is (eq (tree:frame-next first-frame) third-frame))))))
+
+(define-tree-test poly-split-h--left-next-prev-frame-pointer ()
+  (run-poly-split-left-top-test #'tree:split-frame-h :left))
+
+(define-tree-test poly-split-v--top-next-prev-frame-pointers ()
+  (run-poly-split-left-top-test #'tree:split-frame-v :top))
+
+(defun run-poly-split-right-bottom-test (function direction)
+  (let* ((tree:*new-split-type* :many)
+         (first-frame (make-tree-for-tests)))
+    (multiple-value-bind (second-frame parent)
+        (funcall function first-frame :direction direction)
+      (let ((third-frame (funcall function parent :direction direction)))
+        (is (eq (tree:frame-next third-frame) first-frame))
+        (is (eq (tree:frame-prev first-frame) third-frame))
+        (is (eq (tree:frame-prev third-frame) second-frame))
+        (is (eq (tree:frame-next second-frame) third-frame))))))
+
+(define-tree-test poly-split-h--right-next-prev-frame-pointer ()
+  (run-poly-split-right-bottom-test #'tree:split-frame-h :right))
+
+(define-tree-test poly-split-v--bottom-next-prev-frame-pointers ()
+  (run-poly-split-right-bottom-test #'tree:split-frame-v :bottom))
