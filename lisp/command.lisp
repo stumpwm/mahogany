@@ -70,7 +70,7 @@ See the documentation for cl-interactive:define-command for more details.
            (hrt:with-view-transaction ()
              (handler-case
                  (cl-interactive:call-command-with-argument-list func arg-list)
-               (invalid-operation (condition)
+               (mahogany/util:recoverable-error (condition)
                  (toast-message *compositor-state* (condition-text condition)
                                 :theme *message-error-theme*)))))))))
 

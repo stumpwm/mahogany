@@ -4,6 +4,7 @@
   (:export #:mahogany-error
            #:mahogany-panic
            #:invalid-operation
+           #:recoverable-error
            #:condition-text
            #:defglobal
            #:disable-fpu-exceptions
@@ -23,7 +24,11 @@
   (:documentation "Fatal error that cannot be recovered from.
 When this error is signaled, the only appropriate thing to do is exit."))
 
-(define-condition invalid-operation (mahogany-error)
+(define-condition recoverable-error (mahogany-error)
+  ()
+  (:documentation "Used when a logic error occurs that should not cause a panic"))
+
+(define-condition invalid-operation (recoverable-error)
   ()
   (:documentation "Used when an invalid operation was requested"))
 
