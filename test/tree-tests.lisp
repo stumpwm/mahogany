@@ -599,3 +599,13 @@
 
 (define-tree-test poly-split-v--bottom-next-prev-frame-pointers ()
   (run-poly-split-right-bottom-test #'tree:split-frame-v :bottom))
+
+(define-tree-test remove-frame--poly-tree-next-prev-pointers ()
+  (let* ((tree:*new-split-type* :many)
+         (first-frame (make-tree-for-tests)))
+    (multiple-value-bind (second-frame parent)
+        (tree:split-frame-h first-frame :direction :right)
+      (let ((third-frame (tree:split-frame-h parent :direction :right)))
+        (tree:remove-frame second-frame)
+        (is (eq (tree:frame-next first-frame) third-frame))
+        (is (eq (tree:frame-prev third-frame) first-frame))))))
