@@ -638,6 +638,13 @@ the current group or a layer shell frame"
   string
   "The cursor image to use for the grab pointer.")
 
+(defun state-remove-cur-group-frame (state)
+  (declare (type mahogany-state state))
+  (when (group-frame-p (state-current-frame state))
+    (let ((cur-group (state-current-group state)))
+      (group-remove-current-frame cur-group)
+      (%cur-frame-set-from-group state cur-group))))
+
 (defun state-grab-seat (state)
   (declare (type mahogany-state state))
   (let ((seat (server-seat state)))

@@ -36,6 +36,11 @@
     (let ((group (state-current-group *compositor-state*)))
       (group-maximize-current-frame group))))
 
+(defcommand remove-current-frame ()
+  (:documentation "Remove the current frame in the tree")
+  (:method ()
+    (state-remove-cur-group-frame *compositor-state*)))
+
 (defcommand close-current-view ()
   (:method ()
     (alexandria:when-let*
@@ -361,7 +366,8 @@ valid output layouts")
     (kbd "Q") #'maximize-current-frame
     (kbd "n") #'next-view
     (kbd "p") #'previous-view
-    (kbd "g") '*group-map*))
+    (kbd "g") '*group-map*
+    (kbd "R") #'remove-current-frame))
 
 (defvar *top-map* (define-kmap))
 
