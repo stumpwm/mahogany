@@ -485,3 +485,34 @@ After this function is ran, the current frame needs to be set and focused."
           (log-string :trace "\"minimizing\" view ~S" view)
           (group-next-hidden group))
         (hrt:view-configure view))))
+
+(defun group-remove-current-frame (group)
+  (declare (type mahogany-group group))
+  (let ((cur-frame (mahogany-group-current-frame group)))
+    (when (or (tree:root-frame-p cur-frame)
+              (tree:topmost-frame-p cur-frame))
+      (error 'mahogany/util:invalid-operation
+             :text "Cannot remove the topmost frame in the frame tree."))
+    (let* ((sibling (find-if (lambda (child) (not (eq child cur-frame)))
+                             (mahogany/tree:tree-children
+                              (tree:frame-parent cur-frame))))
+           (to-focus (and sibling (mahogany/tree:find-first-leaf sibling))))
+      (when (not to-focus)
+        (error 'mahogany/util:invalid-operation
+               :text "No frame to focus after removal"))
+      (let ((rescued (list)))
+        (mahogany/tree:remove-frame
+         cur-frame
+         (lambda (removed)
+           (let ((view (mahogany/tree:frame-surface removed)))
+             (when view
+               (push view rescued)))))
+        (when rescued
+          (when (not (tree:frame-surface to-focus))
+            (setf (tree:frame-surface to-focus) (car rescued)))
+          (let ((hidden-list (mahogany-group-hidden-views group)))
+            (dolist (v (cdr rescued))
+              (%add-hidden hidden-list v)))))
+      (setf (mahogany-group-current-frame group) to-focus)
+      (hrt:dirty-view-transaction)
+      to-focus)))
