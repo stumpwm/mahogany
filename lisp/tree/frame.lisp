@@ -483,8 +483,15 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                                    (tree-children parent))))
          (%replace-frame parent other-child)))
       (t
-       ;; remove the child from the parent and set the remaining childrens' dimensions:
-       (setf (tree-children parent) (remove frame (tree-children parent) :test #'equal))
+       ;; Update the next / prev pointers:
+       (let ((prev (frame-prev frame))
+             (next (frame-next frame)))
+         (setf (%frame-next prev) next
+               (%frame-prev next) prev))
+       ;; remove the child from the parent and set the
+       ;; remaining childrens' dimensions:
+       (setf (tree-children parent) (remove frame (tree-children parent)
+                                            :test #'equal))
        (ecase (tree-split-direction parent)
          (:horizontal (let ((new-child-width (/ (frame-width parent) new-num-children))
                             (new-x (frame-x parent)))
