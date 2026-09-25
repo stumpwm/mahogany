@@ -53,17 +53,18 @@ static bool draw_box(struct hrt_border_box_style *style,
     cairo_set_source_rgba(cairo, style->stroke_color[0], style->stroke_color[1],
                           style->stroke_color[2], style->stroke_color[3]);
 
-    const double scaled_line = style->line_width * scale;
-    cairo_set_line_width(cairo, scaled_line);
+    const double line_width = style->line_width;
+    cairo_set_line_width(cairo, style->line_width);
     if (style->border_style == HRT_BORDER_DOTTED) {
         double pattern[] = {8 * scale, 4 * scale};
         cairo_set_dash(cairo, pattern, 2, 0);
     }
     // cairo starts drawing in the middle of the line, so we need to
-    // transform the coordinates to make the whole line to be visible
+    // transform the coordinates to make the whole line visible
     // within the buffer.
-    const double coordinate_offset = scaled_line == 1 ? 1.5 : (scaled_line / 2);
-    const double dim_offset        = scaled_line == 1 ? 3 : scaled_line;
+    const double coordinate_offset = line_width / 2;
+    const double dim_offset        = line_width;
+
     cairo_rectangle(cairo, coordinate_offset, coordinate_offset,
                     width - dim_offset, height - dim_offset);
     cairo_stroke(cairo);
