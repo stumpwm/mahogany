@@ -31,6 +31,24 @@
       (when frame
         (tree:split-frame-v frame :direction :bottom)))))
 
+(defcommand split-frame-parent-h ()
+  (:documentation "Split the curent frame's parent")
+  (:method ()
+    (let ((frame (state-current-frame *compositor-state*)))
+      (if (tree:topmost-frame-p frame)
+          (error 'mahogany/util:invalid-operation
+                 :text "Cannot split the topmost frame")
+          (tree:split-frame-h (tree:frame-parent frame))))))
+
+(defcommand split-frame-parent-v ()
+  (:documentation "Split the curent frame's parent")
+  (:method ()
+    (let ((frame (state-current-frame *compositor-state*)))
+      (if (tree:topmost-frame-p frame)
+          (error 'mahogany/util:invalid-operation
+                 :text "Cannot split the topmost frame")
+          (tree:split-frame-v (tree:frame-parent frame))))))
+
 (defcommand maximize-current-frame ()
   (:method ()
     (let ((group (state-current-group *compositor-state*)))
