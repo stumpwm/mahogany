@@ -38,23 +38,25 @@
     parent))
 
 (defmacro with-border-box-mocks (() &body body)
-  `(cl-mock:dflet ((hrt::border-box-create
-                    (layer style x y width height)
-                    (declare (ignore layer style x y width height))
-                    (cffi:null-pointer))
-                   (hrt:hrt-border-box-set-relative
-                    (box x y)
-                    (declare (ignore box x y)))
-                   (hrt:hrt-border-box-set-enabled
-                    (box enabled)
-                    (declare (ignore box enabled)))
-                   (hrt:hrt-border-box-destroy
-                    (box)
-                    (declare (ignore box)))
-                   (hrt:hrt-border-box-set-size
-                    (box width height)
-                    (declare (ignore box width height))))
-                  ,@body))
+  `(with-stubbed-functions
+       ((hrt::border-box-create
+         (layer style x y width height)
+         (cffi:null-pointer))
+        (hrt:hrt-border-box-set-relative (box x y))
+        (hrt:hrt-border-box-set-enabled
+         (box enabled))
+        (hrt:hrt-border-box-destroy
+         (box))
+        (hrt:hrt-border-box-set-size
+         (box width height))
+        (hrt:hrt-border-box-lower-to-bottom
+         (box))
+        (hrt:hrt-border-box-raise-to-top
+         (box))
+        (hrt::hrt-view-set-size (view width height))
+        (hrt::hrt-view-set-relative (view x y))
+        (hrt::%COMMIT-VIEW-TRANSACTION ()))
+     ,@body))
 
 (defmacro define-tree-test (name args &body body)
   `(fiasco:deftest ,name ,args

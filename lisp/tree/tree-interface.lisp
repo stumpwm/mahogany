@@ -35,6 +35,12 @@ of an already existing frame with the `set-split-frame-type` function")
    (parent :initarg :parent
            :type (or output-node frame)
            :accessor frame-parent)
+   (bordered-left :initform nil
+                  :accessor frame-bordered-left
+                  :initarg :bordered-left)
+   (bordered-top :initform nil
+                 :accessor frame-bordered-top
+                 :initarg :bordered-top)
    (focused :initarg :focused
             :reader frame-focused
             :initform nil
