@@ -230,7 +230,6 @@ static void hrt_border_box_redraw(struct hrt_border_box *box, int width,
         draw_box_surface(box->style, width, height, box->scale);
     if (!buffer) {
         wlr_log(WLR_ERROR, "Could not redraw box surface");
-        wlr_buffer_drop(&buffer->base);
         return;
     }
 

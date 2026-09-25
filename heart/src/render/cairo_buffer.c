@@ -1,4 +1,5 @@
 #include "render/cairo_buffer.h"
+#include <wlr/util/log.h>
 #include <drm_fourcc.h>
 #include <stdlib.h>
 
@@ -39,6 +40,10 @@ static const struct wlr_buffer_impl cairo_buffer_impl = {
 
 struct hrt_cairo_buffer *hrt_cairo_buffer_create(int width, int height) {
     struct hrt_cairo_buffer *buffer = calloc(1, sizeof(*buffer));
+    if (!buffer) {
+        wlr_log(WLR_ERROR, "Could not allocate hrt_cairo_buffer");
+        return nullptr;
+    }
 
     buffer->surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
