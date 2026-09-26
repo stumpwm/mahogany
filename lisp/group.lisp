@@ -511,9 +511,9 @@ After this function is ran, the current frame needs to be set and focused."
                (push view rescued)))))
         (when rescued
           (when (not (tree:frame-surface to-focus))
-            (setf (tree:frame-surface to-focus) (car rescued)))
+            (setf (tree:frame-surface to-focus) (pop rescued)))
           (let ((hidden-list (mahogany-group-hidden-views group)))
-            (dolist (v (cdr rescued))
+            (dolist (v rescued)
               (%add-hidden hidden-list v)))))
       (setf (mahogany-group-current-frame group) to-focus)
       (hrt:dirty-view-transaction)
