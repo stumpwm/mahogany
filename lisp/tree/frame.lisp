@@ -536,7 +536,7 @@ REMOVE-FUNC is called with one argument: the view that was removed."
                          (setf new-y (+ new-y new-child-height))))
           (let ((first-child (car (tree-children parent))))
             (setf (frame-bordered-top first-child)
-                  (frame-bordere-top parent)))))))))
+                  (frame-bordered-top parent)))))))))
 
 (defmethod remove-frame-from-parent ((parent binary-tree-frame) frame cleanup-func)
   (declare (ignore cleanup-func))
