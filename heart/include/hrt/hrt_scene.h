@@ -20,6 +20,7 @@ struct hrt_scene_root {
     struct wlr_scene_tree *top;
     struct wlr_scene_tree *overlay;
     // Should we store the outputs and groups associated with this?
+    struct wlr_scene_tree *lock;
     struct {
         struct wl_listener scene_destroy;
     } listeners;
