@@ -49,13 +49,16 @@ struct hrt_server {
     struct wl_listener new_layer_shell;
 
     struct wlr_ext_image_copy_capture_manager_v1
-        *ext_image_copy_capture_manager_v1;
+      *ext_image_copy_capture_manager_v1;
+    struct wlr_session_lock_manager_v1 *session_lock_manager;
+    struct wl_listener session_lock_new;
 
     struct {
         struct wl_listener backend;
         struct wl_listener headless;
         struct wl_listener output_manager;
         struct wl_listener layer_shell;
+        struct wl_listener session_lock_manager;
     } destroy_listener;
 
     const struct hrt_output_callbacks *output_callback;
