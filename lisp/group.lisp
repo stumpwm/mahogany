@@ -77,7 +77,7 @@
       group
     (log-string :debug "Waking up group ~A" (mahogany-group-name group))
     (group-focus group seat)
-    (setf (mahogany-group-active-p group) nil)
+    (setf (mahogany-group-active-p group) t)
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
 (defun group-move-view (source destination view)
