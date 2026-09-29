@@ -32,6 +32,7 @@ struct hrt_scene_output {
 
     struct wlr_scene_tree *top;
     struct wlr_scene_tree *overlay;
+    struct wlr_scene_tree *lock;
     struct hrt_output *output;
 };
 

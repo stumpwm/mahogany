@@ -26,6 +26,7 @@ hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
     scene_root->fullscreen            = wlr_scene_tree_create(scene_tree);
     scene_root->top                   = wlr_scene_tree_create(scene_tree);
     scene_root->overlay               = wlr_scene_tree_create(scene_tree);
+    scene_root->lock                  = wlr_scene_tree_create(scene_tree);
 
     scene_root->listeners.scene_destroy.notify = handle_scene_destroy;
     wl_signal_add(&scene_tree->node.events.destroy,
@@ -42,6 +43,7 @@ void hrt_scene_root_destroy(struct hrt_scene_root *scene_root) {
     wlr_scene_node_destroy(&scene_root->normal->node);
     wlr_scene_node_destroy(&scene_root->bottom->node);
     wlr_scene_node_destroy(&scene_root->background->node);
+    wlr_scene_node_destroy(&scene_root->lock->node);
     free(scene_root);
 }
 
@@ -51,11 +53,13 @@ struct hrt_scene_output *hrt_scene_output_create(struct hrt_scene_root *scene) {
     scene_output->bottom     = wlr_scene_tree_create(scene->bottom);
     scene_output->top        = wlr_scene_tree_create(scene->top);
     scene_output->overlay    = wlr_scene_tree_create(scene->overlay);
+    scene_output->lock       = wlr_scene_tree_create(scene->lock);
     return scene_output;
 }
 
 void hrt_scene_output_destroy(struct hrt_scene_output *output) {
     wlr_log(WLR_DEBUG, "Destroying scene output");
+    wlr_scene_node_destroy(&output->lock->node);
     wlr_scene_node_destroy(&output->overlay->node);
     wlr_scene_node_destroy(&output->top->node);
     wlr_scene_node_destroy(&output->bottom->node);

@@ -17,6 +17,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 
 #include <hrt/hrt_output.h>
+#include "session_lock_impl.h"
 
 static void handle_request_state(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "Request State Handled");
@@ -296,7 +297,12 @@ bool hrt_output_configure(struct hrt_output *output,
     }
     wlr_output_state_finish(&state);
 
-    return finish_configure(server, output, config);
+    auto result = finish_configure(server, output, config);
+
+    // We may have moved or something, so always rearrange the lock:
+    session_lock_output_arrange(server, output);
+
+    return result;
 }
 
 static bool atomic_modeset(struct hrt_output *outputs[],
@@ -379,6 +385,7 @@ bool hrt_output_configure_atomic(struct hrt_output *outputs[],
         struct hrt_output_config *config = &configs[i];
         finish_configure(output->server, output, config);
     }
+    session_lock_arrange(outputs[0]->server);
 
     return true;
 }
