@@ -22,7 +22,10 @@ void hrt_idle_notify_activity(struct hrt_seat *seat);
  *
  * It must be called by code that changes what is on the screen
  * and by protocol handlers.
+ *
+ * We defer to an idle callback so it catches a scene graph
+ * after every listener of the current event has run.
  */
-void hrt_idle_inhibit_update(void);
+void hrt_idle_inhibit_schedule(void);
 
 #endif

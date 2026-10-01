@@ -16,15 +16,9 @@ static struct wlr_idle_notifier_v1 *idle_notifier;
 static struct wlr_idle_inhibit_manager_v1 *idle_inhibit;
 static struct wl_listener new_idle_inhibitor;
 static struct wl_listener idle_inhibit_destroy;
-// hrt_idle_inhibitor.link
-static struct wl_list inhibitors;
+static struct wl_event_source *pending_update;
 
-// A dying wlroots inhibitor stays in manager->inhibitors during events.destroy,
-// so we have to maintain our own list.
 struct hrt_idle_inhibitor {
-    struct wlr_idle_inhibitor_v1 *inhibitor;
-    struct wl_list link;
-
     struct wl_listener destroy;
     struct wl_listener surface_map;
     struct wl_listener surface_unmap;
@@ -56,22 +50,29 @@ static bool surface_is_visible(struct wlr_surface *surface) {
     return search.found;
 }
 
-void hrt_idle_inhibit_update(void) {
-    if (!idle_inhibit) {
-        return;
-    }
+static void idle_inhibit_update(void *data) {
+    pending_update                              = nullptr;
+    bool inhibited                              = false;
+    struct wlr_idle_inhibitor_v1 *wlr_inhibitor = nullptr;
 
-    bool inhibited                       = false;
-    struct hrt_idle_inhibitor *inhibitor = nullptr;
-
-    wl_list_for_each(inhibitor, &inhibitors, link) {
-        if (surface_is_visible(inhibitor->inhibitor->surface)) {
+    wl_list_for_each(wlr_inhibitor, &idle_inhibit->inhibitors, link) {
+        if (surface_is_visible(wlr_inhibitor->surface)) {
             inhibited = true;
             break;
         }
     }
 
     wlr_idle_notifier_v1_set_inhibited(idle_notifier, inhibited);
+}
+
+void hrt_idle_inhibit_schedule(void) {
+    if (!idle_inhibit || pending_update) {
+        return;
+    }
+
+    pending_update = wl_event_loop_add_idle(
+        wl_display_get_event_loop(idle_server->wl_display), idle_inhibit_update,
+        nullptr);
 }
 
 static void handle_inhibitor_destroy(struct wl_listener *listener, void *data) {
@@ -81,15 +82,14 @@ static void handle_inhibitor_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&inhibitor->destroy.link);
     wl_list_remove(&inhibitor->surface_map.link);
     wl_list_remove(&inhibitor->surface_unmap.link);
-    wl_list_remove(&inhibitor->link);
     free(inhibitor);
 
-    hrt_idle_inhibit_update();
+    hrt_idle_inhibit_schedule();
 }
 
 static void handle_inhibitor_surface_remap(struct wl_listener *listener,
                                            void *data) {
-    hrt_idle_inhibit_update();
+    hrt_idle_inhibit_schedule();
 }
 
 static void handle_new_inhibitor(struct wl_listener *listener, void *data) {
@@ -100,7 +100,6 @@ static void handle_new_inhibitor(struct wl_listener *listener, void *data) {
         wlr_log(WLR_ERROR, "Could not allocate an idle inhibitor");
         return;
     }
-    inhibitor->inhibitor = wlr_inhibitor;
 
     inhibitor->destroy.notify = handle_inhibitor_destroy;
     wl_signal_add(&wlr_inhibitor->events.destroy, &inhibitor->destroy);
@@ -110,20 +109,23 @@ static void handle_new_inhibitor(struct wl_listener *listener, void *data) {
     wl_signal_add(&wlr_inhibitor->surface->events.unmap,
                   &inhibitor->surface_unmap);
 
-    wl_list_insert(&inhibitors, &inhibitor->link);
-
-    hrt_idle_inhibit_update();
+    hrt_idle_inhibit_schedule();
 }
 
 static void handle_idle_inhibit_destroy(struct wl_listener *listener,
                                         void *data) {
     wl_list_remove(&new_idle_inhibitor.link);
     wl_list_remove(&idle_inhibit_destroy.link);
+
+    if (pending_update) {
+        wl_event_source_remove(pending_update);
+        pending_update = nullptr;
+    }
+
     idle_inhibit = nullptr;
 }
 
 bool hrt_idle_init(struct hrt_server *server) {
-    wl_list_init(&inhibitors);
     idle_server   = server;
     idle_notifier = wlr_idle_notifier_v1_create(server->wl_display);
     idle_inhibit  = wlr_idle_inhibit_v1_create(server->wl_display);

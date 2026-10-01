@@ -104,7 +104,7 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group) {
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
     wlr_scene_node_set_enabled(&group->layers->node, enabled);
-    hrt_idle_inhibit_update();
+    hrt_idle_inhibit_schedule();
 }
 
 static void reparent_children(struct wlr_scene_tree *source,
@@ -121,6 +121,7 @@ static void reparent_children(struct wlr_scene_tree *source,
 void hrt_scene_layer_transfer(struct wlr_scene_tree *source,
                               struct wlr_scene_tree *destination) {
     reparent_children(source, destination);
+    hrt_idle_inhibit_schedule();
 }
 
 struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group) {
@@ -145,6 +146,7 @@ void hrt_scene_layer_destroy(struct wlr_scene_tree *layer) {
 void hrt_scene_layer_add_view(struct wlr_scene_tree *layer,
                               struct hrt_view *view) {
     wlr_scene_node_reparent(&view->scene_tree->node, layer);
+    hrt_idle_inhibit_schedule();
 }
 
 struct hrt_scene_fullscreen_node *
