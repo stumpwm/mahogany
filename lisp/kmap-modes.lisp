@@ -106,8 +106,9 @@ the KEYBINDINGS list."
     (define-key *prefix-passthrough-kmap* key :pass-through)
     ;; re-initialize the kmap list:
     (let ((new-bindings nil))
-      ;; go backwards so pushing gets us the same order:
-      (dolist (mode active-modes)
+      ;; active-modes is newest first; go backwards so that pushing
+      ;; gets us the same order that kmap-mode-activate builds:
+      (dolist (mode (reverse active-modes))
         (setf new-bindings (%build-kmaps-from-mode key mode new-bindings)))
       (setf (state-keybindings state) new-bindings
             prefix-key key))))
