@@ -110,4 +110,4 @@ the KEYBINDINGS list."
       (dolist (mode active-modes)
         (setf new-bindings (%build-kmaps-from-mode key mode new-bindings)))
       (setf (state-keybindings state) new-bindings
-            (slot-value state 'prefix-key) key))))
+            prefix-key key))))
