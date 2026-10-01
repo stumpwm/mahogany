@@ -24,8 +24,15 @@ void hrt_seat_notify_axis(struct hrt_seat *seat,
 
 bool hrt_seat_set_keymap(struct hrt_seat *seat, struct xkb_rule_names *rules,
                          enum xkb_keymap_compile_flags flags) {
+    // A new context, as one only searches for include directories like
+    // ~/.config/xkb once. The keymap keeps its own reference to it.
+    struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!context) {
+        return false;
+    }
     struct xkb_keymap *keymap =
-        xkb_keymap_new_from_names(seat->xkb_context, rules, flags);
+        xkb_keymap_new_from_names(context, rules, flags);
+    xkb_context_unref(context);
     if (!keymap) {
         return false;
     }
