@@ -80,3 +80,39 @@ harder to use `git blame`. You can ignore these commits by adding the
 ``` bash
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
+
+## AI Usage
+
+AI usage is strongly discouraged. The process that surrounds open source
+software is ultimately about human collaboration, and LLMs bypass this. This
+[blog article](https://simonwillison.net/2026/Apr/30/zig-anti-ai/) on Zig's AI
+ban puts it best:
+
+> Zig values contributors over their contributions. Each contributor represents
+  an investment by the Zig core team - the primary goal of reviewing and
+  accepting PRs isn't to land new code, it's to help grow new contributors who
+  can become trusted and prolific over time.
+
+> LLM assistance breaks that completely. It doesn't matter if the LLM helps you
+  submit a perfect PR to Zig - the time the Zig team spends reviewing your work
+  does nothing to help them add new, confident, trustworthy contributors to
+  their overall project.
+
+The rules surrounding the usage of AI tools in this repository try to put this
+sentiment into practice.
+
+### Usage
++ *No autonomous AI agent use or vibe coding.*
++ *No AI-generated text in human-to-human communication*. This includes PR
+  descriptions.
+  - Machine translations or other similar uses are acceptable, as long as you
+    wrote the original content.
++ *Do not use AI to generate user-facing media (e.g. documentation, images and
+  audio)*.
+  + Documentation intended for developers and source code comments is excluded;
+    AI tools should explain why they wrote the code they did.
++ *Do not include AI tools as the co-author of a commit or PR*.
++ *Include what parts of the commit are authored by AI.*
+  + See the [SBCL repository](https://github.com/sbcl/sbcl) for some good
+    examples. Including something like "Implementation mostly done by $TOOL with
+    prose completely rewritten by me." at the bottom of the commit works.
