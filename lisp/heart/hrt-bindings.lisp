@@ -389,6 +389,7 @@ set the width and height of views."
   (fullscreen :pointer #| (:struct wlr-scene-tree) |#)
   (top :pointer #| (:struct wlr-scene-tree) |#)
   (overlay :pointer #| (:struct wlr-scene-tree) |#)
+  (lock :pointer #| (:struct wlr-scene-tree) |#)
   (listeners (:struct hrt-scene-root-listeners)))
 
 (cffi:defcstruct hrt-scene-output
@@ -396,6 +397,7 @@ set the width and height of views."
   (bottom :pointer #| (:struct wlr-scene-tree) |#)
   (top :pointer #| (:struct wlr-scene-tree) |#)
   (overlay :pointer #| (:struct wlr-scene-tree) |#)
+  (lock :pointer #| (:struct wlr-scene-tree) |#)
   (output (:pointer (:struct hrt-output))))
 
 (cffi:defcstruct hrt-scene-group
@@ -740,7 +742,8 @@ intial placement."
   (backend (:struct wl-listener))
   (headless (:struct wl-listener))
   (output-manager (:struct wl-listener))
-  (layer-shell (:struct wl-listener)))
+  (layer-shell (:struct wl-listener))
+  (session-lock-manager (:struct wl-listener)))
 
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
@@ -766,6 +769,9 @@ intial placement."
   (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |#)
   (new-layer-shell (:struct wl-listener))
   (ext-image-copy-capture-manager-v1 :pointer #| (:struct wlr-ext-image-copy-capture-manager-v1) |#)
+  (session-lock-manager :pointer #| (:struct wlr-session-lock-manager-v1) |#)
+  (session-lock-new (:struct wl-listener))
+  (session-lock :pointer)
   (destroy-listener (:struct hrt-server-destroy-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))
