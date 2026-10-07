@@ -216,7 +216,7 @@ struct hrt_seat *hrt_server_seat(struct hrt_server *server) {
 }
 
 struct hrt_scene_group *hrt_server_group_create(struct hrt_server *server) {
-    return hrt_scene_group_create(server->scene_root);
+    return hrt_scene_group_create(server);
 }
 
 size_t hrt_server_struct_size() {

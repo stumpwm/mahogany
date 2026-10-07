@@ -147,6 +147,7 @@ and set the cursor image to the given image name."
   (height :int)
   (xdg-surface :pointer #| (:struct wlr-xdg-surface) |#)
   (xdg-toplevel :pointer #| (:struct wlr-xdg-toplevel) |#)
+  (server (:pointer (:struct hrt-server)))
   (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
   (xdg-scene :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
@@ -344,7 +345,8 @@ set the width and height of views."
   (output (:pointer (:struct hrt-output))))
 
 (cffi:defcstruct hrt-scene-group
-  (layers :pointer #| (:struct wlr-scene-tree) |#))
+  (layers :pointer #| (:struct wlr-scene-tree) |#)
+  (server (:pointer (:struct hrt-server))))
 
 (cffi:defcstruct hrt-scene-fullscreen-node
   (layer :pointer #| (:struct wlr-scene-tree) |#)
@@ -404,6 +406,7 @@ set the width and height of views."
 (cffi:defcfun ("hrt_scene_layer_transfer" hrt-scene-layer-transfer) :void
   "Transfer all of the views in the source layer to the
 destination layer"
+  (server (:pointer (:struct hrt-server)))
   (source :pointer #| (:struct wlr-scene-tree) |#)
   (destination :pointer #| (:struct wlr-scene-tree) |#))
 
@@ -654,7 +657,8 @@ intial placement."
   (backend (:struct wl-listener))
   (headless (:struct wl-listener))
   (output-manager (:struct wl-listener))
-  (layer-shell (:struct wl-listener)))
+  (layer-shell (:struct wl-listener))
+  (idle-inhibit-manager (:struct wl-listener)))
 
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
@@ -680,6 +684,10 @@ intial placement."
   (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |#)
   (new-layer-shell (:struct wl-listener))
   (ext-image-copy-capture-manager-v1 :pointer #| (:struct wlr-ext-image-copy-capture-manager-v1) |#)
+  (idle-notifier :pointer #| (:struct wlr-idle-notifier-v1) |#)
+  (idle-inhibit-manager :pointer #| (:struct wlr-idle-inhibit-manager-v1) |#)
+  (new-idle-inhibitor (:struct wl-listener))
+  (idle-inhibit-scheduled-update :pointer #| (:struct wl-event-source) |#)
   (destroy-listener (:struct hrt-server-destroy-listener))
   (output-callback (:pointer (:struct hrt-output-callbacks)))
   (view-callbacks (:pointer (:struct hrt-view-callbacks)))

@@ -1,5 +1,6 @@
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
+#include "hrt/hrt_server.h"
 #include "hrt/hrt_view.h"
 #include "idle_impl.h"
 #include "wlr/util/log.h"
@@ -81,13 +82,14 @@ hrt_scene_output_get_layer(struct hrt_scene_output *output,
     }
 }
 
-struct hrt_scene_group *hrt_scene_group_create(struct hrt_scene_root *parent) {
+struct hrt_scene_group *hrt_scene_group_create(struct hrt_server *server) {
     struct hrt_scene_group *group = calloc(1, sizeof(*group));
     if (!group) {
         wlr_log(WLR_ERROR, "Could not allocate hrt_scene_layers");
         return NULL;
     }
-    group->layers = wlr_scene_tree_create(parent->normal);
+    group->server = server;
+    group->layers = wlr_scene_tree_create(server->scene_root->normal);
     if (!group->layers) {
         wlr_log(WLR_ERROR, "Could not create wlr_scene_tree for scene group");
         return nullptr;
@@ -104,7 +106,7 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group) {
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
     wlr_scene_node_set_enabled(&group->layers->node, enabled);
-    hrt_idle_inhibit_schedule();
+    hrt_idle_inhibit_schedule(group->server);
 }
 
 static void reparent_children(struct wlr_scene_tree *source,
@@ -118,10 +120,11 @@ static void reparent_children(struct wlr_scene_tree *source,
 /**
  * This is unused; should we remove it?
  */
-void hrt_scene_layer_transfer(struct wlr_scene_tree *source,
+void hrt_scene_layer_transfer(struct hrt_server *server,
+                              struct wlr_scene_tree *source,
                               struct wlr_scene_tree *destination) {
     reparent_children(source, destination);
-    hrt_idle_inhibit_schedule();
+    hrt_idle_inhibit_schedule(server);
 }
 
 struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group) {
@@ -146,7 +149,7 @@ void hrt_scene_layer_destroy(struct wlr_scene_tree *layer) {
 void hrt_scene_layer_add_view(struct wlr_scene_tree *layer,
                               struct hrt_view *view) {
     wlr_scene_node_reparent(&view->scene_tree->node, layer);
-    hrt_idle_inhibit_schedule();
+    hrt_idle_inhibit_schedule(view->server);
 }
 
 struct hrt_scene_fullscreen_node *

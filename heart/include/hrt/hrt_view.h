@@ -41,6 +41,7 @@ struct hrt_view {
     int width, height;
     struct wlr_xdg_surface *xdg_surface;
     struct wlr_xdg_toplevel *xdg_toplevel;
+    struct hrt_server *server;
     /*
       Contains the tree with the xdg surface tree
       plus decorations and that sort of thing.

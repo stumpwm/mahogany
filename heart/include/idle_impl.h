@@ -26,6 +26,6 @@ void hrt_idle_notify_activity(struct hrt_seat *seat);
  * We defer to an idle callback so it catches a scene graph
  * after every listener of the current event has run.
  */
-void hrt_idle_inhibit_schedule(void);
+void hrt_idle_inhibit_schedule(struct hrt_server *server);
 
 #endif
