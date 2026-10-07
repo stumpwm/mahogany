@@ -2,6 +2,7 @@ hrt_source_files += files(
   'border_box.c',
   'cursor.c',
   'event_loop.c',
+  'idle.c',
   'input.c',
   'keyboard.c',
   'message.c',

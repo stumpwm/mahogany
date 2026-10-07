@@ -135,6 +135,7 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     // TODO: Maybe remove view->xdg_surface? We can get to it via the toplevel.
     view->xdg_surface = xdg_surface;
     view->callbacks   = server->view_callbacks;
+    view->server      = server;
 
     // Using the scene root here is not as efficient as it could be,
     // as we then need to reparent the node in the initial commit.
