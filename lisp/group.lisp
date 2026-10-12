@@ -255,17 +255,12 @@ to match."
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
-  (with-accessors ((view-list mahogany-group-views)
-                   (output-map mahogany-group-output-map)
-                   (hidden mahogany-group-hidden-views)
-                   (tiled-container mahogany-group-tiled-container))
+  (with-accessors ((view-list mahogany-group-views))
       group
     (when (hrt:view-mapped-p view)
-      ;; if the view is hidden, it won't be in a frame:
-      (or
-       (ring-list:remove-item hidden view)
-       (alexandria:when-let ((f (hrt::view-container view)))
-         (setf (tree:frame-surface f) nil))))
+      (hrt:unfocus-view view (server-seat *compositor-state*))
+      (group-unmap-view group view)
+      (%cur-frame-set-from-group *compositor-state* group))
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))
