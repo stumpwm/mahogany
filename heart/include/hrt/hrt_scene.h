@@ -9,8 +9,7 @@
 #include <wlr/types/wlr_layer_shell_v1.h>
 
 struct hrt_output;
-
-struct hrt_output;
+struct hrt_server;
 
 struct hrt_scene_root {
     struct wlr_scene_tree *background;
@@ -36,6 +35,7 @@ struct hrt_scene_output {
 
 struct hrt_scene_group {
     struct wlr_scene_tree *layers;
+    struct hrt_server *server;
 };
 
 struct hrt_scene_fullscreen_node {
@@ -70,7 +70,8 @@ void hrt_scene_layer_add_view(struct wlr_scene_tree *layer,
  * Transfer all of the views in the source layer to the
  * destination layer
  **/
-void hrt_scene_layer_transfer(struct wlr_scene_tree *source,
+void hrt_scene_layer_transfer(struct hrt_server *server,
+                              struct wlr_scene_tree *source,
                               struct wlr_scene_tree *destination);
 
 struct wlr_scene_tree *hrt_scene_group_layers(struct hrt_scene_group *group);

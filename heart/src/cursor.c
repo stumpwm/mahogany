@@ -8,6 +8,8 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
+#include "idle_impl.h"
+
 // This function is shamelessly ripped from the tinywl implementation:
 static void *find_view_at(struct hrt_server *server, double lx, double ly,
                           struct wlr_surface **surface, double *sx,
@@ -61,6 +63,7 @@ void hrt_seat_reset_view_under(struct hrt_seat *seat) {
 }
 
 static void handle_cursor_motion(struct hrt_seat *seat, uint32_t time) {
+    hrt_idle_notify_activity(seat);
     if (!seat->grabbed) {
         double sx, sy;
         struct wlr_surface *found_surface = NULL;
@@ -97,6 +100,7 @@ static void seat_motion_absolute(struct wl_listener *listener, void *data) {
 
 static void seat_button(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, button);
+    hrt_idle_notify_activity(seat);
     if (!seat->grabbed) {
         struct wlr_pointer_button_event *event = data;
 
@@ -107,6 +111,7 @@ static void seat_button(struct wl_listener *listener, void *data) {
 
 static void seat_axis(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, axis);
+    hrt_idle_notify_activity(seat);
     if (!seat->grabbed) {
         struct wlr_pointer_axis_event *ev = data;
         seat->callbacks->wheel_event(seat, ev);

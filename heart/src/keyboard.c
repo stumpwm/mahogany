@@ -16,6 +16,8 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_input.h>
 
+#include "idle_impl.h"
+
 static size_t seat_translate_keysyms(struct hrt_seat *seat,
                                      xkb_keycode_t keycode,
                                      const xkb_keysym_t **keysyms,
@@ -55,6 +57,8 @@ static void seat_handle_key(struct wl_listener *listener, void *data) {
     struct hrt_seat *seat = wl_container_of(listener, seat, keyboard_key);
     struct wlr_keyboard_key_event *event = data;
     struct hrt_server *server            = seat->server;
+
+    hrt_idle_notify_activity(seat);
 
     xkb_keycode_t keycode = event->keycode + 8;
 

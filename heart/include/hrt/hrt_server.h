@@ -51,11 +51,17 @@ struct hrt_server {
     struct wlr_ext_image_copy_capture_manager_v1
         *ext_image_copy_capture_manager_v1;
 
+    struct wlr_idle_notifier_v1 *idle_notifier;
+    struct wlr_idle_inhibit_manager_v1 *idle_inhibit_manager;
+    struct wl_listener new_idle_inhibitor;
+    struct wl_event_source *idle_inhibit_scheduled_update;
+
     struct {
         struct wl_listener backend;
         struct wl_listener headless;
         struct wl_listener output_manager;
         struct wl_listener layer_shell;
+        struct wl_listener idle_inhibit_manager;
     } destroy_listener;
 
     const struct hrt_output_callbacks *output_callback;
