@@ -482,6 +482,13 @@ the current group or a layer shell frame"
   (let ((index (%next-group-index state)))
     (%next-group-name index)))
 
+(defun state-find-group (state name)
+  "Return the group in STATE named NAME, or NIL if there is none."
+  (declare (type mahogany-state state)
+           (type string name))
+  (find name (state-groups state)
+        :key #'mahogany-group-name :test #'string=))
+
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (declare (type mahogany-state state))
   (let ((index (%next-group-index state)))
