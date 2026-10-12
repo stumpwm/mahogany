@@ -82,6 +82,8 @@
 
 (defun group-move-view (source destination view)
   (declare (type mahogany-group destination source))
+  (when (eq source destination)
+    (return-from group-move-view))
   (let ((dest-layer (mahogany-group-tiled-container destination))
         (hidden-list (mahogany-group-hidden-views destination)))
     (group-remove-view source view)
