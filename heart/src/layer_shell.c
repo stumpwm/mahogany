@@ -343,11 +343,10 @@ create_popup(struct wlr_xdg_popup *wlr_popup,
 }
 
 static void popup_handle_new_popup(struct wl_listener *listener, void *data) {
-    struct hrt_layer_shell_popup *sway_layer_popup =
-        wl_container_of(listener, sway_layer_popup, new_popup);
+    struct hrt_layer_shell_popup *layer_popup =
+        wl_container_of(listener, layer_popup, new_popup);
     struct wlr_xdg_popup *wlr_popup = data;
-    create_popup(wlr_popup, sway_layer_popup->toplevel,
-                 sway_layer_popup->scene);
+    create_popup(wlr_popup, layer_popup->toplevel, layer_popup->scene);
 }
 
 static void handle_new_popup(struct wl_listener *listener, void *data) {
