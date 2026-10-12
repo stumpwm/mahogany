@@ -353,8 +353,17 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data) {
 static void handle_new_popup(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.new_popup);
+    struct wlr_scene_tree *popup_layer;
+    // The output should be set, but let's be cautious here;
+    // the user may have forgotten to call hrt_layer_shell_surface_place:
+    if (surface->output) {
+        popup_layer = surface->output->scene->top;
+    } else {
+        wlr_log(WLR_ERROR, "surface output not assigned; did you forget to call hrt_layer_shell_surface_place?");
+        popup_layer = surface->tree;
+    }
     struct wlr_xdg_popup *wlr_popup = data;
-    create_popup(wlr_popup, surface, surface->tree);
+    create_popup(wlr_popup, surface, popup_layer);
 }
 
 static void handle_layer_surface_destroy(struct wl_listener *listener,
