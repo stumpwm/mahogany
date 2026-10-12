@@ -553,11 +553,15 @@ the current group or a layer shell frame"
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
 (defun %cur-frame-set-from-group (state group)
+  "Follow the current frame in GROUP."
   (declare (type mahogany-state state)
            (type mahogany-group group))
-  (let ((cur-frame (mahogany-group-current-frame group)))
-    (setf (state-%current-frame state) cur-frame)
-    (tree:mark-frame-focused cur-frame (server-seat state))))
+  (let ((seat (server-seat state)))
+    (if (eq group (state-current-group state))
+        (setf (state-%current-frame state) (mahogany-group-current-frame group))
+        (group-unfocus group seat))
+    (alexandria:when-let ((cur-frame (state-current-frame state)))
+      (tree:mark-frame-focused cur-frame seat))))
 
 (defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)
