@@ -4,6 +4,14 @@
   "Use this variable in your config file to run code that should only
 be executed once, when mahogany starts up and loads the config file.")
 
+(defun %handle-init-config-error-timer (timer)
+  (declare (type hrt:timer-handle timer))
+  (let ((msg (format nil "Error loading config: ~%~a"
+                     (hrt:timer-handle-data timer))))
+    (toast-message *compositor-state* msg
+                   :theme *message-error-theme*))
+  (hrt:timer-handle-destroy timer))
+
 (defun load-config-file (&optional (catch-errors nil))
   "Load the user's config file. Returns a values list: whether the file loaded (t if no
 rc files exist), the error if it didn't, and the config file that was
@@ -16,7 +24,13 @@ further up. "
           (log-string :info "Found config file at ~a" config-file)
           (if catch-errors
               (handler-case (load config-file)
-                (error (c) (values nil (format nil "~a" c) config-file))
+                (error (c)
+                  (let ((message (format nil "~a" c))
+                        (timer (hrt:server-make-timer (state-server *compositor-state*)
+                                                      #'%handle-init-config-error-timer)))
+                    (setf (hrt:timer-handle-data timer) message)
+                    (hrt:timer-handle-update timer 5)
+                    (values nil message config-file)))
                 (:no-error (&rest args) (declare (ignore args)) (values t nil config-file)))
               (progn
                 (load config-file)
@@ -102,7 +116,7 @@ further up. "
     (if (gethash 'no-init-file args)
         (log-string :info "Init file loading skipped")
         (let ((*initializing* t))
-          (load-config-file)))
+          (load-config-file (not (gethash 'enable-debugger args)))))
     (unwind-protect
          (hrt:server-start server)
       (log-string :debug "Cleaning up...")
