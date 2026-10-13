@@ -36,7 +36,7 @@ further up. "
                 (load config-file)
                 (values t nil config-file))))
         (progn
-          (log-string :info "Did not find config file")
+          (log-string :info "Did not find config file at ~S" config-location)
           (values t nil nil)))))
 
 (defcommand loadrc ()
@@ -44,9 +44,9 @@ further up. "
   (:method ()
     (handler-case (load-config-file nil)
       (error (c)
-        (log-string :error "Error loading config file: ~A" c)
+        (log-string :error "Error loading config file: ~% ~A" c)
         (toast-message *compositor-state*
-                       (format nil "Error loading config file: ~A" c)
+                       (format nil "Error loading config file: ~%~A" c)
                        :theme *message-error-theme*))
       (:no-error (&rest args)
         (declare (ignore args))
