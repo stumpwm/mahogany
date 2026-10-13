@@ -1,57 +1,5 @@
 (in-package #:mahogany)
 
-(defvar *initializing* nil
-  "Use this variable in your config file to run code that should only
-be executed once, when mahogany starts up and loads the config file.")
-
-(defun %handle-init-config-error-timer (timer)
-  (declare (type hrt:timer-handle timer))
-  (let ((msg (format nil "Error loading config: ~%~a"
-                     (hrt:timer-handle-data timer))))
-    (toast-message *compositor-state* msg
-                   :theme *message-error-theme*))
-  (hrt:timer-handle-destroy timer))
-
-(defun load-config-file (&optional (catch-errors nil))
-  "Load the user's config file. Returns a values list: whether the file loaded (t if no
-rc files exist), the error if it didn't, and the config file that was
-loaded. When CATCH-ERRORS is nil, errors are left to be handled
-further up. "
-  (let* ((config-location (uiop:xdg-config-home "mahogany" "init.lisp"))
-         (config-file (probe-file config-location)))
-    (if config-file
-        (progn
-          (log-string :info "Found config file at ~a" config-file)
-          (if catch-errors
-              (handler-case (load config-file)
-                (error (c)
-                  (let ((message (format nil "~a" c))
-                        (timer (hrt:server-make-timer (state-server *compositor-state*)
-                                                      #'%handle-init-config-error-timer)))
-                    (setf (hrt:timer-handle-data timer) message)
-                    (hrt:timer-handle-update timer 5)
-                    (values nil message config-file)))
-                (:no-error (&rest args) (declare (ignore args)) (values t nil config-file)))
-              (progn
-                (load config-file)
-                (values t nil config-file))))
-        (progn
-          (log-string :info "Did not find config file at ~S" config-location)
-          (values t nil nil)))))
-
-(defcommand loadrc ()
-  (:documentation "Reload the config file")
-  (:method ()
-    (handler-case (load-config-file nil)
-      (error (c)
-        (log-string :error "Error loading config file: ~% ~A" c)
-        (toast-message *compositor-state*
-                       (format nil "Error loading config file: ~%~A" c)
-                       :theme *message-error-theme*))
-      (:no-error (&rest args)
-        (declare (ignore args))
-        (toast-message *compositor-state* "config file loaded successfully.")))))
-
 (defmacro init-callback-struct (variable type &body sets)
   (let ((vars (mapcar #'car sets)))
     `(cffi:with-foreign-slots (,vars ,variable ,type)

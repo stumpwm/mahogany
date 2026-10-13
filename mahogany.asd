@@ -22,6 +22,8 @@
                #:float-features
                #:cl-interactive
                #:trivial-garbage
+               #:local-time
+               #:trivial-backtrace
                #:cffi)
   :in-order-to ((test-op (test-op mahogany-test)))
   :pathname #p"lisp/"
@@ -113,7 +115,8 @@
                 :depends-on ("state" "keyboard" "heart" "command" "message"))
                (:file "key-bindings"
                 :depends-on ("kmap-modes" "state" "tree" "input" "command"))
-               (:file "main" :depends-on ("heart" "keyboard" "input" "package"))))
+               (:file "load-init" :depends-on ("heart" "package"))
+               (:file "main" :depends-on ("heart" "keyboard" "input" "package" "load-init"))))
 
 (asdf:defsystem #:mahogany/executable
   :build-operation program-op
