@@ -27,6 +27,7 @@
 #include <hrt/hrt_server.h>
 #include <hrt/hrt_output.h>
 #include <hrt/hrt_input.h>
+#include "session_lock_impl.h"
 
 #include "idle_impl.h"
 
@@ -144,6 +145,10 @@ bool hrt_server_init(
             wlr_log(WLR_ERROR, "Could not initialize the layer shell");
             return false;
         }
+    }
+    if (!session_lock_manager_init(server)) {
+      wlr_log(WLR_ERROR, "Failed to initialized session locking");
+      return false;
     }
 
     if (!hrt_message_init(server)) {
