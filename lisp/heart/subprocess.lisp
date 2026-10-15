@@ -1,8 +1,9 @@
 (in-package #:hrt)
 
 (defstruct (collect-output-process
-			(:constructor make-collect-output-process (process pid stdout-result stderr-result callback))
-			(:copier nil))
+	    (:constructor make-collect-output-process
+                (process pid stdout-result stderr-result callback))
+	    (:copier nil))
   ;; the process-info type is documented, but it's not external.
   ;; should we really be using it?
   (process nil :type uiop/launch-program::process-info :read-only t)
@@ -16,15 +17,15 @@
                                        :output :stream
                                        :error-output :stream
                                        :input (when stdin
-                                                  :stream)))
-		 (pid (uiop:process-info-pid process))
-		 (stdout-result (make-string-output-stream))
+                                                :stream)))
+	 (pid (uiop:process-info-pid process))
+	 (stdout-result (make-string-output-stream))
          (stderr-result (make-string-output-stream)))
     (when stdin
       (let ((stdin-stream (uiop:process-info-input process)))
         (write-string stdin stdin-stream)
         (close stdin-stream)))
-	(make-collect-output-process process pid stdout-result
+    (make-collect-output-process process pid stdout-result
                                  stderr-result
                                  callback)))
 
@@ -33,31 +34,31 @@
   ;; so a noisy client doesn't block the server?
   (declare (optimize (speed 3) (safety 0)))
   (loop
-	;; There doesn't seem to be a good way to do bulk
+    ;; There doesn't seem to be a good way to do bulk
     ;; non-blocking input portably, so just read character-by-character
     ;; Hopefully it's buffered somewhere so we aren't wasting too many
     ;; CPU cycles:
-	:for char = (read-char-no-hang output-stream nil)
-	;; Loop continues as long as some bytes are read
-	:while char
-	:do
-	   (write-char char result-stream)))
+    :for char = (read-char-no-hang output-stream nil)
+    ;; Loop continues as long as some bytes are read
+    :while char
+    :do
+       (write-char char result-stream)))
 
 (defun collect-app-slurp-stdout (info)
   (declare (type collect-output-process info))
   (with-accessors ((process collect-output-process-process)
-				   (stdout-result collect-output-process-stdout-result)
-				   (stderr-result collect-output-process-stderr-result))
-	  info
-	(%collect-app-output (uiop:process-info-output process) stdout-result)))
+		   (stdout-result collect-output-process-stdout-result)
+		   (stderr-result collect-output-process-stderr-result))
+      info
+    (%collect-app-output (uiop:process-info-output process) stdout-result)))
 
 (defun collect-app-slurp-stderr (info)
   (declare (type collect-output-process info))
   (with-accessors ((process collect-output-process-process)
-				   (stderr-result collect-output-process-stderr-result))
-	  info
-	(%collect-app-output (uiop:process-info-error-output process)
-						 stderr-result)))
+		   (stderr-result collect-output-process-stderr-result))
+      info
+    (%collect-app-output (uiop:process-info-error-output process)
+			 stderr-result)))
 
 (defstruct collect-output-result
   (stdout nil :type string)
@@ -72,40 +73,40 @@
 (defun collect-app-output-end (info)
   (declare (type collect-output-process info))
   (with-accessors ((stdout collect-output-process-stdout-result)
-				   (stderr collect-output-process-stderr-result)
-				   (process collect-output-process-process))
-	  info
-	(let ((stdout-result (get-output-stream-string stdout))
-		  (stderr-result  (get-output-stream-string stderr))
-		  (exit-code nil))
-	  ;; If we wanted to follow the UIOP launch-program interface to the
-	  ;; letter, we would unconditionally call uiop:wait-process somewhere
-	  ;; to ensure we get an exit code and make sure the process doesn't
-	  ;; leave behind resources from the OS. However, it only exposes
-	  ;; a blocking interface, which we can't use. Thankfully, uiop just
-	  ;; calls the implementation's version, and SBCL does the
-	  ;; appropriate cleanup by listening to the SIGCHLD signal. That's
-	  ;; also why I'm hesitant to add our own SIGCHLD handler, as it would
-	  ;; most likely overwrite whatever the implementation does.
-	  ;; I can't find what CCL does, but it's not leaving any orphaned
-	  ;; processes behind, so it's probably not an issue?
-	  (when (not (uiop:process-alive-p process))
-		(setf exit-code (uiop:wait-process process)))
-	  (make-collect-output-result :stdout stdout-result
-				      :stderr stderr-result
-				      :exit-code exit-code))))
+		   (stderr collect-output-process-stderr-result)
+		   (process collect-output-process-process))
+      info
+    (let ((stdout-result (get-output-stream-string stdout))
+	  (stderr-result  (get-output-stream-string stderr))
+	  (exit-code nil))
+      ;; If we wanted to follow the UIOP launch-program interface to the
+      ;; letter, we would unconditionally call uiop:wait-process somewhere
+      ;; to ensure we get an exit code and make sure the process doesn't
+      ;; leave behind resources from the OS. However, it only exposes
+      ;; a blocking interface, which we can't use. Thankfully, uiop just
+      ;; calls the implementation's version, and SBCL does the
+      ;; appropriate cleanup by listening to the SIGCHLD signal. That's
+      ;; also why I'm hesitant to add our own SIGCHLD handler, as it would
+      ;; most likely overwrite whatever the implementation does.
+      ;; I can't find what CCL does, but it's not leaving any orphaned
+      ;; processes behind, so it's probably not an issue?
+      (when (not (uiop:process-alive-p process))
+	(setf exit-code (uiop:wait-process process)))
+      (make-collect-output-result :stdout stdout-result
+				  :stderr stderr-result
+				  :exit-code exit-code))))
 
 (defun collect-app-output-cleanup (info)
   (with-accessors ((stdout collect-output-process-stdout-result)
-				   (stderr collect-output-process-stderr-result)
-				   (process collect-output-process-process))
-	  info
-	(uiop:close-streams process)
-	(close stdout)
-	(close stderr)))
+		   (stderr collect-output-process-stderr-result)
+		   (process collect-output-process-process))
+      info
+    (uiop:close-streams process)
+    (close stdout)
+    (close stderr)))
 
 (mahogany/util:defglobal *subprocesses* (make-hash-table)
-  "Hash table for storing active subprocesses")
+    "Hash table for storing active subprocesses")
 
 (cffi:defcstruct app-output-data
   ;; Note: PIDs are usually ints, and since we get the value from
