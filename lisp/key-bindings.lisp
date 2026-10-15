@@ -1,5 +1,13 @@
 (in-package #:mahogany)
 
+(defun interactively-read-bool (com im arg prompt)
+  (declare (ignore com arg))
+  (let ((result (cl-interactive:input-method-read-index
+                 im
+                 (list "Yes" "No")
+                 prompt)))
+    (= 0 (first result))))
+
 (defcommand run-shell-command
     ((shell-command (:function interactively-read-string :data "Exec")))
   (:method ((exec string))
@@ -12,6 +20,12 @@
 (defcommand shutdown-gracefully ()
   (:method ()
     (server-shutdown-gracefully *compositor-state*)))
+
+(defcommand shutdown-confirm
+    ((should-shutdown (:function interactively-read-bool :data "Quit?")))
+  (:method (should-shutdown)
+    (when should-shutdown
+      (server-shutdown-gracefully *compositor-state*))))
 
 (defcommand shutdown-cancel ()
   (:method ()
