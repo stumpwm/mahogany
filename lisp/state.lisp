@@ -116,7 +116,15 @@ or HRT-OUTPUT is NIL or a null pointer."
                               num-views num-views))
        (hrt:timer-handle-update timer *shutdown-timeout-msec*))
       (t
+       (hrt:timer-handle-destroy timer)
        (server-stop state)))))
+
+(defun server-shutdown-cancel (state)
+  (declare (type mahogany-state state))
+  (log-string :info "Shutdown: shutdown canceled.")
+  (hrt:timer-handle-destroy *shutdown-timer*)
+  (setf *shutdown-timer* nil)
+  (toast-message state "Quitting Canceled."))
 
 (defun server-shutdown-gracefully (state)
   (declare (type mahogany-state state))
@@ -125,7 +133,7 @@ or HRT-OUTPUT is NIL or a null pointer."
       ((> num-views 0)
        (log-string :info "Shutdown: Waiting for clients to disconnect.")
        (toast-message state
-                      (format nil "Shutting down ~A client~P."
+                      (format nil "Quiting after ~A client~P close..."
                               num-views num-views))
        (maphash (lambda (_ view)
                   (declare (ignore _))
