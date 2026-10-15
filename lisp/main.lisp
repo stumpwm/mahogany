@@ -9,6 +9,13 @@
                                       `(cffi:callback ,(cadr pair))
                                       (cffi:null-pointer))))))))
 
+(defun init-session-lock (server lock-callbacks)
+  (declare (type cffi:foreign-pointer server lock-callbacks))
+  (init-callback-struct lock-callbacks (:struct hrt::hrt-session-lock-callbacks)
+    (hrt::session-locked handle-session-lock)
+    (hrt::session-unlocked handle-session-unlock))
+  (hrt::hrt-session-lock-manager-init server lock-callbacks))
+
 (defun init-view-callbacks (view-callbacks)
   (init-callback-struct view-callbacks (:struct hrt:hrt-view-callbacks)
     (hrt:new-view handle-new-view-event)
@@ -42,6 +49,7 @@
 		              (seat-callbacks '(:struct hrt:hrt-seat-callbacks))
 		              (view-callbacks '(:struct hrt:hrt-view-callbacks))
 		              (layer-shell-callbacks '(:struct hrt:hrt-layer-shell-callbacks))
+                              (session-lock-callbacks '(:struct hrt::hrt-session-lock-callbacks))
 		              (server '(:struct hrt:hrt-server)))
     (init-callback-struct output-callbacks (:struct hrt:hrt-output-callbacks)
       (hrt:output-added handle-new-output)
@@ -60,6 +68,8 @@
                        view-callbacks
                        layer-shell-callbacks
                        :debug-level log-level)
+    (init-session-lock server session-lock-callbacks)
+
     (log-string :debug "Initialized mahogany state")
     (if (gethash 'no-init-file args)
         (log-string :info "Init file loading skipped")
