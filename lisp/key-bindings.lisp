@@ -13,6 +13,10 @@
   (:method ()
     (server-shutdown-gracefully *compositor-state*)))
 
+(defcommand shutdown-cancel ()
+  (:method ()
+    (server-shutdown-cancel *compositor-state*)))
+
 (defcommand open-terminal ()
   (:method ()
     (mh-sys:open-terminal)))
