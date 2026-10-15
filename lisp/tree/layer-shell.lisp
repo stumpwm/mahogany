@@ -9,10 +9,10 @@
            :type (or null tree-parent)
            :accessor frame-parent)
    (next :initform nil
-         :type (or tree-node null)
+         :type (or layer-shell-frame tree-node null)
          :reader frame-next)
    (prev :initform nil
-         :type (or tree-node null)
+         :type (or layer-shell-frame tree-node null)
          :reader frame-prev)
    (focused :initarg :focused
             :reader frame-focused
