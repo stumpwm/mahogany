@@ -196,7 +196,8 @@ ARGS:   A list of program arguments or the name of program; \"ls\"
         or (list \"ls\" \"/\"
 CALLBACK: A function that takes a COLLECT-OUTPUT-RESULT object as an argument
 STDIN: A string to pass to the standard input of the command"
-  (declare (type (or null string) stdin))
+  (declare (type (or null string) stdin)
+           (type cffi:foreign-pointer server))
   (let ((info (collect-app-output-begin args callback stdin))
         data)
     (handler-case
@@ -219,11 +220,13 @@ STDIN: A string to pass to the standard input of the command"
                                  (cffi:callback handle-app-stderr)
                                  data))))
 
-      (t ()
+      (t (err)
         ;; I'm not entirely sure how to cleanup here. We certainly need to
         ;; free the data we allocated and close the streams, but do we really
         ;; need to terminate the process?
         ;; This gets handled in normal exectution by handle-app-output:
+        (mahogany/log:log-string
+         :error "Process failed to start: ~S:~%" args err)
         (uiop:terminate-process (collect-output-process-process info))
         (when data
           (cffi:foreign-free data))
