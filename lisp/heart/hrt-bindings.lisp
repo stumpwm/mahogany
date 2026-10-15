@@ -746,7 +746,8 @@ intial placement."
   (headless (:struct wl-listener))
   (output-manager (:struct wl-listener))
   (layer-shell (:struct wl-listener))
-  (idle-inhibit-manager (:struct wl-listener)))
+  (idle-inhibit-manager (:struct wl-listener))
+  (session-lock-manager (:struct wl-listener)))
 
 (cffi:defcstruct hrt-server
   (wl-display :pointer #| (:struct wl-display) |#)
@@ -772,6 +773,9 @@ intial placement."
   (layer-shell :pointer #| (:struct wlr-layer-shell-v1) |#)
   (new-layer-shell (:struct wl-listener))
   (ext-image-copy-capture-manager-v1 :pointer #| (:struct wlr-ext-image-copy-capture-manager-v1) |#)
+  (session-lock-manager :pointer #| (:struct wlr-session-lock-manager-v1) |#)
+  (session-lock-new (:struct wl-listener))
+  (session-lock :pointer)
   (idle-notifier :pointer #| (:struct wlr-idle-notifier-v1) |#)
   (idle-inhibit-manager :pointer #| (:struct wlr-idle-inhibit-manager-v1) |#)
   (new-idle-inhibitor (:struct wl-listener))
