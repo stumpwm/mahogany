@@ -439,6 +439,40 @@
     (check-children-dimensions parent
                                (list 34 33 33) #'tree:frame-height)))
 
+(defun check-children-positions (parent size-list)
+  (loop for c in (tree:tree-children parent)
+        for size in size-list
+        do
+        (is (equalp size (list (tree:frame-x c) (tree:frame-y c))))))
+
+(define-tree-test poly-split-h-child-position-right ()
+  (let* ((tree:*new-split-type* :many)
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-h x :direction :right)))))
+    (check-children-positions parent '((0 0) (33 0) (66 0)))))
+
+(define-tree-test poly-split-h-child-position-left ()
+  (let* ((tree:*new-split-type* :many)
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-h x :direction :left)))))
+    (check-children-positions parent '((0 0) (34 0) (67 0)))))
+
+(define-tree-test poly-split-v-child-position-right ()
+  (let* ((tree:*new-split-type* :many)
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-v x :direction :top)))))
+    (check-children-positions parent '((0 0) (0 33) (0 66)))))
+
+(define-tree-test poly-split-v-child-position-left ()
+  (let* ((tree:*new-split-type* :many)
+         (parent (split-frame-times (make-tree-for-tests) 2
+                                    (lambda (x)
+                                      (mahogany/tree:split-frame-v x :direction :bottom)))))
+    (check-children-positions parent '((0 0) (0 34) (0 67)))))
+
 (define-tree-test remove-frame-output-node-frame-next ()
   "Check that the frame-next pointer is updated correctly when an output node is removed."
   (multiple-value-bind (frame output-node)

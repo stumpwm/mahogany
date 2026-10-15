@@ -410,7 +410,8 @@ Used to initially split all frames, regardless of type."
                               :bordered-left (frame-bordered-left frame))))
         (ecase direction
           (:top
-           (setf new-frame (make-new-frame parent-y
+           (setf new-frame (make-new-frame (+ parent-y
+                                              (- parent-height new-frame-height))
                                            :bordered-top
                                            (frame-bordered-top frame))
                  y-adjust 0
@@ -424,8 +425,7 @@ Used to initially split all frames, regardless of type."
                    (%frame-prev next-frame) new-frame
                    (%frame-next prev-frame) new-frame)))
           (:bottom
-           (setf new-frame (make-new-frame (+ parent-y
-                                              (- parent-height new-frame-height))
+           (setf new-frame (make-new-frame parent-y
                                            :bordered-top t)
                  y-adjust (+ parent-y new-frame-height)
                  ;; we can still use parent-children to access all frames
