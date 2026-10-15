@@ -328,7 +328,12 @@ Used to initially split all frames, regardless of type."
                               :x x
                               :y parent-y
                               :bordered-top (frame-bordered-top frame)
-                              :bordered-left bordered-left)))
+                              :bordered-left bordered-left))
+             (set-next-pointers (new-frame prev-frame next-frame)
+               (setf (%frame-prev new-frame) prev-frame
+                     (%frame-next new-frame) next-frame
+                     (%frame-prev next-frame) new-frame
+                     (%frame-next prev-frame) new-frame)))
         (ecase direction
           (:right
            (setf new-frame (make-new-frame (+ parent-x
@@ -340,10 +345,7 @@ Used to initially split all frames, regardless of type."
                  new-frame-list (append parent-children (list new-frame)))
            (let* ((prev-frame (car (last parent-children)))
                   (next-frame (frame-next prev-frame)))
-             (setf (%frame-prev new-frame) prev-frame
-                   (%frame-next new-frame) next-frame
-                   (%frame-prev next-frame) new-frame
-                   (%frame-next prev-frame) new-frame)))
+             (set-next-pointers new-frame prev-frame next-frame)))
           (:left
            (setf new-frame (make-new-frame parent-x
                                            :bordered-left
@@ -355,10 +357,7 @@ Used to initially split all frames, regardless of type."
                  new-frame-list (cons new-frame parent-children))
            (let* ((next-frame (car parent-children))
                   (prev-frame (frame-prev next-frame)))
-             (setf (%frame-prev new-frame) prev-frame
-                   (%frame-next new-frame) next-frame
-                   (%frame-prev next-frame) new-frame
-                   (%frame-next prev-frame) new-frame)))))
+             (set-next-pointers new-frame prev-frame next-frame)))))
 
       ;; adjust the older child frames:
       (dolist (child parent-children)
@@ -407,7 +406,12 @@ Used to initially split all frames, regardless of type."
                               :x parent-x
                               :y y
                               :bordered-top bordered-top
-                              :bordered-left (frame-bordered-left frame))))
+                              :bordered-left (frame-bordered-left frame)))
+             (set-next-pointers (new-frame prev-frame next-frame)
+               (setf (%frame-prev new-frame) prev-frame
+                     (%frame-next new-frame) next-frame
+                     (%frame-prev next-frame) new-frame
+                     (%frame-next prev-frame) new-frame)))
         (ecase direction
           (:top
            (setf new-frame (make-new-frame (+ parent-y
@@ -420,10 +424,7 @@ Used to initially split all frames, regardless of type."
                  new-frame-list (append parent-children (list new-frame)))
            (let* ((prev-frame (car (last parent-children)))
                   (next-frame (frame-next prev-frame)))
-             (setf (%frame-prev new-frame) prev-frame
-                   (%frame-next new-frame) next-frame
-                   (%frame-prev next-frame) new-frame
-                   (%frame-next prev-frame) new-frame)))
+             (set-next-pointers new-frame prev-frame next-frame)))
           (:bottom
            (setf new-frame (make-new-frame parent-y
                                            :bordered-top t)
@@ -434,10 +435,7 @@ Used to initially split all frames, regardless of type."
                  new-frame-list (cons new-frame parent-children))
            (let* ((next-frame (car parent-children))
                   (prev-frame (frame-prev next-frame)))
-             (setf (%frame-prev new-frame) prev-frame
-                   (%frame-next new-frame) next-frame
-                   (%frame-prev next-frame) new-frame
-                   (%frame-next prev-frame) new-frame)))))
+             (set-next-pointers new-frame prev-frame next-frame)))))
       ;; adjust the older child frames:
       (dolist (child parent-children)
         (setf (frame-height child) other-children-height)
