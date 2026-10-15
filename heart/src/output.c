@@ -24,6 +24,7 @@
 
 #include <hrt/hrt_output.h>
 #include <scene_impl.h>
+#include "session_lock_impl.h"
 
 static void handle_request_state(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "Request State Handled");
@@ -58,6 +59,7 @@ static void handle_output_destroy(struct wl_listener *listener, void *data) {
     // close the layer surfaces raw pointers as well as the hrt_scene_output
     // and the scene trees owned by it, while they are still valid.
     hrt_layer_shell_output_destroy(output);
+    session_lock_output_remove(server, output);
 
     if (output != server->fallback_output) {
         server->output_callback->output_removed(output);
@@ -354,6 +356,7 @@ bool hrt_output_configure(struct hrt_output *output,
 
     bool success = finish_configure(server, output, config);
 
+    session_lock_output_arrange(server, output);
     // We could add another callback that just takes one
     // output, but it probably isn't needed. Plus, it retains
     // the same behavior as when we were calling this in the
@@ -445,6 +448,7 @@ bool hrt_output_configure_atomic(struct hrt_output *outputs[],
         struct hrt_output_config *config = &configs[i];
         success = finish_configure(server, output, config);
     }
+    session_lock_arrange(outputs[0]->server);
     server->output_callback->output_layout_changed();
 
     return success;
@@ -463,6 +467,7 @@ static void handle_new_output(struct wl_listener *listener, void *data) {
     // Initialize the hrt_output here so it's available in any events that
     // are triggered in the subsequent code:
     struct hrt_output *output = hrt_output_create(server, wlr_output);
+    session_lock_output_add(server, output);
 
     wlr_output_init_render(wlr_output, server->allocator, server->renderer);
 
