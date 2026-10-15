@@ -459,14 +459,14 @@
                                       (mahogany/tree:split-frame-h x :direction :left)))))
     (check-children-positions parent '((0 0) (34 0) (67 0)))))
 
-(define-tree-test poly-split-v-child-position-right ()
+(define-tree-test poly-split-v-child-position-top ()
   (let* ((tree:*new-split-type* :many)
          (parent (split-frame-times (make-tree-for-tests) 2
                                     (lambda (x)
                                       (mahogany/tree:split-frame-v x :direction :top)))))
     (check-children-positions parent '((0 0) (0 33) (0 66)))))
 
-(define-tree-test poly-split-v-child-position-left ()
+(define-tree-test poly-split-v-child-position-bottom ()
   (let* ((tree:*new-split-type* :many)
          (parent (split-frame-times (make-tree-for-tests) 2
                                     (lambda (x)
