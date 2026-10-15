@@ -414,6 +414,7 @@ set the width and height of views."
   (overlay :pointer #| (:struct wlr-scene-tree) |#)
   (popup :pointer #| (:struct wlr-scene-tree) |#)
   (drag-icons :pointer #| (:struct wlr-scene-tree) |#)
+  (lock :pointer #| (:struct wlr-scene-tree) |#)
   (listeners (:struct hrt-scene-root-listeners)))
 
 (cffi:defcstruct hrt-scene-output
@@ -421,6 +422,7 @@ set the width and height of views."
   (bottom :pointer #| (:struct wlr-scene-tree) |#)
   (top :pointer #| (:struct wlr-scene-tree) |#)
   (overlay :pointer #| (:struct wlr-scene-tree) |#)
+  (lock :pointer #| (:struct wlr-scene-tree) |#)
   (output (:pointer (:struct hrt-output))))
 
 (cffi:defcstruct hrt-scene-group
