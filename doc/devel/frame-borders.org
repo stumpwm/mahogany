@@ -1,0 +1,5 @@
+* Frame Borders
+
+** Positioning and Sizing
+
+To avoid ocluding the contents of a view with the frame border, tilted frames don't place their views exactly to their dimensions. Instead, they place and size them smaller 
