@@ -1,5 +1,6 @@
 * Frame Borders
 
-** Positioning and Sizing
+** Avoiding the "Window pane effect"
 
-To avoid ocluding the contents of a view with the frame border, tilted frames don't place their views exactly to their dimensions. Instead, they place and size them smaller 
+To avoid ocluding the contents of a view with the frame border, tilted frames don't place their views exactly to their dimensions. Instead, they place and size them smaller so there is no overlap between the veiws and the border.
+When no other adjustments are made, this has the unfortunate effect of causing 
