@@ -80,7 +80,9 @@
     (setf (mahogany-group-active-p group) t)
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
-(defun group-move-view (source destination view)
+(defun group-move-view (source destination view &key (make-current t))
+  "Move VIEW from SOURCE to DESTINATION, replacing the view in DESTINATION's
+current frame. If MAKE-CURRENT is NIL, VIEW is hidden instead."
   (declare (type mahogany-group destination source))
   (when (eq source destination)
     (return-from group-move-view))
@@ -90,13 +92,20 @@
     (tree:layer-container-transfer-view dest-layer view)
     (push view (mahogany-group-views destination))
     (when (hrt:view-mapped-p view)
-      (%add-hidden hidden-list view))))
+      (cond
+        ((and make-current (mahogany-group-current-frame destination))
+         ;; Leaving SOURCE's hidden list doesn't unhide it:
+         (hrt:view-set-hidden view nil)
+         (group-map-view destination view)
+         (%cur-frame-set-from-group *compositor-state* destination))
+        (t
+         (%add-hidden hidden-list view))))))
 
 (defun group-transfer-views (destination source)
   "Transfer the all views from the SOURCE group to the DESTINATION group"
   (declare (type mahogany-group destination source))
   (dolist (view (mahogany-group-views source))
-    (group-move-view source destination view)))
+    (group-move-view source destination view :make-current nil)))
 
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
