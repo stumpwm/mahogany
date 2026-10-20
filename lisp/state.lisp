@@ -298,7 +298,13 @@ the current group or a layer shell frame"
            output-layout
            (map 'list #'tree:output-container-output (state-cur-outputs state)))))
     (if config-map
-        (hrt::output-configure-atomic config-map)
+        (if (hrt::output-configure-atomic config-map)
+            (maphash (lambda (output config)
+                     (declare (ignore config))
+                     (%update-output-enabled *compositor-state* output))
+                     config-map)
+            (error 'mahogany/util:recoverable-error
+                   :text "Could not apply output configuration"))
         (let ((config-name (mh/output-config:output-layout-config-name output-layout)))
           (error 'mahogany/util:invalid-operation
                  :text (format nil
@@ -346,6 +352,9 @@ the current group or a layer shell frame"
         (dolist (new-output added)
           (remhash new-output config-map)
           (%add-output *compositor-state* new-output))
+        ;; Because we removed the newly added outputs to the
+        ;; map, it now contains just the outputs that need to have their
+        ;; enabled-ness updated:
         (maphash (lambda (output config)
                    (declare (ignore config))
                    (%update-output-enabled *compositor-state* output))
