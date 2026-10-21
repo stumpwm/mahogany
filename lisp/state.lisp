@@ -459,6 +459,13 @@ the current group or a layer shell frame"
   (let ((index (%next-group-index state)))
     (%next-group-name index)))
 
+(defun state-find-group (state name)
+  "Return the group in STATE named NAME, or NIL if there is none."
+  (declare (type mahogany-state state)
+           (type string name))
+  (find name (state-groups state)
+        :key #'mahogany-group-name :test #'string=))
+
 (defun mahogany-state-group-add (state &key group-name (make-current t))
   (declare (type mahogany-state state))
   (let ((index (%next-group-index state)))
@@ -554,11 +561,15 @@ the current group or a layer shell frame"
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
 (defun %cur-frame-set-from-group (state group)
+  "Follow the current frame in GROUP."
   (declare (type mahogany-state state)
            (type mahogany-group group))
-  (let ((cur-frame (mahogany-group-current-frame group)))
-    (setf (state-%current-frame state) cur-frame)
-    (tree:mark-frame-focused cur-frame (server-seat state))))
+  (let ((seat (server-seat state)))
+    (if (eq group (state-current-group state))
+        (setf (state-%current-frame state) (mahogany-group-current-frame group))
+        (group-unfocus group seat))
+    (alexandria:when-let ((cur-frame (state-current-frame state)))
+      (tree:mark-frame-focused cur-frame seat))))
 
 (defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)

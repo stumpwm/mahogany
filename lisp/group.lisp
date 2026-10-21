@@ -80,21 +80,32 @@
     (setf (mahogany-group-active-p group) t)
     (hrt:hrt-scene-group-set-enabled hrt-group t)))
 
-(defun group-move-view (source destination view)
+(defun group-move-view (source destination view &key (make-current t))
+  "Move VIEW from SOURCE to DESTINATION, replacing the view in DESTINATION's
+current frame. If MAKE-CURRENT is NIL, VIEW is hidden instead."
   (declare (type mahogany-group destination source))
+  (when (eq source destination)
+    (return-from group-move-view))
   (let ((dest-layer (mahogany-group-tiled-container destination))
         (hidden-list (mahogany-group-hidden-views destination)))
     (group-remove-view source view)
     (tree:layer-container-transfer-view dest-layer view)
     (push view (mahogany-group-views destination))
     (when (hrt:view-mapped-p view)
-      (%add-hidden hidden-list view))))
+      (cond
+        ((and make-current (mahogany-group-current-frame destination))
+         ;; Leaving SOURCE's hidden list doesn't unhide it:
+         (hrt:view-set-hidden view nil)
+         (group-map-view destination view)
+         (%cur-frame-set-from-group *compositor-state* destination))
+        (t
+         (%add-hidden hidden-list view))))))
 
 (defun group-transfer-views (destination source)
   "Transfer the all views from the SOURCE group to the DESTINATION group"
   (declare (type mahogany-group destination source))
   (dolist (view (mahogany-group-views source))
-    (group-move-view source destination view)))
+    (group-move-view source destination view :make-current nil)))
 
 (defun group-focus-frame (group frame seat)
   (with-accessors ((current-frame mahogany-group-current-frame)) group
@@ -255,17 +266,12 @@ to match."
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
-  (with-accessors ((view-list mahogany-group-views)
-                   (output-map mahogany-group-output-map)
-                   (hidden mahogany-group-hidden-views)
-                   (tiled-container mahogany-group-tiled-container))
+  (with-accessors ((view-list mahogany-group-views))
       group
     (when (hrt:view-mapped-p view)
-      ;; if the view is hidden, it won't be in a frame:
-      (or
-       (ring-list:remove-item hidden view)
-       (alexandria:when-let ((f (hrt::view-container view)))
-         (setf (tree:frame-surface f) nil))))
+      (hrt:unfocus-view view (server-seat *compositor-state*))
+      (group-unmap-view group view)
+      (%cur-frame-set-from-group *compositor-state* group))
     (setf view-list (remove view view-list :test #'equalp))))
 
 (defmethod tree:find-empty-frame ((group mahogany-group))
