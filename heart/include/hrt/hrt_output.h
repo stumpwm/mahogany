@@ -2,6 +2,7 @@
 #define HRT_HRT_OUTPUT_H
 
 #include "hrt/hrt_scene.h"
+#include "wayland-server-protocol.h"
 #include <wayland-server.h>
 
 #include <wlr/types/wlr_output.h>
@@ -10,6 +11,38 @@
 #include <hrt/hrt_server.h>
 
 struct hrt_scene_output;
+
+enum hrt_output_transform {
+    HRT_OUTPUT_TRANSFORM_NORMAL = WL_OUTPUT_TRANSFORM_NORMAL,
+    /**
+     * 90 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_90 = WL_OUTPUT_TRANSFORM_90,
+    /**
+     * 180 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_180 = WL_OUTPUT_TRANSFORM_180,
+    /**
+     * 270 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_270 = WL_OUTPUT_TRANSFORM_270,
+    /**
+     * 180 degree flip around a vertical axis
+     */
+    HRT_OUTPUT_TRANSFORM_FLIPPED = WL_OUTPUT_TRANSFORM_FLIPPED,
+    /**
+     * flip and rotate 90 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_FLIPPED_90 = WL_OUTPUT_TRANSFORM_FLIPPED_90,
+    /**
+     * flip and rotate 180 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_FLIPPED_180 = WL_OUTPUT_TRANSFORM_FLIPPED_180,
+    /**
+     * flip and rotate 270 degrees counter-clockwise
+     */
+    HRT_OUTPUT_TRANSFORM_FLIPPED_270 = WL_OUTPUT_TRANSFORM_FLIPPED_270,
+};
 
 struct hrt_output_config {
     double scale;
@@ -23,6 +56,8 @@ struct hrt_output_config {
     // These are in layout coordinates, not pixel coordinates:
     int x, y;
     bool enabled;
+    // The screen orientation.
+    enum hrt_output_transform transform;
 };
 
 struct hrt_output {

@@ -2,11 +2,13 @@
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
 #include "layer_shell_impl.h"
+#include "wayland-server-protocol.h"
 #include "wlr/util/log.h"
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -157,15 +159,42 @@ static int compute_default_scale(struct wlr_output *output,
     return 2;
 }
 
+static enum wl_output_transform
+convert_to_wl_transform(enum hrt_output_transform transform) {
+    switch (transform) {
+        case HRT_OUTPUT_TRANSFORM_NORMAL:
+            return WL_OUTPUT_TRANSFORM_NORMAL;
+        case HRT_OUTPUT_TRANSFORM_90:
+            return WL_OUTPUT_TRANSFORM_90;
+        case HRT_OUTPUT_TRANSFORM_180:
+            return WL_OUTPUT_TRANSFORM_180;
+        case HRT_OUTPUT_TRANSFORM_270:
+            return WL_OUTPUT_TRANSFORM_270;
+        case HRT_OUTPUT_TRANSFORM_FLIPPED:
+            return WL_OUTPUT_TRANSFORM_FLIPPED;
+        case HRT_OUTPUT_TRANSFORM_FLIPPED_90:
+            return WL_OUTPUT_TRANSFORM_FLIPPED_90;
+        case HRT_OUTPUT_TRANSFORM_FLIPPED_180:
+            return WL_OUTPUT_TRANSFORM_FLIPPED_180;
+        case HRT_OUTPUT_TRANSFORM_FLIPPED_270:
+            return WL_OUTPUT_TRANSFORM_270;
+    }
+
+    // TODO: Swap this out for C23's unreachable() function, found in stddef.h
+    //  clang on FreeBSD doesn't have it though.
+    __builtin_unreachable();
+}
+
 static void set_transform(struct wlr_output *wlr_output,
-                          struct wlr_output_state *state) {
+                          struct wlr_output_state *state,
+                          enum hrt_output_transform transform) {
 #if WLR_HAS_DRM_BACKEND
     if (wlr_output_is_drm(wlr_output)) {
         wlr_output_state_set_transform(
             state, wlr_drm_connector_get_panel_orientation(wlr_output));
     } else {
 #endif
-        wlr_output_state_set_transform(state, WL_OUTPUT_TRANSFORM_NORMAL);
+        wlr_output_state_set_transform(state, convert_to_wl_transform(transform));
 #if WLR_HAS_DRM_BACKEND
     }
 #endif
@@ -235,7 +264,11 @@ static void output_build_state(struct hrt_server *server,
         wlr_output_state_set_mode(state, mode);
     }
 
-    set_transform(wlr_output, state);
+    if (config) {
+        set_transform(wlr_output, state, config->transform);
+    } else {
+        set_transform(wlr_output, state, HRT_OUTPUT_TRANSFORM_NORMAL);
+    }
 
     if (config && config->scale > 0) {
         // The fractional-scale-v1 protocol uses increments of 120ths to send

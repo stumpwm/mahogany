@@ -18,7 +18,7 @@
 (defun %output-config-from-clauses (clauses)
   (let ((found (make-hash-table))
         (enabled t)
-        scale refresh-rate custom-mode dimensions position)
+        scale refresh-rate custom-mode dimensions position transform)
     (dolist (c clauses)
       (when (not (listp c))
         (error (format nil "output config property spec must be a list, not ~S"
@@ -44,13 +44,17 @@
           (error "Both width and height need to be specified when setting a mode"))
         (setf custom-mode custom
               dimensions (cons width height)
-              refresh-rate refresh)))
+              refresh-rate refresh))
+      (with-clause :transform (rotation)
+        (check-type rotation hrt::output-transform)
+        (setf transform rotation)))
     (hrt:make-output-config :scale scale
                             :refresh-rate refresh-rate
                             :custom-mode custom-mode
                             :dimensions dimensions
                             :position position
-                            :enabled enabled)))
+                            :enabled enabled
+                            :transform transform)))
 
 (defun %output-match-data-from-clause (clause config)
   (etypecase clause

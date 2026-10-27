@@ -11,6 +11,10 @@
    (output-hrt-output output1)
    (output-hrt-output output2)))
 
+(deftype output-transform ()
+  '(member :normal :transform-90 :transform-180 :transform-270
+    :flipped :flipped-90 :flipped-180 :flipped-270))
+
 (defstruct output-config
   (scale 1 :type (or number null) :read-only t)
   (refresh-rate nil :type (or number null) :read-only t)
@@ -19,7 +23,8 @@
   (dimensions nil :type (or cons null) :read-only t)
   ;; a cons of (x . y)
   (position nil :type (or cons null) :read-only t)
-  (enabled t :type boolean))
+  (enabled t :type boolean :read-only t)
+  (transform nil :type (or output-transform null) :read-only t))
 
 (defun output-config= (a b)
   (declare (type output-config a a))
@@ -28,7 +33,8 @@
        (eq (output-config-custom-mode a) (output-config-custom-mode b))
        (equalp (output-config-dimensions a) (output-config-dimensions b))
        (equalp (output-config-position a) (output-config-position b))
-       (eq (output-config-enabled a) (output-config-enabled b))))
+       (eq (output-config-enabled a) (output-config-enabled b))
+       (eq (output-config-transform a) (output-config-transform b))))
 
 (defun output-config-merge (base override)
   (declare (type output-config base override))
@@ -49,10 +55,41 @@
        :dimensions dimensions
        :refresh-rate refresh-rate
        :custom-mode custom-mode
-       :enabled (output-config-enabled override)))))
+       :enabled (output-config-enabled override)
+       :transform (override-val output-config-transform)))))
+
+(defun %set-output-transform (hrt-config config)
+  (declare (type output-config config)
+           (type cffi:foreign-pointer hrt-config)
+           (optimize (speed 3)))
+  (cffi:with-foreign-slots
+      ((transform)
+       hrt-config (:struct hrt-output-config))
+    ;; Call the setf directly instead of finding the type first
+    ;; to give a chance for the CFFI compiler macros to remove the runtime
+    ;; type translation. This does generate worse code when that
+    ;; doesn't happen though:
+    (ecase (output-config-transform config)
+      ((or nil :normal)
+       (setf transform :hrt-output-transform-normal))
+      (:transform-90
+       (setf transform :hrt-output-transform-90))
+      (:transform-180
+       (setf transform :hrt-output-transform-180))
+      (:transform-270
+       (setf transform :hrt-output-transform-270))
+      (:flipped
+       (setf transform :hrt-output-flipped))
+      (:flipped-90
+       (setf transform :hrt-output-flipped-90))
+      (:flipped-180
+       (setf transform :hrt-output-flipped-180))
+      (:flipped-270
+       (setf transform :hrt-output-flipped-270)))))
 
 (defun %transfer-output-config (hrt-config config)
-  (declare (type output-config config))
+  (declare (type output-config config)
+           (type cffi:foreign-pointer hrt-config))
   (cffi:with-foreign-slots
       ((scale custom-mode width height refresh-rate custom-position x y enabled)
        hrt-config (:struct hrt-output-config))
@@ -71,6 +108,7 @@
             refresh-rate 0.0
             width 0
             height 0))
+    (%set-output-transform hrt-config config)
     (alexandria:if-let ((position (output-config-position config)))
       (setf custom-position t
             x (car position)

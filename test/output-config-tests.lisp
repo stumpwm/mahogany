@@ -127,6 +127,19 @@
     (let ((result (mh/output::find-output-layout-config (list output))))
       (is (null result)))))
 
+(define-layout-test define-output-config-transform-transform-90 ()
+  (let* ((match-data (mh/output:define-output-config "name"
+                  "output"
+                   (:transform :transform-90)))
+         (config (mahogany/output-config::output-match-data-config match-data)))
+    (is (eq (hrt::output-config-transform config) :transform-90))))
+
+(define-layout-test define-output-config-transform-default ()
+  (let* ((match-data (mh/output:define-output-config "name"
+                  "output"))
+         (config (mahogany/output-config::output-match-data-config match-data)))
+    (is (eq (hrt::output-config-transform config) nil))))
+
 (defun check-match-data (entry &key output matched scored)
   (unless (and output matched scored)
     (error "All keys to check-match-data need to be supplied"))

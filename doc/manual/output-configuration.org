@@ -131,12 +131,22 @@ default, but can be made to match if the `exact` flag is `nil`.
 
   NAME-OR-DETAILS : output-name | (&key name make model serial)
 
+  TRANSFORM-OPTION : :normal
+     | :transform-90
+     | :transform-180
+     | :transform-270
+     | :transform-flipped
+     | :transform-flipped-90
+     | :transform-flipped-180
+     | :transform-flipped-270
+
   OUTPUT-PROPERTIES :
        (:scale scale)
      | (:mode width height &key refresh custom)
      | (:position x y)
+     | (:transform TRANSFORM-OPTION)
+     | (:enabled enabled)
      | (:mirror NAME-OR-DETAILS) ;; Not supported yet
-     | (:enabled enabled)        ;; Not supported yet
 #+END_SRC
 
 *** Resolving Conflicts
