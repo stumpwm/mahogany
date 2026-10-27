@@ -297,6 +297,16 @@ well behaved ones should."
 
 (cffi:defcstruct hrt-scene-output)
 
+(cffi:defcenum hrt-output-transform
+  (:hrt-output-transform-normal 0)
+  (:hrt-output-transform-90 1)
+  (:hrt-output-transform-180 2)
+  (:hrt-output-transform-270 3)
+  (:hrt-output-transform-flipped 4)
+  (:hrt-output-transform-flipped-90 5)
+  (:hrt-output-transform-flipped-180 6)
+  (:hrt-output-transform-flipped-270 7))
+
 (cffi:defcstruct hrt-output-config
   (scale :double)
   (custom-mode :bool)
@@ -306,7 +316,8 @@ well behaved ones should."
   (custom-position :bool)
   (x :int)
   (y :int)
-  (enabled :bool))
+  (enabled :bool)
+  (transform hrt-output-transform))
 
 (cffi:defcstruct hrt-output
   (wlr-output :pointer #| (:struct wlr-output) |#)

@@ -40,3 +40,8 @@
     (:enabled t)
   (:enabled nil)
   (:enabled nil))
+
+(define-output-config-merge-test output-config-merge-transform-defaults
+    (:transform :transform-90)
+  (:transform nil)
+  (:transform :transform-90))
