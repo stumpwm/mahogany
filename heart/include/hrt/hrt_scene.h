@@ -55,6 +55,9 @@ struct wlr_scene_tree *
 hrt_scene_output_get_layer(struct hrt_scene_output *output,
                            enum zwlr_layer_shell_v1_layer layer_type);
 
+void hrt_scene_output_set_enabled(struct hrt_scene_output *output,
+                                  bool enabled);
+
 void hrt_scene_group_destroy(struct hrt_scene_group *group);
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled);
