@@ -23,11 +23,14 @@
       (when (not (listp c))
         (error (format nil "output config property spec must be a list, not ~S"
                        c)))
-      (let ((present (gethash (first c) found)))
-        (when present
-          (error (format nil "duplicate property ~S in output config property list"
-                         (first c))))
-        (setf (gethash (first c) found) c)))
+      (let ((property (first c)))
+        (when (not (member  property `(:scale :enabled :position :mode :transform)))
+          (error (format nil "Unknown output config property ~S" property)))
+        (let ((present (gethash property found)))
+          (when present
+            (error (format nil "duplicate property ~S in output config property list"
+                           property)))
+          (setf (gethash property found) c))))
     (macrolet ((with-clause (key lambda-list &body body)
                  (let ((spec (gensym "spec")))
                    `(alexandria:when-let ((,spec (gethash ,key found)))
