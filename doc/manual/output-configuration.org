@@ -38,10 +38,20 @@ The grammar for this macro is as follows:
 
   NAME-OR-DETAILS : output-name | (&key name make model serial)
 
+  TRANSFORM-OPTION : :normal
+     | :transform-90
+     | :transform-180
+     | :transform-270
+     | :transform-flipped
+     | :transform-flipped-90
+     | :transform-flipped-180
+     | :transform-flipped-270
+
   OUTPUT-PROPERTIES :
        (:scale scale)
      | (:mode width height &key refresh custom)
      | (:position x y)
+     | (:transform TRANSFORM-OPTION)
      | (:enabled enabled)
      | (:mirror NAME-OR-DETAILS) ;; Not supported yet
 
@@ -109,10 +119,10 @@ if the following was also present in the configuration above, the
     (:scale 2))
 #+END_SRC
 
-*** Matching configuration lenghts
+*** Matching configuration lengths
 
 If there are more connected outputs than there is in an output layout,
-that layout is not considered a valid canidated unless the `exact`
+that layout is not considered a valid candidate unless the `exact`
 flag is unset in the configuration. For example, if there are three
 outputs connected and you have an output layout that contains only 2
 outputs, but both of them match, that layout will not match by
