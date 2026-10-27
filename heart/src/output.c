@@ -11,6 +11,10 @@
 #include <wayland-server-core.h>
 #include <wayland-util.h>
 #include <wlr/render/wlr_renderer.h>
+#include <wlr/config.h>
+#if WLR_HAS_DRM_BACKEND
+#include <wlr/backend/drm.h>
+#endif
 #include <wlr/backend/headless.h>
 #include <wlr/types/wlr_output_swapchain_manager.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
@@ -153,11 +157,12 @@ static int compute_default_scale(struct wlr_output *output,
     return 2;
 }
 
-static void set_transform(struct wlr_output_state *state) {
+static void set_transform(struct wlr_output *wlr_output,
+                          struct wlr_output_state *state) {
 #if WLR_HAS_DRM_BACKEND
     if (wlr_output_is_drm(wlr_output)) {
         wlr_output_state_set_transform(
-            pending, wlr_drm_connector_get_panel_orientation(wlr_output));
+            state, wlr_drm_connector_get_panel_orientation(wlr_output));
     } else {
 #endif
         wlr_output_state_set_transform(state, WL_OUTPUT_TRANSFORM_NORMAL);
@@ -230,7 +235,7 @@ static void output_build_state(struct hrt_server *server,
         wlr_output_state_set_mode(state, mode);
     }
 
-    set_transform(state);
+    set_transform(wlr_output, state);
 
     if (config && config->scale > 0) {
         // The fractional-scale-v1 protocol uses increments of 120ths to send
