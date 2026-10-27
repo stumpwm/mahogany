@@ -248,11 +248,11 @@ static bool finish_configure(struct hrt_server *server,
                              struct hrt_output_config *config) {
 
     if (config && !config->enabled) {
-        struct wlr_output_layout_output *cur_layout = wlr_output_layout_get(
-            output->server->output_layout, output->wlr_output);
+        struct wlr_output_layout_output *cur_layout = output->layout;
         if (cur_layout) {
             wlr_output_layout_remove(output->server->output_layout,
                                      output->wlr_output);
+            output->layout = nullptr;
         }
         return true;
     }
@@ -264,19 +264,18 @@ static bool finish_configure(struct hrt_server *server,
                 wlr_output->scale);
     }
 
-    struct wlr_output_layout_output *l_output;
     if (config && config->custom_position) {
-        l_output = wlr_output_layout_add(server->output_layout, wlr_output,
+        output->layout = wlr_output_layout_add(server->output_layout, wlr_output,
                                          config->x, config->y);
     } else {
-        l_output =
+        output->layout =
             wlr_output_layout_add_auto(server->output_layout, wlr_output);
     }
-    if (!l_output) {
+    if (!output->layout) {
         wlr_log(WLR_ERROR, "Failed to add output to layout");
         return false;
     }
-    wlr_scene_output_layout_add_output(server->scene_layout, l_output,
+    wlr_scene_output_layout_add_output(server->scene_layout, output->layout,
                                        output->wlr_scene);
     return true;
 }
