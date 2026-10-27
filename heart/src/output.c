@@ -284,8 +284,9 @@ static void output_build_state(struct hrt_server *server,
 static bool finish_configure(struct hrt_server *server,
                              struct hrt_output *output,
                              struct hrt_output_config *config) {
-
-    if (config && !config->enabled) {
+    bool enabled = config && !config->enabled;
+    hrt_scene_output_set_enabled(output->scene, enabled);
+    if (enabled) {
         struct wlr_output_layout_output *cur_layout = output->layout;
         if (cur_layout) {
             wlr_output_layout_remove(output->server->output_layout,

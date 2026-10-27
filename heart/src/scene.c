@@ -65,6 +65,14 @@ void hrt_scene_output_destroy(struct hrt_scene_output *output) {
     free(output);
 }
 
+void hrt_scene_output_set_enabled(struct hrt_scene_output *output,
+                                  bool enabled) {
+    wlr_scene_node_set_enabled(&output->overlay->node, enabled);
+    wlr_scene_node_set_enabled(&output->top->node, enabled);
+    wlr_scene_node_set_enabled(&output->bottom->node, enabled);
+    wlr_scene_node_set_enabled(&output->background->node, enabled);
+}
+
 struct wlr_scene_tree *
 hrt_scene_output_get_layer(struct hrt_scene_output *output,
                            enum zwlr_layer_shell_v1_layer layer_type) {
