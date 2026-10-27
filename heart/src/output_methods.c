@@ -5,10 +5,14 @@ void hrt_output_resolution(struct hrt_output *output, int *width, int *height) {
 }
 
 void hrt_output_position(struct hrt_output *output, int *x, int *y) {
-    struct wlr_output_layout_output *l_output = wlr_output_layout_get(
-        output->server->output_layout, output->wlr_output);
-    *x = l_output->x;
-    *y = l_output->y;
+    struct wlr_output_layout_output *l_output = output->layout;
+    if (!l_output) {
+        wlr_log(WLR_ERROR, "Output layout for output not available; has the output been configured?");
+        *x = *y = 0;
+    } else {
+        *x = l_output->x;
+        *y = l_output->y;
+    }
 }
 
 bool hrt_output_enabled(struct hrt_output *output) {
