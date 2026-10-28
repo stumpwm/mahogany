@@ -108,11 +108,15 @@ static bool phys_size_is_aspect_ratio(struct wlr_output *output) {
 }
 
 // The minimum DPI at which we turn on a scale of 2
-#define HIDPI_DPI_LIMIT (2 * 96)
+constexpr int HIDPI_DPI_LIMIT = (2 * 96);
 // The minimum screen height at which we turn on a scale of 2
-#define HIDPI_MIN_HEIGHT 1200
+constexpr int HIDPI_MIN_HEIGHT = 1200;
 // 1 inch = 25.4 mm
-#define MM_PER_INCH 25.4
+constexpr double MM_PER_INCH = 25.4;
+// Max physical dimension before we increase the scale:
+//  The units are in millimeters, so if a dimension is bigger than a meter,
+//  increase the scale:
+constexpr int32_t BIG_SCREEN_SIZE = 1000;
 
 static int compute_default_scale(struct wlr_output *output,
                                  struct wlr_output_state *pending) {
@@ -150,9 +154,16 @@ static int compute_default_scale(struct wlr_output *output,
         return 1;
     }
 
-    double dpi_x = (double)width / (output->phys_width / MM_PER_INCH);
-    double dpi_y = (double)height / (output->phys_height / MM_PER_INCH);
+    if (output->phys_width >= BIG_SCREEN_SIZE ||
+        output->phys_height >= BIG_SCREEN_SIZE) {
+        return 2;
+    }
+
+    double dpi_x = width / (output->phys_width / MM_PER_INCH);
+    double dpi_y = height / (output->phys_height / MM_PER_INCH);
     if (dpi_x <= HIDPI_DPI_LIMIT || dpi_y <= HIDPI_DPI_LIMIT) {
+        wlr_log(WLR_DEBUG, "scale default 1: height limit: (%f, %f)", dpi_x,
+                dpi_y);
         return 1;
     }
 
@@ -194,7 +205,8 @@ static void set_transform(struct wlr_output *wlr_output,
             state, wlr_drm_connector_get_panel_orientation(wlr_output));
     } else {
 #endif
-        wlr_output_state_set_transform(state, convert_to_wl_transform(transform));
+        wlr_output_state_set_transform(state,
+                                       convert_to_wl_transform(transform));
 #if WLR_HAS_DRM_BACKEND
     }
 #endif
