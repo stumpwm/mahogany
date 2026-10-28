@@ -16,7 +16,7 @@
     :flipped :flipped-90 :flipped-180 :flipped-270))
 
 (defstruct output-config
-  (scale 1 :type (or number null) :read-only t)
+  (scale nil :type (or number null) :read-only t)
   (refresh-rate nil :type (or number null) :read-only t)
   (custom-mode nil :type boolean :read-only t)
   ;; a cons of (width . height)
