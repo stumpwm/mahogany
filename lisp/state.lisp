@@ -296,15 +296,16 @@ the current group or a layer shell frame"
   (let ((config-map
           (mh/output-config:get-configuration-map
            output-layout
-           (map 'list #'tree:output-container-output (state-cur-outputs state)))))
+           (state-outputs state))))
     (if config-map
         (if (hrt::output-configure-atomic config-map)
             (maphash (lambda (output config)
-                     (declare (ignore config))
-                     (%update-output-enabled *compositor-state* output))
+                       (declare (ignore config))
+                       (%update-output-enabled *compositor-state* output))
                      config-map)
-            (error 'mahogany/util:recoverable-error
-                   :text "Could not apply output configuration"))
+            (let ((config-name (mh/output-config:output-layout-config-name output-layout)))
+              (error 'mahogany/util:recoverable-error
+                     :text (format nil "Could not apply output configuration: ~S" config-name))))
         (let ((config-name (mh/output-config:output-layout-config-name output-layout)))
           (error 'mahogany/util:invalid-operation
                  :text (format nil
@@ -386,8 +387,6 @@ the current group or a layer shell frame"
              state
              (make-pending-output-changes
               :added (list mh-output)))))))
-
-
 
 (declaim (inline %find-output))
 (defun %find-output (hrt-output state)

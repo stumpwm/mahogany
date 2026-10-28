@@ -222,29 +222,30 @@ return nil."
 (defun %populate-config-map (outputs output-scores)
   "Create a map of outputs to their combined configuration
 using a sequence of %config-match objects."
-  (declare (type list outputs)
-           (type sequence output-scores))
+  (declare (type sequence outputs output-scores))
   (let ((configurations (make-hash-table :test 'equalp)))
-    (dolist (o outputs)
-      (let ((base (find-output-config o))
-            (from-layout (alexandria:when-let
-                             ((l (find o output-scores
-                                       :key '%config-match-output)))
-                           (output-match-data-config (%config-match-config l)))))
-        (cond
-          ((and base from-layout)
-           (setf (gethash o configurations)
-                 (hrt:output-config-merge
-                  (output-match-data-config base) from-layout)))
-          (base
-           (setf (gethash o configurations)
-                 (output-match-data-config base)))
-          (from-layout
-           (setf (gethash o configurations)
-                 from-layout))
-          (t
-           (setf (gethash o configurations)
-                 nil)))))
+    (map nil (lambda (o)
+               (declare (type hrt:output o))
+               (let ((base (find-output-config o))
+                     (from-layout (alexandria:when-let
+                                      ((l (find o output-scores
+                                                :key '%config-match-output)))
+                                    (output-match-data-config (%config-match-config l)))))
+                 (cond
+                   ((and base from-layout)
+                    (setf (gethash o configurations)
+                          (hrt:output-config-merge
+                           (output-match-data-config base) from-layout)))
+                   (base
+                    (setf (gethash o configurations)
+                          (output-match-data-config base)))
+                   (from-layout
+                    (setf (gethash o configurations)
+                          from-layout))
+                   (t
+                    (setf (gethash o configurations)
+                          nil)))))
+         outputs)
     configurations))
 
 (declaim (ftype (function (output-layout-config sequence)
