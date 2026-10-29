@@ -5,3 +5,6 @@
 struct hrt_scene_root *hrt_scene_root_create(struct wlr_scene_tree *scene);
 
 struct hrt_scene_group *hrt_scene_group_create(struct hrt_server *server);
+
+void hrt_scene_output_set_enabled(struct hrt_scene_output *output,
+                                  bool enabled);
