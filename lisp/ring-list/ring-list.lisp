@@ -130,38 +130,58 @@ found and removed"
         (%remove-item ring-list prev)
         (ring-item-item prev)))))
 
-(defun %swap-find (ring-list item test swap-fn)
+(defun swap-next-find (ring-list find item &key (test #'equalp))
+  "Remove FIND from the list, then put ITEM in the list as with add-item"
   (declare (type ring-list ring-list)
-           (type (function (ring-list t) t) swap-fn)
            (type (or (function (t t) t) symbol) test)
-           (optimize (speed 3) (safety 0)))
-  (alexandria:when-let ((item (%find-item ring-list item test)))
-    ;; remove the ring item from where it was:
-    (let ((item-prev (ring-item-prev item))
-          (item-next (ring-item-next item)))
-      (setf (ring-item-next item-prev) item-next
-            (ring-item-prev item-next) item-prev))
-    ;; and put it at the head of the list, moving the current head back.
-    (with-slots (head) ring-list
-      (let ((next (ring-item-next head)))
-        (setf (ring-item-next head) item
-              (ring-item-prev next) item
-              head item)))
-    (funcall swap-fn ring-list item)))
+           (optimize (speed 3)))
+  (alexandria:when-let ((node (%find-item ring-list find test)))
+    (setf (ring-item-item node) item)
+    ;; If there's only one node, we are already done;
+    ;; Also, if the node is already the head, there's nothing to do:
+    (unless (or (= 1 (ring-list-size ring-list))
+                (eql node (ring-list-head ring-list)))
+      ;; first remove the node:
+      (let ((prev (ring-item-prev node))
+            (next (ring-item-next node)))
+        (setf (ring-item-next prev) next
+              (ring-item-prev next) prev))
+      ;; then place in before the head and shift the head:
+      (with-slots (head) ring-list
+        (let ((prev (ring-item-prev head)))
+          (setf (ring-item-next prev) node
+                (ring-item-prev head) node
+                (ring-item-prev node) prev
+                (ring-item-next node) head))
+        (setf head node)))
+    t))
 
-(defun swap-next-find (ring-list item &key (test #'equalp))
-  "Find the given item in the list and move it to the head of list.
-Then swap the found item for the given one like in swap-next"
+(defun swap-previous-find (ring-list find item &key (test #'equalp))
+  "Remove FIND from the list, then put ITEM in the list as with add-item-prev"
   (declare (type ring-list ring-list)
-           (type (or (function (t t) t) symbol) test))
-  (%swap-find ring-list item test #'swap-next))
-
-(defun swap-previous-find (ring-list item &key (test #'equalp))
-  "Find the given item in the list and move it to the head of list.
-Then swap the found item for the given one like in swap-previous"
-  (declare (type ring-list ring-list)
-           (type (or (function (t t) t) symbol) test))
-  (%swap-find ring-list item test #'swap-previous))
+           (type (or (function (t t) t) symbol) test)
+           (optimize (speed 3)))
+  (alexandria:when-let ((node (%find-item ring-list find test)))
+    (setf (ring-item-item node) item)
+    ;; If there's only one node, we are already done;
+    (unless (= 1 (ring-list-size ring-list))
+      (if (eql node (ring-list-head ring-list))
+          ;; If we are at the head, we need to shift it:
+          (setf (ring-list-head ring-list) (ring-item-next node))
+          (progn
+            ;; first remove the node:
+            (let ((prev (ring-item-prev node))
+                  (next (ring-item-next node)))
+              (setf (ring-item-next prev) next
+                    (ring-item-prev next) prev))
+            ;; place it before the head:
+            (with-slots (head) ring-list
+              (let ((prev (ring-item-prev head)))
+                (setf (ring-item-next prev) node
+                      (ring-item-prev head) node
+                      (ring-item-prev node) prev
+                      (ring-item-next node) head))))))
+    t))
 
 (defun swap-next (ring-list item)
   "Replace the item currently at the head of the list with the given item,
