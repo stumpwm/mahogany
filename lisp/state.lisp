@@ -682,6 +682,15 @@ the current group or a layer shell frame"
   string
   "The cursor image to use for the grab pointer.")
 
+(defun state-move-view (state source dest view)
+  "Move the given view from SOURCE to DEST groups"
+  (group-move-view source dest view)
+  (%cur-frame-set-from-group state group))
+
+(defun state-transfer-views (state source dest)
+  (group-transfer-views source dest)
+  (%cur-frame-set-from-group state group))
+
 (defun state-remove-cur-group-frame (state)
   (declare (type mahogany-state state))
   (when (group-frame-p (state-current-frame state))
