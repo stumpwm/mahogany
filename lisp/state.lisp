@@ -585,9 +585,15 @@ the current group or a layer shell frame"
 (defun %cur-frame-set-from-group (state group)
   (declare (type mahogany-state state)
            (type mahogany-group group))
-  (let ((cur-frame (mahogany-group-current-frame group)))
-    (setf (state-%current-frame state) cur-frame)
-    (tree:mark-frame-focused cur-frame (server-seat state))))
+  ;; We could get away with moving this check up to avoid redundancy,
+  ;; as only some of the callers will call this with a group that
+  ;; isn't current. This is safer though:
+  (if (eq group (state-current-group state))
+      (let ((cur-frame (mahogany-group-current-frame group)))
+        (setf (state-%current-frame state) cur-frame)
+        (tree:mark-frame-focused cur-frame (server-seat state)))
+      (log-string :trace "Not changing current frame: group ~S not current"
+                  (mahogany-group-name group))))
 
 (defun mahogany-state-view-fullscreen (state view output set-fullscreen)
   (declare (type mahogany-state state)
