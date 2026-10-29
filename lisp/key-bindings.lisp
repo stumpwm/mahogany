@@ -199,13 +199,14 @@
 (defun %move-current-surface (destination)
   (multiple-value-bind (cur-group surface)
       (%prep-move-cur-view)
-    (group-move-view cur-group destination surface)))
+    (state-move-view *compositor-state* cur-group destination surface)))
 
 (defcommand gmerge
     ((from (:function interactively-read-group :data "From Group")))
   (:documentation "Merge FROM into the current group. FROM is not deleted")
   (:method (from)
-    (group-transfer-views (state-current-group *compositor-state*)
+    (state-transfer-views *compositor-state*
+                          (state-current-group *compositor-state*)
                           from)))
 
 (defcommand gmove
@@ -221,7 +222,7 @@
   (:method (views destination)
     (let ((cur-group (state-current-group *compositor-state*)))
       (dolist (v views)
-        (group-move-view cur-group destination v)))))
+        (state-move-view *compositor-state* cur-group destination v)))))
 
 (defcommand gmove-and-follow
     ((group (:function interactively-read-group :data "Group?")))
@@ -239,7 +240,7 @@
     (multiple-value-bind (initial-group surface)
         (%prep-move-cur-view)
       (state-next-hidden-group *compositor-state*)
-      (group-move-view
+      (state-move-view *compositor-state*
        initial-group
        (state-current-group *compositor-state*)
        surface))))
@@ -252,7 +253,7 @@
     (multiple-value-bind (initial-group surface)
         (%prep-move-cur-view)
       (state-prev-hidden-group *compositor-state*)
-      (group-move-view
+      (state-move-view *compositor-state*
        initial-group
        (state-current-group *compositor-state*)
        surface))))
