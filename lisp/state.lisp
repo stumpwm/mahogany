@@ -59,7 +59,7 @@ or HRT-OUTPUT is NIL or a null pointer."
            :text "Could not initialize the compositor."))
   (let ((default-group (%add-group state *default-group-name*
                                    (%next-group-index state))))
-    (setf (state-current-group state) default-group)))
+    (setf (%state-current-group state) default-group)))
 
 (defun server-state-reset (state)
   (declare (type mahogany-state state))
@@ -157,11 +157,12 @@ or HRT-OUTPUT is NIL or a null pointer."
   fixnum
   "How long the group name is shown for, in milliseconds.")
 
-(defun (setf state-current-group) (group state)
+(defun (setf %state-current-group) (group state)
+  "Set the current group to this group. This function does not deal with
+the hidden groups; if directly setting a group, see (setf state-current-group)"
   (declare (type mahogany-state state)
            (type mahogany-group group))
-  (with-accessors ((hidden-groups state-hidden-groups)
-                   (server state-server))
+  (with-accessors ((server state-server))
       state
     (when (not (find group (state-groups state) :test #'equalp))
       (error (format nil "Group ~S is not part of this state" group)))
@@ -174,7 +175,21 @@ or HRT-OUTPUT is NIL or a null pointer."
       (when *show-group-name*
         (toast-message state (mahogany-group-name group)
                        :ms-delay *group-name-delay*)))
-    (hrt:dirty-view-transaction)))
+    (hrt:dirty-view-transaction))
+  group)
+
+(defun (setf state-current-group) (group state)
+  "Set the current group, moving the current group to the previous item in the
+hidden group list"
+  (let ((hidden-groups (state-hidden-groups state)))
+    (if (ring-list:swap-previous-find hidden-groups
+                                      group (state-current-group state))
+        (setf (%state-current-group state) group)
+        ;; We still want to show the group name even if we didn't need to do anything:
+        (when *show-group-name*
+          (toast-message state (mahogany-group-name group)
+                         :ms-delay *group-name-delay*)))
+    group))
 
 (defun %state-select-group (state designator)
   "Retrieve a group based on the given designator. If a number,
@@ -473,16 +488,16 @@ the current group or a layer shell frame"
     (unless group-name
       (setf group-name (%next-group-name index)))
     (let ((new-group (%add-group state group-name index)))
-      (with-accessors ((current-group state-current-group)
-                       (hidden-groups state-hidden-groups)
+      (with-accessors ((hidden-groups state-hidden-groups)
                        (state-outputs state-cur-outputs))
           state
         (loop for o across state-outputs
               do (group-add-output new-group o))
         (cond
           (make-current
-           (ring-list:add-item hidden-groups current-group)
-           (setf current-group new-group))
+           (ring-list:add-item hidden-groups
+                               (state-current-group state))
+           (setf (%state-current-group state) new-group))
           (t
            (ring-list:add-item hidden-groups new-group)))
         (log-string :trace "Hidden groups: ~S" hidden-groups))
@@ -490,8 +505,7 @@ the current group or a layer shell frame"
 
 (defun mahogany-state-group-remove (state group)
   (with-accessors ((groups state-groups)
-                   (hidden-groups state-hidden-groups)
-                   (current-group state-current-group))
+                   (hidden-groups state-hidden-groups))
       state
     (when (= (length groups) 1)
       (log-string :warn "Cannot remove the only group")
@@ -501,15 +515,15 @@ the current group or a layer shell frame"
                (scene-tree (hrt:hrt-server-scene-tree server))
                (seat (hrt:hrt-server-seat server)))
           (cond
-            ((equal group current-group)
+            ((equal group (state-current-group state))
              (let ((new-current (ring-list:pop-item hidden-groups)))
-               (setf current-group new-current)
+               (setf (%state-current-group state) new-current)
                (group-wakeup new-current seat)))
             (t
              (ring-list:remove-item hidden-groups group)))
           (setf groups (delete group groups
                                :test #'equalp))
-          (group-transfer-views current-group group)
+          (group-transfer-views (state-current-group state) group)
           (destroy-mahogany-group group scene-tree seat)
           (log-string :trace "Hidden groups: ~S" hidden-groups))
         (log-string :error "could not find group to delete"))))
@@ -640,7 +654,7 @@ the current group or a layer shell frame"
   (let ((current-group (state-current-group state))
         (hidden-groups (state-hidden-groups state)))
     (when (> (ring-list:ring-list-size hidden-groups) 0)
-      (setf (state-current-group state) (ring-list:swap-next hidden-groups current-group))
+      (setf (%state-current-group state) (ring-list:swap-next hidden-groups current-group))
       (log-string :trace "Hidden groups: ~S" hidden-groups))))
 
 (defun state-prev-hidden-group (state)
@@ -648,7 +662,8 @@ the current group or a layer shell frame"
   (let ((current-group (state-current-group state))
         (hidden-groups (state-hidden-groups state)))
     (when (> (ring-list:ring-list-size hidden-groups) 0)
-      (setf (state-current-group state) (ring-list:swap-previous hidden-groups current-group)))))
+      (setf (%state-current-group state) (ring-list:swap-previous hidden-groups current-group))
+      (log-string :trace "Hidden groups: ~S" hidden-groups))))
 
 (config-system:defconfig grab-pointer-cursor "help"
   string
