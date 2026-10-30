@@ -228,7 +228,9 @@ to match."
                    (hidden mahogany-group-hidden-views))
       group
     (log-string :trace "unmapping view ~S" view)
-    (alexandria:if-let ((f (hrt::view-container view)))
+    (ring-list:remove-item hidden view)
+    (remhash view (mahogany-group-hidden-view-map group))
+    (alexandria:when-let ((f (hrt::view-container view)))
       (hrt:with-view-transaction ()
         (etypecase f
           (tree:output-node
@@ -248,10 +250,11 @@ to match."
                   (setf (mahogany-group-current-frame group) to-focus))))))
           (tree:view-frame
            (setf (tree:frame-surface f) nil)
-           (when (> (ring-list:ring-list-size hidden) 0)
-             (%swap-view-into-frame group f (%pop-hidden-item hidden)))))
-        (hrt:dirty-view-transaction))
-      (ring-list:remove-item hidden view))))
+           ;; Leave frames under a fullscreen view empty
+           (unless (tree:frame-surface (tree:find-root-frame f))
+             (when (> (ring-list:ring-list-size hidden) 0)
+               (%swap-view-into-frame group f (%pop-hidden-item hidden))))))
+        (hrt:dirty-view-transaction)))))
 
 (defun group-remove-view (group view)
   (declare (type mahogany-group group))
