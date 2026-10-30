@@ -226,7 +226,7 @@ STDIN: A string to pass to the standard input of the command"
         ;; need to terminate the process?
         ;; This gets handled in normal exectution by handle-app-output:
         (mahogany/log:log-string
-         :error "Process failed to start: ~S:~%" args err)
+         :error "Process failed to start: ~S:~%~A" args err)
         (uiop:terminate-process (collect-output-process-process info))
         (when data
           (cffi:foreign-free data))
