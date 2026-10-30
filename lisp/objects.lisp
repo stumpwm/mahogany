@@ -1,5 +1,16 @@
 (in-package #:mahogany)
 
+;; This object holds the information needed to restore the state
+;; that was overriden by making a view fullscreen.
+(defstruct (%fullscreen-hidden-info
+            (:constructor make-%fullscreen-hidden-info ()))
+  ;; Map that contains views hidden by fullscreen windows.
+  ;; view -> %hidden-view-info
+  (view-map (make-hash-table) :type hash-table)
+  ;; Map that contains which frame was focused when hidden by a fullscreen window:
+  ;; output-node -> frame
+  (marked-frame-map (make-hash-table) :type hash-table))
+
 (defstruct (mahogany-group (:constructor %make-mahogany-group
                                (name number hrt-group tiled-container)))
   (name "" :type string)
@@ -11,9 +22,7 @@
   (current-frame nil ;; :type (or tree:frame tree:output-node null)
    )
   (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)
-  ;; Map that contains views hidden by fullscreen windows.
-  ;; view -> %hidden-view-info
-  (hidden-view-map (make-hash-table) :type hash-table)
+  (fullscreen-hidden nil :type (or %fullscreen-hidden-info null))
   (views nil :type list))
 
 (defstruct (mahogany-state (:conc-name state-))
