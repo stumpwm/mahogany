@@ -771,7 +771,6 @@ intial placement."
   (new-output (:struct wl-listener))
   (output-manager :pointer #| (:struct wlr-output-manager-v1) |#)
   (output-layout :pointer #| (:struct wlr-output-layout) |#)
-  (output-layout-changed (:struct wl-listener))
   (output-manager-apply (:struct wl-listener))
   (output-manager-test (:struct wl-listener))
   (seat (:struct hrt-seat))
