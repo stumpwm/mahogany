@@ -239,7 +239,7 @@ to match."
       group
     (log-string :trace "unmapping view ~S" view)
     (ring-list:remove-item hidden view)
-    (%remove-hidden-view-info (mahogany-group-hidden-view-map group) view)
+    (%remove-hidden-view-info group view)
     (alexandria:when-let ((f (hrt::view-container view)))
       (hrt:with-view-transaction ()
         (etypecase f

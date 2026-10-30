@@ -686,11 +686,11 @@ the current group or a layer shell frame"
 (defun state-move-view (state source dest view)
   "Move the given view from SOURCE to DEST groups"
   (group-move-view source dest view)
-  (%cur-frame-set-from-group state group))
+  (%cur-frame-set-from-group state source))
 
 (defun state-transfer-views (state source dest)
   (group-transfer-views source dest)
-  (%cur-frame-set-from-group state group))
+  (%cur-frame-set-from-group state source))
 
 (defun state-remove-cur-group-frame (state)
   (declare (type mahogany-state state))
