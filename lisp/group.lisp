@@ -82,7 +82,9 @@
 
 (defun group-move-view (source destination view &key (make-current t))
   "Move VIEW from SOURCE to DESTINATION, replacing the view in DESTINATION's
-current frame. If MAKE-CURRENT is NIL, VIEW is hidden instead."
+current frame. If MAKE-CURRENT is NIL, VIEW is hidden instead. This
+does not change the state's focused frame; %cur-frame-set-from-group
+or another function that does MUST be called after."
   (declare (type mahogany-group destination source))
   (when (eq source destination)
     (return-from group-move-view))
@@ -101,7 +103,9 @@ current frame. If MAKE-CURRENT is NIL, VIEW is hidden instead."
          (%add-hidden hidden-list view))))))
 
 (defun group-transfer-views (source destination)
-  "Transfer the all views from the SOURCE group to the DESTINATION group"
+  "Transfer the all views from the SOURCE group to the DESTINATION group.
+This does not change the state's focused frame; %cur-frame-set-from-group
+or another function that does MUST be called after."
   (declare (type mahogany-group destination source))
   (dolist (view (mahogany-group-views source))
     (group-move-view source destination view :make-current nil)))
