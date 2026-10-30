@@ -83,12 +83,12 @@ the prefix key is pressed, then =j=, then =k=.
 
 ** Changing the prefix key
 
-To change the prefix key, set the `mahogany-state-prefix-key`
+To change the prefix key, set the `state-prefix-key`
 property:
 
 #+BEGIN_SRC lisp
   ;; set the prefix key to Super-a
-  (setf (mahogany-state-prefix-key *compositor-state*) (kbd "s-a"))
+  (setf (state-prefix-key *compositor-state*) (kbd "s-a"))
 #+END_SRC
 
 Only keys that can be represented in a key can be valid prefix keys;
