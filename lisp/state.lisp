@@ -583,7 +583,8 @@ the current group or a layer shell frame"
       (log-string :error "Could not find mahogany view associated with pointer ~S" view-ptr))))
 
 (defun %cur-frame-set-from-group (state group)
-  "Set the state's current frame to the given group's frame if the group is current."
+  "Set the state's current frame to the given group's frame
+if the group is current."
   (declare (type mahogany-state state)
            (type mahogany-group group))
   ;; We could get away with moving this check up to avoid redundancy,
