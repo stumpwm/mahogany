@@ -329,6 +329,11 @@ static bool finish_configure(struct hrt_server *server,
     }
     wlr_scene_output_layout_add_output(server->scene_layout, output->layout,
                                        output->wlr_scene);
+
+    // Since the layout change action should trigger the same
+    //  actions as arranging the layers, don't emit the event; we will
+    //  emit it later.
+    hrt_layer_shell_arrange_layers(output, false);
     return true;
 }
 
@@ -347,7 +352,15 @@ bool hrt_output_configure(struct hrt_output *output,
     }
     wlr_output_state_finish(&state);
 
-    return finish_configure(server, output, config);
+    bool success = finish_configure(server, output, config);
+
+    // We could add another callback that just takes one
+    // output, but it probably isn't needed. Plus, it retains
+    // the same behavior as when we were calling this in the
+    // output layout change listener.
+    output->server->output_callback->output_layout_changed();
+
+    return success;
 }
 
 static bool atomic_modeset(struct hrt_output *outputs[],
@@ -425,13 +438,16 @@ bool hrt_output_configure_atomic(struct hrt_output *outputs[],
         return false;
     }
 
+    bool success;
+    struct hrt_server *server = outputs[0]->server;
     for (size_t i = 0; i < length; ++i) {
         struct hrt_output *output        = outputs[i];
         struct hrt_output_config *config = &configs[i];
-        finish_configure(output->server, output, config);
+        success = finish_configure(server, output, config);
     }
+    server->output_callback->output_layout_changed();
 
-    return true;
+    return success;
 }
 
 static void handle_new_output(struct wl_listener *listener, void *data) {
@@ -471,27 +487,6 @@ static void handle_output_manager_apply(struct wl_listener *listener,
 static void handle_output_manager_test(struct wl_listener *listener,
                                        void *data) {}
 
-static void handle_output_layout_changed(struct wl_listener *listener,
-                                         void *data) {
-    struct hrt_server *server =
-        wl_container_of(listener, server, output_layout_changed);
-    struct wlr_output_layout *layout = data;
-
-    // There's probably a way to deal with changes to outputs individually,
-    // which may be more efficient in certain situations (but not others)
-    struct wlr_output_layout_output *output;
-    wl_list_for_each(output, &layout->outputs, link) {
-        struct wlr_output *wlr_output = output->output;
-        struct hrt_output *hrt_output = wlr_output->data;
-
-        // Since the layout change action should trigger the same
-        //  actions as arranging the layers, don't emit the event:
-        hrt_layer_shell_arrange_layers(hrt_output, false);
-    }
-
-    server->output_callback->output_layout_changed();
-}
-
 static void check_callbacks(const struct hrt_output_callbacks *callbacks) {
     assert(callbacks->output_added != nullptr);
     assert(callbacks->output_removed != nullptr);
@@ -508,10 +503,6 @@ bool hrt_server_output_init(struct hrt_server *server,
     server->output_layout = wlr_output_layout_create(server->wl_display);
     server->scene_layout =
         wlr_scene_attach_output_layout(server->scene, server->output_layout);
-
-    server->output_layout_changed.notify = handle_output_layout_changed;
-    wl_signal_add(&server->output_layout->events.change,
-                  &server->output_layout_changed);
 
     server->output_manager = wlr_output_manager_v1_create(server->wl_display);
     wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
@@ -538,7 +529,6 @@ bool hrt_server_output_init(struct hrt_server *server,
 }
 
 void hrt_output_destroy(struct hrt_server *server) {
-    wl_list_remove(&server->output_layout_changed.link);
     // The output layout and scene root gets destroyed when the display does:
     wl_list_remove(&server->new_output.link);
 }
