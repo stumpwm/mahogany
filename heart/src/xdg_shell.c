@@ -13,6 +13,7 @@
 #include "hrt/hrt_view.h"
 #include "view_impl.h"
 
+#include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/edges.h>
 
@@ -170,28 +171,33 @@ create_view_from_xdg_surface(struct wlr_xdg_toplevel *xdg_toplevel,
     return view;
 }
 
+void hrt_popup_unconstrain(struct wlr_xdg_popup *popup,
+                           struct hrt_output *output, int lx, int ly) {
+    struct wlr_box output_box;
+    wlr_output_layout_get_box(output->server->output_layout, output->wlr_output,
+                              &output_box);
+    // the output box expressed in the coordinate system of the toplevel parent
+    // of the popup
+    struct wlr_box output_toplevel_sx_box = {
+        .x      = output_box.x - lx,
+        .y      = output_box.y - ly,
+        .width  = output_box.width,
+        .height = output_box.height,
+    };
+
+    wlr_xdg_popup_unconstrain_from_box(popup, &output_toplevel_sx_box);
+}
+
 static void popup_unconstrain(struct hrt_xdg_popup *popup) {
-    struct hrt_view *view           = popup->view;
-    struct wlr_xdg_popup *wlr_popup = popup->xdg_popup;
+    struct hrt_view *view = popup->view;
 
     struct hrt_output *output = view->callbacks->get_view_output(view);
     if (!output) {
         wlr_log(WLR_ERROR, "Could not get output to unconstrain popup.");
         return;
     }
-    int x, y;
-    hrt_output_position(output, &x, &y);
-    int width, height;
-    hrt_output_resolution(output, &width, &height);
 
-    struct wlr_box output_toplevel_sx_box = {
-        .x      = x,
-        .y      = y,
-        .width  = width,
-        .height = height,
-    };
-
-    wlr_xdg_popup_unconstrain_from_box(wlr_popup, &output_toplevel_sx_box);
+    hrt_popup_unconstrain(popup->xdg_popup, output, 0, 0);
 }
 
 static void handle_xdg_popup_reposition(struct wl_listener *listener,
