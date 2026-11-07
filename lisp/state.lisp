@@ -793,7 +793,9 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
       (let* ((output-container (%find-output-container
                                 (hrt:layer-surface-output surface)
                                 state))
-             (removed-frame (when output-container
+             ;; Surfaces without keyboard interactivity never get a frame
+             (removed-frame (when (and output-container
+                                       (hrt::layer-surface-container surface))
                               (tree::output-container-remove-layer-shell
                                output-container surface))))
         (when (and removed-frame (eq (state-current-frame state) removed-frame))
