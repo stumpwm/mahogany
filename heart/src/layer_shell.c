@@ -5,6 +5,7 @@
 #include "hrt/hrt_layer_shell.h"
 #include "layer_shell_impl.h"
 #include "seat_impl.h"
+#include "xdg_impl.h"
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
 #include "scene_descriptor.h"
@@ -248,8 +249,7 @@ static void handle_unmap(struct wl_listener *listener, void *data) {
 }
 
 static void popup_unconstrain(struct hrt_layer_shell_popup *popup) {
-    struct wlr_xdg_popup *wlr_popup = popup->wlr_popup;
-    struct hrt_output *output       = popup->toplevel->output;
+    struct hrt_output *output = popup->toplevel->output;
 
     // if a client tries to create a popup while we are in the process of destroying
     // its output, don't crash.
@@ -260,20 +260,7 @@ static void popup_unconstrain(struct hrt_layer_shell_popup *popup) {
     int lx, ly;
     wlr_scene_node_coords(&popup->toplevel->scene_surface->tree->node, &lx,
                           &ly);
-
-    struct wlr_box output_box;
-    wlr_output_layout_get_box(output->server->output_layout, output->wlr_output,
-                              &output_box);
-    // the output box expressed in the coordinate system of the toplevel parent
-    // of the popup
-    struct wlr_box output_toplevel_sx_box = {
-        .x      = output_box.x - lx,
-        .y      = output_box.x - ly,
-        .width  = output_box.width,
-        .height = output_box.height,
-    };
-
-    wlr_xdg_popup_unconstrain_from_box(wlr_popup, &output_toplevel_sx_box);
+    hrt_popup_unconstrain(popup->wlr_popup, output, lx, ly);
 }
 
 static void popup_handle_reposition(struct wl_listener *listener, void *data) {

@@ -16,5 +16,13 @@ struct hrt_xdg_popup {
     struct wl_listener reposition;
 };
 
+/**
+ * Keeps the popup inside the output. lx, ly is the layout top-left corner
+ * of the window or layer surface the popup belongs to.
+ * For a popup of a popup wlroots adds the parent offsets, so we use the same lx, ly.
+ */
+void hrt_popup_unconstrain(struct wlr_xdg_popup *popup,
+                           struct hrt_output *output, int lx, int ly);
+
 bool hrt_xdg_shell_init(struct hrt_server *server);
 void hrt_xdg_shell_destroy(struct hrt_server *server);
