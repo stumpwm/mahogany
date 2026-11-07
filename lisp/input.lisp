@@ -149,41 +149,43 @@ NIL goes back to libinput's default, which is the same as 0."
     (pprint-key last s)
     (format s "\"~%is undefined.")))
 
+(defun reset-keybinding-state (state)
+  (declare (type mahogany-state state))
+  (log-string :trace "Reseting keyboard state")
+  (state-ungrab-seat state)
+  (server-keystate-reset state))
+
 (defun check-and-run-keybinding (key seat key-state)
   (declare (type key key)
            (type key-state key-state)
            (optimize (speed 3)))
   (when (not (key-modifier-key-p key))
     (let* ((handling-keybinding (key-state-active-p key-state)))
-      (flet ((reset-state ()
-               (log-string :trace "Reseting keyboard state")
-               (state-ungrab-seat *compositor-state*)
-               (server-keystate-reset *compositor-state*)))
-        (multiple-value-bind (matched result)
-            (key-state-advance key key-state)
-          (cond
-            (;; A known keybinding was pressed:
-             matched
-             (cond
-               (result
-                (reset-state)
-                ;; Only consume the pressed key if we have a command
-                ;; and not a special keyword:
-                (if (eq :pass-through result)
-                    (return-from check-and-run-keybinding nil)
-                    (execute-command result
-		                             (key-state-sequence key-state) seat)))
-               (t (state-grab-seat *compositor-state*)
-                  t)))
-            (;; No keybinding was pressed but we were expecting one.
-             handling-keybinding
-             (toast-message *compositor-state* (%unkown-keybinding-message key-state key))
-             (reset-state)
-             ;; Since we still took an action (canceling the keybinding),
-             ;; still consume the pressed key
-             t)
-            ;; No action was taken, don't consume the pressed key:
-            (t  nil)))))))
+      (multiple-value-bind (matched result)
+          (key-state-advance key key-state)
+        (cond
+          (;; A known keybinding was pressed:
+           matched
+           (cond
+             (result
+              (reset-keybinding-state *compositor-state*)
+              ;; Only consume the pressed key if we have a command
+              ;; and not a special keyword:
+              (if (eq :pass-through result)
+                  (return-from check-and-run-keybinding nil)
+                  (execute-command result
+		                   (key-state-sequence key-state) seat)))
+             (t (state-grab-seat *compositor-state*)
+                t)))
+          (;; No keybinding was pressed but we were expecting one.
+           handling-keybinding
+           (toast-message *compositor-state* (%unkown-keybinding-message key-state key))
+           (reset-state)
+           ;; Since we still took an action (canceling the keybinding),
+           ;; still consume the pressed key
+           t)
+          ;; No action was taken, don't consume the pressed key:
+          (t  nil))))))
 
 (defun handle-key-event (state key seat event-state)
   (declare (type key key)
@@ -215,7 +217,9 @@ NIL goes back to libinput's default, which is the same as 0."
   (declare (optimize (speed 3))
            #+sbcl
            (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (when (not (zerop (logand *keyboard-focus-bits* +wheel-mask+)))
+  (when (and
+         (not (state-locked *compositor-state*))
+         (not (zerop (logand *keyboard-focus-bits* +wheel-mask+))))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-axis seat event))
 
@@ -226,7 +230,9 @@ NIL goes back to libinput's default, which is the same as 0."
   (declare (optimize (speed 3))
            #+sbcl
            (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (when (not (zerop (logand *keyboard-focus-bits* +click-mask+)))
+  (when (and
+         (not (state-locked *compositor-state*))
+         (not (zerop (logand *keyboard-focus-bits* +click-mask+))))
     (%focus-frame-under-cursor seat))
   (hrt:hrt-seat-notify-button seat event))
 
@@ -240,8 +246,9 @@ NIL goes back to libinput's default, which is the same as 0."
   (cffi:with-foreign-slots ((hrt:keysyms hrt:modifiers hrt:keysyms-len hrt:wl-key-state)
                             info (:struct hrt:hrt-keypress-info))
     ;; don't check for key commands if we are collecting args:
-    (when *collecting-args-p*
-      (log-string :trace "Not checking keybinding due to interactive command")
+    (when (or *collecting-args-p*
+              (state-locked *compositor-state*))
+      (log-string :trace "Not checking keybinding due to lock or interactive command")
       (return-from keyboard-callback nil))
     ;; I'm not sure why this is an array, but it's what tinywl does:
     (dotimes (i hrt:keysyms-len)

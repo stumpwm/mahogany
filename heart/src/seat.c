@@ -65,13 +65,15 @@ bool hrt_seat_keyboard_focus_surface(struct hrt_seat *seat,
                                      struct wlr_surface *surface) {
     struct wlr_seat *wlr_seat = seat->seat;
     if (hrt_session_locked(seat->server)) {
+        // FIXME: It would be better to allow focus if the surface is
+        //  in the locked layer instead of requiring it to be a lock surface
         struct wlr_session_lock_surface_v1 *lock_surface =
             wlr_session_lock_surface_v1_try_from_wlr_surface(surface);
         if (lock_surface) {
-            keyboard_focus_surface(wlr_seat, surface);
+            return keyboard_focus_surface(wlr_seat, surface);
         }
     } else if (!seat->grabbed) {
-        keyboard_focus_surface(wlr_seat, surface);
+        return keyboard_focus_surface(wlr_seat, surface);
     }
     return false;
 }

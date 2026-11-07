@@ -717,6 +717,8 @@ if the group is current."
 
 (defun state-lock (state)
   (declare (type mahogany-state state))
+  (when (key-state-active-p (state-key-state state))
+    (reset-keybinding-state state))
   (let ((seat (server-seat state)))
     (tree:unmark-frame-focused (state-%current-frame state)
                                seat)))

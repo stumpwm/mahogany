@@ -76,4 +76,9 @@
 
 (declaim (inline server-seat))
 (defun server-seat (state)
+  (declare (type mahogany-state state))
   (hrt:hrt-server-seat (state-server state)))
+
+(defun state-locked (state)
+  (declare (type mahogany-state state))
+  (hrt::hrt-session-locked (state-server *compositor-state*)))

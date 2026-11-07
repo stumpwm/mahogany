@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <wlr/types/wlr_scene.h>
 
+#include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
 
 struct hrt_drag {
@@ -17,6 +18,10 @@ struct hrt_drag {
 bool hrt_seat_init(struct hrt_seat *seat, struct hrt_server *server,
                    const struct hrt_seat_callbacks *callbacks);
 void hrt_seat_destroy(struct hrt_seat *seat);
+
+void hrt_seat_clear_focus(struct hrt_seat *seat);
+bool hrt_seat_keyboard_has_focus(struct hrt_seat *seat);
+bool hrt_seat_keyboard_focuses_surface(struct hrt_seat *seat, struct wlr_surface *surface);
 
 bool hrt_seat_keyboard_focus_surface(struct hrt_seat *seat,
                                      struct wlr_surface *surface);
