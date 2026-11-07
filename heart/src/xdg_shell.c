@@ -197,7 +197,11 @@ static void popup_unconstrain(struct hrt_xdg_popup *popup) {
         return;
     }
 
-    hrt_popup_unconstrain(popup->xdg_popup, output, 0, 0);
+    int lx, ly;
+    wlr_scene_node_coords(&view->xdg_scene->node, &lx, &ly);
+    struct wlr_box *geometry = &view->xdg_surface->geometry;
+    hrt_popup_unconstrain(popup->xdg_popup, output, lx - geometry->x,
+                          ly - geometry->y);
 }
 
 static void handle_xdg_popup_reposition(struct wl_listener *listener,
