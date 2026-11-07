@@ -1,7 +1,8 @@
 (in-package #:hrt)
 
 (defstruct (layer-surface (:constructor make-layer-surface (hrt-layer-surface)))
-  (hrt-layer-surface nil :type cffi:foreign-pointer))
+  (hrt-layer-surface nil :type cffi:foreign-pointer)
+  (container nil))
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-surface-output))

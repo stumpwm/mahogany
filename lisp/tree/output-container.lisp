@@ -41,6 +41,7 @@
          (add-to-layer top-layer))
         (:layer-overlay
          (add-to-layer overlay-layer))))
+    (setf (hrt::layer-surface-container surface) node)
     node))
 
 (defun output-container-remove-layer-shell (output-container surface)
@@ -53,7 +54,8 @@
                                           (slot-value x 'layer-shell)))))
                     (cond
                       (var
-                       (setf ,slot (sort-by-location (remove var ,slot) t))
+                       (setf ,slot (sort-by-location (remove var ,slot) t)
+                             (hrt::layer-surface-container surface) nil)
                        var)
                       (t
                        (log-string
