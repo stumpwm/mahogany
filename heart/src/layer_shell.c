@@ -268,7 +268,7 @@ static void popup_unconstrain(struct hrt_layer_shell_popup *popup) {
     // of the popup
     struct wlr_box output_toplevel_sx_box = {
         .x      = output_box.x - lx,
-        .y      = output_box.x - ly,
+        .y      = output_box.y - ly,
         .width  = output_box.width,
         .height = output_box.height,
     };
