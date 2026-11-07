@@ -213,8 +213,8 @@ static void handle_xdg_popup_reposition(struct wl_listener *listener,
 static void handle_xdg_popup_commit(struct wl_listener *listener, void *data) {
     struct hrt_xdg_popup *popup = wl_container_of(listener, popup, commit);
     if (popup->xdg_popup->base->initial_commit) {
-        // wlr_xdg_surface_schedule_configure(popup->xdg_popup->base);
         popup_unconstrain(popup);
+        wlr_xdg_surface_schedule_configure(popup->xdg_popup->base);
     }
 }
 
