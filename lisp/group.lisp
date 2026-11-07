@@ -207,10 +207,11 @@ to match."
     (alexandria:if-let ((focused-frame (mahogany-group-current-frame group)))
       (etypecase focused-frame
         (tree:output-node
-         (let ((focused-underneath (tree:find-focused-frame focused-frame)))
+         (alexandria:if-let ((marked (%hidden-marked-frame group focused-frame)))
            (multiple-value-bind (w h)
-               (tree::frame-view-dimensions focused-underneath)
-           (set-dimensions view w h))))
+               (tree::frame-view-dimensions marked)
+             (set-dimensions view w h))
+           (set-dimensions view 0 0)))
         (tree:frame
          (multiple-value-bind (w h)
                (tree::frame-view-dimensions focused-frame)
@@ -381,6 +382,9 @@ currently focused frame"
 			   (%group-current-output-node group))))
       (unless output-node
         (mahogany/log:log-string :warn "Could not find output when making view fullscreen")
+        (return-from %group-make-fullscreen nil))
+      (when (tree:root-frame-p frame)
+        (log-string :debug "View is already fullscreen: ~S" view)
         (return-from %group-make-fullscreen nil))
       (setf (tree:frame-surface frame) nil)
       (let ((prev-fullscreen (tree:set-fullscreen output-node view)))
