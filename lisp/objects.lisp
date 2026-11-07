@@ -22,7 +22,7 @@
   (current-frame nil ;; :type (or tree:frame tree:output-node null)
    )
   (hidden-views (ring-list:make-ring-list) :type ring-list:ring-list)
-  (fullscreen-hidden nil :type (or %fullscreen-hidden-info null))
+  (fullscreen-hidden (make-%fullscreen-hidden-info) :type %fullscreen-hidden-info)
   (views nil :type list))
 
 (defstruct (mahogany-state (:conc-name state-))
