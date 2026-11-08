@@ -1,5 +1,10 @@
 (in-package #:mahogany)
 
+;; Information for views hidden behind fullscreen views:
+(defstruct (%hidden-view-info (:constructor %make-hidden-view-info (output frame)))
+  (output nil :type tree:output-node :read-only t)
+  (frame nil :type tree:view-frame :read-only t))
+
 (defun make-mahogany-group (name number hrt-server)
   (let* ((hrt-group (hrt:server-group-create hrt-server))
         (tiled-layer (tree:make-layer-container hrt-group)))
@@ -176,6 +181,19 @@ to match."
   (alexandria:when-let ((cur-output-node (%group-current-output-node group)))
     (tree:output-container-output (tree:output-node-output cur-output-node))))
 
+(defun %remove-output-from-hidden-info (group output)
+  (declare (type mahogany-group group))
+  (let* ((hidden-info (mahogany-group-fullscreen-hidden group))
+         (view-map (%fullscreen-hidden-info-view-map hidden-info)))
+    (remhash output (%fullscreen-hidden-info-marked-frame-map
+                     hidden-info))
+    (flet ((remove-relevant (view info)
+             (declare (type %hidden-view-info info))
+             (when (eq output (%hidden-view-info-output info))
+               (remhash view view-map))))
+      (maphash #'remove-relevant (%fullscreen-hidden-info-view-map
+                                  hidden-info)))))
+
 (defun group-remove-output (group output-container seat
                             &aux (output (tree::output-container-output output-container)))
   (declare (type tree:output-container output-container)
@@ -187,6 +205,8 @@ to match."
     (let* ((output-name (hrt:output-full-name output))
            (tree (gethash output-name output-map)))
       (remhash output-name output-map)
+      (when (tree::output-node-fullscreen tree)
+        (%remove-output-from-hidden-info group tree))
       (when (equalp output (group-current-output group))
         (group-unfocus-frame group (mahogany-group-current-frame group) seat)
         (alexandria:when-let ((other-tree (%first-hash-table-value output-map)))
@@ -315,11 +335,6 @@ currently focused frame"
     (unless (%maximize-frame group current-frame)
       (error 'mahogany/util:invalid-operation
              :text "Frame is already maximized!"))))
-
-(defstruct (%hidden-view-info (:constructor %make-hidden-view-info (output frame)))
-  (output nil :type tree:output-node :read-only t)
-  (frame nil :type tree:view-frame :read-only t))
-
 
 (defun %hidden-marked-frame (group output-node)
   (declare (type mahogany-group group))
