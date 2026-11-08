@@ -1,3 +1,5 @@
+#include "hrt/hrt_scene.h"
+#include "hrt/hrt_session_lock.h"
 #include "wlr/util/log.h"
 #include <stdint.h>
 #include <wayland-util.h>
@@ -11,14 +13,21 @@
 #include "idle_impl.h"
 
 // This function is shamelessly ripped from the tinywl implementation:
-static void *find_view_at(struct hrt_server *server, double lx, double ly,
-                          struct wlr_surface **surface, double *sx,
+// TODO: The changes to this function shouldn't be needed
+static void *find_view_at(struct hrt_server *server, double lx,
+                          double ly, struct wlr_surface **surface, double *sx,
                           double *sy) {
+    struct wlr_scene_node *search_node;
+    if (hrt_session_locked(server)) {
+        search_node = &server->scene_root->lock->node;
+    } else {
+        search_node = &server->scene->tree.node;
+    }
     /* This returns the topmost node in the scene at the given layout coords.
      * We only care about surface nodes as we are specifically looking for a
      * surface in the surface tree of a tinywl_toplevel. */
     struct wlr_scene_node *node =
-        wlr_scene_node_at(&server->scene->tree.node, lx, ly, sx, sy);
+        wlr_scene_node_at(search_node, lx, ly, sx, sy);
     if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
         return NULL;
     }

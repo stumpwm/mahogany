@@ -715,6 +715,20 @@ if the group is current."
     (tree:mark-frame-focused (state-%current-frame state)
                              seat)))
 
+(defun state-lock (state)
+  (declare (type mahogany-state state))
+  (when (key-state-active-p (state-key-state state))
+    (reset-keybinding-state state))
+  (let ((seat (server-seat state)))
+    (tree:unmark-frame-focused (state-%current-frame state)
+                               seat)))
+
+(defun state-unlock (state)
+  (declare (type mahogany-state state))
+  (let ((seat (server-seat state)))
+    (tree:mark-frame-focused (state-%current-frame state)
+                             seat)))
+
 (defun state-set-cursor-theme (state theme-name &optional (cursor-size 24))
   (declare (type mahogany-state state))
   (hrt:seat-cursor-set-theme (server-seat state)

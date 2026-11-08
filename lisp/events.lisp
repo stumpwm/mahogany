@@ -147,3 +147,15 @@
   (silence-notes
     (log-string :trace "Surface ~S moved to layer ~S"
                 surface surface)))
+
+(hrt:define-hrt-callback handle-session-lock :void
+    ()
+    ()
+    (log-string :info "Session locked")
+    (state-lock *compositor-state*))
+
+(hrt:define-hrt-callback handle-session-unlock :void
+    ()
+    ()
+  (log-string :info "Session unlocked")
+  (state-unlock *compositor-state*))
