@@ -19,6 +19,7 @@ struct hrt_scene_root {
     struct wlr_scene_tree *top;
     struct wlr_scene_tree *overlay;
     struct wlr_scene_tree *popup;
+    struct wlr_scene_tree *drag_icons;
     // Should we store the outputs and groups associated with this?
     struct {
         struct wl_listener scene_destroy;

@@ -29,6 +29,7 @@ hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
     scene_root->top                   = wlr_scene_tree_create(scene_tree);
     scene_root->overlay               = wlr_scene_tree_create(scene_tree);
     scene_root->popup                 = wlr_scene_tree_create(scene_tree);
+    scene_root->drag_icons            = wlr_scene_tree_create(scene_tree);
 
     scene_root->listeners.scene_destroy.notify = handle_scene_destroy;
     wl_signal_add(&scene_tree->node.events.destroy,
@@ -39,6 +40,7 @@ hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
 
 void hrt_scene_root_destroy(struct hrt_scene_root *scene_root) {
     wlr_log(WLR_DEBUG, "Destroying scene root");
+    wlr_scene_node_destroy(&scene_root->drag_icons->node);
     wlr_scene_node_destroy(&scene_root->popup->node);
     wlr_scene_node_destroy(&scene_root->overlay->node);
     wlr_scene_node_destroy(&scene_root->top->node);
