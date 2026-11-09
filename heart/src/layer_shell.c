@@ -58,7 +58,7 @@ static void handle_new_layer_surface(struct wl_listener *listener, void *data) {
     server->layer_shell_callbacks->new_layer_surface(surface);
 }
 
-void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
+bool hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
                                    struct hrt_output *output) {
     enum zwlr_layer_shell_v1_layer layer_type =
         surface->layer_surface->pending.layer;
@@ -69,6 +69,10 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     wlr_log(WLR_DEBUG, "placing in layer %d", layer_type);
     surface->scene_surface =
         wlr_scene_layer_surface_v1_create(output_layer, surface->layer_surface);
+    if (!surface->scene_surface) {
+        wlr_log(WLR_ERROR, "Could not create scene layer surface");
+        return false;
+    }
     surface->scene_surface->tree->node.data = surface;
 
     // Set this so we can reference it in the arrange_surface function
@@ -77,14 +81,16 @@ void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
     if (!scene_descriptor_assign(&surface->scene_surface->tree->node,
                                  HRT_SCENE_DESC_LAYER_SHELL, surface)) {
         wlr_log(WLR_ERROR, "Could not allocate scene descriptor");
-        wlr_layer_surface_v1_destroy(surface->layer_surface);
-        return;
+        wlr_scene_node_destroy(&surface->scene_surface->tree->node);
+        surface->scene_surface = nullptr;
+        return false;
     }
     wlr_log(WLR_DEBUG, "Surface created");
     surface->output                = output;
     surface->layer_surface->output = output->wlr_output;
     surface->tree                  = surface->scene_surface->tree;
     wl_list_insert(&output->layer_surfaces, &surface->link);
+    return true;
 }
 
 void hrt_layer_shell_surface_set_output(
