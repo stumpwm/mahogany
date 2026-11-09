@@ -701,9 +701,10 @@ The client wlr_layer_surface destroy is up for the client to handle once it sees
 
 #-HRT-DEBUG
 (declaim (inline hrt-layer-shell-surface-place))
-(cffi:defcfun ("hrt_layer_shell_surface_place" hrt-layer-shell-surface-place) :void
+(cffi:defcfun ("hrt_layer_shell_surface_place" hrt-layer-shell-surface-place) :bool
   "Place a freshly-initialized surface in an output. Should only be called once during
-intial placement."
+intial placement.
+Returns false when it fails, leaving the surface to hrt_layer_shell_surface_abort."
   (surface (:pointer (:struct hrt-layer-shell-surface)))
   (output (:pointer (:struct hrt-output))))
 

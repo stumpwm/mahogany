@@ -749,12 +749,11 @@ KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
 
 (defun mahogany-state-layer-shell-handle (state hrt-layer-shell)
   (declare (type mahogany-state state))
-  (alexandria:if-let ((output (%get-or-autoassign-output state hrt-layer-shell)))
-    (progn
-      (hrt:layer-shell-surface-place hrt-layer-shell
-                                     output)
-      (hrt:hrt-layer-shell-finish-init hrt-layer-shell))
-    (hrt:hrt-layer-shell-surface-abort hrt-layer-shell)))
+  (let ((output (%get-or-autoassign-output state hrt-layer-shell)))
+    (if (and output
+             (hrt:layer-shell-surface-place hrt-layer-shell output))
+        (hrt:hrt-layer-shell-finish-init hrt-layer-shell)
+        (hrt:hrt-layer-shell-surface-abort hrt-layer-shell))))
 
 (defun state-layer-surface-add (state hrt-layer-surface)
   (declare (type mahogany-state state))

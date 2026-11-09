@@ -72,8 +72,9 @@ void hrt_layer_shell_surface_set_output(
 /**
  * Place a freshly-initialized surface in an output. Should only be called once during
  * intial placement.
+ * Returns false when it fails, leaving the surface to hrt_layer_shell_surface_abort.
  */
-void hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
+bool hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
                                    struct hrt_output *output);
 
 /**
