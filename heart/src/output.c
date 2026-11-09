@@ -299,6 +299,7 @@ static bool finish_configure(struct hrt_server *server,
                              struct hrt_output_config *config) {
     bool enabled = config && config->enabled;
     hrt_scene_output_set_enabled(output->scene, enabled);
+    hrt_layer_shell_arrange_popups(output);
     if (!enabled) {
         struct wlr_output_layout_output *cur_layout = output->layout;
         if (cur_layout) {

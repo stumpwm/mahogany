@@ -85,6 +85,16 @@ bool hrt_layer_shell_surface_place(struct hrt_layer_shell_surface *surface,
         surface->scene_surface = nullptr;
         return false;
     }
+
+    surface->popups = wlr_scene_tree_create(output->server->scene_root->popup);
+    if (!surface->popups) {
+        wlr_log(WLR_ERROR, "Could not create scene tree for layer popups");
+        wlr_scene_node_destroy(&surface->scene_surface->tree->node);
+        surface->scene_surface = nullptr;
+        return false;
+    }
+    surface->popups->node.data = surface;
+
     wlr_log(WLR_DEBUG, "Surface created");
     surface->output                = output;
     surface->layer_surface->output = output->wlr_output;
@@ -142,6 +152,13 @@ bool hrt_layer_shell_init(struct hrt_server *server,
     return true;
 }
 
+static void surface_arrange_popups(struct hrt_layer_shell_surface *surface) {
+    int lx, ly;
+    bool enabled = wlr_scene_node_coords(&surface->tree->node, &lx, &ly);
+    wlr_scene_node_set_position(&surface->popups->node, lx, ly);
+    wlr_scene_node_set_enabled(&surface->popups->node, enabled);
+}
+
 static void arrange_surface(const struct wlr_box *full_area,
                             struct wlr_box *usable_area,
                             struct wlr_scene_tree *tree, bool exclusive) {
@@ -170,6 +187,7 @@ static void arrange_surface(const struct wlr_box *full_area,
         wlr_log(WLR_DEBUG, "Sending configure");
         wlr_scene_layer_surface_v1_configure(surface->scene_surface, full_area,
                                              usable_area);
+        surface_arrange_popups(surface);
     }
 }
 
@@ -198,8 +216,13 @@ void hrt_layer_shell_arrange_layers(struct hrt_output *output,
         if (emit_event) {
             output->server->layer_shell_callbacks->layers_reconfigured(output);
         }
-    } else {
-        // arrange_popups(root->layers.popup);
+    }
+}
+
+void hrt_layer_shell_arrange_popups(struct hrt_output *output) {
+    struct hrt_layer_shell_surface *surface;
+    wl_list_for_each(surface, &output->layer_surfaces, link) {
+        surface_arrange_popups(surface);
     }
 }
 
@@ -320,6 +343,7 @@ create_popup(struct wlr_xdg_popup *wlr_popup,
         return nullptr;
     }
     wlr_popup->base->data = popup->scene;
+    wlr_scene_node_raise_to_top(&toplevel->popups->node);
 
     // wlr_popup->base->events.configure
     popup->commit.notify = popup_handle_commit;
@@ -346,7 +370,7 @@ static void handle_new_popup(struct wl_listener *listener, void *data) {
     struct hrt_layer_shell_surface *surface =
         wl_container_of(listener, surface, events.new_popup);
     struct wlr_xdg_popup *wlr_popup = data;
-    create_popup(wlr_popup, surface, surface->output->scene->top);
+    create_popup(wlr_popup, surface, surface->popups);
 }
 
 static void handle_layer_surface_destroy(struct wl_listener *listener,
@@ -357,6 +381,10 @@ static void handle_layer_surface_destroy(struct wl_listener *listener,
 
     if (surface->output) {
         hrt_layer_shell_arrange_layers(surface->output, true);
+    }
+
+    if (surface->popups) {
+        wlr_scene_node_destroy(&surface->popups->node);
     }
 
     wl_list_remove(&surface->link);
