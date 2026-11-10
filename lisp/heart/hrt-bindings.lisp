@@ -191,6 +191,7 @@ to 1.0 (fastest)."
   (server (:pointer (:struct hrt-server)))
   (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
   (xdg-scene :pointer #| (:struct wlr-scene-tree) |#)
+  (popups :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
