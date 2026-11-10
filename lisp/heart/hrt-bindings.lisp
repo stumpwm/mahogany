@@ -4,6 +4,8 @@
 
 (cffi:defcstruct hrt-server)
 
+(cffi:defcstruct hrt-view)
+
 (cffi:defcstruct hrt-seat-callbacks)
 
 (cffi:defcenum hrt-touchpad-state
@@ -160,9 +162,16 @@ to 1.0 (fastest)."
 (cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
   (seat (:pointer (:struct hrt-seat))))
 
-;; next section imported from file heart/include/hrt/hrt_view.h
+#-HRT-DEBUG
+(declaim (inline hrt-seat-popup-view-under-cursor))
+(cffi:defcfun ("hrt_seat_popup_view_under_cursor" hrt-seat-popup-view-under-cursor) (:pointer (:struct hrt-view))
+  "The view of the popup under the cursor, null when the cursor is not over
+a popup of a view.
+A popup is not kept inside its view, so what is under the cursor can
+belong to a view that is somewhere else."
+  (seat (:pointer (:struct hrt-seat))))
 
-(cffi:defcstruct hrt-view)
+;; next section imported from file heart/include/hrt/hrt_view.h
 
 (cffi:defctype view-destroy-handler :pointer #| function ptr void (struct hrt_view *) |#)
 

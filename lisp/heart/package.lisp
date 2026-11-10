@@ -76,6 +76,7 @@
            #:hrt-seat-notify-axis
            #:hrt-seat-cursor-lx
            #:hrt-seat-cursor-ly
+           #:hrt-seat-popup-view-under-cursor
            #:hrt-seat-set-keymap
            #:hrt-seat-set-repeat-info
            #:hrt-touchpad-state
