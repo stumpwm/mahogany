@@ -21,6 +21,12 @@ bool hrt_layer_shell_init(struct hrt_server *server,
 
 void hrt_layer_shell_arrange_layers(struct hrt_output *output, bool emit_event);
 
+/**
+ * Move the popups of the layer surfaces of the output to where their surfaces
+ * are, and hide them along with the output.
+ */
+void hrt_layer_shell_arrange_popups(struct hrt_output *output);
+
 void hrt_layer_shell_output_destroy(struct hrt_output *output);
 
 #endif

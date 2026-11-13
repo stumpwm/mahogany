@@ -3,6 +3,7 @@
 #include "hrt/hrt_server.h"
 #include "hrt/hrt_view.h"
 #include "idle_impl.h"
+#include "xdg_impl.h"
 #include "wlr/util/log.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -28,6 +29,8 @@ hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
     scene_root->fullscreen            = wlr_scene_tree_create(scene_tree);
     scene_root->top                   = wlr_scene_tree_create(scene_tree);
     scene_root->overlay               = wlr_scene_tree_create(scene_tree);
+    scene_root->popup                 = wlr_scene_tree_create(scene_tree);
+    scene_root->drag_icons            = wlr_scene_tree_create(scene_tree);
 
     scene_root->listeners.scene_destroy.notify = handle_scene_destroy;
     wl_signal_add(&scene_tree->node.events.destroy,
@@ -38,6 +41,8 @@ hrt_scene_root_create(struct wlr_scene_tree *scene_tree) {
 
 void hrt_scene_root_destroy(struct hrt_scene_root *scene_root) {
     wlr_log(WLR_DEBUG, "Destroying scene root");
+    wlr_scene_node_destroy(&scene_root->drag_icons->node);
+    wlr_scene_node_destroy(&scene_root->popup->node);
     wlr_scene_node_destroy(&scene_root->overlay->node);
     wlr_scene_node_destroy(&scene_root->top->node);
     wlr_scene_node_destroy(&scene_root->fullscreen->node);
@@ -114,6 +119,7 @@ void hrt_scene_group_destroy(struct hrt_scene_group *group) {
 
 void hrt_scene_group_set_enabled(struct hrt_scene_group *group, bool enabled) {
     wlr_scene_node_set_enabled(&group->layers->node, enabled);
+    hrt_xdg_popups_arrange(group->server);
     hrt_idle_inhibit_schedule(group->server);
 }
 
@@ -132,6 +138,7 @@ void hrt_scene_layer_transfer(struct hrt_server *server,
                               struct wlr_scene_tree *source,
                               struct wlr_scene_tree *destination) {
     reparent_children(source, destination);
+    hrt_xdg_popups_arrange(server);
     hrt_idle_inhibit_schedule(server);
 }
 
@@ -157,6 +164,7 @@ void hrt_scene_layer_destroy(struct wlr_scene_tree *layer) {
 void hrt_scene_layer_add_view(struct wlr_scene_tree *layer,
                               struct hrt_view *view) {
     wlr_scene_node_reparent(&view->scene_tree->node, layer);
+    hrt_xdg_popups_arrange(view->server);
     hrt_idle_inhibit_schedule(view->server);
 }
 
@@ -240,6 +248,7 @@ uint32_t hrt_scene_node_set_dimensions(struct hrt_scene_fullscreen_node *node,
 void hrt_scene_node_set_position(struct hrt_scene_fullscreen_node *node, int x,
                                  int y) {
     wlr_scene_node_set_position(&node->layer->node, x, y);
+    hrt_xdg_popups_arrange(node->view->server);
 }
 
 uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_node *node,
@@ -247,6 +256,7 @@ uint32_t hrt_scene_fullscreen_configure(struct hrt_scene_fullscreen_node *node,
     int x, y;
     hrt_output_position(output, &x, &y);
     wlr_scene_node_set_position(&node->layer->node, x, y);
+    hrt_xdg_popups_arrange(node->view->server);
 
     int width, height;
     hrt_output_resolution(output, &width, &height);

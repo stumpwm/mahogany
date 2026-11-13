@@ -4,6 +4,8 @@
 
 (cffi:defcstruct hrt-server)
 
+(cffi:defcstruct hrt-view)
+
 (cffi:defcstruct hrt-seat-callbacks)
 
 (cffi:defcenum hrt-touchpad-state
@@ -160,9 +162,16 @@ to 1.0 (fastest)."
 (cffi:defcfun ("hrt_seat_cursor_ly" hrt-seat-cursor-ly) :double
   (seat (:pointer (:struct hrt-seat))))
 
-;; next section imported from file heart/include/hrt/hrt_view.h
+#-HRT-DEBUG
+(declaim (inline hrt-seat-popup-view-under-cursor))
+(cffi:defcfun ("hrt_seat_popup_view_under_cursor" hrt-seat-popup-view-under-cursor) (:pointer (:struct hrt-view))
+  "The view of the popup under the cursor, null when the cursor is not over
+a popup of a view.
+A popup is not kept inside its view, so what is under the cursor can
+belong to a view that is somewhere else."
+  (seat (:pointer (:struct hrt-seat))))
 
-(cffi:defcstruct hrt-view)
+;; next section imported from file heart/include/hrt/hrt_view.h
 
 (cffi:defctype view-destroy-handler :pointer #| function ptr void (struct hrt_view *) |#)
 
@@ -191,6 +200,7 @@ to 1.0 (fastest)."
   (server (:pointer (:struct hrt-server)))
   (scene-tree :pointer #| (:struct wlr-scene-tree) |#)
   (xdg-scene :pointer #| (:struct wlr-scene-tree) |#)
+  (popups :pointer #| (:struct wlr-scene-tree) |#)
   (map (:struct wl-listener))
   (unmap (:struct wl-listener))
   (commit (:struct wl-listener))
@@ -402,6 +412,8 @@ set the width and height of views."
   (fullscreen :pointer #| (:struct wlr-scene-tree) |#)
   (top :pointer #| (:struct wlr-scene-tree) |#)
   (overlay :pointer #| (:struct wlr-scene-tree) |#)
+  (popup :pointer #| (:struct wlr-scene-tree) |#)
+  (drag-icons :pointer #| (:struct wlr-scene-tree) |#)
   (listeners (:struct hrt-scene-root-listeners)))
 
 (cffi:defcstruct hrt-scene-output
@@ -654,6 +666,7 @@ whenever the semaphore is non-zero."
   (output (:pointer (:struct hrt-output)))
   (link (:struct wl-list))
   (tree :pointer #| (:struct wlr-scene-tree) |#)
+  (popups :pointer #| (:struct wlr-scene-tree) |#)
   (mapped :bool)
   (callbacks (:pointer (:struct hrt-layer-shell-callbacks)))
   (events (:struct hrt-layer-shell-surface-events)))
