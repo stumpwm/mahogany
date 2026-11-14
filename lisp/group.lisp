@@ -357,11 +357,13 @@ currently focused frame"
 ;; a fullscreen view so that we can remove the view from its frame if it gets placed
 ;; in a different one. we also need to unmark any focused frames so they don't
 ;; change the focus of any view and get deactivated correctly
-(defun %hide-frames-under-fullscreen (group output-node &optional (add-fun #'ring-list:add-item-prev))
+(defun %hide-frames-under-fullscreen (group output-node
+                                      &key (add-fun #'ring-list:add-item-prev) frame)
   (declare (optimize (speed 3))
            (type mahogany-group group)
            (type tree:output-node output-node)
-           (type (function (ring-list:ring-list T) (values fixnum)) add-fun))
+           (type (function (ring-list:ring-list T) (values fixnum)) add-fun)
+           (type (or null tree:view-frame) frame))
   (let* ((hidden-info (mahogany-group-fullscreen-hidden group))
          (view-map (%fullscreen-hidden-info-view-map hidden-info))
          (hidden-views (mahogany-group-hidden-views group))
@@ -375,10 +377,20 @@ currently focused frame"
           (hrt:view-set-hidden v t))
         (setf (gethash v view-map)
               (%make-hidden-view-info output-node f))))
-    (let ((focused-frame (tree:find-focused-frame output-node)))
+    ;; Only the focused frame in the current group is marked, fullscreen in another
+    ;; group or output has to find a frame to go back to
+    (let* ((focused-frame (tree:find-focused-frame output-node))
+           (current-frame (mahogany-group-current-frame group))
+           (marked-frame (or focused-frame
+                             (find-if (lambda (f)
+                                        (and (typep f 'tree:view-frame)
+                                             (eq (tree:find-root-frame f) output-node)))
+                                      (list frame current-frame))
+                             (tree::%find-first-child output-node))))
       (setf (gethash output-node (%fullscreen-hidden-info-marked-frame-map hidden-info))
-            focused-frame)
-      (tree:unmark-frame-focused focused-frame (server-seat *compositor-state*)))
+            marked-frame)
+      (when focused-frame
+        (tree:unmark-frame-focused focused-frame (server-seat *compositor-state*))))
     (setf (mahogany-group-fullscreen-hidden group) hidden-info)))
 
 (defun %group-make-fullscreen (group view output)
@@ -406,7 +418,7 @@ currently focused frame"
           (t
            ;; Since there wasn't a fullscreen node here previously, mark all the views
            ;; that it hides as hidden:
-           (%hide-frames-under-fullscreen group output-node))))
+           (%hide-frames-under-fullscreen group output-node :frame frame))))
       ;; When a frame on the current output is focused, move the focus to the fullscreen
       ;; view:
       (when (eq (%group-current-output-node group)
@@ -479,7 +491,10 @@ After this function is ran, the current frame needs to be set and focused."
        (unless prev-fullscreen
          ;; This is one place to store what the current frame was before the
          ;; tiles were hidden
-         (%hide-frames-under-fullscreen group cur-output #'ring-list:add-item))
+         (%hide-frames-under-fullscreen group cur-output
+                                        :add-fun #'ring-list:add-item
+                                        :frame (when (typep current-frame 'tree:view-frame)
+                                                 current-frame)))
        (setf (mahogany-group-current-frame group) cur-output)))
     (t
      (let ((hidden-data (%lookup-hidden-view-info group view)))
