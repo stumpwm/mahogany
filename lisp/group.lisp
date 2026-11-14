@@ -403,7 +403,7 @@ currently focused frame"
     (let ((output-node (if output
 			   (gethash (hrt:output-full-name output)
                                     (mahogany-group-output-map group))
-			   (%group-current-output-node group))))
+			   (tree:find-root-frame frame))))
       (unless output-node
         (mahogany/log:log-string :warn "Could not find output when making view fullscreen")
         (return-from %group-make-fullscreen nil))
