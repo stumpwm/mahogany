@@ -275,12 +275,14 @@ to match."
                ((and to-replace (hrt:view-fullscreen-p to-replace))
                 (tree:set-fullscreen f (%pop-hidden-item hidden)))
                (t
-                (let ((to-focus (%clear-fullscreen-state group f)))
+                (let* ((was-current (eq f (mahogany-group-current-frame group)))
+                       (to-focus (%clear-fullscreen-state group f)))
                   ;; Don't pull from the hidden list unless we land on an empty frame:
                   (when (and to-replace
                              (not (tree:frame-surface to-focus)))
                     (setf (tree:frame-surface to-focus) (%pop-hidden-item hidden)))
-                  (setf (mahogany-group-current-frame group) to-focus))))))
+                  (when was-current
+                    (setf (mahogany-group-current-frame group) to-focus)))))))
           (tree:view-frame
            (setf (tree:frame-surface f) nil)
            ;; Leave frames under a fullscreen view empty
@@ -465,8 +467,10 @@ After this function is ran, the current frame needs to be set and focused."
     ;; The frame is visible, we need to do some cleanup:
     (cond
       ((typep frame 'tree:output-node)
-       (let ((to-focus (%clear-fullscreen-state group frame)))
-         (setf (mahogany-group-current-frame group) to-focus)
+       (let* ((was-current (eq frame (mahogany-group-current-frame group)))
+              (to-focus (%clear-fullscreen-state group frame)))
+         (when was-current
+           (setf (mahogany-group-current-frame group) to-focus))
          (alexandria:when-let ((prev (tree:frame-surface to-focus)))
            (%add-hidden (mahogany-group-hidden-views group) prev))
          (setf (tree:frame-surface to-focus) view)))
