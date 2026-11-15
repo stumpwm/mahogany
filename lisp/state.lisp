@@ -50,6 +50,7 @@ or HRT-OUTPUT is NIL or a null pointer."
 (defun server-state-init (state server output-callbacks seat-callbacks view-callbacks
 			  layer-shell-callbacks
                           &key (debug-level 3))
+  (declare (type mahogany-state state))
   (setf (state-server state) server)
   (unless (hrt:server-init server
                            output-callbacks seat-callbacks view-callbacks
@@ -181,6 +182,8 @@ the hidden groups; if directly setting a group, see (setf state-current-group)"
 (defun (setf state-current-group) (group state)
   "Set the current group, moving the current group to the previous item in the
 hidden group list"
+  (declare (type mahogany-state state)
+           (type mahogany-group group))
   (let ((hidden-groups (state-hidden-groups state)))
     (if (ring-list:swap-previous-find hidden-groups
                                       group (state-current-group state))
@@ -219,6 +222,7 @@ the group with that number is returned"
 (defun state-focus-frame (state new-frame seat)
   "Focus the given frame. The frame must either be a member of
 the current group or a layer shell frame"
+  (declare (type mahogany-state state))
   (with-accessors ((cur-frame state-%current-frame)
                    (cur-group state-current-group))
       state
@@ -511,6 +515,7 @@ the current group or a layer shell frame"
       new-group)))
 
 (defun mahogany-state-group-remove (state group)
+  (declare (type mahogany-state state))
   (with-accessors ((groups state-groups)
                    (hidden-groups state-hidden-groups))
       state
@@ -536,6 +541,7 @@ the current group or a layer shell frame"
         (log-string :error "could not find group to delete"))))
 
 (defun mahogany-state-output-reconfigure (state)
+  (declare (type mahogany-state state))
   (hrt:with-view-transaction ()
     (with-accessors ((groups state-groups)) state
       (loop for g across groups
@@ -724,6 +730,7 @@ if the group is current."
 (defun mahogany-set-keymap (state &key (rules (cffi:null-pointer)) (keymap-flags :no-flags))
   "Set the xkb keymap using the provided rules and flags. Signals a
 KEYMAP-CREATION-ERROR if the rules are invalid or malformed."
+  (declare (type mahogany-state state))
   (let* ((seat (hrt:hrt-server-seat (state-server state)))
 	 (success (hrt:hrt-seat-set-keymap seat rules keymap-flags)))
     (unless success
