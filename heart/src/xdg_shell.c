@@ -9,6 +9,7 @@
 #include "hrt/hrt_output.h"
 #include "hrt/hrt_scene.h"
 #include "hrt/hrt_server.h"
+#include "scene_descriptor.h"
 #include "xdg_impl.h"
 #include "hrt/hrt_view.h"
 #include "view_impl.h"
@@ -226,13 +227,44 @@ static void handle_xdg_popup_destroy(struct wl_listener *listener, void *data) {
     wl_list_remove(&popup->new_popup.link);
     wl_list_remove(&popup->reposition.link);
 
-
     free(popup);
 }
 
 static void handle_popup_new_xdg_popup(struct wl_listener *listener,
                                        void *data);
 
+static void view_arrange_popups(struct hrt_view *view) {
+    int lx, ly;
+    bool enabled = wlr_scene_node_coords(&view->xdg_scene->node, &lx, &ly);
+    wlr_scene_node_set_position(&view->popups->node, lx, ly);
+    wlr_scene_node_set_enabled(&view->popups->node, enabled);
+}
+
+void hrt_xdg_popups_arrange(struct hrt_server *server) {
+    struct wlr_scene_node *node;
+    wl_list_for_each(node, &server->scene_root->popup->children, link) {
+        struct hrt_view *view =
+            scene_descriptor_try_get(node, HRT_SCENE_DESC_POPUP);
+        if (view) {
+            view_arrange_popups(view);
+        }
+    }
+}
+
+static void popup_raise(struct hrt_xdg_popup *popup) {
+    struct wlr_scene_tree *popups = popup->view->popups;
+    struct wlr_scene_node *node   = &popup->scene->node;
+    // A popup of a popup is inside the scene of its parent popup
+    while (node->parent != popups) {
+        node = &node->parent->node;
+    }
+    wlr_scene_node_raise_to_top(node);
+    wlr_scene_node_raise_to_top(&popups->node);
+}
+
+/**
+ * parent is the scene of the parent popup, or the popups tree of the view.
+ */
 static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
                                           struct wlr_xdg_popup *xdg_popup,
                                           struct wlr_scene_tree *parent) {
@@ -243,13 +275,14 @@ static struct hrt_xdg_popup *create_popup(struct hrt_view *view,
     }
     popup->view      = view;
     popup->xdg_popup = xdg_popup;
-    popup->scene     = wlr_scene_xdg_surface_create(parent, xdg_popup->base);
 
+    popup->scene = wlr_scene_xdg_surface_create(parent, xdg_popup->base);
     if (!popup->scene) {
         wlr_log(WLR_ERROR, "Failed to allocate XDG surface for popup");
         free(popup);
         return nullptr;
     }
+    popup_raise(popup);
     xdg_popup->base->data = popup->scene;
 
     popup->commit.notify = handle_xdg_popup_commit;
@@ -277,7 +310,11 @@ static void handle_new_xdg_popup(struct wl_listener *listener, void *data) {
     wlr_log(WLR_DEBUG, "New xdg popup received");
     struct hrt_view *view = wl_container_of(listener, view, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
-    create_popup(view, xdg_popup, view->xdg_scene);
+    if (!view->popups) {
+        wlr_log(WLR_ERROR, "The view has no scene tree for popups");
+        return;
+    }
+    create_popup(view, xdg_popup, view->popups);
 }
 
 static void handle_new_xdg_toplevel(struct wl_listener *listener, void *data) {

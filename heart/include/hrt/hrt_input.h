@@ -12,6 +12,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 struct hrt_server;
+struct hrt_view;
 struct hrt_seat_callbacks;
 
 enum hrt_touchpad_state {
@@ -162,5 +163,13 @@ void hrt_seat_reset_touchpad_accel(struct hrt_seat *seat);
 double hrt_seat_cursor_lx(struct hrt_seat *seat);
 
 double hrt_seat_cursor_ly(struct hrt_seat *seat);
+
+/**
+ * The view of the popup under the cursor, null when the cursor is not over
+ * a popup of a view.
+ * A popup is not kept inside its view, so what is under the cursor can
+ * belong to a view that is somewhere else.
+ **/
+struct hrt_view *hrt_seat_popup_view_under_cursor(struct hrt_seat *seat);
 
 #endif

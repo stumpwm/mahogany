@@ -24,5 +24,12 @@ struct hrt_xdg_popup {
 void hrt_popup_unconstrain(struct wlr_xdg_popup *popup,
                            struct hrt_output *output, int lx, int ly);
 
+/**
+ * Move the popups of the views to where their views are, and hide them along
+ * with their views.
+ * Call it whenever a view, or a tree it is in, is moved or hidden.
+ */
+void hrt_xdg_popups_arrange(struct hrt_server *server);
+
 bool hrt_xdg_shell_init(struct hrt_server *server);
 void hrt_xdg_shell_destroy(struct hrt_server *server);

@@ -19,6 +19,7 @@ struct hrt_layer_shell_surface {
     struct hrt_output *output;
     struct wl_list link;
     struct wlr_scene_tree *tree;
+    struct wlr_scene_tree *popups;
     bool mapped;
     const struct hrt_layer_shell_callbacks *callbacks;
     struct {

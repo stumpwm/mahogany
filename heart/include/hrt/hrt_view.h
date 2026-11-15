@@ -49,6 +49,7 @@ struct hrt_view {
      */
     struct wlr_scene_tree *scene_tree;
     struct wlr_scene_tree *xdg_scene;
+    struct wlr_scene_tree *popups;
 
     // internal state:
     struct wl_listener map;

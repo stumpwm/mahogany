@@ -17,7 +17,7 @@ enum hrt_scene_descriptor_type {
     HRT_SCENE_DESC_VIEW,
     HRT_SCENE_DESC_LAYER_SHELL,
     /* SWAY_SCENE_DESC_XWAYLAND_UNMANAGED, */
-    /* SWAY_SCENE_DESC_POPUP, */
+    HRT_SCENE_DESC_POPUP,
     /* SWAY_SCENE_DESC_DRAG_ICON, */
 };
 

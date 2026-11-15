@@ -7,11 +7,29 @@
 #include "hrt/hrt_input.h"
 #include "hrt/hrt_view.h"
 #include "idle_impl.h"
+#include "scene_descriptor.h"
 #include "seat_impl.h"
+#include "xdg_impl.h"
 #include "wlr/util/log.h"
 
 void hrt_view_info(struct hrt_view *view) {
     wlr_log(WLR_DEBUG, "New view: %s", view->xdg_toplevel->app_id);
+}
+
+static struct wlr_scene_tree *create_popups_tree(struct hrt_view *view) {
+    struct wlr_scene_tree *popups =
+        wlr_scene_tree_create(view->server->scene_root->popup);
+    if (!popups) {
+        wlr_log(WLR_ERROR, "Could not create scene tree for view popups");
+        return nullptr;
+    }
+    popups->node.data = view;
+    if (!scene_descriptor_assign(&popups->node, HRT_SCENE_DESC_POPUP, view)) {
+        wlr_log(WLR_ERROR, "Could not allocate scene descriptor for popups");
+        wlr_scene_node_destroy(&popups->node);
+        return nullptr;
+    }
+    return popups;
 }
 
 void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
@@ -26,6 +44,7 @@ void hrt_view_init(struct hrt_view *view, struct wlr_scene_tree *tree) {
     view->xdg_surface->data = xdg_tree;
 
     view->xdg_scene = xdg_tree;
+    view->popups    = create_popups_tree(view);
 
     hrt_view_info(view);
 }
@@ -39,6 +58,9 @@ void hrt_view_cleanup(struct hrt_view *view) {
     }
     if (view->scene_tree) {
         wlr_scene_node_destroy(&view->scene_tree->node);
+    }
+    if (view->popups) {
+        wlr_scene_node_destroy(&view->popups->node);
     }
 }
 
@@ -61,6 +83,7 @@ bool hrt_view_mapped(struct hrt_view *view) {
 
 void hrt_view_set_relative(struct hrt_view *view, int x, int y) {
     wlr_scene_node_set_position(&view->scene_tree->node, x, y);
+    hrt_xdg_popups_arrange(view->server);
 }
 
 void hrt_view_focus(struct hrt_view *view, struct hrt_seat *seat) {
@@ -86,11 +109,13 @@ bool hrt_view_focused(struct hrt_view *view) {
 
 void hrt_view_set_hidden(struct hrt_view *view, bool hidden) {
     wlr_scene_node_set_enabled(&view->scene_tree->node, !hidden);
+    hrt_xdg_popups_arrange(view->server);
     hrt_idle_inhibit_schedule(view->server);
 }
 
 void hrt_view_reparent(struct hrt_view *view, struct wlr_scene_tree *node) {
     wlr_scene_node_reparent(&view->scene_tree->node, node);
+    hrt_xdg_popups_arrange(view->server);
     hrt_idle_inhibit_schedule(view->server);
 }
 

@@ -9,6 +9,7 @@
 #include <hrt/hrt_input.h>
 
 #include "idle_impl.h"
+#include "scene_descriptor.h"
 
 // This function is shamelessly ripped from the tinywl implementation:
 static void *find_view_at(struct hrt_server *server, double lx, double ly,
@@ -41,6 +42,22 @@ static void *find_view_at(struct hrt_server *server, double lx, double ly,
     } else {
         return NULL;
     }
+}
+
+struct hrt_view *hrt_seat_popup_view_under_cursor(struct hrt_seat *seat) {
+    struct wlr_scene_node *node =
+        wlr_scene_node_at(&seat->server->scene->tree.node, seat->cursor->x,
+                          seat->cursor->y, nullptr, nullptr);
+    // The popups are inside the popups tree of their view
+    while (node) {
+        struct hrt_view *view =
+            scene_descriptor_try_get(node, HRT_SCENE_DESC_POPUP);
+        if (view) {
+            return view;
+        }
+        node = node->parent ? &node->parent->node : nullptr;
+    }
+    return nullptr;
 }
 
 void hrt_seat_reset_view_under(struct hrt_seat *seat) {

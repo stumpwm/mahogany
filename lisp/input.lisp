@@ -200,10 +200,19 @@ NIL goes back to libinput's default, which is the same as 0."
   (declare (optimize (speed 2)))
   (declare (type cffi:foreign-pointer seat))
   (let* ((group (state-current-group *compositor-state*))
+         (popup-view (hrt:hrt-seat-popup-view-under-cursor seat))
          (found (silence-notes
-                  (tree:frame-at (mahogany-group-tiled-container group)
-                                 (hrt:hrt-seat-cursor-lx seat)
-                                 (hrt:hrt-seat-cursor-ly seat)))))
+                  (if (cffi:null-pointer-p popup-view)
+                      (tree:frame-at (mahogany-group-tiled-container group)
+                                     (hrt:hrt-seat-cursor-lx seat)
+                                     (hrt:hrt-seat-cursor-ly seat))
+                      ;; The popup under the cursor can be over another frame than the one its view is in
+                      (alexandria:if-let
+                          ((view (gethash (cffi:pointer-address popup-view)
+                                          (state-views *compositor-state*))))
+                        (hrt::view-container view)
+                        (log-string :error "Could not find mahogany view associated with pointer ~S"
+                                    (cffi:pointer-address popup-view)))))))
     (if found
         (state-focus-frame *compositor-state* found seat)
         nil)))
