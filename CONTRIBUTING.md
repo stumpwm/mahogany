@@ -64,12 +64,14 @@ When submitting a pull request, try to do the following things:
 + For significant changes, create an issue first to discuss the
   implementation and how it fits in with the rest of the project.
 + Ensure your branch is rebased upon the latest commit.
++ PRs should be focused on a single issue or a set of related issues to make
+  reviewing each change easier.
 
 ## Additional Tools
 
 If you are changing the C back end's user interface, you will need
 [cl-bindgen](https://github.com/sdilts/cl-bindgen) to generate the
-lisp interface.
+lisp interface. Use the latest commit from git.
 
 ## Improving git blame
 
