@@ -1,3 +1,4 @@
+#include "hrt/hrt_session_lock.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -6,6 +7,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_session_lock_v1.h>
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -41,26 +43,48 @@ void hrt_seat_set_repeat_info(struct hrt_seat *seat, int32_t rate_hz,
                                  delay_ms);
 }
 
+static bool keyboard_focus_surface(struct wlr_seat *wlr_seat,
+                                   struct wlr_surface *surface) {
+    struct wlr_surface *prev_surface = wlr_seat->keyboard_state.focused_surface;
+    if (prev_surface == surface) {
+        // Don't re-focus an already focused surface:
+        return false;
+    }
+    struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(wlr_seat);
+
+    if (keyboard != NULL) {
+        wlr_seat_keyboard_notify_enter(wlr_seat, surface, keyboard->keycodes,
+                                       keyboard->num_keycodes,
+                                       &keyboard->modifiers);
+        return true;
+    }
+    return false;
+}
+
 bool hrt_seat_keyboard_focus_surface(struct hrt_seat *seat,
                                      struct wlr_surface *surface) {
     struct wlr_seat *wlr_seat = seat->seat;
-    if (!seat->grabbed) {
-        struct wlr_surface *prev_surface =
-            wlr_seat->keyboard_state.focused_surface;
-        if (prev_surface == surface) {
-            // Don't re-focus an already focused surface:
-            return false;
+    if (hrt_session_locked(seat->server)) {
+        // FIXME: It would be better to allow focus if the surface is
+        //  in the locked layer instead of requiring it to be a lock surface
+        struct wlr_session_lock_surface_v1 *lock_surface =
+            wlr_session_lock_surface_v1_try_from_wlr_surface(surface);
+        if (lock_surface) {
+            return keyboard_focus_surface(wlr_seat, surface);
         }
-        struct wlr_keyboard *keyboard = wlr_seat_get_keyboard(wlr_seat);
-
-        if (keyboard != NULL) {
-            wlr_seat_keyboard_notify_enter(
-                wlr_seat, surface, keyboard->keycodes, keyboard->num_keycodes,
-                &keyboard->modifiers);
-            return true;
-        }
+    } else if (!seat->grabbed) {
+        return keyboard_focus_surface(wlr_seat, surface);
     }
     return false;
+}
+
+bool hrt_seat_keyboard_has_focus(struct hrt_seat *seat) {
+    return seat->seat->keyboard_state.focused_surface != nullptr;
+}
+
+bool hrt_seat_keyboard_focuses_surface(struct hrt_seat *seat,
+                                       struct wlr_surface *surface) {
+    return seat->seat->keyboard_state.focused_surface == surface;
 }
 
 bool hrt_seat_keyboard_focus_surface_clear(struct hrt_seat *seat,
@@ -127,6 +151,11 @@ static void hrt_seat_reset_cursor_img(struct hrt_seat *seat) {
     // TODO: investigate; this may send the pointer_enter event
     // when the pointer is already in the view. Does that matter?
     hrt_seat_reset_view_under(seat);
+}
+
+void hrt_seat_clear_focus(struct hrt_seat *seat) {
+    wlr_seat_keyboard_clear_focus(seat->seat);
+    wlr_seat_pointer_clear_focus(seat->seat);
 }
 
 void hrt_seat_grab(struct hrt_seat *seat, char *img_name) {

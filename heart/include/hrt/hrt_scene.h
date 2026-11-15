@@ -20,7 +20,9 @@ struct hrt_scene_root {
     struct wlr_scene_tree *overlay;
     struct wlr_scene_tree *popup;
     struct wlr_scene_tree *drag_icons;
-    // Should we store the outputs and groups associated with this?
+    struct wlr_scene_tree *lock;
+    // Should we store the outputs and groups that are
+    // attached to this object?
     struct {
         struct wl_listener scene_destroy;
     } listeners;
@@ -32,6 +34,7 @@ struct hrt_scene_output {
 
     struct wlr_scene_tree *top;
     struct wlr_scene_tree *overlay;
+    struct wlr_scene_tree *lock;
     struct hrt_output *output;
 };
 
