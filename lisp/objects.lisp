@@ -76,4 +76,5 @@
 
 (declaim (inline server-seat))
 (defun server-seat (state)
+  (declare (type mahogany-state state))
   (hrt:hrt-server-seat (state-server state)))
